@@ -12,8 +12,12 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import org.librarysimplified.audiobook.json_web_token.JSONBase64String
 import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAPassword
+import org.slf4j.LoggerFactory
 
 class ExampleConfigurationActivity : AppCompatActivity() {
+
+  private val logger =
+    LoggerFactory.getLogger(ExampleConfigurationActivity::class.java)
 
   private lateinit var authBasic: String
   private lateinit var authentication: Spinner
@@ -41,6 +45,7 @@ class ExampleConfigurationActivity : AppCompatActivity() {
 
   override fun onCreate(state: Bundle?) {
     super.onCreate(state)
+    this.logger.debug("onCreate")
 
     this.setContentView(R.layout.example_config_screen)
 
@@ -160,7 +165,7 @@ class ExampleConfigurationActivity : AppCompatActivity() {
           )
         }
         this.authNone -> {
-          ExamplePlayerCredentials.None
+          ExamplePlayerCredentials.None(0)
         }
         this.authFeedbooks -> {
           val secretText =
@@ -238,7 +243,7 @@ class ExampleConfigurationActivity : AppCompatActivity() {
     this.location.text = preset.uri.toString()
 
     return when (val credentials = preset.credentials) {
-      ExamplePlayerCredentials.None -> {
+      is ExamplePlayerCredentials.None -> {
         this.onSelectedAuthentication(this.authNone)
       }
 

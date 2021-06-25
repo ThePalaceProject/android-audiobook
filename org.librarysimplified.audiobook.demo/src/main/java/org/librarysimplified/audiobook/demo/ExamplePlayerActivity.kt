@@ -58,7 +58,8 @@ import java.util.concurrent.TimeUnit
 
 class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
 
-  private val log = LoggerFactory.getLogger(ExamplePlayerActivity::class.java)
+  private val log =
+    LoggerFactory.getLogger(ExamplePlayerActivity::class.java)
 
   companion object {
     const val FETCH_PARAMETERS_ID =
@@ -239,7 +240,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     parameters: ExamplePlayerParameters
   ): ManifestFulfillmentStrategyType {
     return when (credentials) {
-      ExamplePlayerCredentials.None -> {
+      is ExamplePlayerCredentials.None -> {
         val strategies =
           ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
             ?: throw UnsupportedOperationException()

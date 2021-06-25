@@ -32,9 +32,9 @@ dependencies {
   implementation libraries.androidx_appcompat
   implementation libraries.androidXRecyclerView
   implementation libraries.kotlinStdlib
-  implementation libraries.logbackAndroid
   implementation libraries.okhttp
   implementation libraries.slf4j
+  implementation libraries.logback_android
 
   if (project.hasProperty("org.librarysimplified.audiobook.demo.with_findaway")) {
     if (project.property("org.librarysimplified.audiobook.demo.with_findaway") == "true") {
