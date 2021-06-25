@@ -21,9 +21,11 @@ import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterWaiting
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventCreateBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackBuffering
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackPaused
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
@@ -514,9 +516,15 @@ class PlayerFragment : Fragment() {
         this.onPlayerEventPlaybackRateChanged(event)
       is PlayerEventError ->
         this.onPlayerEventError(event)
-      PlayerEvent.PlayerEventManifestUpdated ->
+      PlayerEventManifestUpdated ->
         this.onPlayerEventManifestUpdated()
+      is PlayerEventCreateBookmark ->
+        this.onPlayerEventCreateBookmark()
     }
+  }
+
+  private fun onPlayerEventCreateBookmark() {
+    // Do nothing
   }
 
   private fun onPlayerEventError(event: PlayerEventError) {
