@@ -13,6 +13,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
@@ -74,33 +75,34 @@ class PlayerFragment : Fragment() {
     }
   }
 
-  private lateinit var listener: PlayerFragmentListenerType
-  private lateinit var player: PlayerType
   private lateinit var book: PlayerAudioBookType
-  private lateinit var executor: ScheduledExecutorService
-  private lateinit var sleepTimer: PlayerSleepTimerType
   private lateinit var coverView: ImageView
-  private lateinit var playerTitleView: TextView
-  private lateinit var playerAuthorView: TextView
-  private lateinit var playPauseButton: ImageView
-  private lateinit var playerSkipForwardButton: ImageView
-  private lateinit var playerSkipBackwardButton: ImageView
-  private var playerPositionDragging: Boolean = false
-  private var playerBufferingStillOngoing: Boolean = false
-  private var playerBufferingTask: ScheduledFuture<*>? = null
-  private lateinit var playerPosition: SeekBar
-  private lateinit var playerTimeCurrent: TextView
-  private lateinit var playerTimeMaximum: TextView
-  private lateinit var playerSpineElement: TextView
-  private lateinit var playerWaiting: TextView
+  private lateinit var executor: ScheduledExecutorService
+  private lateinit var listener: PlayerFragmentListenerType
   private lateinit var menuPlaybackRate: MenuItem
   private lateinit var menuPlaybackRateText: TextView
   private lateinit var menuSleep: MenuItem
-  private lateinit var menuSleepText: TextView
   private lateinit var menuSleepEndOfChapter: ImageView
+  private lateinit var menuSleepText: TextView
   private lateinit var menuTOC: MenuItem
   private lateinit var parameters: PlayerFragmentParameters
+  private lateinit var playPauseButton: ImageView
+  private lateinit var player: PlayerType
+  private lateinit var playerAuthorView: TextView
+  private lateinit var playerBookmark: ImageView
+  private lateinit var playerPosition: SeekBar
+  private lateinit var playerSkipBackwardButton: ImageView
+  private lateinit var playerSkipForwardButton: ImageView
+  private lateinit var playerSpineElement: TextView
+  private lateinit var playerTimeCurrent: TextView
+  private lateinit var playerTimeMaximum: TextView
+  private lateinit var playerTitleView: TextView
+  private lateinit var playerWaiting: TextView
+  private lateinit var sleepTimer: PlayerSleepTimerType
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
+  private var playerBufferingStillOngoing: Boolean = false
+  private var playerBufferingTask: ScheduledFuture<*>? = null
+  private var playerPositionDragging: Boolean = false
 
   private var playerPositionCurrentSpine: PlayerSpineElementType? = null
   private var playerPositionCurrentOffset: Long = 0L
@@ -115,7 +117,7 @@ class PlayerFragment : Fragment() {
     super.onCreate(state)
 
     this.parameters =
-      this.arguments!!.getSerializable(org.librarysimplified.audiobook.views.PlayerFragment.Companion.parametersKey)
+      this.arguments!!.getSerializable(parametersKey)
       as PlayerFragmentParameters
     this.timeStrings =
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
@@ -410,6 +412,9 @@ class PlayerFragment : Fragment() {
 
     this.coverView = view.findViewById(R.id.player_cover)!!
 
+    this.playerBookmark = view.findViewById(R.id.player_bookmark)
+    this.playerBookmark.alpha = 0.0f
+
     this.playerTitleView = view.findViewById(R.id.player_title)
     this.playerAuthorView = view.findViewById(R.id.player_author)
 
@@ -523,8 +528,16 @@ class PlayerFragment : Fragment() {
     }
   }
 
+  /*
+   * Show a small icon to demonstrate that a bookmark was created.
+   */
+
   private fun onPlayerEventCreateBookmark() {
-    // Do nothing
+    UIThread.runOnUIThread {
+      this.playerBookmark.alpha = 0.5f
+      this.playerBookmark.animation =
+        AnimationUtils.loadAnimation(this.context, R.anim.zoom_fade)
+    }
   }
 
   private fun onPlayerEventError(event: PlayerEventError) {

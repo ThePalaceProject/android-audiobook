@@ -9,6 +9,19 @@ import com.google.common.util.concurrent.MoreExecutors
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
+import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterCompleted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterWaiting
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventCreateBookmark
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackBuffering
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackPaused
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
@@ -46,6 +59,7 @@ import org.librarysimplified.audiobook.views.PlayerSleepTimerFragment
 import org.librarysimplified.audiobook.views.PlayerTOCFragment
 import org.librarysimplified.audiobook.views.PlayerTOCFragmentParameters
 import org.slf4j.LoggerFactory
+import rx.Subscription
 import java.io.File
 import java.io.IOException
 import java.net.URI
@@ -68,6 +82,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
 
   private val userAgent = PlayerUserAgent("org.librarysimplified.audiobook.demo.main_ui")
 
+  private lateinit var bookmarks: ExampleBookmarkDatabase
   private lateinit var examplePlayerFetchingFragment: ExamplePlayerFetchingFragment
   private lateinit var downloadExecutor: ListeningExecutorService
   private lateinit var uiScheduledExecutor: ScheduledExecutorService
@@ -78,6 +93,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   private lateinit var bookTitle: String
   private lateinit var bookAuthor: String
   private lateinit var sleepTimer: PlayerSleepTimerType
+  private lateinit var playerEvents: Subscription
 
   override fun onCreate(state: Bundle?) {
     super.onCreate(null)
@@ -85,6 +101,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     this.setTheme(R.style.AudioBooksWithActionBar)
     this.setContentView(R.layout.example_player_activity)
     this.supportActionBar?.setTitle(R.string.exAppName)
+    this.bookmarks = ExampleBookmarkDatabase(this)
 
     /*
      * Create executors for download threads, and for scheduling UI events. Each thread is
@@ -175,11 +192,23 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
       this.log.error("error shutting down sleep timer: ", e)
     }
 
+    try {
+      this.bookmarks.close()
+    } catch (e: Exception) {
+      this.log.error("error shutting down bookmarks: ", e)
+    }
+
     if (this.playerInitialized) {
       try {
         this.player.close()
       } catch (e: Exception) {
         this.log.error("error closing player: ", e)
+      }
+
+      try {
+        this.playerEvents.unsubscribe()
+      } catch (e: Exception) {
+        this.log.error("error closing subscription: ", e)
       }
 
       try {
@@ -505,6 +534,10 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     this.player = this.book.createPlayer()
     this.playerInitialized = true
 
+    val lastPlayed = this.bookmarks.bookmarkFindLastReadLocation(book.id.value)
+    this.player.movePlayheadToLocation(lastPlayed)
+    this.playerEvents = this.player.events.subscribe(this::onPlayerEvent)
+
     /*
      * Create and load the main player fragment into the holder view declared in the activity.
      */
@@ -670,5 +703,33 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
         toast.show()
       }
     )
+  }
+
+  private fun onPlayerEvent(event: PlayerEvent) {
+    return when (event) {
+      is PlayerEventCreateBookmark -> {
+        this.bookmarks.bookmarkSave(
+          this.book.id.value,
+          PlayerPosition(
+            title = event.spineElement.title,
+            part = event.spineElement.position.part,
+            chapter = event.spineElement.position.chapter,
+            offsetMilliseconds = event.offsetMilliseconds
+          )
+        )
+      }
+
+      is PlayerEventError,
+      PlayerEventManifestUpdated,
+      is PlayerEventPlaybackRateChanged,
+      is PlayerEventChapterCompleted,
+      is PlayerEventChapterWaiting,
+      is PlayerEventPlaybackBuffering,
+      is PlayerEventPlaybackPaused,
+      is PlayerEventPlaybackProgressUpdate,
+      is PlayerEventPlaybackStarted,
+      is PlayerEventPlaybackStopped ->
+        Unit
+    }
   }
 }
