@@ -24,10 +24,4 @@
     location="http://ataxia.io7m.com/2018/08/02/open_access_0.json">
     <AuthenticationNone />
   </Preset>
-
-  <Preset
-    name="DPLA Test 0"
-    location="http://qa.circulation.librarysimplified.org/DEX/works/349968/fulfill/25">
-    <AuthenticationNone />
-  </Preset>
 </Presets>
