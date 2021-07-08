@@ -104,5 +104,16 @@ sealed class PlayerEvent {
       override val spineElement: PlayerSpineElementType,
       val offsetMilliseconds: Long
     ) : PlayerEventWithSpineElement()
+
+    /**
+     * Playback has progressed in a manner that's significant enough to justify a new
+     * bookmark. This is typically on chapter changes, and periodically when playing
+     * a chapter.
+     */
+
+    data class PlayerEventCreateBookmark(
+      override val spineElement: PlayerSpineElementType,
+      val offsetMilliseconds: Long
+    ) : PlayerEventWithSpineElement()
   }
 }

@@ -1,12 +1,12 @@
 dependencies {
-  androidTestImplementation libraries.androidXAppCompat
+  androidTestImplementation libraries.androidx_appcompat
   androidTestImplementation libraries.androidXTestEspresso
   androidTestImplementation libraries.androidXTestExtJunit
   androidTestImplementation libraries.androidXTestRules
   androidTestImplementation libraries.androidXTestRunner
   androidTestImplementation libraries.junit
   androidTestImplementation libraries.kotlinStdlib
-  androidTestImplementation libraries.logbackAndroid
+  androidTestImplementation libraries.logback_android
   androidTestImplementation libraries.slf4j
   androidTestUtil libraries.androidXTestOrchestrator
 

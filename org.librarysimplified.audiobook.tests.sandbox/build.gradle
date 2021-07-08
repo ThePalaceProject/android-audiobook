@@ -10,6 +10,6 @@ dependencies {
   implementation project(':org.librarysimplified.audiobook.open_access')
   implementation project(':org.librarysimplified.audiobook.views')
 
-  implementation libraries.androidXAppCompat
-  implementation libraries.logbackAndroid
+  implementation libraries.androidx_appcompat
+  implementation libraries.logback_android
 }

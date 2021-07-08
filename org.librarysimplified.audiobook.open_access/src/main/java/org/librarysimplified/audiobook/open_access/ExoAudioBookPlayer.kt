@@ -66,6 +66,7 @@ class ExoAudioBookPlayer private constructor(
   manifestUpdates: Observable<Unit>
 ) : PlayerType {
 
+  private val bookmarkObserver: ExoBookmarkObserver
   private val manifestSubscription: Subscription
   private val log = LoggerFactory.getLogger(ExoAudioBookPlayer::class.java)
   private val bufferSegmentSize = 64 * 1024
@@ -77,6 +78,11 @@ class ExoAudioBookPlayer private constructor(
     this.manifestSubscription = manifestUpdates.subscribe {
       this.onManifestUpdated()
     }
+    this.bookmarkObserver =
+      ExoBookmarkObserver.create(
+        player = this,
+        onBookmarkCreate = this.statusEvents::onNext
+      )
   }
 
   private fun onManifestUpdated() {
@@ -226,12 +232,12 @@ class ExoAudioBookPlayer private constructor(
       return engineExecutor.submit(
         Callable {
 
-        /*
-         * The rendererCount parameter is not well documented. It appears to be the number of
-         * renderers that are required to render a single track. To render a piece of video that
-         * had video, audio, and a subtitle track would require three renderers. Audio books should
-         * require just one.
-         */
+          /*
+           * The rendererCount parameter is not well documented. It appears to be the number of
+           * renderers that are required to render a single track. To render a piece of video that
+           * had video, audio, and a subtitle track would require three renderers. Audio books should
+           * require just one.
+           */
 
           val player =
             ExoPlayer.Factory.newInstance(1)
@@ -892,6 +898,7 @@ class ExoAudioBookPlayer private constructor(
   private fun opClose() {
     ExoEngineThread.checkIsExoEngineThread()
     this.log.debug("opClose")
+    this.bookmarkObserver.close()
     this.manifestSubscription.unsubscribe()
     this.downloadEventSubscription.unsubscribe()
     this.playNothing()
