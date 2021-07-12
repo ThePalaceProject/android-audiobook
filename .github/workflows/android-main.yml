@@ -2,8 +2,8 @@ name: Android CI (Authenticated)
 
 on:
   push:
-    branches: [ develop, master ]
-    tags: audiobook-android-[0-9]+.[0-9]+.[0-9]+
+    branches: [ main ]
+    tags: android-audiobook-[0-9]+.[0-9]+.[0-9]+
 
 jobs:
   build:
