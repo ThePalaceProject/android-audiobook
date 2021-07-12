@@ -352,7 +352,7 @@ Automatic-Module-Name: ${POM_AUTOMATIC_MODULE_NAME}
       if (version.endsWith("SNAPSHOT")) {
         logger.info("Using Sonatype snapshots repository for publication")
         maven {
-          url = "https://oss.sonatype.org/content/repositories/snapshots/"
+          url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
           credentials(PasswordCredentials) {
             username mavenCentralUsername
             password mavenCentralPassword
@@ -377,7 +377,7 @@ Automatic-Module-Name: ${POM_AUTOMATIC_MODULE_NAME}
 
     // Sonatype snapshots
     maven {
-      url "https://oss.sonatype.org/content/repositories/snapshots/"
+      url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
     }
 
     if (project.hasProperty("org.thepalaceproject.audiobook.demo.with_findaway")) {
