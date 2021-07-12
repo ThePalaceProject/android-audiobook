@@ -1,9 +1,9 @@
 audiobook-android
 ===
 
-[![Build Status](https://img.shields.io/github/workflow/status/NYPL-Simplified/audiobook-android/Android%20CI%20(Authenticated)?style=flat-square)](https://github.com/NYPL-Simplified/audiobook-android/actions?query=workflow%3A%22Android+CI+%28Authenticated%29%22)
-[![Maven Central](https://img.shields.io/maven-central/v/org.librarysimplified.audiobook/org.librarysimplified.audiobook.api.svg?style=flat-square)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.librarysimplified.audiobook%22)
-[![Maven Central (snapshot)](https://img.shields.io/nexus/s/https/oss.sonatype.org/org.librarysimplified.audiobook/org.librarysimplified.audiobook.api.svg?style=flat-square)](https://oss.sonatype.org/content/repositories/snapshots/org.librarysimplified.audiobook/)
+[![Build Status](https://img.shields.io/github/workflow/status/ThePalaceProject/android-audiobook/Android%20CI%20(Authenticated)?style=flat-square)](https://github.com/ThePalaceProject/android-audiobook/actions?query=workflow%3A%22Android+CI+%28Authenticated%29%22)
+[![Maven Central](https://img.shields.io/maven-central/v/org.thepalaceproject.audiobook/org.librarysimplified.audiobook.api.svg?style=flat-square)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.librarysimplified.audiobook%22)
+[![Maven Central (snapshot)](https://img.shields.io/nexus/s/https/oss.sonatype.org/org.thepalaceproject.audiobook/org.librarysimplified.audiobook.api.svg?style=flat-square)](https://oss.sonatype.org/content/repositories/snapshots/org.thepalaceproject.audiobook/)
 
 ### Compilation
 
@@ -26,14 +26,14 @@ redundant nowadays.
 ### Project Structure
 
 The project is divided into separate modules. Programmers wishing to use the API will primarily be
-concerned with the [Core API](https://github.com/NYPL-Simplified/audiobook-android/tree/develop/org.librarysimplified.audiobook.api),
+concerned with the [Core API](https://github.com/ThePalaceProject/android-audiobook/tree/develop/org.librarysimplified.audiobook.api),
 but will also need to add [providers](#providers) to the classpaths of their projects in order
 to actually do useful work. The API is designed to make it easy to develop an event-driven user
 interface, but this project also includes a ready-made [player UI](#player_ui) that can be embedded
 into applications. Additionally, audio engine providers that do not, by themselves, handle downloads
 require callers to provide a _download provider_. Normally, this code would be provided directly
 by applications (as applications tend to have centralized code to handle downloads), but a
-[simple implementation](https://github.com/NYPL-Simplified/audiobook-android/tree/develop/org.librarysimplified.audiobook.downloads)
+[simple implementation](https://github.com/ThePalaceProject/android-audiobook/tree/develop/org.librarysimplified.audiobook.downloads)
 is available to ease integration.
 
 |Module|Description|
@@ -71,7 +71,7 @@ to manage release changelogs.
 3. (Optional) Ask the API to [perform license checks](#license_checking).
 4. (Optional) Configure any [player extensions](#player_extensions) you may want to use.
 5. Ask the API to [create an audio engine](#using_audio_engines) from the parsed manifest.
-6. Make calls to the resulting [audio book](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerAudioBookType.kt) to download and play individual parts of the book.
+6. Make calls to the resulting [audio book](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerAudioBookType.kt) to download and play individual parts of the book.
 
 See the provided [example project](https://github.com/NYPL-Simplified/audiobook-demo-android) for a
 complete example that is capable of downloading and playing audio books.
@@ -119,28 +119,28 @@ defined in the Core API.
 
 #### Using Manifest Parsers <a id="using_manifest_parsers"/>
 
-Programmers should make calls to the [ManifestParsers](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.manifest_parser.api/src/main/java/org/librarysimplified/audiobook/manifest_parser/api/ManifestParsers.kt)
+Programmers should make calls to the [ManifestParsers](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.manifest_parser.api/src/main/java/org/librarysimplified/audiobook/manifest_parser/api/ManifestParsers.kt)
 class, passing in a byte array representing (typically) the raw text of a JSON manifest. The methods return a
 `PlayerResult` value providing either the parsed manifest or a list of errors indicating why parsing
 failed. The `ManifestParsers` class asks each registered [manifest parser](#creating_manifest_parsers)
 whether or not it can parse the given raw data and picks the first one that claims that it can.
-Programmers are not intended to have to use instances of the [PlayerManifestParserType](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.manifest_parser.api/src/main/java/org/librarysimplified/audiobook/manifest_parser/api/ManifestParserType.kt)
+Programmers are not intended to have to use instances of the [PlayerManifestParserType](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.manifest_parser.api/src/main/java/org/librarysimplified/audiobook/manifest_parser/api/ManifestParserType.kt)
 directly.
 
 #### Creating Manifest Parsers <a id="creating_manifest_parsers"/>
 
 Programmers will generally not need to create new manifest parsers, but will instead use one or
-more of the [provided implementations](https://github.com/NYPL-Simplified/audiobook-android/tree/develop/org.librarysimplified.audiobook.manifest_parser.webpub).
+more of the [provided implementations](https://github.com/ThePalaceProject/android-audiobook/tree/develop/org.librarysimplified.audiobook.manifest_parser.webpub).
 However, applications needing to use a new and unsupported manifest format will need to
 provide and register new manifest parser implementations.
 
 In order to add a new manifest parser, it's necessary to define a new class that implements
-the [PlayerManifestParserType](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.manifest_parser.api/src/main/java/org/librarysimplified/audiobook/manifest_parser/api/ManifestParserProviderType.kt)
+the [PlayerManifestParserType](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.manifest_parser.api/src/main/java/org/librarysimplified/audiobook/manifest_parser/api/ManifestParserProviderType.kt)
 and defines a public, no-argument constructor. It's then necessary to register this class so that
 `ServiceLoader` can find it by creating a resource file at
 `META-INF/services/org.librarysimplified.audiobook.manifest_parser.api.ManifestParserProviderType` containing the fully
-qualified name of the new class. The standard [WebPubParserProvider](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.manifest_parser.webpub/src/main/java/org/librarysimplified/audiobook/manifest_parser/webpub/WebPubParserProvider.kt)
-class and its associated [service file](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.manifest_parser.webpub/src/main/resources/META-INF/services/org.librarysimplified.audiobook.manifest_parser.api.ManifestParserProviderType)
+qualified name of the new class. The standard [WebPubParserProvider](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.manifest_parser.webpub/src/main/java/org/librarysimplified/audiobook/manifest_parser/webpub/WebPubParserProvider.kt)
+class and its associated [service file](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.manifest_parser.webpub/src/main/resources/META-INF/services/org.librarysimplified.audiobook.manifest_parser.api.ManifestParserProviderType)
 serve as minimal examples for new parser implementations. When a `jar` (or `aar`) file is placed on
 the classpath containing both the class and the service file, `ServiceLoader` will find the
 implementation automatically when the user asks for parser implementations.
@@ -162,9 +162,9 @@ if the listening party actually has permission to hear the given audio
 book.
 
 Individual license checks are provided as implementations of the
-[SingleLicenseCheckProviderType](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.license_check.spi/src/main/java/org/librarysimplified/audiobook/license_check/spi/SingleLicenseCheckProviderType.kt)
+[SingleLicenseCheckProviderType](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.license_check.spi/src/main/java/org/librarysimplified/audiobook/license_check/spi/SingleLicenseCheckProviderType.kt)
 type. Programmers should pass in a list of desired single license check providers
-to the [LicenseChecks](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.license_check.api/src/main/java/org/librarysimplified/audiobook/license_check/api/LicenseChecks.kt)
+to the [LicenseChecks](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.license_check.api/src/main/java/org/librarysimplified/audiobook/license_check/api/LicenseChecks.kt)
 API for execution. The `LicenseChecks` API returns a list of the results
 of license checks, and provides a simple `true/false` value indicating
 whether or not playing should be permitted.
@@ -178,7 +178,7 @@ An _audio engine_ is a component that actually downloads and plays a given audio
 #### Using Audio Engines <a id="using_audio_engines"/>
 
 Given a parsed [manifest](#using_manifest_parsers), programmers should make calls to the methods
-defined on the [PlayerAudioEngines](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerAudioEngines.kt)
+defined on the [PlayerAudioEngines](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerAudioEngines.kt)
 class. Similarly to the `PlayerManifests` class, the `PlayerAudioEngines` class will ask each
 registered [audio engine implementation](#creating_audio_engines) in turn if it is capable of
 supporting the book described by the given manifest. Please consult the documentation for that
@@ -188,27 +188,27 @@ support the given book, and then select the implementation that advertises the h
 
 #### Creating Audio Engines <a id="creating_audio_engines"/>
 
-Implementations must implement the [PlayerAudioEngineProviderType](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerAudioEngineProviderType.kt)
+Implementations must implement the [PlayerAudioEngineProviderType](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerAudioEngineProviderType.kt)
 interface and register themselves in the same manner as [manifest parsers](#creating_manifest_parsers).
 
 Creating a new audio engine provider is a fairly involved process. The provided
-[ExoPlayer-based implementation](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.open_access/src/main/java/org/librarysimplified/audiobook/open_access/ExoEngineProvider.kt)
+[ExoPlayer-based implementation](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.open_access/src/main/java/org/librarysimplified/audiobook/open_access/ExoEngineProvider.kt)
 may serve as an example for new implementations.
 
 In order to reduce duplication of code between audio engines, the downloading of books is
-abstracted out into a [PlayerDownloadProviderType](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerDownloadProviderType.kt)
+abstracted out into a [PlayerDownloadProviderType](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerDownloadProviderType.kt)
 interface that audio engine implementations can call in order to perform the work of actually
 downloading books. Implementations of this interface are actually provided by the calling programmer
 as this kind of code is generally provided by the application using the audio engine.
 
 #### Player Extensions <a id="player_extensions"/>
 
-Audio engines may support [extensions](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/extensions/PlayerExtensionType.kt)
+Audio engines may support [extensions](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/extensions/PlayerExtensionType.kt)
 that allow for augmenting the behaviour of existing implementations. This
 is primarily useful for, for example, adding unusual authentication
 mechanisms that may be required by book distributors when downloading
 book chapters. A list of extensions may be passed in to the `create`
-method of the [PlayerAudioBookProviderType](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerAudioBookProviderType.kt)
+method of the [PlayerAudioBookProviderType](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.api/src/main/java/org/librarysimplified/audiobook/api/PlayerAudioBookProviderType.kt)
 interface. Extensions _must_ be explicitly passed in in order to be
 used; passing in an empty list results in no extensions being used.
 
@@ -221,7 +221,7 @@ to provide a simple user interface for the player API.
 
 #### Using the UI
 
-1. Declare an `Activity` that implements the [PlayerFragmentListenerType](https://github.com/NYPL-Simplified/audiobook-android/blob/develop/org.librarysimplified.audiobook.views/src/main/java/org/librarysimplified/audiobook/views/PlayerFragmentListenerType.kt).
+1. Declare an `Activity` that implements the [PlayerFragmentListenerType](https://github.com/ThePalaceProject/android-audiobook/blob/develop/org.librarysimplified.audiobook.views/src/main/java/org/librarysimplified/audiobook/views/PlayerFragmentListenerType.kt).
 2. Load a `PlayerFragment` instance into the activity.
 
 Please consult the provided [example project](https://github.com/NYPL-Simplified/audiobook-demo-android)
