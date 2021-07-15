@@ -26,8 +26,8 @@ object PlayerPositions : PlayerPositionParserType, PlayerPositionSerializerType 
 
   @Throws(PlayerJSONParseException::class)
   private fun parseFromObjectNodeV1(node: ObjectNode): PlayerResult<PlayerPosition, Exception> {
-    val positionNode = PlayerJSONParserUtilities.getObject(node, "position")
-
+    val positionNode =
+      PlayerJSONParserUtilities.getObject(node, "position")
     val chapter =
       PlayerJSONParserUtilities.getInteger(positionNode, "chapter")
     val part =
@@ -56,7 +56,9 @@ object PlayerPositions : PlayerPositionParserType, PlayerPositionSerializerType 
     positionNode.put("chapter", position.chapter)
     positionNode.put("part", position.part)
     positionNode.put("offsetMilliseconds", position.offsetMilliseconds)
-    positionNode.put("title", position.title)
+    if (position.title != null) {
+      positionNode.put("title", position.title)
+    }
 
     node.set<ObjectNode>("position", positionNode)
     return node
