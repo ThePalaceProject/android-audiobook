@@ -127,10 +127,13 @@
         <c:change date="2021-07-13T00:00:00+00:00" summary="Add explicit bookmark events"/>
       </c:changes>
     </c:release>
-    <c:release date="2021-07-27T18:39:48+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.7.0">
+    <c:release date="2021-07-27T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.7.0">
       <c:changes>
         <c:change date="2021-07-27T00:00:00+00:00" summary="Fix titles appearing as &quot;null&quot;"/>
       </c:changes>
+    </c:release>
+    <c:release date="2021-07-27T20:22:38+00:00" is-open="true" ticket-system="org.nypl.jira" version="6.7.1">
+      <c:changes/>
     </c:release>
   </c:releases>
   <c:ticket-systems>
