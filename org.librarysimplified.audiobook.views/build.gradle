@@ -3,6 +3,7 @@ dependencies {
 
   implementation libraries.androidx_appcompat
   implementation libraries.androidXRecyclerView
+  implementation libraries.androidx_constraintlayout
   implementation libraries.kotlinStdlib
   implementation libraries.kotlinReflect
   implementation libraries.slf4j

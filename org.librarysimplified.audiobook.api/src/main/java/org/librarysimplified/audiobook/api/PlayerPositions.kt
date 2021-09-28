@@ -59,7 +59,6 @@ object PlayerPositions : PlayerPositionParserType, PlayerPositionSerializerType 
     if (position.title != null) {
       positionNode.put("title", position.title)
     }
-
     node.set<ObjectNode>("position", positionNode)
     return node
   }
