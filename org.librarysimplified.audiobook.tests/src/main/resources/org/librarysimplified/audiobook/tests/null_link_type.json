@@ -10,11 +10,8 @@
     },
     {
       "href": "http://example.org/b",
-      "rel": "something-1"
-    },
-    {
-      "href": "http://example.org/c",
-      "rel": "something-2"
+      "rel": "something-1",
+      "type": null
     }
   ],
 
