@@ -27,21 +27,21 @@ dependencies {
   implementation project(":org.librarysimplified.audiobook.rbdigital")
   implementation project(":org.librarysimplified.audiobook.views")
 
-  implementation libraries.androidx_constraintlayout
-  implementation libraries.androidx_core
-  implementation libraries.androidx_appcompat
-  implementation libraries.androidXRecyclerView
-  implementation libraries.kotlinStdlib
-  implementation libraries.okhttp
-  implementation libraries.slf4j
-  implementation libraries.logback_android
+  implementation libs.androidx.constraint.layout
+  implementation libs.androidx.core
+  implementation libs.androidx.app.compat
+  implementation libs.androidx.recycler.view
+  implementation libs.kotlin.stdlib
+  implementation libs.okhttp3
+  implementation libs.slf4j
+  implementation libs.logback.android
 
   if (project.hasProperty("org.thepalaceproject.audiobook.demo.with_findaway")) {
     if (project.property("org.thepalaceproject.audiobook.demo.with_findaway") == "true") {
-      implementation libraries.nypl_audiobook_audioengine
+      implementation libs.palace.findaway
     }
   }
 
-  compileOnly libraries.jcip
+  compileOnly libs.jcip
 }
 
