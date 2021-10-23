@@ -80,6 +80,13 @@ interface PlayerFragmentListenerType {
   fun onPlayerPlaybackRateShouldOpen()
 
   /**
+   * The user has performed an action that implies the player to be closed and the app to return to
+   * the previous screen
+   */
+
+  fun onPlayerShouldBeClosed()
+
+  /**
    * The user has performed an action that requires that a sleep timer configuration dialog be opened.
    * The caller should load a fragment capable of displaying the configuration menu
    * (such as {@link org.librarysimplified.audiobook.views.PlayerSleepTimerFragment}).

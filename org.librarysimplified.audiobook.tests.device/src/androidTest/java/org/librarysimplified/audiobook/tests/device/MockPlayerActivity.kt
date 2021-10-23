@@ -128,6 +128,10 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     this.supportFragmentManager.popBackStack()
   }
 
+  override fun onPlayerShouldBeClosed() {
+    onBackPressed()
+  }
+
   override fun onPlayerPlaybackRateShouldOpen() {
     Handler(Looper.getMainLooper()).post {
       val fragment =
