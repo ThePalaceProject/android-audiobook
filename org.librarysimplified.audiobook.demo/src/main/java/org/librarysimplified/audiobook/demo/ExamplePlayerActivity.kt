@@ -672,6 +672,10 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     )
   }
 
+  override fun onPlayerShouldBeClosed() {
+    onBackPressed()
+  }
+
   override fun onPlayerTOCWantsClose() {
     this.log.debug("onPlayerTOCWantsClose")
     this.supportFragmentManager.popBackStack()

@@ -203,6 +203,10 @@ class SandboxPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     this.supportFragmentManager.popBackStack()
   }
 
+  override fun onPlayerShouldBeClosed() {
+    onBackPressed()
+  }
+
   override fun onPlayerPlaybackRateShouldOpen() {
 
     /*

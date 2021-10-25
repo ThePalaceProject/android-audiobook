@@ -5,8 +5,6 @@ import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.View.INVISIBLE
@@ -17,6 +15,7 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
@@ -100,6 +99,7 @@ class PlayerFragment : Fragment() {
   private lateinit var playerWaiting: TextView
   private lateinit var sleepTimer: PlayerSleepTimerType
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
+  private lateinit var toolbar: Toolbar
   private var playerBufferingStillOngoing: Boolean = false
   private var playerBufferingTask: ScheduledFuture<*>? = null
   private var playerPositionDragging: Boolean = false
@@ -121,12 +121,6 @@ class PlayerFragment : Fragment() {
       as PlayerFragmentParameters
     this.timeStrings =
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
-
-    /*
-     * This fragment wants an options menu.
-     */
-
-    this.setHasOptionsMenu(true)
   }
 
   override fun onAttach(context: Context) {
@@ -152,100 +146,6 @@ class PlayerFragment : Fragment() {
           .toString()
       )
     }
-  }
-
-  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-    this.log.debug("onCreateOptionsMenu")
-
-    super.onCreateOptionsMenu(menu, inflater)
-
-    inflater.inflate(R.menu.player_menu, menu)
-
-    this.menuPlaybackRate = menu.findItem(R.id.player_menu_playback_rate)
-
-    /*
-     * If the user is using a non-AppCompat theme, the action view will be null.
-     * If this happens, we need to inflate the same view that would have been
-     * automatically placed there by the menu definition.
-     */
-
-    if (this.menuPlaybackRate.actionView == null) {
-      this.log.warn("received a null action view, likely due to a non-appcompat theme; inflating a replacement view")
-
-      val actionView =
-        this.layoutInflater.inflate(R.layout.player_menu_playback_rate_text, null)
-      this.menuPlaybackRate.actionView = actionView
-      this.menuPlaybackRate.setOnMenuItemClickListener { this.onMenuPlaybackRateSelected(); true }
-    }
-
-    this.menuPlaybackRate.actionView.setOnClickListener { this.onMenuPlaybackRateSelected() }
-    this.menuPlaybackRate.actionView.contentDescription =
-      this.playbackRateContentDescription()
-    this.menuPlaybackRateText =
-      this.menuPlaybackRate.actionView.findViewById(R.id.player_menu_playback_rate_text)
-
-    this.menuPlaybackRateText.text =
-      PlayerPlaybackRateAdapter.textOfRate(this.player.playbackRate)
-
-    /*
-     * On API versions older than 23, playback rate changes will have no effect. There is no
-     * point showing the menu.
-     */
-
-    if (Build.VERSION.SDK_INT < 23) {
-      this.menuPlaybackRate.setVisible(false)
-    }
-
-    this.menuSleep = menu.findItem(R.id.player_menu_sleep)
-
-    /*
-     * If the user is using a non-AppCompat theme, the action view will be null.
-     * If this happens, we need to inflate the same view that would have been
-     * automatically placed there by the menu definition.
-     */
-
-    if (this.menuSleep.actionView == null) {
-      this.log.warn("received a null action view, likely due to a non-appcompat theme; inflating a replacement view")
-
-      val actionView =
-        this.layoutInflater.inflate(R.layout.player_menu_sleep_text, null)
-      this.menuSleep.actionView = actionView
-      this.menuSleep.setOnMenuItemClickListener { this.onMenuSleepSelected() }
-    }
-
-    this.menuSleep.actionView.setOnClickListener { this.onMenuSleepSelected() }
-    this.menuSleep.actionView.contentDescription = this.sleepTimerContentDescriptionSetUp()
-
-    this.menuSleepText = this.menuSleep.actionView.findViewById(R.id.player_menu_sleep_text)
-    this.menuSleepText.text = ""
-    this.menuSleepText.visibility = INVISIBLE
-
-    this.menuSleepEndOfChapter =
-      this.menuSleep.actionView.findViewById(R.id.player_menu_sleep_end_of_chapter)
-    this.menuSleepEndOfChapter.visibility = INVISIBLE
-
-    this.menuTOC = menu.findItem(R.id.player_menu_toc)
-    this.menuTOC.setOnMenuItemClickListener { this.onMenuTOCSelected() }
-
-    /*
-     * Subscribe to player and timer events. We do the subscription here (as late as possible)
-     * so that all of the views (including the options menu) have been created before the first
-     * event is received.
-     */
-
-    this.playerEventSubscription =
-      this.player.events.subscribe(
-        { event -> this.onPlayerEvent(event) },
-        { error -> this.onPlayerError(error) },
-        { this.onPlayerEventsCompleted() }
-      )
-
-    this.playerSleepTimerEventSubscription =
-      this.sleepTimer.status.subscribe(
-        { event -> this.onPlayerSleepTimerEvent(event) },
-        { error -> this.onPlayerSleepTimerError(error) },
-        { this.onPlayerSleepTimerEventsCompleted() }
-      )
   }
 
   private fun onPlayerSleepTimerEventsCompleted() {
@@ -389,6 +289,10 @@ class PlayerFragment : Fragment() {
     this.listener.onPlayerPlaybackRateShouldOpen()
   }
 
+  private fun onToolbarNavigationSelected() {
+    this.listener.onPlayerShouldBeClosed()
+  }
+
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
@@ -406,9 +310,105 @@ class PlayerFragment : Fragment() {
     this.onPlayerBufferingStopped()
   }
 
+  private fun configureToolbarActions() {
+
+    this.toolbar.inflateMenu(R.menu.player_menu)
+
+    this.toolbar.setNavigationOnClickListener { this.onToolbarNavigationSelected() }
+
+    this.menuPlaybackRate = this.toolbar.menu.findItem(R.id.player_menu_playback_rate)
+
+    /*
+     * If the user is using a non-AppCompat theme, the action view will be null.
+     * If this happens, we need to inflate the same view that would have been
+     * automatically placed there by the menu definition.
+     */
+
+    if (this.menuPlaybackRate.actionView == null) {
+      this.log.warn("received a null action view, likely due to a non-appcompat theme; inflating a replacement view")
+
+      val actionView =
+        this.layoutInflater.inflate(R.layout.player_menu_playback_rate_text, null)
+      this.menuPlaybackRate.actionView = actionView
+      this.menuPlaybackRate.setOnMenuItemClickListener { this.onMenuPlaybackRateSelected(); true }
+    }
+
+    this.menuPlaybackRate.actionView.setOnClickListener { this.onMenuPlaybackRateSelected() }
+    this.menuPlaybackRate.actionView.contentDescription =
+      this.playbackRateContentDescription()
+    this.menuPlaybackRateText =
+      this.menuPlaybackRate.actionView.findViewById(R.id.player_menu_playback_rate_text)
+
+    this.menuPlaybackRateText.text =
+      PlayerPlaybackRateAdapter.textOfRate(this.player.playbackRate)
+
+    /*
+     * On API versions older than 23, playback rate changes will have no effect. There is no
+     * point showing the menu.
+     */
+
+    if (Build.VERSION.SDK_INT < 23) {
+      this.menuPlaybackRate.isVisible = false
+    }
+
+    this.menuSleep = this.toolbar.menu.findItem(R.id.player_menu_sleep)
+
+    /*
+     * If the user is using a non-AppCompat theme, the action view will be null.
+     * If this happens, we need to inflate the same view that would have been
+     * automatically placed there by the menu definition.
+     */
+
+    if (this.menuSleep.actionView == null) {
+      this.log.warn("received a null action view, likely due to a non-appcompat theme; inflating a replacement view")
+
+      val actionView =
+        this.layoutInflater.inflate(R.layout.player_menu_sleep_text, null)
+      this.menuSleep.actionView = actionView
+      this.menuSleep.setOnMenuItemClickListener { this.onMenuSleepSelected() }
+    }
+
+    this.menuSleep.actionView.setOnClickListener { this.onMenuSleepSelected() }
+    this.menuSleep.actionView.contentDescription = this.sleepTimerContentDescriptionSetUp()
+
+    this.menuSleepText = this.menuSleep.actionView.findViewById(R.id.player_menu_sleep_text)
+    this.menuSleepText.text = ""
+    this.menuSleepText.visibility = INVISIBLE
+
+    this.menuSleepEndOfChapter =
+      this.menuSleep.actionView.findViewById(R.id.player_menu_sleep_end_of_chapter)
+    this.menuSleepEndOfChapter.visibility = INVISIBLE
+
+    this.menuTOC = this.toolbar.menu.findItem(R.id.player_menu_toc)
+    this.menuTOC.setOnMenuItemClickListener { this.onMenuTOCSelected() }
+
+    /*
+     * Subscribe to player and timer events. We do the subscription here (as late as possible)
+     * so that all of the views (including the options menu) have been created before the first
+     * event is received.
+     */
+
+    this.playerEventSubscription =
+      this.player.events.subscribe(
+        { event -> this.onPlayerEvent(event) },
+        { error -> this.onPlayerError(error) },
+        { this.onPlayerEventsCompleted() }
+      )
+
+    this.playerSleepTimerEventSubscription =
+      this.sleepTimer.status.subscribe(
+        { event -> this.onPlayerSleepTimerEvent(event) },
+        { error -> this.onPlayerSleepTimerError(error) },
+        { this.onPlayerSleepTimerEventsCompleted() }
+      )
+  }
+
   override fun onViewCreated(view: View, state: Bundle?) {
     this.log.debug("onViewCreated")
     super.onViewCreated(view, state)
+
+    this.toolbar = view.findViewById(R.id.audioBookToolbar)
+    configureToolbarActions()
 
     this.coverView = view.findViewById(R.id.player_cover)!!
 
