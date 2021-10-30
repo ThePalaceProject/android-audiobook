@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="64mm"
+   height="64mm"
+   viewBox="0 0 64 64"
+   version="1.1"
+   id="svg1032"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="speed.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1034"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="true"
+     width="64mm"
+     borderlayer="true"
+     inkscape:showpageshadow="false"
+     inkscape:snap-global="true"
+     inkscape:zoom="2"
+     inkscape:cx="165.75"
+     inkscape:cy="66.25"
+     inkscape:window-width="1788"
+     inkscape:window-height="922"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1544"
+       spacingx="2.1166666"
+       spacingy="2.1166666" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1029" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path1296"
+       style="fill:#000000;stroke-width:4.12845"
+       d="M 121 0.5 A 120.5 120.5 0 0 0 0.5 121 A 120.5 120.5 0 0 0 121 241.5 A 120.5 120.5 0 0 0 241.5 121 A 120.5 120.5 0 0 0 121 0.5 z M 121 21.5 A 99.500002 99.500002 0 0 1 220.5 121 A 99.500002 99.500002 0 0 1 121 220.5 A 99.500002 99.500002 0 0 1 21.5 121 A 99.500002 99.500002 0 0 1 121 21.5 z "
+       transform="scale(0.26458333)" />
+    <rect
+       style="fill:#000000;stroke-width:0.631837"
+       id="rect1421"
+       width="2.1166651"
+       height="10.503084"
+       x="30.72101"
+       y="8.5134382"
+       ry="0.93360686"
+       inkscape:transform-center-x="-0.11759247"
+       inkscape:transform-center-y="-17.890386" />
+    <rect
+       style="fill:#000000;stroke-width:0.631837"
+       id="rect2543"
+       width="2.1166651"
+       height="10.503084"
+       x="42.306824"
+       y="-11.558452"
+       ry="0.93360686"
+       inkscape:transform-center-x="-9.0470315"
+       inkscape:transform-center-y="-15.434732"
+       transform="rotate(30)" />
+    <rect
+       style="fill:#000000;stroke-width:0.631837"
+       id="rect2545"
+       width="2.1166651"
+       height="10.503084"
+       x="10.651458"
+       y="20.103298"
+       ry="0.93360686"
+       inkscape:transform-center-x="8.8433542"
+       inkscape:transform-center-y="-15.552326"
+       transform="rotate(-30)" />
+    <rect
+       style="fill:#000000;stroke-width:0.631837"
+       id="rect2547"
+       width="2.1166651"
+       height="10.503084"
+       x="-12.524216"
+       y="20.105635"
+       ry="0.93360686"
+       inkscape:transform-center-x="15.434733"
+       inkscape:transform-center-y="-9.0470322"
+       transform="rotate(-60)" />
+    <rect
+       style="fill:#000000;stroke-width:0.631837"
+       id="rect2549"
+       width="2.1166651"
+       height="10.503084"
+       x="42.304489"
+       y="-34.734127"
+       ry="0.93360686"
+       inkscape:transform-center-x="-15.552328"
+       inkscape:transform-center-y="-8.843354"
+       transform="rotate(60)" />
+  </g>
+</svg>

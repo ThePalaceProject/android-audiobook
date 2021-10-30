@@ -5,6 +5,7 @@ import android.content.res.Resources
 import android.util.TypedValue
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.core.content.ContextCompat
 
 /**
  * Functions to resolve colors from themes.
@@ -15,31 +16,14 @@ import androidx.annotation.ColorInt
 internal object PlayerColors {
 
   /**
-   * Resolve the given attribute color value against the given theme.
+   * The hint color for components.
    */
 
   @JvmStatic
   @ColorInt
-  fun resolveColorAttribute(
-    theme: Resources.Theme,
-    @AttrRes attribute: Int
+  fun hintColor(
+    context: Context
   ): Int {
-    val typedValue = TypedValue()
-    theme.resolveAttribute(attribute, typedValue, true)
-    return typedValue.data
-  }
-
-  /**
-   * If a color is provided, use it. Otherwise, resolve the primary color of the current
-   * theme.
-   */
-
-  @JvmStatic
-  @ColorInt
-  fun primaryColor(
-    context: Context,
-    @ColorInt providedColor: Int?
-  ): Int {
-    return providedColor ?: resolveColorAttribute(context.theme, R.attr.colorPrimary)
+    return ContextCompat.getColor(context, android.R.color.darker_gray)
   }
 }

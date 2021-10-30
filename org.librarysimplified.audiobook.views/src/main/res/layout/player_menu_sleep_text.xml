@@ -15,7 +15,6 @@
     android:clickable="false"
     android:focusable="false"
     android:text="00:00"
-    android:textColor="#fff"
     android:textSize="7sp"
     android:textStyle="bold"
     android:typeface="monospace" />
@@ -28,7 +27,7 @@
     android:importantForAccessibility="no"
     android:clickable="false"
     android:focusable="false"
-    android:src="@drawable/sleep_icon" />
+    android:src="@drawable/ic_sleep_48" />
 
   <ImageView
     android:id="@+id/player_menu_sleep_end_of_chapter"
