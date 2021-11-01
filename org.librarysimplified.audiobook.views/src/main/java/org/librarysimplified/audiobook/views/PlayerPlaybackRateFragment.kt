@@ -66,7 +66,7 @@ class PlayerPlaybackRateFragment : DialogFragment() {
           resources = this.resources,
           rates = PlayerPlaybackRate.values().toList(),
           parameters = this.parameters,
-          primaryColor = { PlayerColors.primaryColor(requireActivity(), this.parameters.primaryColor) },
+          primaryColor = { PlayerColors.hintColor(context) },
           onSelect = { item -> this.onPlaybackRateSelected(item) }
         )
 

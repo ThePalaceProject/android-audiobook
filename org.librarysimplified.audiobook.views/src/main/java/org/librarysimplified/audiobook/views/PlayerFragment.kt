@@ -430,14 +430,11 @@ class PlayerFragment : Fragment() {
     this.playerWaiting.text = ""
     this.playerWaiting.contentDescription = null
 
-    val primaryColorResolved =
-      PlayerColors.primaryColor(this.requireActivity(), this.parameters.primaryColor)
-
     this.playerPosition = view.findViewById(R.id.player_progress)!!
     this.playerPosition.thumbTintList =
-      ColorStateList.valueOf(primaryColorResolved)
+      ColorStateList.valueOf(PlayerColors.hintColor(requireContext()))
     this.playerPosition.progressTintList =
-      ColorStateList.valueOf(primaryColorResolved)
+      ColorStateList.valueOf(PlayerColors.hintColor(requireContext()))
     this.playerPosition.isEnabled = false
     this.playerPositionDragging = false
     this.playerPosition.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
