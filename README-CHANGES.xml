@@ -132,11 +132,14 @@
         <c:change date="2021-07-27T00:00:00+00:00" summary="Fix titles appearing as &quot;null&quot;"/>
       </c:changes>
     </c:release>
-    <c:release date="2021-11-01T18:33:28+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.8.0">
+    <c:release date="2021-11-01T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.8.0">
       <c:changes>
         <c:change date="2021-11-01T00:00:00+00:00" summary="Add back button to audiobook player"/>
         <c:change date="2021-11-01T00:00:00+00:00" summary="Switch to a neutral theme"/>
       </c:changes>
+    </c:release>
+    <c:release date="2021-11-01T21:17:58+00:00" is-open="true" ticket-system="org.nypl.jira" version="6.9.0">
+      <c:changes/>
     </c:release>
   </c:releases>
   <c:ticket-systems>
