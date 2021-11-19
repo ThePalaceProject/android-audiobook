@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.tests
 
 import okhttp3.Interceptor
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -275,8 +274,8 @@ abstract class FeedbooksSignatureCheckContract {
             .message("Nope")
             .body(
               ResponseBody.create(
-                      "text/plain".toMediaTypeOrNull(),
-                      "Nope nope nope"
+                "text/plain".toMediaTypeOrNull(),
+                "Nope nope nope"
               )
             ).addHeader("content-type", "text/plain")
             .build()

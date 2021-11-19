@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.views
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -297,7 +296,7 @@ class PlayerFragment : Fragment() {
     inflater: LayoutInflater,
     container: ViewGroup?,
     state: Bundle?
-  ): View? {
+  ): View {
     this.log.debug("onCreateView")
     return inflater.inflate(R.layout.player_view, container, false)
   }
@@ -431,10 +430,6 @@ class PlayerFragment : Fragment() {
     this.playerWaiting.contentDescription = null
 
     this.playerPosition = view.findViewById(R.id.player_progress)!!
-    this.playerPosition.thumbTintList =
-      ColorStateList.valueOf(PlayerColors.hintColor(requireContext()))
-    this.playerPosition.progressTintList =
-      ColorStateList.valueOf(PlayerColors.hintColor(requireContext()))
     this.playerPosition.isEnabled = false
     this.playerPositionDragging = false
     this.playerPosition.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
