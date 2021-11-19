@@ -35,6 +35,7 @@ dependencies {
   implementation libs.okhttp3
   implementation libs.slf4j
   implementation libs.logback.android
+  implementation libs.nypl.theme
 
   if (project.hasProperty("org.thepalaceproject.audiobook.demo.with_findaway")) {
     if (project.property("org.thepalaceproject.audiobook.demo.with_findaway") == "true") {

@@ -6,8 +6,9 @@
   <item
     android:id="@+id/player_menu_playback_rate"
     android:title="@string/audiobook_player_menu_playback_rate_title"
-    android:icon="@drawable/ic_sleep_48"
+    android:icon="@drawable/ic_speed_48"
     app:actionLayout="@layout/player_menu_playback_rate_text"
+    app:iconTint="?attr/simplifiedColorControlActionBar"
     app:showAsAction="always" />
 
   <item
@@ -15,6 +16,7 @@
     android:icon="@drawable/ic_sleep_48"
     android:title="@string/audiobook_player_menu_sleep_title"
     app:actionLayout="@layout/player_menu_sleep_text"
+    app:iconTint="?attr/simplifiedColorControlActionBar"
     app:showAsAction="always" />
 
   <item
