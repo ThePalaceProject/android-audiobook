@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.tests
 
 import okhttp3.Call
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
