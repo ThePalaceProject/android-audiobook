@@ -1,11 +1,10 @@
 package org.librarysimplified.audiobook.tests
 
 import org.joda.time.LocalDateTime
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.feedbooks.FeedbooksRightsCheck
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckParameters
@@ -16,6 +15,7 @@ import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.slf4j.Logger
+import java.io.File
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -25,11 +25,11 @@ abstract class FeedbooksRightsCheckContract {
 
   abstract fun log(): Logger
 
-  @Rule
+  @TempDir
   @JvmField
-  val tempFolder = TemporaryFolder()
+  val tempFolder: File? = null
 
-  @Before
+  @BeforeEach
   fun testSetup() {
     this.eventLog = mutableListOf()
   }
@@ -44,12 +44,12 @@ abstract class FeedbooksRightsCheckContract {
           manifest = manifest,
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           onStatusChanged = { },
-          cacheDirectory = tempFolder.newFolder("cache")
+          cacheDirectory = File(tempFolder, "cache")
         ),
         timeNow = LocalDateTime.now()
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.NotApplicable)
+    Assertions.assertTrue(result is SingleLicenseCheckResult.NotApplicable)
   }
 
   @Test
@@ -62,12 +62,12 @@ abstract class FeedbooksRightsCheckContract {
           manifest = manifest,
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           onStatusChanged = { },
-          cacheDirectory = tempFolder.newFolder("cache")
+          cacheDirectory = File(tempFolder, "cache")
         ),
         timeNow = LocalDateTime.parse("2000-01-01T00:10:00.000")
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.Succeeded)
+    Assertions.assertTrue(result is SingleLicenseCheckResult.Succeeded)
   }
 
   @Test
@@ -80,13 +80,13 @@ abstract class FeedbooksRightsCheckContract {
           manifest = manifest,
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           onStatusChanged = { },
-          cacheDirectory = tempFolder.newFolder("cache")
+          cacheDirectory = File(tempFolder, "cache")
         ),
         timeNow = LocalDateTime.parse("1999-01-01T00:10:00.000")
       ).execute()
 
     val failed = result as SingleLicenseCheckResult.Failed
-    Assert.assertTrue(failed.message.contains("precedes"))
+    Assertions.assertTrue(failed.message.contains("precedes"))
   }
 
   @Test
@@ -99,13 +99,13 @@ abstract class FeedbooksRightsCheckContract {
           manifest = manifest,
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           onStatusChanged = { },
-          cacheDirectory = tempFolder.newFolder("cache")
+          cacheDirectory = File(tempFolder, "cache")
         ),
         timeNow = LocalDateTime.parse("2002-01-01T00:10:00.000")
       ).execute()
 
     val failed = result as SingleLicenseCheckResult.Failed
-    Assert.assertTrue(failed.message.contains("exceeds"))
+    Assertions.assertTrue(failed.message.contains("exceeds"))
   }
 
   @Test
@@ -118,12 +118,12 @@ abstract class FeedbooksRightsCheckContract {
           manifest = manifest,
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           onStatusChanged = { },
-          cacheDirectory = tempFolder.newFolder("cache")
+          cacheDirectory = File(tempFolder, "cache")
         ),
         timeNow = LocalDateTime.parse("2000-01-01T00:10:00.000")
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.Succeeded)
+    Assertions.assertTrue(result is SingleLicenseCheckResult.Succeeded)
   }
 
   @Test
@@ -136,12 +136,12 @@ abstract class FeedbooksRightsCheckContract {
           manifest = manifest,
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           onStatusChanged = { },
-          cacheDirectory = tempFolder.newFolder("cache")
+          cacheDirectory = File(tempFolder, "cache")
         ),
         timeNow = LocalDateTime.parse("2000-01-01T00:10:00.000")
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.Succeeded)
+    Assertions.assertTrue(result is SingleLicenseCheckResult.Succeeded)
   }
 
   private fun manifest(
@@ -154,7 +154,7 @@ abstract class FeedbooksRightsCheckContract {
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
-    Assert.assertTrue("Result is success", result is ParseResult.Success)
+    Assertions.assertTrue(result is ParseResult.Success, "Result is success")
 
     val success: ParseResult.Success<PlayerManifest> =
       result as ParseResult.Success<PlayerManifest>

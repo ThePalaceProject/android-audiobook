@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
 import org.librarysimplified.audiobook.api.PlayerUserAgent
@@ -29,7 +29,7 @@ abstract class PlayerAudioEnginesContract {
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
     )
     val providers = PlayerAudioEngines.findAllFor(request)
-    Assert.assertEquals("Exactly one open access provider should be present", 1, providers.size)
+    Assertions.assertEquals(1, providers.size, "Exactly one open access provider should be present")
   }
 
   @Test
@@ -42,7 +42,7 @@ abstract class PlayerAudioEnginesContract {
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
     )
     val providers = PlayerAudioEngines.findAllFor(request)
-    Assert.assertEquals("No providers should be present", 0, providers.size)
+    Assertions.assertEquals(0, providers.size, "No providers should be present")
   }
 
   private fun parseManifest(file: String): PlayerManifest {
@@ -54,7 +54,7 @@ abstract class PlayerAudioEnginesContract {
       )
 
     this.log().debug("result: {}", result)
-    Assert.assertTrue("Result is success", result is ParseResult.Success)
+    Assertions.assertTrue(result is ParseResult.Success, "Result is success")
     val manifest = (result as ParseResult.Success).result
     return manifest
   }

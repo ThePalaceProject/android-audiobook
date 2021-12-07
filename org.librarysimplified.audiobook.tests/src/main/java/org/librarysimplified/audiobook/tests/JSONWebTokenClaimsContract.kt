@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.json_web_token.JSONWebTokenClaims
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.quicktheories.QuickTheory
@@ -25,7 +25,7 @@ abstract class JSONWebTokenClaimsContract {
       ) as ParseResult.Success
 
     val token = result.result
-    Assert.assertEquals(0, token.claims.size)
+    Assertions.assertEquals(0, token.claims.size)
   }
 
   /**
@@ -45,9 +45,9 @@ abstract class JSONWebTokenClaimsContract {
       ) as ParseResult.Success
 
     val token = result.result
-    Assert.assertEquals(2, token.claims.size)
-    Assert.assertEquals("JWT", token.claims["typ"])
-    Assert.assertEquals("HS256", token.claims["alg"])
+    Assertions.assertEquals(2, token.claims.size)
+    Assertions.assertEquals("JWT", token.claims["typ"])
+    Assertions.assertEquals("HS256", token.claims["alg"])
   }
 
   /**

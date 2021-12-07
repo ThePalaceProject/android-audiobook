@@ -1,8 +1,8 @@
 package org.librarysimplified.audiobook.tests
 
 import org.joda.time.Duration
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.views.PlayerTimeStrings
 
 abstract class PlayerTimeStringsContract {
@@ -23,7 +23,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsTextFromMillis_0() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "00:00:00",
       PlayerTimeStrings.hourMinuteSecondTextFromMilliseconds(0)
     )
@@ -31,7 +31,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsTextFromMillis_1() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "00:00:01",
       PlayerTimeStrings.hourMinuteSecondTextFromMilliseconds(Duration.standardSeconds(1).millis)
     )
@@ -39,7 +39,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsTextFromMillis_2() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "00:01:00",
       PlayerTimeStrings.hourMinuteSecondTextFromMilliseconds(Duration.standardMinutes(1).millis)
     )
@@ -47,7 +47,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsTextFromMillis_3() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "01:00:00",
       PlayerTimeStrings.hourMinuteSecondTextFromMilliseconds(Duration.standardHours(1).millis)
     )
@@ -55,7 +55,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsTextFromMillis_4() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "59:59:59",
       PlayerTimeStrings.hourMinuteSecondTextFromMilliseconds(
         Duration.standardHours(59)
@@ -68,7 +68,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsTextFromDuration_0() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "00:00:00",
       PlayerTimeStrings.hourMinuteSecondTextFromDuration(Duration.ZERO)
     )
@@ -76,7 +76,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsTextFromDuration_1() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "00:00:01",
       PlayerTimeStrings.hourMinuteSecondTextFromDuration(Duration.standardSeconds(1))
     )
@@ -84,7 +84,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsTextFromDuration_2() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "00:01:00",
       PlayerTimeStrings.hourMinuteSecondTextFromDuration(Duration.standardMinutes(1))
     )
@@ -92,7 +92,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsTextFromDuration_3() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "01:00:00",
       PlayerTimeStrings.hourMinuteSecondTextFromDuration(Duration.standardHours(1))
     )
@@ -105,7 +105,7 @@ abstract class PlayerTimeStringsContract {
         .plus(Duration.standardMinutes(59))
         .plus(Duration.standardSeconds(59))
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "59:59:59",
       PlayerTimeStrings.hourMinuteSecondTextFromDuration(time)
     )
@@ -113,7 +113,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testMinuteSecondsTextFromDuration_0() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "00:00",
       PlayerTimeStrings.minuteSecondTextFromDuration(Duration.ZERO)
     )
@@ -121,7 +121,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testMinuteSecondsTextFromDuration_1() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "00:01",
       PlayerTimeStrings.minuteSecondTextFromDuration(Duration.standardSeconds(1))
     )
@@ -129,7 +129,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testMinuteSecondsTextFromDuration_2() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "01:00",
       PlayerTimeStrings.minuteSecondTextFromDuration(Duration.standardMinutes(1))
     )
@@ -141,7 +141,7 @@ abstract class PlayerTimeStringsContract {
       Duration.standardMinutes(59)
         .plus(Duration.standardSeconds(59))
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "59:59",
       PlayerTimeStrings.minuteSecondTextFromDuration(time)
     )
@@ -149,7 +149,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenEnglishFromMillis_0() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(this.spokenEnglish, 0)
     )
@@ -157,7 +157,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenEnglishFromMillis_1() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 second",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(
         this.spokenEnglish,
@@ -168,7 +168,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenEnglishFromMillis_2() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 minute",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(
         this.spokenEnglish,
@@ -179,7 +179,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenEnglishFromMillis_3() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 hour",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(
         this.spokenEnglish,
@@ -190,7 +190,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenEnglishFromMillis_4() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "59 hours 59 minutes 59 seconds",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(
         this.spokenEnglish,
@@ -204,7 +204,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenEnglishFromDuration_0() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(this.spokenEnglish, Duration.ZERO)
     )
@@ -212,7 +212,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenEnglishFromDuration_1() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 second",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(
         this.spokenEnglish,
@@ -223,7 +223,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenEnglishFromDuration_2() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 minute",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(
         this.spokenEnglish,
@@ -234,7 +234,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenEnglishFromDuration_3() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 hour",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(
         this.spokenEnglish,
@@ -250,7 +250,7 @@ abstract class PlayerTimeStringsContract {
         .plus(Duration.standardMinutes(59))
         .plus(Duration.standardSeconds(59))
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "59 hours 59 minutes 59 seconds",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(this.spokenEnglish, time)
     )
@@ -258,7 +258,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testMinuteSecondsSpokenEnglishFromDuration_0() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(this.spokenEnglish, Duration.ZERO)
     )
@@ -266,7 +266,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testMinuteSecondsSpokenEnglishFromDuration_1() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 second",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(
         this.spokenEnglish,
@@ -277,7 +277,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testMinuteSecondsSpokenEnglishFromDuration_2() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 minute",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(
         this.spokenEnglish,
@@ -292,7 +292,7 @@ abstract class PlayerTimeStringsContract {
       Duration.standardMinutes(59)
         .plus(Duration.standardSeconds(59))
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "59 minutes 59 seconds",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(this.spokenEnglish, time)
     )
@@ -302,7 +302,7 @@ abstract class PlayerTimeStringsContract {
   fun testMinuteSecondsSpokenEnglishFromDuration_5() {
     val time = Duration.standardMinutes(60)
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "60 minutes",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(this.spokenEnglish, time)
     )
@@ -310,7 +310,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenSpanishFromMillis_0() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(this.spokenSpanish, 0)
     )
@@ -318,7 +318,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenSpanishFromMillis_1() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 segundo",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(
         this.spokenSpanish,
@@ -329,7 +329,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenSpanishFromMillis_2() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 minuto",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(
         this.spokenSpanish,
@@ -340,7 +340,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenSpanishFromMillis_3() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 hora",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(
         this.spokenSpanish,
@@ -351,7 +351,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenSpanishFromMillis_4() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "59 horas 59 minutos 59 segundos",
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(
         this.spokenSpanish,
@@ -365,7 +365,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenSpanishFromDuration_0() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(this.spokenSpanish, Duration.ZERO)
     )
@@ -373,7 +373,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenSpanishFromDuration_1() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 segundo",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(
         this.spokenSpanish,
@@ -384,7 +384,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenSpanishFromDuration_2() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 minuto",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(
         this.spokenSpanish,
@@ -395,7 +395,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testHourMinuteSecondsSpokenSpanishFromDuration_3() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 hora",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(
         this.spokenSpanish,
@@ -411,7 +411,7 @@ abstract class PlayerTimeStringsContract {
         .plus(Duration.standardMinutes(59))
         .plus(Duration.standardSeconds(59))
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "59 horas 59 minutos 59 segundos",
       PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(this.spokenSpanish, time)
     )
@@ -419,7 +419,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testMinuteSecondsSpokenSpanishFromDuration_0() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(this.spokenSpanish, Duration.ZERO)
     )
@@ -427,7 +427,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testMinuteSecondsSpokenSpanishFromDuration_1() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 segundo",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(
         this.spokenSpanish,
@@ -438,7 +438,7 @@ abstract class PlayerTimeStringsContract {
 
   @Test
   fun testMinuteSecondsSpokenSpanishFromDuration_2() {
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "1 minuto",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(
         this.spokenSpanish,
@@ -453,7 +453,7 @@ abstract class PlayerTimeStringsContract {
       Duration.standardMinutes(59)
         .plus(Duration.standardSeconds(59))
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "59 minutos 59 segundos",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(this.spokenSpanish, time)
     )
@@ -463,7 +463,7 @@ abstract class PlayerTimeStringsContract {
   fun testMinuteSecondsSpokenSpanishFromDuration_5() {
     val time = Duration.standardMinutes(60)
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       "60 minutos",
       PlayerTimeStrings.minuteSecondSpokenFromDuration(this.spokenSpanish, time)
     )

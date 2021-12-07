@@ -6,11 +6,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.feedbooks.FeedbooksSignatureCheck
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckParameters
@@ -31,11 +30,11 @@ abstract class FeedbooksSignatureCheckContract {
 
   abstract fun log(): Logger
 
-  @Rule
+  @TempDir
   @JvmField
-  val tempFolder = TemporaryFolder()
+  val tempFolder: File? = null
 
-  @Before
+  @BeforeEach
   fun testSetup() {
     this.eventLog = mutableListOf()
   }
@@ -66,7 +65,7 @@ abstract class FeedbooksSignatureCheckContract {
         )
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.Succeeded)
+    Assertions.assertTrue(result is SingleLicenseCheckResult.Succeeded)
   }
 
   /**
@@ -91,8 +90,8 @@ abstract class FeedbooksSignatureCheckContract {
         )
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.Failed)
-    Assert.assertTrue(result.message.contains("not verified", true))
+    Assertions.assertTrue(result is SingleLicenseCheckResult.Failed)
+    Assertions.assertTrue(result.message.contains("not verified", true))
   }
 
   /**
@@ -117,8 +116,8 @@ abstract class FeedbooksSignatureCheckContract {
         )
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.Failed)
-    Assert.assertTrue(result.message.contains("unsupported signature algorithm", true))
+    Assertions.assertTrue(result is SingleLicenseCheckResult.Failed)
+    Assertions.assertTrue(result.message.contains("unsupported signature algorithm", true))
   }
 
   /**
@@ -143,8 +142,8 @@ abstract class FeedbooksSignatureCheckContract {
         )
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.Failed)
-    Assert.assertTrue(result.message.contains("unknown signature issuer", true))
+    Assertions.assertTrue(result is SingleLicenseCheckResult.Failed)
+    Assertions.assertTrue(result.message.contains("unknown signature issuer", true))
   }
 
   /**
@@ -165,8 +164,8 @@ abstract class FeedbooksSignatureCheckContract {
         )
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.Failed)
-    Assert.assertTrue(result.message.contains("could not be retrieved", true))
+    Assertions.assertTrue(result is SingleLicenseCheckResult.Failed)
+    Assertions.assertTrue(result.message.contains("could not be retrieved", true))
   }
 
   /**
@@ -195,8 +194,8 @@ abstract class FeedbooksSignatureCheckContract {
         )
       ).execute()
 
-    Assert.assertTrue(result is SingleLicenseCheckResult.Failed)
-    Assert.assertTrue(result.message.contains("could not be parsed", true))
+    Assertions.assertTrue(result is SingleLicenseCheckResult.Failed)
+    Assertions.assertTrue(result.message.contains("could not be parsed", true))
   }
 
   private fun manifest(
@@ -209,7 +208,7 @@ abstract class FeedbooksSignatureCheckContract {
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
-    Assert.assertTrue("Result is success", result is ParseResult.Success)
+    Assertions.assertTrue(result is ParseResult.Success, "Result is success")
 
     val success: ParseResult.Success<PlayerManifest> =
       result as ParseResult.Success<PlayerManifest>
@@ -285,6 +284,6 @@ abstract class FeedbooksSignatureCheckContract {
   }
 
   private fun emptyCacheDirectory(): File {
-    return tempFolder.newFolder("cache")
+    return File(tempFolder, "cache")
   }
 }

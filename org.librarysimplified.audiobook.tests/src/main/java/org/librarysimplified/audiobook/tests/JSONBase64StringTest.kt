@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.json_web_token.JSONBase64String
 import java.security.SecureRandom
 
@@ -15,6 +15,6 @@ class JSONBase64StringTest {
 
     val encoded = JSONBase64String.encode(decoded)
     val decodedAfter = encoded.decode()
-    Assert.assertArrayEquals(decodedAfter, decoded)
+    Assertions.assertArrayEquals(decodedAfter, decoded)
   }
 }

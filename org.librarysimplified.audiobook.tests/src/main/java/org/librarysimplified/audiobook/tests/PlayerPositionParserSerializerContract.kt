@@ -2,8 +2,8 @@ package org.librarysimplified.audiobook.tests
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerPositionParserType
 import org.librarysimplified.audiobook.api.PlayerPositionSerializerType
@@ -30,14 +30,14 @@ abstract class PlayerPositionParserSerializerContract {
     val result =
       parser.parseFromObjectNode(node)
 
-    Assert.assertTrue(result is Success<PlayerPosition, Exception>)
+    Assertions.assertTrue(result is Success<PlayerPosition, Exception>)
 
     val resultNode = (result as Success<PlayerPosition, Exception>).result
 
-    Assert.assertEquals("A Title", resultNode.title)
-    Assert.assertEquals(23, resultNode.part)
-    Assert.assertEquals(137, resultNode.chapter)
-    Assert.assertEquals(183991238L, resultNode.offsetMilliseconds)
+    Assertions.assertEquals("A Title", resultNode.title)
+    Assertions.assertEquals(23, resultNode.part)
+    Assertions.assertEquals(137, resultNode.chapter)
+    Assertions.assertEquals(183991238L, resultNode.offsetMilliseconds)
   }
 
   @Test
@@ -50,7 +50,7 @@ abstract class PlayerPositionParserSerializerContract {
     val result =
       parser.parseFromObjectNode(node)
 
-    Assert.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
+    Assertions.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
   }
 
   @Test
@@ -64,7 +64,7 @@ abstract class PlayerPositionParserSerializerContract {
     val result =
       parser.parseFromObjectNode(node)
 
-    Assert.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
+    Assertions.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
   }
 
   @Test
@@ -81,7 +81,7 @@ abstract class PlayerPositionParserSerializerContract {
     val result =
       parser.parseFromObjectNode(node)
 
-    Assert.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
+    Assertions.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
   }
 
   @Test
@@ -98,7 +98,7 @@ abstract class PlayerPositionParserSerializerContract {
     val result =
       parser.parseFromObjectNode(node)
 
-    Assert.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
+    Assertions.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
   }
 
   @Test
@@ -115,7 +115,7 @@ abstract class PlayerPositionParserSerializerContract {
     val result =
       parser.parseFromObjectNode(node)
 
-    Assert.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
+    Assertions.assertTrue(result is PlayerResult.Failure<PlayerPosition, Exception>)
   }
 
   @Test
@@ -132,14 +132,14 @@ abstract class PlayerPositionParserSerializerContract {
     val result =
       parser.parseFromObjectNode(node)
 
-    Assert.assertTrue(result is Success<PlayerPosition, Exception>)
+    Assertions.assertTrue(result is Success<PlayerPosition, Exception>)
 
     val resultNode = (result as Success<PlayerPosition, Exception>).result
 
-    Assert.assertEquals(null, resultNode.title)
-    Assert.assertEquals(23, resultNode.part)
-    Assert.assertEquals(137, resultNode.chapter)
-    Assert.assertEquals(183991238L, resultNode.offsetMilliseconds)
+    Assertions.assertEquals(null, resultNode.title)
+    Assertions.assertEquals(23, resultNode.part)
+    Assertions.assertEquals(137, resultNode.chapter)
+    Assertions.assertEquals(183991238L, resultNode.offsetMilliseconds)
   }
 
   @Test
@@ -154,14 +154,14 @@ abstract class PlayerPositionParserSerializerContract {
     val result =
       parser.parseFromObjectNode(node)
 
-    Assert.assertTrue(result is Success<PlayerPosition, Exception>)
+    Assertions.assertTrue(result is Success<PlayerPosition, Exception>)
 
     val resultNode = (result as Success<PlayerPosition, Exception>).result
 
-    Assert.assertEquals(null, resultNode.title)
-    Assert.assertEquals(23, resultNode.part)
-    Assert.assertEquals(137, resultNode.chapter)
-    Assert.assertEquals(183991238L, resultNode.offsetMilliseconds)
+    Assertions.assertEquals(null, resultNode.title)
+    Assertions.assertEquals(23, resultNode.part)
+    Assertions.assertEquals(137, resultNode.chapter)
+    Assertions.assertEquals(183991238L, resultNode.offsetMilliseconds)
   }
 
   @Test
@@ -179,13 +179,13 @@ abstract class PlayerPositionParserSerializerContract {
     val result =
       parser.parseFromObjectNode(node)
 
-    Assert.assertTrue(result is Success<PlayerPosition, Exception>)
+    Assertions.assertTrue(result is Success<PlayerPosition, Exception>)
 
     val resultNode = (result as Success<PlayerPosition, Exception>).result
 
-    Assert.assertEquals(null, resultNode.title)
-    Assert.assertEquals(23, resultNode.part)
-    Assert.assertEquals(137, resultNode.chapter)
-    Assert.assertEquals(183991238L, resultNode.offsetMilliseconds)
+    Assertions.assertEquals(null, resultNode.title)
+    Assertions.assertEquals(23, resultNode.part)
+    Assertions.assertEquals(137, resultNode.chapter)
+    Assertions.assertEquals(183991238L, resultNode.offsetMilliseconds)
   }
 }

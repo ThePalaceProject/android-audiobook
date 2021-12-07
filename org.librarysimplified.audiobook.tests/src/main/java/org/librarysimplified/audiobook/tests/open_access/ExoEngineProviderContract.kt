@@ -3,17 +3,14 @@ package org.librarysimplified.audiobook.tests.open_access
 import android.content.Context
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
-import org.hamcrest.CoreMatchers.instanceOf
-import org.hamcrest.core.StringContains
 import org.joda.time.Duration
 import org.joda.time.Instant
-import org.junit.After
-import org.junit.Assert
-import org.junit.Assume
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.ExpectedException
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
@@ -78,18 +75,14 @@ abstract class ExoEngineProviderContract {
   private lateinit var timeThen: Instant
   private lateinit var timeNow: Instant
 
-  @Rule
-  @JvmField
-  val expectedException: ExpectedException = ExpectedException.none()
-
-  @Before
+  @BeforeEach
   open fun setup() {
     this.log().debug("setup")
     this.timeThen = Instant.now()
     this.exec = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(1))!!
   }
 
-  @After
+  @AfterEach
   fun tearDown() {
     this.log().debug("tearDown")
     this.exec.shutdown()
@@ -112,11 +105,11 @@ abstract class ExoEngineProviderContract {
     )
     val engine_provider = ExoEngineProvider()
     val book_provider = engine_provider.tryRequest(request)
-    Assert.assertNotNull("Engine must handle manifest", book_provider)
+    Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
     val result = book_provider_nn.create(this.context())
     this.log().debug("testAudioEnginesTrivial:result: {}", result)
-    Assert.assertTrue("Engine accepts book", result is PlayerResult.Success)
+    Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
   }
 
   /**
@@ -134,11 +127,11 @@ abstract class ExoEngineProviderContract {
     )
     val engine_provider = ExoEngineProvider()
     val book_provider = engine_provider.tryRequest(request)
-    Assert.assertNotNull("Engine must handle manifest", book_provider)
+    Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
     val result = book_provider_nn.create(this.context())
     this.log().debug("testAudioEnginesFlatland:result: {}", result)
-    Assert.assertTrue("Engine accepts book", result is PlayerResult.Success)
+    Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
   }
 
   /**
@@ -148,7 +141,7 @@ abstract class ExoEngineProviderContract {
   @Test
   fun testPlayNoStreaming() {
     val book = this.createBook("ok_minimal_0.json")
-    Assert.assertFalse("Player does not support streaming", book.supportsStreaming)
+    Assertions.assertFalse(book.supportsStreaming, "Player does not support streaming")
   }
 
   /**
@@ -157,14 +150,14 @@ abstract class ExoEngineProviderContract {
 
   @Test
   fun testPlayerOpenClose() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book = this.createBook("ok_minimal_0.json")
 
     val player = book.createPlayer()
-    Assert.assertFalse("Player is open", player.isClosed)
+    Assertions.assertFalse(player.isClosed, "Player is open")
     player.close()
-    Assert.assertTrue("Player is closed", player.isClosed)
+    Assertions.assertTrue(player.isClosed, "Player is closed")
   }
 
   /**
@@ -173,16 +166,17 @@ abstract class ExoEngineProviderContract {
 
   @Test
   fun testPlayerClosedPlay() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book = this.createBook("ok_minimal_0.json")
 
     val player = book.createPlayer()
-    Assert.assertFalse("Player is open", player.isClosed)
+    Assertions.assertFalse(player.isClosed, "Player is open")
     player.close()
 
-    this.expectedException.expect(IllegalStateException::class.java)
-    player.play()
+    Assertions.assertThrows(IllegalStateException::class.java) {
+      player.play()
+    }
   }
 
   /**
@@ -190,9 +184,10 @@ abstract class ExoEngineProviderContract {
    * element, the player will publish a "waiting" event and stop playback.
    */
 
-  @Test(timeout = 20_000L)
+  @Test
+  @Timeout(20)
   fun testPlayerWaitingForChapter() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book = this.createBook("ok_minimal_0.json")
 
@@ -206,9 +201,9 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertEquals(2, events.size)
-    Assert.assertEquals("playbackChapterWaiting 0", events[0])
-    Assert.assertEquals("playbackStopped 0 0", events[1])
+    Assertions.assertEquals(2, events.size)
+    Assertions.assertEquals("playbackChapterWaiting 0", events[0])
+    Assertions.assertEquals("playbackStopped 0 0", events[1])
   }
 
   /**
@@ -216,9 +211,10 @@ abstract class ExoEngineProviderContract {
    * starts playback when the spine element becomes available.
    */
 
-  @Test(timeout = 20_000L)
+  @Test
+  @Timeout(20)
   fun testPlayerPlayWhenDownloaded() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book =
       this.createBook(
@@ -250,14 +246,14 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertEquals(7, events.size)
-    Assert.assertEquals("playbackChapterWaiting 0", events[0])
-    Assert.assertEquals("playbackStopped 0 0", events[1])
-    Assert.assertEquals("rateChanged NORMAL_TIME", events[2])
-    Assert.assertEquals("playbackStarted 0 0", events[3])
-    Assert.assertTrue(events[4], events[4].startsWith("playbackProgressUpdate 0 "))
-    Assert.assertTrue(events[5], events[5].startsWith("playbackProgressUpdate 0 "))
-    Assert.assertEquals("playbackStopped 0 0", events[6])
+    Assertions.assertEquals(7, events.size)
+    Assertions.assertEquals("playbackChapterWaiting 0", events[0])
+    Assertions.assertEquals("playbackStopped 0 0", events[1])
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events[2])
+    Assertions.assertEquals("playbackStarted 0 0", events[3])
+    Assertions.assertTrue(events[4].startsWith("playbackProgressUpdate 0 "), events[4])
+    Assertions.assertTrue(events[5].startsWith("playbackProgressUpdate 0 "), events[5])
+    Assertions.assertEquals("playbackStopped 0 0", events[6])
   }
 
   private fun subscribeToEvents(
@@ -276,9 +272,10 @@ abstract class ExoEngineProviderContract {
    * Test that the player can play downloaded spine elements.
    */
 
-  @Test(timeout = 20_000L)
+  @Test
+  @Timeout(20)
   fun testPlayerPlayAlreadyDownloaded() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book =
       this.createBook(
@@ -312,19 +309,20 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertEquals(3, events.size)
-    Assert.assertEquals("rateChanged NORMAL_TIME", events[0])
-    Assert.assertEquals("playbackStarted 0 0", events[1])
-    Assert.assertEquals("playbackStopped 0 0", events[2])
+    Assertions.assertEquals(3, events.size)
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events[0])
+    Assertions.assertEquals("playbackStarted 0 0", events[1])
+    Assertions.assertEquals("playbackStopped 0 0", events[2])
   }
 
   /**
    * Test that the player can play and pause.
    */
 
-  @Test(timeout = 20_000L)
+  @Test
+  @Timeout(20)
   fun testPlayerPlayPausePlay() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book =
       this.createBook(
@@ -364,21 +362,22 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertEquals(5, events.size)
-    Assert.assertEquals("rateChanged NORMAL_TIME", events[0])
-    Assert.assertEquals("playbackStarted 0 0", events[1])
-    Assert.assertEquals("playbackPaused 0 0", events[2])
-    Assert.assertEquals("playbackStarted 0 0", events[3])
-    Assert.assertEquals("playbackStopped 0 0", events[4])
+    Assertions.assertEquals(5, events.size)
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events[0])
+    Assertions.assertEquals("playbackStarted 0 0", events[1])
+    Assertions.assertEquals("playbackPaused 0 0", events[2])
+    Assertions.assertEquals("playbackStarted 0 0", events[3])
+    Assertions.assertEquals("playbackStopped 0 0", events[4])
   }
 
   /**
    * Test that the player automatically progresses across chapters.
    */
 
-  @Test(timeout = 40_000L)
+  @Test
+  @Timeout(40)
   fun testPlayerPlayNextChapter() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book =
       this.createBook(
@@ -418,34 +417,35 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertTrue("At least 15 events must be logged (${events.size})", events.size >= 15)
-    Assert.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
-    Assert.assertEquals("playbackStarted 0 0", events.removeAt(0))
+    Assertions.assertTrue(events.size >= 15, "At least 15 events must be logged (${events.size})")
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
+    Assertions.assertEquals("playbackStarted 0 0", events.removeAt(0))
     while (events[0].startsWith("playbackProgressUpdate 0")) {
       events.removeAt(0)
     }
-    Assert.assertEquals("playbackChapterCompleted 0", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 0 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterCompleted 0", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 0 0", events.removeAt(0))
 
-    Assert.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
-    Assert.assertEquals("playbackStarted 1 0", events.removeAt(0))
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
+    Assertions.assertEquals("playbackStarted 1 0", events.removeAt(0))
     while (events[0].startsWith("playbackProgressUpdate 1")) {
       events.removeAt(0)
     }
-    Assert.assertEquals("playbackChapterCompleted 1", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 1 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterCompleted 1", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 1 0", events.removeAt(0))
 
-    Assert.assertEquals("playbackChapterWaiting 2", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 2 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterWaiting 2", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 2 0", events.removeAt(0))
   }
 
   /**
    * Test that deleting a spine element in the middle of playback stops playback.
    */
 
-  @Test(timeout = 20_000L)
+  @Test
+  @Timeout(20)
   fun testPlayerPlayDeletePlaying() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book =
       this.createBook(
@@ -481,19 +481,20 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertEquals(3, events.size)
-    Assert.assertEquals("rateChanged NORMAL_TIME", events[0])
-    Assert.assertEquals("playbackStarted 0 0", events[1])
-    Assert.assertEquals("playbackStopped 0 0", events[2])
+    Assertions.assertEquals(3, events.size)
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events[0])
+    Assertions.assertEquals("playbackStarted 0 0", events[1])
+    Assertions.assertEquals("playbackStopped 0 0", events[2])
   }
 
   /**
    * Test that the skipping to the next chapter works.
    */
 
-  @Test(timeout = 20_000L)
+  @Test
+  @Timeout(20)
   fun testPlayerSkipNext() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book =
       this.createBook(
@@ -533,31 +534,32 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertTrue("At least 12 events must be logged (${events.size})", events.size >= 12)
-    Assert.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
-    Assert.assertEquals("playbackStarted 0 0", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 0 0", events.removeAt(0))
+    Assertions.assertTrue(events.size >= 12, "At least 12 events must be logged (${events.size})")
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
+    Assertions.assertEquals("playbackStarted 0 0", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 0 0", events.removeAt(0))
 
-    Assert.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
-    Assert.assertEquals("playbackStarted 1 0", events.removeAt(0))
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
+    Assertions.assertEquals("playbackStarted 1 0", events.removeAt(0))
     while (events[0].startsWith("playbackProgressUpdate 1")) {
       events.removeAt(0)
     }
 
-    Assert.assertEquals("playbackChapterCompleted 1", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 1 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterCompleted 1", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 1 0", events.removeAt(0))
 
-    Assert.assertEquals("playbackChapterWaiting 2", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 2 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterWaiting 2", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 2 0", events.removeAt(0))
   }
 
   /**
    * Test that the skipping to the previous chapter works.
    */
 
-  @Test(timeout = 20_000L)
+  @Test
+  @Timeout(20)
   fun testPlayerSkipPrevious() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book =
       this.createBook(
@@ -598,38 +600,39 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertTrue("At least 16 events must be logged (${events.size})", events.size >= 16)
-    Assert.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
-    Assert.assertEquals("playbackStarted 1 0", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 1 0", events.removeAt(0))
+    Assertions.assertTrue(events.size >= 16, "At least 16 events must be logged (${events.size})")
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
+    Assertions.assertEquals("playbackStarted 1 0", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 1 0", events.removeAt(0))
 
-    Assert.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
-    Assert.assertEquals("playbackStarted 0 0", events.removeAt(0))
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
+    Assertions.assertEquals("playbackStarted 0 0", events.removeAt(0))
     while (events[0].startsWith("playbackProgressUpdate 0")) {
       events.removeAt(0)
     }
-    Assert.assertEquals("playbackChapterCompleted 0", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 0 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterCompleted 0", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 0 0", events.removeAt(0))
 
-    Assert.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
-    Assert.assertEquals("playbackStarted 1 0", events.removeAt(0))
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
+    Assertions.assertEquals("playbackStarted 1 0", events.removeAt(0))
     while (events[0].startsWith("playbackProgressUpdate 1")) {
       events.removeAt(0)
     }
-    Assert.assertEquals("playbackChapterCompleted 1", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 1 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterCompleted 1", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 1 0", events.removeAt(0))
 
-    Assert.assertEquals("playbackChapterWaiting 2", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 2 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterWaiting 2", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 2 0", events.removeAt(0))
   }
 
   /**
    * Test that playing a specific chapter works.
    */
 
-  @Test(timeout = 20_000L)
+  @Test
+  @Timeout(20)
   fun testPlayerPlayAtLocation() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book =
       this.createBook(
@@ -669,26 +672,27 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertTrue("At least 9 events must be logged (${events.size})", events.size >= 9)
-    Assert.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
-    Assert.assertEquals("playbackStarted 1 0", events.removeAt(0))
+    Assertions.assertTrue(events.size >= 9, "At least 9 events must be logged (${events.size})")
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
+    Assertions.assertEquals("playbackStarted 1 0", events.removeAt(0))
     while (events[0].startsWith("playbackProgressUpdate 1")) {
       events.removeAt(0)
     }
-    Assert.assertEquals("playbackChapterCompleted 1", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 1 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterCompleted 1", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 1 0", events.removeAt(0))
 
-    Assert.assertEquals("playbackChapterWaiting 2", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 2 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterWaiting 2", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 2 0", events.removeAt(0))
   }
 
   /**
    * Test that playing the start of the book works.
    */
 
-  @Test(timeout = 20_000L)
+  @Test
+  @Timeout(20)
   fun testPlayerPlayAtBookStart() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val book =
       this.createBook(
@@ -728,14 +732,14 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertTrue("At least 9 events must be logged (${events.size})", events.size >= 9)
-    Assert.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
-    Assert.assertEquals("playbackStarted 0 0", events.removeAt(0))
+    Assertions.assertTrue(events.size >= 9, "At least 9 events must be logged (${events.size})")
+    Assertions.assertEquals("rateChanged NORMAL_TIME", events.removeAt(0))
+    Assertions.assertEquals("playbackStarted 0 0", events.removeAt(0))
     while (events[0].startsWith("playbackProgressUpdate 0")) {
       events.removeAt(0)
     }
-    Assert.assertEquals("playbackChapterCompleted 0", events.removeAt(0))
-    Assert.assertEquals("playbackStopped 0 0", events.removeAt(0))
+    Assertions.assertEquals("playbackChapterCompleted 0", events.removeAt(0))
+    Assertions.assertEquals("playbackStopped 0 0", events.removeAt(0))
   }
 
   private fun showEvents(events: ArrayList<String>) {
@@ -761,7 +765,7 @@ abstract class ExoEngineProviderContract {
         is PlayerSpineElementDownloaded -> downloaded = true
         is PlayerSpineElementDownloadFailed -> {
           this.log().error("error: ", status.exception)
-          Assert.fail("Failed: " + status.message)
+          Assertions.fail("Failed: " + status.message)
         }
       }
 
@@ -811,7 +815,7 @@ abstract class ExoEngineProviderContract {
       )
     val engine_provider = ExoEngineProvider()
     val book_provider = engine_provider.tryRequest(request)
-    Assert.assertNotNull("Engine must handle manifest", book_provider)
+    Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
     val result = book_provider_nn.create(this.context())
     this.log().debug("testAudioEnginesTrivial:result: {}", result)
@@ -828,7 +832,7 @@ abstract class ExoEngineProviderContract {
         extensions = listOf()
       )
     this.log().debug("parseManifest: result: {}", result)
-    Assert.assertTrue("Result is success", result is ParseResult.Success)
+    Assertions.assertTrue(result is ParseResult.Success, "Result is success")
     val manifest = (result as ParseResult.Success).result
     return manifest
   }
@@ -859,30 +863,30 @@ abstract class ExoEngineProviderContract {
     val audioBook =
       (bookProvider.create(this.context()) as PlayerResult.Success).result
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       URI.create("http://www.example.com/0.mp3"),
       (audioBook.spine[0] as ExoSpineElement).itemManifest.uri
     )
-    Assert.assertEquals(
+    Assertions.assertEquals(
       URI.create("http://www.example.com/1.mp3"),
       (audioBook.spine[1] as ExoSpineElement).itemManifest.uri
     )
-    Assert.assertEquals(
+    Assertions.assertEquals(
       URI.create("http://www.example.com/2.mp3"),
       (audioBook.spine[2] as ExoSpineElement).itemManifest.uri
     )
 
     audioBook.replaceManifest(manifest1).get()
 
-    Assert.assertEquals(
+    Assertions.assertEquals(
       URI.create("http://www.example.com/0r.mp3"),
       (audioBook.spine[0] as ExoSpineElement).itemManifest.uri
     )
-    Assert.assertEquals(
+    Assertions.assertEquals(
       URI.create("http://www.example.com/1r.mp3"),
       (audioBook.spine[1] as ExoSpineElement).itemManifest.uri
     )
-    Assert.assertEquals(
+    Assertions.assertEquals(
       URI.create("http://www.example.com/2r.mp3"),
       (audioBook.spine[2] as ExoSpineElement).itemManifest.uri
     )
@@ -920,10 +924,12 @@ abstract class ExoEngineProviderContract {
     val audioBook =
       (bookProvider.create(this.context()) as PlayerResult.Success).result
 
-    this.expectedException.expect(ExecutionException::class.java)
-    this.expectedException.expectCause(instanceOf(IllegalArgumentException::class.java))
-    this.expectedException.expectMessage(StringContains("8d4a0b6b-5f4b-4249-b27c-9a02c769d231"))
-    audioBook.replaceManifest(manifest2).get()
+    val exception = Assertions.assertThrows(ExecutionException::class.java) {
+      audioBook.replaceManifest(manifest2).get()
+    }
+
+    Assertions.assertTrue(exception.cause is IllegalArgumentException)
+    Assertions.assertTrue(exception.message!!.contains("8d4a0b6b-5f4b-4249-b27c-9a02c769d231"))
   }
 
   /**
@@ -956,10 +962,12 @@ abstract class ExoEngineProviderContract {
     val audioBook =
       (bookProvider.create(this.context()) as PlayerResult.Success).result
 
-    this.expectedException.expect(ExecutionException::class.java)
-    this.expectedException.expectCause(instanceOf(IllegalArgumentException::class.java))
-    this.expectedException.expectMessage(StringContains("count 1 does not match existing count 3"))
-    audioBook.replaceManifest(manifest2).get()
+    val exception = Assertions.assertThrows(ExecutionException::class.java) {
+      audioBook.replaceManifest(manifest2).get()
+    }
+
+    Assertions.assertTrue(exception.cause is IllegalArgumentException)
+    Assertions.assertTrue(exception.message!!.contains("count 1 does not match existing count 3"))
   }
 
   /**
@@ -1014,10 +1022,10 @@ abstract class ExoEngineProviderContract {
 
     Thread.sleep(1_000L)
 
-    Assert.assertTrue(
+    Assertions.assertTrue(
       audioBook.spine[0].downloadStatus is PlayerSpineElementDownloadExpired
     )
-    Assert.assertTrue(
+    Assertions.assertTrue(
       audioBook.spine[1].downloadStatus is PlayerSpineElementDownloadFailed
     )
   }
@@ -1026,9 +1034,10 @@ abstract class ExoEngineProviderContract {
    * Test that manifest update events are delivered.
    */
 
-  @Test // (timeout = 20_000L)
+  @Test
+  // @Timeout(20)
   fun testManifestUpdatedEvents() {
-    Assume.assumeTrue("Test is running on a real device", this.onRealDevice())
+    Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 
     val manifest0 =
       PlayerManifest(
@@ -1078,8 +1087,8 @@ abstract class ExoEngineProviderContract {
     waitLatch.await()
 
     this.showEvents(events)
-    Assert.assertTrue("1 events must be logged (${events.size})", events.size == 1)
-    Assert.assertEquals("playerManifestUpdated", events.removeAt(0))
+    Assertions.assertTrue(events.size == 1, "1 event must be logged (${events.size})")
+    Assertions.assertEquals("playerManifestUpdated", events.removeAt(0))
   }
 
   private fun resourceStream(name: String): InputStream {
