@@ -632,6 +632,30 @@ abstract class PlayerManifestContract {
   }
 
   @Test
+  fun testOkFindawayLeading0() {
+    val result =
+      ManifestParsers.parse(
+        uri = URI.create("findaway"),
+        streams = this.resource("findaway_leading_0.json"),
+        extensions = listOf()
+      )
+    this.log().debug("result: {}", result)
+    assertTrue(result is ParseResult.Success, "Result is success")
+
+    val success: ParseResult.Success<PlayerManifest> =
+      result as ParseResult.Success<PlayerManifest>
+
+    val manifest = success.result
+
+    val encrypted = manifest.metadata.encrypted!!
+
+    Assertions.assertEquals(
+      "012345",
+      encrypted.values["findaway:fulfillmentId"].toString()
+    )
+  }
+
+  @Test
   fun testOkFeedbooks1() {
     val result =
       ManifestParsers.parse(
