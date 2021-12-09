@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.tests
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.librarysimplified.audiobook.json_web_token.JOSEHeader
 import org.librarysimplified.audiobook.json_web_token.JSONWebSignature
 import org.librarysimplified.audiobook.json_web_token.JSONWebSignatureAlgorithmHMACSha256
@@ -16,7 +17,8 @@ abstract class JSONWebSignatureContract {
    * Signing produces a verifiable signature.
    */
 
-  @Test(timeout = 10_000L)
+  @Test
+  @Timeout(10)
   fun testVerification() {
     val theory =
       QuickTheory.qt()

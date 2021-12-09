@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.tests
 
+import com.nhaarman.mockitokotlin2.any
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -7,9 +8,9 @@ import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicCredentials
@@ -24,7 +25,7 @@ abstract class ManifestFulfillmentBasicContract {
   private lateinit var call: Call
   private lateinit var client: OkHttpClient
 
-  @Before
+  @BeforeEach
   fun testSetup() {
     this.client =
       Mockito.mock(OkHttpClient::class.java)
@@ -50,7 +51,7 @@ abstract class ManifestFulfillmentBasicContract {
         )
         .build()
 
-    Mockito.`when`(this.client.newCall(Mockito.any()))
+    Mockito.`when`(this.client.newCall(any()))
       .thenReturn(this.call)
     Mockito.`when`(this.call.execute())
       .thenReturn(response)
@@ -77,10 +78,10 @@ abstract class ManifestFulfillmentBasicContract {
 
     val error = result.failure
     val serverData = error.serverData!!
-    Assert.assertEquals(404, serverData.code)
-    Assert.assertEquals("NOT FOUND", error.message)
-    Assert.assertArrayEquals(ByteArray(0), serverData.receivedBody)
-    Assert.assertEquals("application/octet-stream", serverData.receivedContentType)
+    Assertions.assertEquals(404, serverData.code)
+    Assertions.assertEquals("NOT FOUND", error.message)
+    Assertions.assertArrayEquals(ByteArray(0), serverData.receivedBody)
+    Assertions.assertEquals("application/octet-stream", serverData.receivedContentType)
   }
 
   /**
@@ -107,7 +108,7 @@ abstract class ManifestFulfillmentBasicContract {
         )
         .build()
 
-    Mockito.`when`(this.client.newCall(Mockito.any()))
+    Mockito.`when`(this.client.newCall(any()))
       .thenReturn(this.call)
     Mockito.`when`(this.call.execute())
       .thenReturn(response)
@@ -133,6 +134,6 @@ abstract class ManifestFulfillmentBasicContract {
       strategy.execute() as PlayerResult.Success
 
     val data = result.result
-    Assert.assertEquals("Some text.", String(data.data))
+    Assertions.assertEquals("Some text.", String(data.data))
   }
 }

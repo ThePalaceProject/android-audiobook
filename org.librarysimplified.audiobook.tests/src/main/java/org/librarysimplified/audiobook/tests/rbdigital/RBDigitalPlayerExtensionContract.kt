@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.tests.rbdigital
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.rbdigital.RBDigitialPlayerExtension
 
@@ -12,6 +12,6 @@ abstract class RBDigitalPlayerExtensionContract {
   @Test
   fun hasCorrectServiceType() {
     val extensions = ServiceLoader.load(PlayerExtensionType::class.java).toList()
-    Assert.assertTrue(extensions.any({ extension -> extension is RBDigitialPlayerExtension }))
+    Assertions.assertTrue(extensions.any({ extension -> extension is RBDigitialPlayerExtension }))
   }
 }

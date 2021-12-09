@@ -4,10 +4,10 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
-import org.junit.After
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadRequestCredentials
@@ -31,7 +31,7 @@ abstract class FeedbooksExtensionContract {
   private lateinit var downloadProvider: FakeDownloadProvider
   private lateinit var executor: ListeningExecutorService
 
-  @Before
+  @BeforeEach
   fun testSetup() {
     this.executor =
       MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
@@ -51,7 +51,7 @@ abstract class FeedbooksExtensionContract {
     }
   }
 
-  @After
+  @AfterEach
   fun testTearDown() {
     this.executor.shutdown()
   }
@@ -86,7 +86,7 @@ abstract class FeedbooksExtensionContract {
         )
       )
 
-    Assert.assertEquals(null, future)
+    Assertions.assertEquals(null, future)
   }
 
   /**
@@ -129,11 +129,11 @@ abstract class FeedbooksExtensionContract {
       future!!.get()
     } catch (e: ExecutionException) {
       val cause = e.cause as IllegalStateException
-      Assert.assertTrue(cause.message!!.contains("has not been configured"))
+      Assertions.assertTrue(cause.message!!.contains("has not been configured"))
       return
     }
 
-    Assert.fail()
+    Assertions.fail<Any>()
   }
 
   /**
@@ -180,8 +180,8 @@ abstract class FeedbooksExtensionContract {
     future!!.get()
 
     val sentRequest = this.downloadProvider.requests.poll()
-    Assert.assertEquals(request.uri, sentRequest.uri)
-    Assert.assertEquals(request.outputFile, sentRequest.outputFile)
-    Assert.assertTrue(sentRequest.credentials is PlayerDownloadRequestCredentials.BearerToken)
+    Assertions.assertEquals(request.uri, sentRequest.uri)
+    Assertions.assertEquals(request.outputFile, sentRequest.outputFile)
+    Assertions.assertTrue(sentRequest.credentials is PlayerDownloadRequestCredentials.BearerToken)
   }
 }

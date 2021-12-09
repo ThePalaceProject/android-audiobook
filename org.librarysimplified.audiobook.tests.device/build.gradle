@@ -1,3 +1,10 @@
+android {
+  packagingOptions {
+    exclude "META-INF/LICENSE.md"
+    exclude "META-INF/LICENSE-notice.md"
+  }
+}
+
 dependencies {
   androidTestImplementation libs.androidx.app.compat
   androidTestImplementation libs.androidx.test.espresso

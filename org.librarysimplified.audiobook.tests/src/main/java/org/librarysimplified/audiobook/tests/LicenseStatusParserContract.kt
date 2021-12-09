@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.lcp.license_status.LicenseStatusDocument
 import org.librarysimplified.audiobook.lcp.license_status.LicenseStatusParserProviderType
 import org.librarysimplified.audiobook.parser.api.ParseResult
@@ -21,7 +21,7 @@ abstract class LicenseStatusParserContract {
       parser.parse() as ParseResult.Success
 
     val document = result.result
-    Assert.assertEquals(LicenseStatusDocument.Status.ACTIVE, document.status)
+    Assertions.assertEquals(LicenseStatusDocument.Status.ACTIVE, document.status)
   }
 
   @Test
@@ -34,7 +34,7 @@ abstract class LicenseStatusParserContract {
       parser.parse() as ParseResult.Success
 
     val document = result.result
-    Assert.assertEquals(LicenseStatusDocument.Status.ACTIVE, document.status)
+    Assertions.assertEquals(LicenseStatusDocument.Status.ACTIVE, document.status)
   }
 
   @Test
@@ -47,7 +47,7 @@ abstract class LicenseStatusParserContract {
       parser.parse() as ParseResult.Success
 
     val document = result.result
-    Assert.assertEquals(LicenseStatusDocument.Status.REVOKED, document.status)
+    Assertions.assertEquals(LicenseStatusDocument.Status.REVOKED, document.status)
   }
 
   private fun resource(

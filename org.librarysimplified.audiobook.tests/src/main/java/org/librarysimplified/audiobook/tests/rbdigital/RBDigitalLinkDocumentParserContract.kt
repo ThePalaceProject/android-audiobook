@@ -1,8 +1,8 @@
 package org.librarysimplified.audiobook.tests.rbdigital
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.rbdigital.RBDigitalLinkDocumentParser
 import org.librarysimplified.audiobook.rbdigital.RBDigitalLinkDocumentParser.ParseResult.ParseFailed
 import org.librarysimplified.audiobook.rbdigital.RBDigitalLinkDocumentParser.ParseResult.ParseSuccess
@@ -24,10 +24,10 @@ abstract class RBDigitalLinkDocumentParserContract {
     objectNode.put("url", "http://www.example.com")
 
     val result = parser.parseFromObjectNode(objectNode)
-    Assert.assertTrue(result is ParseSuccess)
+    Assertions.assertTrue(result is ParseSuccess)
     val document = result as ParseSuccess
-    Assert.assertEquals("application/octet-stream", document.document.type)
-    Assert.assertEquals("http://www.example.com", document.document.uri.toString())
+    Assertions.assertEquals("application/octet-stream", document.document.type)
+    Assertions.assertEquals("http://www.example.com", document.document.uri.toString())
   }
 
   @Test
@@ -38,7 +38,7 @@ abstract class RBDigitalLinkDocumentParserContract {
     objectNode.put("url", "http://www.example.com")
 
     val result = parser.parseFromObjectNode(objectNode)
-    Assert.assertTrue(result is ParseFailed)
+    Assertions.assertTrue(result is ParseFailed)
   }
 
   @Test
@@ -49,7 +49,7 @@ abstract class RBDigitalLinkDocumentParserContract {
     objectNode.put("type", "application/octet-stream")
 
     val result = parser.parseFromObjectNode(objectNode)
-    Assert.assertTrue(result is ParseFailed)
+    Assertions.assertTrue(result is ParseFailed)
   }
 
   @Test
@@ -59,7 +59,7 @@ abstract class RBDigitalLinkDocumentParserContract {
     val node = this.mapper.createArrayNode()
 
     val result = parser.parseFromNode(node)
-    Assert.assertTrue(result is ParseFailed)
+    Assertions.assertTrue(result is ParseFailed)
   }
 
   @Test
@@ -72,10 +72,10 @@ abstract class RBDigitalLinkDocumentParserContract {
 
     ByteArrayInputStream(this.mapper.writeValueAsBytes(objectNode)).use { stream ->
       val result = parser.parseFromStream(stream)
-      Assert.assertTrue(result is ParseSuccess)
+      Assertions.assertTrue(result is ParseSuccess)
       val document = result as ParseSuccess
-      Assert.assertEquals("application/octet-stream", document.document.type)
-      Assert.assertEquals("http://www.example.com", document.document.uri.toString())
+      Assertions.assertEquals("application/octet-stream", document.document.type)
+      Assertions.assertEquals("http://www.example.com", document.document.uri.toString())
     }
   }
 
@@ -92,10 +92,10 @@ abstract class RBDigitalLinkDocumentParserContract {
 
     FileInputStream(file).use { stream ->
       val result = parser.parseFromStream(stream)
-      Assert.assertTrue(result is ParseSuccess)
+      Assertions.assertTrue(result is ParseSuccess)
       val document = result as ParseSuccess
-      Assert.assertEquals("application/octet-stream", document.document.type)
-      Assert.assertEquals("http://www.example.com", document.document.uri.toString())
+      Assertions.assertEquals("application/octet-stream", document.document.type)
+      Assertions.assertEquals("http://www.example.com", document.document.uri.toString())
     }
   }
 }

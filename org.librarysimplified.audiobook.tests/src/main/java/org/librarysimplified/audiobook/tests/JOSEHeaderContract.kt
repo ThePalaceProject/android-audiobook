@@ -1,7 +1,8 @@
 package org.librarysimplified.audiobook.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.librarysimplified.audiobook.json_web_token.JOSEHeader
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.quicktheories.QuickTheory
@@ -25,7 +26,7 @@ abstract class JOSEHeaderContract {
       ) as ParseResult.Success
 
     val token = result.result
-    Assert.assertEquals(0, token.headers.size)
+    Assertions.assertEquals(0, token.headers.size)
   }
 
   /**
@@ -45,16 +46,17 @@ abstract class JOSEHeaderContract {
       ) as ParseResult.Success
 
     val token = result.result
-    Assert.assertEquals(2, token.headers.size)
-    Assert.assertEquals("JWT", token.headers["typ"])
-    Assert.assertEquals("HS256", token.headers["alg"])
+    Assertions.assertEquals(2, token.headers.size)
+    Assertions.assertEquals("JWT", token.headers["typ"])
+    Assertions.assertEquals("HS256", token.headers["alg"])
   }
 
   /**
    * Encoding and decoding are inverses of each other.
    */
 
-  @Test(timeout = 10_000L)
+  @Test
+  @Timeout(10)
   fun testIdentity() {
     val theory =
       QuickTheory.qt()

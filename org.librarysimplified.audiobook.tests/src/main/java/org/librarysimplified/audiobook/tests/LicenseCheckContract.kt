@@ -1,10 +1,9 @@
 package org.librarysimplified.audiobook.tests
 
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.license_check.api.LicenseCheckParameters
 import org.librarysimplified.audiobook.license_check.api.LicenseCheckProviderType
@@ -18,6 +17,7 @@ import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.slf4j.Logger
+import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.util.ServiceLoader
@@ -30,11 +30,11 @@ abstract class LicenseCheckContract {
 
   abstract fun licenseChecks(): LicenseCheckProviderType
 
-  @Rule
+  @TempDir
   @JvmField
-  val tempFolder = TemporaryFolder()
+  val tempFolder: File? = null
 
-  @Before
+  @BeforeEach
   fun testSetup() {
     this.eventLog = mutableListOf()
   }
@@ -53,7 +53,7 @@ abstract class LicenseCheckContract {
         manifest = manifest,
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
         checks = listOf(),
-        cacheDirectory = tempFolder.newFolder("cache")
+        cacheDirectory = File(tempFolder,"cache")
       )
 
     val result =
@@ -62,8 +62,8 @@ abstract class LicenseCheckContract {
         check.execute()
       }
 
-    Assert.assertEquals(0, result.checkStatuses.size)
-    Assert.assertTrue(result.checkSucceeded())
+    Assertions.assertEquals(0, result.checkStatuses.size)
+    Assertions.assertTrue(result.checkSucceeded())
   }
 
   /**
@@ -85,7 +85,7 @@ abstract class LicenseCheckContract {
           FailingTest(),
           SucceedingTest()
         ),
-        cacheDirectory = tempFolder.newFolder("cache")
+        cacheDirectory = File(tempFolder,"cache")
       )
 
     val result =
@@ -94,8 +94,8 @@ abstract class LicenseCheckContract {
         check.execute()
       }
 
-    Assert.assertEquals(4, result.checkStatuses.size)
-    Assert.assertFalse(result.checkSucceeded())
+    Assertions.assertEquals(4, result.checkStatuses.size)
+    Assertions.assertFalse(result.checkSucceeded())
   }
 
   /**
@@ -117,7 +117,7 @@ abstract class LicenseCheckContract {
           CrashingTest(),
           SucceedingTest()
         ),
-        cacheDirectory = tempFolder.newFolder("cache")
+        cacheDirectory = File(tempFolder,"cache")
       )
 
     val result =
@@ -126,8 +126,8 @@ abstract class LicenseCheckContract {
         check.execute()
       }
 
-    Assert.assertEquals(4, result.checkStatuses.size)
-    Assert.assertFalse(result.checkSucceeded())
+    Assertions.assertEquals(4, result.checkStatuses.size)
+    Assertions.assertFalse(result.checkSucceeded())
   }
 
   /**
@@ -149,7 +149,7 @@ abstract class LicenseCheckContract {
           NonApplicableTest(),
           NonApplicableTest()
         ),
-        cacheDirectory = tempFolder.newFolder("cache")
+        cacheDirectory = File(tempFolder,"cache")
       )
 
     val result =
@@ -158,8 +158,8 @@ abstract class LicenseCheckContract {
         check.execute()
       }
 
-    Assert.assertEquals(4, result.checkStatuses.size)
-    Assert.assertTrue(result.checkSucceeded())
+    Assertions.assertEquals(4, result.checkStatuses.size)
+    Assertions.assertTrue(result.checkSucceeded())
   }
 
   private class NonApplicableTest : SingleLicenseCheckType, SingleLicenseCheckProviderType {
@@ -232,7 +232,7 @@ abstract class LicenseCheckContract {
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
-    Assert.assertTrue("Result is success", result is ParseResult.Success)
+    Assertions.assertTrue(result is ParseResult.Success, "Result is success")
 
     val success: ParseResult.Success<PlayerManifest> =
       result as ParseResult.Success<PlayerManifest>
