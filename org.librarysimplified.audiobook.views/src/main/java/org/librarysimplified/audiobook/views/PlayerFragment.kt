@@ -1,8 +1,14 @@
 package org.librarysimplified.audiobook.views
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Context.BIND_AUTO_CREATE
+import android.content.Intent
+import android.content.ServiceConnection
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -88,7 +94,9 @@ class PlayerFragment : Fragment() {
   private lateinit var player: PlayerType
   private lateinit var playerAuthorView: TextView
   private lateinit var playerBookmark: ImageView
+  private lateinit var playerInfoModel: PlayerInfoModel
   private lateinit var playerPosition: SeekBar
+  private lateinit var playerService: PlayerService
   private lateinit var playerSkipBackwardButton: ImageView
   private lateinit var playerSkipForwardButton: ImageView
   private lateinit var playerSpineElement: TextView
@@ -109,6 +117,19 @@ class PlayerFragment : Fragment() {
   private var playerSleepTimerEventSubscription: Subscription? = null
 
   private val log = LoggerFactory.getLogger(PlayerFragment::class.java)
+
+  private val serviceConnection = object : ServiceConnection {
+
+    override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+      playerService = (binder as PlayerService.PlayerBinder).playerService
+      initializePlayerInfo()
+      playerService.updatePlayerInfo(playerInfoModel)
+    }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+      // do nothing
+    }
+  }
 
   override fun onCreate(state: Bundle?) {
     this.log.debug("onCreate")
@@ -307,6 +328,7 @@ class PlayerFragment : Fragment() {
     this.playerEventSubscription?.unsubscribe()
     this.playerSleepTimerEventSubscription?.unsubscribe()
     this.onPlayerBufferingStopped()
+    requireContext().unbindService(serviceConnection)
   }
 
   private fun configureToolbarActions() {
@@ -454,6 +476,8 @@ class PlayerFragment : Fragment() {
     this.listener.onPlayerWantsCoverImage(this.coverView)
     this.playerTitleView.text = this.listener.onPlayerWantsTitle()
     this.playerAuthorView.text = this.listener.onPlayerWantsAuthor()
+
+    initializeService()
   }
 
   private fun onProgressBarDraggingStopped() {
@@ -630,11 +654,19 @@ class PlayerFragment : Fragment() {
   private fun onPressedPlay() {
     this.player.play()
     this.sleepTimer.unpause()
+    this.playerInfoModel = this.playerInfoModel.copy(
+      isPlaying = true
+    )
+    this.playerService.updatePlayerInfo(this.playerInfoModel)
   }
 
   private fun onPressedPause() {
     this.player.pause()
     this.sleepTimer.pause()
+    this.playerInfoModel = this.playerInfoModel.copy(
+      isPlaying = false
+    )
+    this.playerService.updatePlayerInfo(this.playerInfoModel)
   }
 
   private fun onPlayerEventPlaybackProgressUpdate(event: PlayerEventPlaybackProgressUpdate) {
@@ -769,6 +801,19 @@ class PlayerFragment : Fragment() {
       )
   }
 
+  private fun initializePlayerInfo() {
+    this.playerInfoModel = PlayerInfoModel(
+      bookChapterName = this.spineElementText(this.book.spine.first()),
+      bookCover = null,
+      bookName = this.listener.onPlayerWantsTitle(),
+      isPlaying = false,
+      player = this.player,
+      smallIcon = this.listener.onPlayerNotificationWantsSmallIcon()
+    )
+
+    this.listener.onPlayerNotificationWantsBookCover(this::onBookCoverLoaded)
+  }
+
   /**
    * The player said that it has started buffering. Only display a message if it is still buffering
    * a few seconds from now.
@@ -814,5 +859,18 @@ class PlayerFragment : Fragment() {
       future.cancel(true)
       this.playerBufferingTask = null
     }
+  }
+
+  private fun initializeService() {
+    val intent = Intent(requireContext(), PlayerService::class.java)
+    requireContext().bindService(intent, serviceConnection, BIND_AUTO_CREATE)
+  }
+
+  private fun onBookCoverLoaded(bitmap: Bitmap) {
+    this.playerInfoModel = this.playerInfoModel.copy(
+      bookCover = bitmap
+    )
+
+    playerService.updatePlayerInfo(this.playerInfoModel)
   }
 }

@@ -1,6 +1,8 @@
 package org.librarysimplified.audiobook.views
 
+import android.graphics.Bitmap
 import android.widget.ImageView
+import androidx.annotation.DrawableRes
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
@@ -27,6 +29,20 @@ interface PlayerFragmentListenerType {
    */
 
   fun onPlayerWantsCoverImage(view: ImageView)
+
+  /**
+   * A fragment requires a book cover to be loaded as a bitmap in order to run the given callback
+   * with the obtained bitmap which will be used as the large icon of the audiobook player
+   * notification
+   */
+  fun onPlayerNotificationWantsBookCover(onBookCoverLoaded: (Bitmap) -> Unit)
+
+  /**
+   * A fragment requires the drawable resource to be used as the small of the audiobook player
+   * notification
+   */
+  @DrawableRes
+  fun onPlayerNotificationWantsSmallIcon(): Int
 
   /**
    * A fragment wants to know the title of the audio book being played. The receiver must return
