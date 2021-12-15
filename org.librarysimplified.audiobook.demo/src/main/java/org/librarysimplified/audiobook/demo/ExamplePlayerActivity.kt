@@ -1,5 +1,7 @@
 package org.librarysimplified.audiobook.demo
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.Toast
@@ -609,6 +611,14 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
       this.book.wholeBookDownloadTask.delete()
       true
     }
+  }
+
+  override fun onPlayerNotificationWantsBookCover(onBookCoverLoaded: (Bitmap) -> Unit) {
+    onBookCoverLoaded(BitmapFactory.decodeResource(resources, R.drawable.example_cover))
+  }
+
+  override fun onPlayerNotificationWantsSmallIcon(): Int {
+    return R.drawable.icon
   }
 
   override fun onPlayerTOCWantsBook(): PlayerAudioBookType {

@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.tests.sandbox
 
 import android.app.AlertDialog
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -170,6 +171,14 @@ class SandboxPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
       dialog.show()
       true
     }
+  }
+
+  override fun onPlayerNotificationWantsBookCover(onBookCoverLoaded: (Bitmap) -> Unit) {
+    // do nothing regarding the book cover loading
+  }
+
+  override fun onPlayerNotificationWantsSmallIcon(): Int {
+    return R.drawable.icon
   }
 
   override fun onPlayerWantsTitle(): String {

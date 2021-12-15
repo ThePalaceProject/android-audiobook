@@ -168,7 +168,6 @@ class ExoAudioBook private constructor(
           ExoSpineElement(
             downloadStatusEvents = statusEvents,
             bookID = bookId,
-            bookManifest = manifest,
             itemManifest = spineItem,
             partFile = partFile,
             extensions = extensions,

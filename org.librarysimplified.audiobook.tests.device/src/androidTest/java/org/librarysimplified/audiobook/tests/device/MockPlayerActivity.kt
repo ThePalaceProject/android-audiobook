@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.tests.device
 
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -91,6 +92,14 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   }
 
   override fun onPlayerWantsCoverImage(view: ImageView) {
+  }
+
+  override fun onPlayerNotificationWantsBookCover(onBookCoverLoaded: (Bitmap) -> Unit) {
+    // do nothing regarding the book cover loading
+  }
+
+  override fun onPlayerNotificationWantsSmallIcon(): Int {
+    return R.drawable.icon
   }
 
   override fun onPlayerWantsTitle(): String {

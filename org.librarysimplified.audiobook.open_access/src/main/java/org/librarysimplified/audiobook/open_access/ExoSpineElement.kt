@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutorService
 class ExoSpineElement(
   private val downloadStatusEvents: PublishSubject<PlayerSpineElementDownloadStatus>,
   private val bookID: PlayerBookID,
-  private val bookManifest: ExoManifest,
   val itemManifest: ExoManifestSpineItem,
   internal val partFile: File,
   private val extensions: List<PlayerExtensionType>,
