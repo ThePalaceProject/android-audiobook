@@ -566,7 +566,7 @@ class PlayerFragment : Fragment() {
 
         val element = event.spineElement
         if (element != null) {
-          this.configureSpineElementText(element)
+          this.configureSpineElementText(element, isPlaying = false)
           this.onEventUpdateTimeRelatedUI(element, event.offsetMilliseconds)
         }
       }
@@ -582,7 +582,7 @@ class PlayerFragment : Fragment() {
         this.playerWaiting.contentDescription = null
         this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityIsWaitingForChapter(text))
 
-        this.configureSpineElementText(event.spineElement)
+        this.configureSpineElementText(event.spineElement, isPlaying = false)
         this.onEventUpdateTimeRelatedUI(event.spineElement, 0)
       }
     )
@@ -592,7 +592,7 @@ class PlayerFragment : Fragment() {
     UIThread.runOnUIThread(
       Runnable {
         this.onPlayerBufferingStarted()
-        this.configureSpineElementText(event.spineElement)
+        this.configureSpineElementText(event.spineElement, isPlaying = false)
         this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
       }
     )
@@ -631,7 +631,7 @@ class PlayerFragment : Fragment() {
         this.playPauseButton.setImageResource(R.drawable.play_icon)
         this.playPauseButton.setOnClickListener { this.onPressedPlay() }
         this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_play)
-        this.configureSpineElementText(event.spineElement)
+        this.configureSpineElementText(event.spineElement, isPlaying = false)
         this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
       }
     )
@@ -645,7 +645,7 @@ class PlayerFragment : Fragment() {
         this.playPauseButton.setImageResource(R.drawable.play_icon)
         this.playPauseButton.setOnClickListener { this.onPressedPlay() }
         this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_play)
-        this.configureSpineElementText(event.spineElement)
+        this.configureSpineElementText(event.spineElement, isPlaying = false)
         this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
       }
     )
@@ -692,7 +692,7 @@ class PlayerFragment : Fragment() {
         this.playPauseButton.setImageResource(R.drawable.pause_icon)
         this.playPauseButton.setOnClickListener { this.onPressedPause() }
         this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_pause)
-        this.configureSpineElementText(event.spineElement)
+        this.configureSpineElementText(event.spineElement, isPlaying = true)
         this.playerPosition.isEnabled = true
         this.playerWaiting.text = ""
         this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
@@ -732,6 +732,16 @@ class PlayerFragment : Fragment() {
       this.playerTimeCurrentSpoken(offsetMilliseconds)
 
     this.playerSpineElement.text = this.spineElementText(spineElement)
+
+    // we just update the book chapter on the playerInfoModel if it's been initialized
+    if (::playerInfoModel.isInitialized) {
+
+      this.playerInfoModel = this.playerInfoModel.copy(
+        bookChapterName = this.spineElementText(spineElement)
+      )
+
+      playerService.updatePlayerInfo(playerInfoModel)
+    }
   }
 
   private fun playerTimeCurrentSpoken(offsetMilliseconds: Long): String {
@@ -784,8 +794,19 @@ class PlayerFragment : Fragment() {
    * description to give the same information.
    */
 
-  private fun configureSpineElementText(element: PlayerSpineElementType) {
+  private fun configureSpineElementText(element: PlayerSpineElementType, isPlaying: Boolean) {
     this.playerSpineElement.text = this.spineElementText(element)
+
+    // we just update the book chapter on the playerInfoModel if it's been initialized
+    if (::playerInfoModel.isInitialized) {
+
+      this.playerInfoModel = this.playerInfoModel.copy(
+        bookChapterName = this.spineElementText(element),
+        isPlaying = isPlaying
+      )
+
+      playerService.updatePlayerInfo(playerInfoModel)
+    }
 
     val accessibilityTitle = element.title ?: this.getString(
       R.string.audiobook_accessibility_toc_chapter_n,

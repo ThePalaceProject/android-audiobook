@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<manifest package="org.librarysimplified.audiobook.views"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.librarysimplified.audiobook.views">
+
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <application>
         <service
             android:name="org.librarysimplified.audiobook.views.PlayerService"
             android:enabled="true"
             android:exported="false" />
+
+        <receiver
+            android:name="androidx.media.session.MediaButtonReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
