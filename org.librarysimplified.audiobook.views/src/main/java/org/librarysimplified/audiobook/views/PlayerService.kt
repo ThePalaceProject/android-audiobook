@@ -8,13 +8,16 @@ import android.content.IntentFilter
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
+
 
 class PlayerService : Service() {
 
   companion object {
-    private const val NOTIFICATION_CHANNEL_ID = "AudiobookPlayerCommands"
-    private const val NOTIFICATION_CHANNEL_NAME = "Audiobook player commands"
+    private const val NOTIFICATION_CHANNEL_ID = "Audiobook_Player_Commands"
+    private const val NOTIFICATION_CHANNEL_NAME = "Audiobook Player Commands"
 
     private const val ACTION_PLAY = "org.librarysimplified.audiobook.views.action_play"
     private const val ACTION_PAUSE = "org.librarysimplified.audiobook.views.action_pause"
@@ -23,7 +26,23 @@ class PlayerService : Service() {
   private lateinit var playerReceiver: PlayerBroadcastReceiver
   private lateinit var playerInfo: PlayerInfoModel
 
+  private var mediaSession: MediaSessionCompat? = null
+
   private val binder = PlayerBinder()
+
+  private val playIntent by lazy {
+    PendingIntent.getBroadcast(
+      this, 0, Intent(ACTION_PLAY),
+      PendingIntent.FLAG_UPDATE_CURRENT
+    )
+  }
+
+  private val pauseIntent by lazy {
+    PendingIntent.getBroadcast(
+      this, 0, Intent(ACTION_PAUSE),
+      PendingIntent.FLAG_UPDATE_CURRENT
+    )
+  }
 
   override fun onBind(intent: Intent?): IBinder {
     return binder
@@ -47,6 +66,7 @@ class PlayerService : Service() {
     if (!this.playerInfo.player.isClosed) {
       this.playerInfo.player.close()
     }
+    mediaSession?.release()
     unregisterReceiver(playerReceiver)
     super.onDestroy()
   }
@@ -59,11 +79,12 @@ class PlayerService : Service() {
       val notificationChannel = NotificationChannel(
         NOTIFICATION_CHANNEL_ID,
         NOTIFICATION_CHANNEL_NAME,
-        NotificationManager.IMPORTANCE_DEFAULT
+        NotificationManager.IMPORTANCE_LOW
       )
         .apply {
           this.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
           this.setShowBadge(false)
+          this.enableVibration(false)
         }
 
       notificationManager.createNotificationChannel(notificationChannel)
@@ -72,13 +93,16 @@ class PlayerService : Service() {
 
   private fun updateNotification() {
 
-    val playIntent = PendingIntent.getBroadcast(
-      this, 0, Intent(ACTION_PLAY),
-      PendingIntent.FLAG_UPDATE_CURRENT
-    )
-    val pauseIntent = PendingIntent.getBroadcast(
-      this, 0, Intent(ACTION_PAUSE),
-      PendingIntent.FLAG_UPDATE_CURRENT
+    if (mediaSession == null) {
+      mediaSession = MediaSessionCompat(this, PlayerService::class.java.simpleName)
+    }
+
+    mediaSession?.setMetadata(
+      MediaMetadataCompat.Builder()
+        .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, playerInfo.bookCover)
+        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, playerInfo.bookChapterName)
+        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, playerInfo.bookName)
+        .build()
     )
 
     val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
@@ -88,10 +112,12 @@ class PlayerService : Service() {
         androidx.media.app.NotificationCompat.MediaStyle()
           .setShowActionsInCompactView(0)
           .setShowCancelButton(false)
+          .setMediaSession(mediaSession?.sessionToken)
       )
       .setSmallIcon(this.playerInfo.smallIcon)
       .setLargeIcon(this.playerInfo.bookCover)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+      .setNotificationSilent()
       .addAction(
         if (this.playerInfo.isPlaying) {
           NotificationCompat.Action(R.drawable.ic_pause, "Pause", pauseIntent)
@@ -114,12 +140,14 @@ class PlayerService : Service() {
     override fun onReceive(context: Context?, intent: Intent?) {
       val action = intent?.action
       if (action == ACTION_PLAY) {
+        mediaSession?.isActive = true
         playerInfo.player.play()
         playerInfo = playerInfo.copy(
           isPlaying = true
         )
         updateNotification()
       } else if (action == ACTION_PAUSE) {
+        mediaSession?.isActive = false
         playerInfo.player.pause()
         playerInfo = playerInfo.copy(
           isPlaying = false
