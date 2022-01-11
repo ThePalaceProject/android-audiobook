@@ -1,0 +1,37 @@
+{
+  "readingOrder": [
+    {
+      "title": "Track 1",
+      "findaway:sequence": 1,
+      "href": null,
+      "duration": 10.000,
+      "findaway:part": 0,
+      "type": "audio/mpeg"
+    }
+  ],
+  "@context": [
+    "http://readium.org/webpub/default.jsonld",
+    {
+      "findaway": "http://librarysimplified.org/terms/third-parties/findaway.com/"
+    }
+  ],
+  "metadata": {
+    "language": "en",
+    "title": "Juggler of Worlds",
+    "encrypted": {
+      "findaway:accountId": "REDACTED0",
+      "findaway:checkoutId": "REDACTED1",
+      "findaway:sessionKey": "REDACTED2",
+      "findaway:fulfillmentId": "012345",
+      "findaway:licenseId": "REDACTED4",
+      "scheme": "http://librarysimplified.org/terms/drm/scheme/FAE"
+    },
+    "authors": [
+      "Larry Niven",
+      "Edward M. Lerner"
+    ],
+    "duration": 10.000,
+    "identifier": "urn:librarysimplified.org/terms/id/Bibliotheca%20ID/eb517g9",
+    "@type": "http://bib.schema.org/Audiobook"
+  }
+}

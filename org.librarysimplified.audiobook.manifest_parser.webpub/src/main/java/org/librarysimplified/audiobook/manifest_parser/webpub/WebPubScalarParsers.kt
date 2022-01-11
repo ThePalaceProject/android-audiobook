@@ -20,23 +20,29 @@ object WebPubScalarParsers {
     text: String
   ): FRParseResult<PlayerManifestScalar> {
     return FRParseResult.succeed(
-      when (val integer = text.toIntOrNull()) {
-        null ->
-          when (val double = text.toDoubleOrNull()) {
-            null ->
-              when (text) {
-                "true" ->
-                  PlayerManifestScalarBoolean(true)
-                "false" ->
-                  PlayerManifestScalarBoolean(false)
-                else ->
-                  PlayerManifestScalarString(text)
-              }
-            else ->
-              PlayerManifestScalarReal(double)
-          }
-        else ->
-          PlayerManifestScalarInteger(integer)
+      if (text.startsWith("0")) {
+        // If the text begins with "0", parse it into a string to ensure that the leading "0" is retained.
+        PlayerManifestScalarString(text)
+      }
+      else {
+        when (val integer = text.toIntOrNull()) {
+          null ->
+            when (val double = text.toDoubleOrNull()) {
+              null ->
+                when (text) {
+                  "true" ->
+                    PlayerManifestScalarBoolean(true)
+                  "false" ->
+                    PlayerManifestScalarBoolean(false)
+                  else ->
+                    PlayerManifestScalarString(text)
+                }
+              else ->
+                PlayerManifestScalarReal(double)
+            }
+          else ->
+            PlayerManifestScalarInteger(integer)
+        }
       }
     )
   }
