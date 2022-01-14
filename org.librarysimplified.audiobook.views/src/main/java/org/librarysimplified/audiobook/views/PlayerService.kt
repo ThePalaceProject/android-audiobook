@@ -19,8 +19,11 @@ class PlayerService : Service() {
     private const val NOTIFICATION_CHANNEL_ID = "Audiobook_Player_Commands"
     private const val NOTIFICATION_CHANNEL_NAME = "Audiobook Player Commands"
 
-    private const val ACTION_PLAY = "org.librarysimplified.audiobook.views.action_play"
+    private const val ACTION_BACKWARD = "org.librarysimplified.audiobook.views.action_backward"
+    private const val ACTION_FORWARD = "org.librarysimplified.audiobook.views.action_forward"
     private const val ACTION_PAUSE = "org.librarysimplified.audiobook.views.action_pause"
+    private const val ACTION_PLAY = "org.librarysimplified.audiobook.views.action_play"
+
   }
 
   private lateinit var playerReceiver: PlayerBroadcastReceiver
@@ -30,9 +33,16 @@ class PlayerService : Service() {
 
   private val binder = PlayerBinder()
 
-  private val playIntent by lazy {
+  private val backwardIntent by lazy {
     PendingIntent.getBroadcast(
-      this, 0, Intent(ACTION_PLAY),
+      this, 0, Intent(ACTION_BACKWARD),
+      PendingIntent.FLAG_UPDATE_CURRENT
+    )
+  }
+
+  private val forwardIntent by lazy {
+    PendingIntent.getBroadcast(
+      this, 0, Intent(ACTION_FORWARD),
       PendingIntent.FLAG_UPDATE_CURRENT
     )
   }
@@ -40,6 +50,13 @@ class PlayerService : Service() {
   private val pauseIntent by lazy {
     PendingIntent.getBroadcast(
       this, 0, Intent(ACTION_PAUSE),
+      PendingIntent.FLAG_UPDATE_CURRENT
+    )
+  }
+
+  private val playIntent by lazy {
+    PendingIntent.getBroadcast(
+      this, 0, Intent(ACTION_PLAY),
       PendingIntent.FLAG_UPDATE_CURRENT
     )
   }
@@ -53,6 +70,8 @@ class PlayerService : Service() {
       PlayerBroadcastReceiver()
 
     registerReceiver(this.playerReceiver, IntentFilter().apply {
+      addAction(ACTION_BACKWARD)
+      addAction(ACTION_FORWARD)
       addAction(ACTION_PAUSE)
       addAction(ACTION_PLAY)
     })
@@ -110,7 +129,7 @@ class PlayerService : Service() {
       .setContentText(this.playerInfo.bookChapterName)
       .setStyle(
         androidx.media.app.NotificationCompat.MediaStyle()
-          .setShowActionsInCompactView(0)
+          .setShowActionsInCompactView(0,1,2)
           .setShowCancelButton(false)
           .setMediaSession(mediaSession?.sessionToken)
       )
@@ -118,6 +137,7 @@ class PlayerService : Service() {
       .setLargeIcon(this.playerInfo.bookCover)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
       .setNotificationSilent()
+      .addAction(NotificationCompat.Action(R.drawable.ic_backward, "Backward", backwardIntent))
       .addAction(
         if (this.playerInfo.isPlaying) {
           NotificationCompat.Action(R.drawable.ic_pause, "Pause", pauseIntent)
@@ -125,6 +145,7 @@ class PlayerService : Service() {
           NotificationCompat.Action(R.drawable.ic_play, "Play", playIntent)
         }
       )
+      .addAction(NotificationCompat.Action(R.drawable.ic_forward, "Forward", forwardIntent))
       .build()
 
     startForeground(1, notification)
@@ -138,21 +159,31 @@ class PlayerService : Service() {
   inner class PlayerBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
-      val action = intent?.action
-      if (action == ACTION_PLAY) {
-        mediaSession?.isActive = true
-        playerInfo.player.play()
-        playerInfo = playerInfo.copy(
-          isPlaying = true
-        )
-        updateNotification()
-      } else if (action == ACTION_PAUSE) {
-        mediaSession?.isActive = false
-        playerInfo.player.pause()
-        playerInfo = playerInfo.copy(
-          isPlaying = false
-        )
-        updateNotification()
+      when (intent?.action) {
+          ACTION_BACKWARD -> {
+            playerInfo.player.skipBack()
+            updateNotification()
+          }
+          ACTION_FORWARD -> {
+            playerInfo.player.skipForward()
+            updateNotification()
+          }
+          ACTION_PAUSE -> {
+            mediaSession?.isActive = false
+            playerInfo.player.pause()
+            playerInfo = playerInfo.copy(
+              isPlaying = false
+            )
+            updateNotification()
+          }
+          ACTION_PLAY -> {
+            mediaSession?.isActive = true
+            playerInfo.player.play()
+            playerInfo = playerInfo.copy(
+              isPlaying = true
+            )
+            updateNotification()
+          }
       }
     }
   }
