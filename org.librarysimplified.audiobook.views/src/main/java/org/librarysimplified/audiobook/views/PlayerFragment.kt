@@ -36,6 +36,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerCancelled
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerFinished
@@ -111,6 +112,7 @@ class PlayerFragment : Fragment() {
   private var playerBufferingTask: ScheduledFuture<*>? = null
   private var playerPositionDragging: Boolean = false
 
+  private var currentPlaybackRate: PlayerPlaybackRate = PlayerPlaybackRate.NORMAL_TIME
   private var playerPositionCurrentSpine: PlayerSpineElementType? = null
   private var playerPositionCurrentOffset: Long = 0L
   private var playerEventSubscription: Subscription? = null
@@ -642,6 +644,7 @@ class PlayerFragment : Fragment() {
 
     UIThread.runOnUIThread(
       Runnable {
+        this.currentPlaybackRate = this.player.playbackRate
         this.playPauseButton.setImageResource(R.drawable.play_icon)
         this.playPauseButton.setOnClickListener { this.onPressedPlay() }
         this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_play)
@@ -689,6 +692,7 @@ class PlayerFragment : Fragment() {
 
     UIThread.runOnUIThread(
       Runnable {
+        this.player.playbackRate = this.currentPlaybackRate
         this.playPauseButton.setImageResource(R.drawable.pause_icon)
         this.playPauseButton.setOnClickListener { this.onPressedPause() }
         this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_pause)
