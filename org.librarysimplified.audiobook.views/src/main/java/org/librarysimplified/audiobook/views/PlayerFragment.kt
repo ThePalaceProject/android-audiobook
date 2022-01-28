@@ -23,8 +23,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import org.joda.time.Duration
-import org.librarysimplified.audiobook.api.PlayerAudioBookType
-import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.*
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
@@ -36,14 +35,10 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
-import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerCancelled
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerFinished
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerRunning
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerStopped
-import org.librarysimplified.audiobook.api.PlayerSleepTimerType
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
-import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityErrorOccurred
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityIsBuffering
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityIsWaitingForChapter
@@ -111,6 +106,7 @@ class PlayerFragment : Fragment() {
   private var playerBufferingTask: ScheduledFuture<*>? = null
   private var playerPositionDragging: Boolean = false
 
+  private var currentPlaybackRate: PlayerPlaybackRate = PlayerPlaybackRate.NORMAL_TIME
   private var playerPositionCurrentSpine: PlayerSpineElementType? = null
   private var playerPositionCurrentOffset: Long = 0L
   private var playerEventSubscription: Subscription? = null
@@ -642,6 +638,7 @@ class PlayerFragment : Fragment() {
 
     UIThread.runOnUIThread(
       Runnable {
+        this.currentPlaybackRate = this.player.playbackRate
         this.playPauseButton.setImageResource(R.drawable.play_icon)
         this.playPauseButton.setOnClickListener { this.onPressedPlay() }
         this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_play)
@@ -689,6 +686,7 @@ class PlayerFragment : Fragment() {
 
     UIThread.runOnUIThread(
       Runnable {
+        this.player.playbackRate = this.currentPlaybackRate
         this.playPauseButton.setImageResource(R.drawable.pause_icon)
         this.playPauseButton.setOnClickListener { this.onPressedPause() }
         this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_pause)
