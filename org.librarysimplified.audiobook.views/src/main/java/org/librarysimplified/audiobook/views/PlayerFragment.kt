@@ -619,6 +619,7 @@ class PlayerFragment : Fragment() {
   private fun onPlayerEventPlaybackRateChanged(event: PlayerEventPlaybackRateChanged) {
     UIThread.runOnUIThread(
       Runnable {
+        this.currentPlaybackRate = event.rate
         this.menuPlaybackRateText.text = PlayerPlaybackRateAdapter.textOfRate(event.rate)
         this.menuPlaybackRate.actionView.contentDescription = this.playbackRateContentDescription()
       }
