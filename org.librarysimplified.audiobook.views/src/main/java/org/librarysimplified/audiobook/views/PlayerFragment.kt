@@ -140,7 +140,7 @@ class PlayerFragment : Fragment() {
 
     this.parameters =
       this.arguments!!.getSerializable(parametersKey)
-      as PlayerFragmentParameters
+        as PlayerFragmentParameters
     this.timeStrings =
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
   }
@@ -198,10 +198,12 @@ class PlayerFragment : Fragment() {
 
     UIThread.runOnUIThread(
       Runnable {
-        this.menuSleepText.text = ""
-        this.menuSleep.actionView.contentDescription = this.sleepTimerContentDescriptionSetUp()
-        this.menuSleepText.visibility = INVISIBLE
-        this.menuSleepEndOfChapter.visibility = INVISIBLE
+        safelyPerformOperations {
+          this.menuSleepText.text = ""
+          this.menuSleep.actionView.contentDescription = this.sleepTimerContentDescriptionSetUp()
+          this.menuSleepText.visibility = INVISIBLE
+          this.menuSleepEndOfChapter.visibility = INVISIBLE
+        }
       }
     )
   }
@@ -209,10 +211,12 @@ class PlayerFragment : Fragment() {
   private fun onPlayerSleepTimerEventCancelled() {
     UIThread.runOnUIThread(
       Runnable {
-        this.menuSleepText.text = ""
-        this.menuSleep.actionView.contentDescription = this.sleepTimerContentDescriptionSetUp()
-        this.menuSleepText.visibility = INVISIBLE
-        this.menuSleepEndOfChapter.visibility = INVISIBLE
+        safelyPerformOperations {
+          this.menuSleepText.text = ""
+          this.menuSleep.actionView.contentDescription = this.sleepTimerContentDescriptionSetUp()
+          this.menuSleepText.visibility = INVISIBLE
+          this.menuSleepEndOfChapter.visibility = INVISIBLE
+        }
       }
     )
   }
@@ -220,21 +224,23 @@ class PlayerFragment : Fragment() {
   private fun onPlayerSleepTimerEventRunning(event: PlayerSleepTimerRunning) {
     UIThread.runOnUIThread(
       Runnable {
-        val remaining = event.remaining
-        if (remaining != null) {
-          this.menuSleep.actionView.contentDescription =
-            this.sleepTimerContentDescriptionForTime(event.paused, remaining)
-          this.menuSleepText.text =
-            PlayerTimeStrings.minuteSecondTextFromDuration(remaining)
-          this.menuSleepEndOfChapter.visibility = INVISIBLE
-        } else {
-          this.menuSleep.actionView.contentDescription =
-            this.sleepTimerContentDescriptionEndOfChapter()
-          this.menuSleepText.text = ""
-          this.menuSleepEndOfChapter.visibility = VISIBLE
-        }
+        safelyPerformOperations {
+          val remaining = event.remaining
+          if (remaining != null) {
+            this.menuSleep.actionView.contentDescription =
+              this.sleepTimerContentDescriptionForTime(event.paused, remaining)
+            this.menuSleepText.text =
+              PlayerTimeStrings.minuteSecondTextFromDuration(remaining)
+            this.menuSleepEndOfChapter.visibility = INVISIBLE
+          } else {
+            this.menuSleep.actionView.contentDescription =
+              this.sleepTimerContentDescriptionEndOfChapter()
+            this.menuSleepText.text = ""
+            this.menuSleepEndOfChapter.visibility = VISIBLE
+          }
 
-        this.menuSleepText.visibility = VISIBLE
+          this.menuSleepText.visibility = VISIBLE
+        }
       }
     )
   }
@@ -282,17 +288,24 @@ class PlayerFragment : Fragment() {
     builder.append(". ")
     builder.append(this.resources.getString(R.string.audiobook_accessibility_playback_speed_currently))
     builder.append(" ")
-    builder.append(PlayerPlaybackRateAdapter.contentDescriptionOfRate(this.resources, this.player.playbackRate))
+    builder.append(
+      PlayerPlaybackRateAdapter.contentDescriptionOfRate(
+        this.resources,
+        this.player.playbackRate
+      )
+    )
     return builder.toString()
   }
 
   private fun onPlayerSleepTimerEventStopped() {
     UIThread.runOnUIThread(
       Runnable {
-        this.menuSleepText.text = ""
-        this.menuSleepText.contentDescription = this.sleepTimerContentDescriptionSetUp()
-        this.menuSleepText.visibility = INVISIBLE
-        this.menuSleepEndOfChapter.visibility = INVISIBLE
+        safelyPerformOperations {
+          this.menuSleepText.text = ""
+          this.menuSleepText.contentDescription = this.sleepTimerContentDescriptionSetUp()
+          this.menuSleepText.visibility = INVISIBLE
+          this.menuSleepEndOfChapter.visibility = INVISIBLE
+        }
       }
     )
   }
@@ -490,7 +503,7 @@ class PlayerFragment : Fragment() {
     if (spine != null) {
       val target = spine.position.copy(
         offsetMilliseconds =
-          TimeUnit.MILLISECONDS.convert(this.playerPosition.progress.toLong(), TimeUnit.SECONDS)
+        TimeUnit.MILLISECONDS.convert(this.playerPosition.progress.toLong(), TimeUnit.SECONDS)
       )
       if (this.player.isPlaying) {
         this.player.playAtLocation(target)
@@ -552,24 +565,28 @@ class PlayerFragment : Fragment() {
 
   private fun onPlayerEventCreateBookmark() {
     UIThread.runOnUIThread {
-      this.playerBookmark.alpha = 0.5f
-      this.playerBookmark.animation =
-        AnimationUtils.loadAnimation(this.context, R.anim.zoom_fade)
+      safelyPerformOperations {
+        this.playerBookmark.alpha = 0.5f
+        this.playerBookmark.animation =
+          AnimationUtils.loadAnimation(this.context, R.anim.zoom_fade)
+      }
     }
   }
 
   private fun onPlayerEventError(event: PlayerEventError) {
     UIThread.runOnUIThread(
       Runnable {
-        val text = this.getString(R.string.audiobook_player_error, event.errorCode)
-        this.playerWaiting.setText(text)
-        this.playerWaiting.contentDescription = null
-        this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityErrorOccurred(text))
+        safelyPerformOperations {
+          val text = this.getString(R.string.audiobook_player_error, event.errorCode)
+          this.playerWaiting.setText(text)
+          this.playerWaiting.contentDescription = null
+          this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityErrorOccurred(text))
 
-        val element = event.spineElement
-        if (element != null) {
-          this.configureSpineElementText(element, isPlaying = false)
-          this.onEventUpdateTimeRelatedUI(element, event.offsetMilliseconds)
+          val element = event.spineElement
+          if (element != null) {
+            this.configureSpineElementText(element, isPlaying = false)
+            this.onEventUpdateTimeRelatedUI(element, event.offsetMilliseconds)
+          }
         }
       }
     )
@@ -578,14 +595,16 @@ class PlayerFragment : Fragment() {
   private fun onPlayerEventChapterWaiting(event: PlayerEventChapterWaiting) {
     UIThread.runOnUIThread(
       Runnable {
-        val text =
-          this.getString(R.string.audiobook_player_waiting, event.spineElement.index + 1)
-        this.playerWaiting.setText(text)
-        this.playerWaiting.contentDescription = null
-        this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityIsWaitingForChapter(text))
+        safelyPerformOperations {
+          val text =
+            this.getString(R.string.audiobook_player_waiting, event.spineElement.index + 1)
+          this.playerWaiting.setText(text)
+          this.playerWaiting.contentDescription = null
+          this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityIsWaitingForChapter(text))
 
-        this.configureSpineElementText(event.spineElement, isPlaying = false)
-        this.onEventUpdateTimeRelatedUI(event.spineElement, 0)
+          this.configureSpineElementText(event.spineElement, isPlaying = false)
+          this.onEventUpdateTimeRelatedUI(event.spineElement, 0)
+        }
       }
     )
   }
@@ -593,9 +612,11 @@ class PlayerFragment : Fragment() {
   private fun onPlayerEventPlaybackBuffering(event: PlayerEventPlaybackBuffering) {
     UIThread.runOnUIThread(
       Runnable {
-        this.onPlayerBufferingStarted()
-        this.configureSpineElementText(event.spineElement, isPlaying = false)
-        this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+        safelyPerformOperations {
+          this.onPlayerBufferingStarted()
+          this.configureSpineElementText(event.spineElement, isPlaying = false)
+          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+        }
       }
     )
   }
@@ -619,9 +640,12 @@ class PlayerFragment : Fragment() {
   private fun onPlayerEventPlaybackRateChanged(event: PlayerEventPlaybackRateChanged) {
     UIThread.runOnUIThread(
       Runnable {
-        this.currentPlaybackRate = event.rate
-        this.menuPlaybackRateText.text = PlayerPlaybackRateAdapter.textOfRate(event.rate)
-        this.menuPlaybackRate.actionView.contentDescription = this.playbackRateContentDescription()
+        safelyPerformOperations {
+          this.currentPlaybackRate = event.rate
+          this.menuPlaybackRateText.text = PlayerPlaybackRateAdapter.textOfRate(event.rate)
+          this.menuPlaybackRate.actionView.contentDescription =
+            this.playbackRateContentDescription()
+        }
       }
     )
   }
@@ -633,7 +657,8 @@ class PlayerFragment : Fragment() {
       Runnable {
         this.playPauseButton.setImageResource(R.drawable.play_icon)
         this.playPauseButton.setOnClickListener { this.onPressedPlay() }
-        this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_play)
+        this.playPauseButton.contentDescription =
+          this.getString(R.string.audiobook_accessibility_play)
         this.configureSpineElementText(event.spineElement, isPlaying = false)
         this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
       }
@@ -645,12 +670,15 @@ class PlayerFragment : Fragment() {
 
     UIThread.runOnUIThread(
       Runnable {
-        this.currentPlaybackRate = this.player.playbackRate
-        this.playPauseButton.setImageResource(R.drawable.play_icon)
-        this.playPauseButton.setOnClickListener { this.onPressedPlay() }
-        this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_play)
-        this.configureSpineElementText(event.spineElement, isPlaying = false)
-        this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+        safelyPerformOperations {
+          this.currentPlaybackRate = this.player.playbackRate
+          this.playPauseButton.setImageResource(R.drawable.play_icon)
+          this.playPauseButton.setOnClickListener { this.onPressedPlay() }
+          this.playPauseButton.contentDescription =
+            this.getString(R.string.audiobook_accessibility_play)
+          this.configureSpineElementText(event.spineElement, isPlaying = false)
+          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+        }
       }
     )
   }
@@ -673,17 +701,30 @@ class PlayerFragment : Fragment() {
     this.playerService.updatePlayerInfo(this.playerInfoModel)
   }
 
+  private fun safelyPerformOperations(operations: () -> Unit) {
+
+    // if the fragment is not attached anymore, we can't perform the operations. This may occur due
+    //to a racing condition
+    if (!this.isAdded) {
+      return
+    }
+
+    operations()
+  }
+
   private fun onPlayerEventPlaybackProgressUpdate(event: PlayerEventPlaybackProgressUpdate) {
     this.onPlayerBufferingStopped()
-
     UIThread.runOnUIThread(
       Runnable {
-        this.playPauseButton.setImageResource(R.drawable.pause_icon)
-        this.playPauseButton.setOnClickListener { this.onPressedPause() }
-        this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_pause)
-        this.playerWaiting.text = ""
-        this.playerWaiting.contentDescription = null
-        this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+        safelyPerformOperations {
+          this.playPauseButton.setImageResource(R.drawable.pause_icon)
+          this.playPauseButton.setOnClickListener { this.onPressedPause() }
+          this.playPauseButton.contentDescription =
+            this.getString(R.string.audiobook_accessibility_pause)
+          this.playerWaiting.text = ""
+          this.playerWaiting.contentDescription = null
+          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+        }
       }
     )
   }
@@ -693,14 +734,17 @@ class PlayerFragment : Fragment() {
 
     UIThread.runOnUIThread(
       Runnable {
-        this.player.playbackRate = this.currentPlaybackRate
-        this.playPauseButton.setImageResource(R.drawable.pause_icon)
-        this.playPauseButton.setOnClickListener { this.onPressedPause() }
-        this.playPauseButton.contentDescription = this.getString(R.string.audiobook_accessibility_pause)
-        this.configureSpineElementText(event.spineElement, isPlaying = true)
-        this.playerPosition.isEnabled = true
-        this.playerWaiting.text = ""
-        this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+        safelyPerformOperations {
+          this.player.playbackRate = this.currentPlaybackRate
+          this.playPauseButton.setImageResource(R.drawable.pause_icon)
+          this.playPauseButton.setOnClickListener { this.onPressedPause() }
+          this.playPauseButton.contentDescription =
+            this.getString(R.string.audiobook_accessibility_pause)
+          this.configureSpineElementText(event.spineElement, isPlaying = true)
+          this.playerPosition.isEnabled = true
+          this.playerWaiting.text = ""
+          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+        }
       }
     )
   }
@@ -774,8 +818,7 @@ class PlayerFragment : Fragment() {
     offsetMilliseconds: Long,
     duration: Duration?
   ): String {
-    return duration?.let {
-      time ->
+    return duration?.let { time ->
       this.playerTimeRemainingSpoken(offsetMilliseconds, time)
     } ?: ""
   }
@@ -848,10 +891,12 @@ class PlayerFragment : Fragment() {
   private fun onPlayerBufferingStarted() {
     UIThread.runOnUIThread(
       Runnable {
-        this.onPlayerBufferingStopTaskNow()
-        this.playerBufferingStillOngoing = true
-        this.playerBufferingTask =
-          this.executor.schedule({ this.onPlayerBufferingCheckNow() }, 2L, TimeUnit.SECONDS)
+        safelyPerformOperations {
+          this.onPlayerBufferingStopTaskNow()
+          this.playerBufferingStillOngoing = true
+          this.playerBufferingTask =
+            this.executor.schedule({ this.onPlayerBufferingCheckNow() }, 2L, TimeUnit.SECONDS)
+        }
       }
     )
   }
@@ -859,12 +904,19 @@ class PlayerFragment : Fragment() {
   private fun onPlayerBufferingCheckNow() {
     UIThread.runOnUIThread(
       Runnable {
-        if (this.playerBufferingStillOngoing) {
-          val accessibleMessage = this.getString(R.string.audiobook_accessibility_player_buffering)
-          this.playerWaiting.contentDescription = accessibleMessage
-          this.playerWaiting.setText(R.string.audiobook_player_buffering)
-          this.playerWaiting.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
-          this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityIsBuffering(accessibleMessage))
+        safelyPerformOperations {
+          if (this.playerBufferingStillOngoing) {
+            val accessibleMessage =
+              this.getString(R.string.audiobook_accessibility_player_buffering)
+            this.playerWaiting.contentDescription = accessibleMessage
+            this.playerWaiting.setText(R.string.audiobook_player_buffering)
+            this.playerWaiting.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
+            this.listener.onPlayerAccessibilityEvent(
+              PlayerAccessibilityIsBuffering(
+                accessibleMessage
+              )
+            )
+          }
         }
       }
     )
@@ -873,8 +925,10 @@ class PlayerFragment : Fragment() {
   private fun onPlayerBufferingStopped() {
     UIThread.runOnUIThread(
       Runnable {
-        this.onPlayerBufferingStopTaskNow()
-        this.playerBufferingStillOngoing = false
+        safelyPerformOperations {
+          this.onPlayerBufferingStopTaskNow()
+          this.playerBufferingStillOngoing = false
+        }
       }
     )
   }
