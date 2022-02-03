@@ -658,6 +658,7 @@ class PlayerFragment : Fragment() {
         this.playPauseButton.setImageResource(R.drawable.play_icon)
         this.playPauseButton.setOnClickListener { this.onPressedPlay() }
         this.playPauseButton.contentDescription =
+
           this.getString(R.string.audiobook_accessibility_play)
         this.configureSpineElementText(event.spineElement, isPlaying = false)
         this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
