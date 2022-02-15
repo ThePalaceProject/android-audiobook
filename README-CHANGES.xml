@@ -153,7 +153,7 @@
       <c:changes>
         <c:change date="2022-01-28T00:00:00+00:00" summary="Fixed audiobook playback rate incorrect behavior"/>
         <c:change date="2022-02-02T00:00:00+00:00" summary="Fixed crash when exiting an audiobook"/>
-        <c:change date="2022-02-15T16:01:32+00:00" summary="Added scale type to audiobook cover image"/>
+        <c:change date="2022-02-15T16:01:32+00:00" summary="Added dimension ratio to audiobook cover image"/>
       </c:changes>
     </c:release>
   </c:releases>
