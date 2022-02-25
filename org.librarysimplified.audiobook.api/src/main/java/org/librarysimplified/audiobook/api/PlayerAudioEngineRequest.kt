@@ -1,13 +1,14 @@
 package org.librarysimplified.audiobook.api
 
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.readium.r2.shared.publication.ContentProtection
+import java.io.File
 
 /**
  * A request for an audio engine.
  */
 
 data class PlayerAudioEngineRequest(
-
   /**
    * The book manifest.
    */
@@ -36,5 +37,18 @@ data class PlayerAudioEngineRequest(
    * allow for using a custom implementation).
    */
 
-  val downloadProvider: PlayerDownloadProviderType
+  val downloadProvider: PlayerDownloadProviderType,
+
+  /**
+   * The book file, if this is a packaged audio book that has been downloaded. This will be null
+   * for unpackaged audio books.
+   */
+
+  val file: File? = null,
+
+  /**
+   * Content protections available to unlock the audio book, if it is protected.
+   */
+
+  val contentProtections: List<ContentProtection>? = null
 )
