@@ -13,7 +13,7 @@ jobs:
         with:
           java-version: 11
       - name: Finish release
-        run: .ci/ci-release-finish.sh
+        run: .ci/ci-release-finish.sh --tag
       - name: Build
         env:
           MAVEN_CENTRAL_USERNAME:           ${{ secrets.MAVEN_CENTRAL_USERNAME }}
