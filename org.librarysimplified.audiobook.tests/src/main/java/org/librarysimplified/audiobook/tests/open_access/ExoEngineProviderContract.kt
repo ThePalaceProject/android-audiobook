@@ -135,6 +135,24 @@ abstract class ExoEngineProviderContract {
   }
 
   /**
+   * Test that the engine rejects the Best New Horror (LCP) book.
+   */
+
+  @Test
+  fun lcpManifest_isRejected() {
+    val manifest = this.parseManifest("bestnewhorror.audiobook-manifest.json")
+    val request = PlayerAudioEngineRequest(
+      manifest = manifest,
+      filter = { true },
+      downloadProvider = DishonestDownloadProvider(),
+      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+    )
+    val engine_provider = ExoEngineProvider()
+    val book_provider = engine_provider.tryRequest(request)
+    Assertions.assertNull(book_provider, "Engine must reject manifest")
+  }
+
+  /**
    * Test that the player does not support streaming.
    */
 
