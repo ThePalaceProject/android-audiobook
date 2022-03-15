@@ -26,7 +26,9 @@ class WebPubParserProvider : ManifestParserProviderType {
   private val contextTypes =
     setOf(
       "http://readium.org/webpub/default.jsonld",
-      "http://readium.org/webpub-manifest/context.jsonld"
+      "https://readium.org/webpub/default.jsonld",
+      "http://readium.org/webpub-manifest/context.jsonld",
+      "https://readium.org/webpub-manifest/context.jsonld",
     )
 
   private fun isRecognizedContextType(type: String): Boolean =

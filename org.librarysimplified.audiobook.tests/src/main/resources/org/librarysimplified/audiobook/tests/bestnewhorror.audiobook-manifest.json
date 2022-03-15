@@ -1,0 +1,160 @@
+{
+  "@context": "https://readium.org/webpub-manifest/context.jsonld",
+  "metadata": {
+    "@type": "http://schema.org/Audiobook",
+    "identifier": "urn:isbn:9780061552137",
+    "title": "Best New Horror",
+    "language": "en",
+    "modified": "2021-07-27T20:27:26Z",
+    "published": "2007-10-16T00:00:00Z",
+    "publisher": "Harper Collins US audio",
+    "author": "Joe Hill",
+    "duration": 3420
+  },
+  "links": [
+    {
+      "href": "manifest.json",
+      "type": "application/audiobook+json",
+      "rel": "self"
+    }
+  ],
+  "readingOrder": [
+    {
+      "href": "ee2176d6-c36f-4215-9365-b305514acd64.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9780061552137_001_MP3.mp3",
+      "duration": 487,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "75272c5c-28c0-4603-9f30-967167072575.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9780061552137_002_MP3.mp3",
+      "duration": 437,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "d9630648-ee40-40b6-93dc-0681e1dbfc5b.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9780061552137_003_MP3.mp3",
+      "duration": 364,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "cca56d65-bd7f-48ff-9606-3c2afae5b94f.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9780061552137_004_MP3.mp3",
+      "duration": 299,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "bcfc1bfa-c6f6-4bc4-a3bd-3bd489fb40c4.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9780061552137_005_MP3.mp3",
+      "duration": 668,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "a0ca6922-019f-4dc4-9103-2f78ae4e9bf4.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9780061552137_006_MP3.mp3",
+      "duration": 626,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "0079b4de-6bd1-43d5-a082-afa89134957c.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9780061552137_007_MP3.mp3",
+      "duration": 539,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "href": "ecf59153798b02a2163c674d153eb5c141ad3f.jpg",
+      "type": "image/jpeg",
+      "rel": "cover",
+      "height": 2400,
+      "width": 2187
+    }
+  ],
+  "toc": [
+    {
+      "href": "ee2176d6-c36f-4215-9365-b305514acd64.MP3.mp3#t=0",
+      "title": "Chapter 1"
+    },
+    {
+      "href": "75272c5c-28c0-4603-9f30-967167072575.MP3.mp3#t=0",
+      "title": "Chapter 2"
+    },
+    {
+      "href": "d9630648-ee40-40b6-93dc-0681e1dbfc5b.MP3.mp3#t=0",
+      "title": "Chapter 3"
+    },
+    {
+      "href": "cca56d65-bd7f-48ff-9606-3c2afae5b94f.MP3.mp3#t=0",
+      "title": "Chapter 4"
+    },
+    {
+      "href": "bcfc1bfa-c6f6-4bc4-a3bd-3bd489fb40c4.MP3.mp3#t=0",
+      "title": "Chapter 5"
+    },
+    {
+      "href": "a0ca6922-019f-4dc4-9103-2f78ae4e9bf4.MP3.mp3#t=0",
+      "title": "Chapter 6"
+    },
+    {
+      "href": "0079b4de-6bd1-43d5-a082-afa89134957c.MP3.mp3#t=0",
+      "title": "Chapter 7"
+    }
+  ]
+}
