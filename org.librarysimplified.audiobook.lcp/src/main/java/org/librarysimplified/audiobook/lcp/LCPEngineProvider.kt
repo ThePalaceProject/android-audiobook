@@ -58,17 +58,11 @@ class LCPEngineProvider(
       return null
     }
 
-    if (request.contentProtections == null || request.contentProtections!!.size == 0) {
-      this.log.debug("cannot support an LCP audio book without content protections")
-
-      return null
-    }
-
     return LCPAudioBookProvider(
       engineExecutor = this.engineExecutor,
       manifest = manifest,
       file = request.file!!,
-      contentProtections = request.contentProtections!!
+      contentProtections = request.contentProtections ?: listOf()
     )
   }
 

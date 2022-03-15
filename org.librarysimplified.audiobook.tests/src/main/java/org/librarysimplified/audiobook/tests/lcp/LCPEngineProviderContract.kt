@@ -76,46 +76,6 @@ abstract class LCPEngineProviderContract {
   }
 
   /**
-   * Test that the engine rejects a request without content protections.
-   */
-
-  @Test
-  fun requestWithNullContentProtections_isRejected() {
-    val manifest = this.parseManifest("bestnewhorror.audiobook-manifest.json")
-    val request = PlayerAudioEngineRequest(
-      manifest = manifest,
-      filter = { true },
-      downloadProvider = DishonestDownloadProvider(),
-      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
-      file = Mockito.mock(File::class.java),
-      contentProtections = null
-    )
-    val engine_provider = LCPEngineProvider()
-    val book_provider = engine_provider.tryRequest(request)
-    Assertions.assertNull(book_provider, "Engine must reject request with null content protections")
-  }
-
-  /**
-   * Test that the engine rejects a request without content protections.
-   */
-
-  @Test
-  fun requestWithEmptyContentProtections_isRejected() {
-    val manifest = this.parseManifest("bestnewhorror.audiobook-manifest.json")
-    val request = PlayerAudioEngineRequest(
-      manifest = manifest,
-      filter = { true },
-      downloadProvider = DishonestDownloadProvider(),
-      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
-      file = Mockito.mock(File::class.java),
-      contentProtections = listOf()
-    )
-    val engine_provider = LCPEngineProvider()
-    val book_provider = engine_provider.tryRequest(request)
-    Assertions.assertNull(book_provider, "Engine must reject request with empty content protections")
-  }
-
-  /**
    * Test that the engine rejects the flatland (open access) book.
    */
 
