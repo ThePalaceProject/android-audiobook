@@ -825,7 +825,7 @@ class PlayerFragment : Fragment() {
 
   private fun spineElementText(spineElement: PlayerSpineElementType): String {
     val title = spineElement.title ?: this.getString(
-      R.string.audiobook_player_toc_chapter_n,
+      R.string.audiobook_player_toc_track_n,
       spineElement.index + 1
     )
 
@@ -857,7 +857,7 @@ class PlayerFragment : Fragment() {
     }
 
     val accessibilityTitle = element.title ?: this.getString(
-      R.string.audiobook_accessibility_toc_chapter_n,
+      R.string.audiobook_accessibility_toc_track_n,
       element.index + 1
     )
 

@@ -79,7 +79,7 @@ class PlayerTOCAdapter(
     val normalIndex = item.index + 1
 
     val title = item.title ?: this.context.getString(
-      R.string.audiobook_player_toc_chapter_n,
+      R.string.audiobook_player_toc_track_n,
       normalIndex
     )
 
