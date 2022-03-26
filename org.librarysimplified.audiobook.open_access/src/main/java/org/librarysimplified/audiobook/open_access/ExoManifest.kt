@@ -29,7 +29,7 @@ data class ExoManifest(
             manifest.metadata.title,
             manifest.metadata.identifier,
             manifest.readingOrder.mapIndexed { index, item ->
-              this.processSpineItem(index, item)
+              this.processSpineItem(index, item, manifest.toc?.getOrNull(index))
             }
           )
         )
@@ -43,11 +43,16 @@ data class ExoManifest(
 
     private fun processSpineItem(
       index: Int,
-      item: PlayerManifestLink
+      item: PlayerManifestLink,
+      tocElement: PlayerManifestLink?
     ): ExoManifestSpineItem {
 
-      val title =
+      val title = if (tocElement != null) {
+        tocElement.title
+      } else {
         item.title
+      }
+
       val type =
         item.type ?: this.OCTET_STREAM
       val uri =

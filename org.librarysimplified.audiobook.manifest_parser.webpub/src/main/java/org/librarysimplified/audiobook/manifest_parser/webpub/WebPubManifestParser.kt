@@ -25,6 +25,7 @@ class WebPubManifestParser(
 
   private lateinit var metadata: PlayerManifestMetadata
   private val spineItems = mutableListOf<PlayerManifestLink>()
+  private val tocElements = mutableListOf<PlayerManifestLink>()
   private val links = mutableListOf<PlayerManifestLink>()
   private val extensionValues = mutableListOf<PlayerManifestExtensionValueType>()
   private val errors = mutableListOf<FRParseError>()
@@ -37,7 +38,8 @@ class WebPubManifestParser(
           readingOrder = this.spineItems.toList(),
           metadata = this.metadata,
           links = this.links.toList(),
-          extensions = this.extensionValues.toList()
+          extensions = this.extensionValues.toList(),
+          toc = this.tocElements.toList()
         )
       )
     }
@@ -70,6 +72,22 @@ class WebPubManifestParser(
             },
             receiver = { spineItems ->
               this.spineItems.addAll(spineItems)
+            }
+          )
+        },
+        isOptional = true
+      )
+
+    val tocSchema =
+      FRParserObjectFieldSchema(
+        name = "toc",
+        parser = {
+          FRValueParsers.forArrayMonomorphic(
+            forEach = {
+              WebPubLinkParser()
+            },
+            receiver = { spineItems ->
+              this.tocElements.addAll(spineItems)
             }
           )
         },
@@ -113,7 +131,8 @@ class WebPubManifestParser(
       linksSchema = linksSchema,
       metadataSchema = metadataSchema,
       readingOrderSchema = readingOrderSchema,
-      spineSchema = spineSchema
+      spineSchema = spineSchema,
+      tocSchema = tocSchema
     )
   }
 
@@ -122,6 +141,7 @@ class WebPubManifestParser(
     readingOrderSchema: FRParserObjectFieldSchema<List<PlayerManifestLink>>,
     spineSchema: FRParserObjectFieldSchema<List<PlayerManifestLink>>,
     linksSchema: FRParserObjectFieldSchema<List<PlayerManifestLink>>,
+    tocSchema: FRParserObjectFieldSchema<List<PlayerManifestLink>>,
     context: FRParserContextType
   ): FRParserObjectSchema {
 
@@ -135,6 +155,7 @@ class WebPubManifestParser(
     schemas[metadataSchema.name] = metadataSchema
     schemas[readingOrderSchema.name] = readingOrderSchema
     schemas[spineSchema.name] = spineSchema
+    schemas[tocSchema.name] = tocSchema
 
     WebPubParserExtensions.addToSchemas(
       context = context,
