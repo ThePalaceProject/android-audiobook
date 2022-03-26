@@ -323,31 +323,31 @@ abstract class ExoManifestContract {
     )
 
     Assertions.assertEquals(
-      "9780061552137_001_MP3.mp3",
+      manifest.toc?.get(0)?.title,
       exo.spineItems[0].title
     )
     Assertions.assertEquals(
-      "9780061552137_002_MP3.mp3",
+      manifest.toc?.get(1)?.title,
       exo.spineItems[1].title
     )
     Assertions.assertEquals(
-      "9780061552137_003_MP3.mp3",
+      manifest.toc?.get(2)?.title,
       exo.spineItems[2].title
     )
     Assertions.assertEquals(
-      "9780061552137_004_MP3.mp3",
+      manifest.toc?.get(3)?.title,
       exo.spineItems[3].title
     )
     Assertions.assertEquals(
-      "9780061552137_005_MP3.mp3",
+      manifest.toc?.get(4)?.title,
       exo.spineItems[4].title
     )
     Assertions.assertEquals(
-      "9780061552137_006_MP3.mp3",
+      manifest.toc?.get(5)?.title,
       exo.spineItems[5].title
     )
     Assertions.assertEquals(
-      "9780061552137_007_MP3.mp3",
+      manifest.toc?.get(6)?.title,
       exo.spineItems[6].title
     )
 
