@@ -9,6 +9,8 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.open_access.ExoManifest
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.audiobook.tests.R
+import org.mockito.Mockito
 import org.slf4j.Logger
 import java.net.URI
 
@@ -287,6 +289,10 @@ abstract class ExoManifestContract {
 
   @Test
   fun testOkBestNewHorror() {
+    val context = context()
+    Mockito.`when`(context.getString(R.string.player_manifest_audiobook_default_track_n, 1))
+      .thenReturn("Track 1")
+
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:flatland"),
@@ -302,7 +308,7 @@ abstract class ExoManifestContract {
 
     val manifest = success.result
 
-    val exo_result = ExoManifest.transform(context(), manifest)
+    val exo_result = ExoManifest.transform(context, manifest)
     this.log().debug("exo_result: {}", exo_result)
     assertTrue(exo_result is PlayerResult.Success, "Result is success")
 

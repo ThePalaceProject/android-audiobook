@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.tests.device
 
+import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import org.junit.runner.RunWith
@@ -12,5 +13,9 @@ import org.slf4j.LoggerFactory
 class ExoManifestTest : ExoManifestContract() {
   override fun log(): Logger {
     return LoggerFactory.getLogger(ExoManifestTest::class.java)
+  }
+
+  override fun context(): Context {
+    return this.instrumentationContext!!
   }
 }
