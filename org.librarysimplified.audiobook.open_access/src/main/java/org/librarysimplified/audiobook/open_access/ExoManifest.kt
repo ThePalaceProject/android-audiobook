@@ -1,9 +1,11 @@
 package org.librarysimplified.audiobook.open_access
 
+import android.content.Context
 import one.irradia.mime.api.MIMEType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import org.librarysimplified.audiobook.manifest.api.R
 import java.net.URI
 
 /**
@@ -11,6 +13,7 @@ import java.net.URI
  */
 
 data class ExoManifest(
+  val context: Context,
   val title: String,
   val id: String,
   val spineItems: List<ExoManifestSpineItem>
@@ -22,14 +25,15 @@ data class ExoManifest(
      * Parse an ExoPlayer manifest from the given raw manifest.
      */
 
-    fun transform(manifest: PlayerManifest): PlayerResult<ExoManifest, Exception> {
+    fun transform(context: Context, manifest: PlayerManifest): PlayerResult<ExoManifest, Exception> {
       try {
         return PlayerResult.Success(
           ExoManifest(
+            context,
             manifest.metadata.title,
             manifest.metadata.identifier,
             manifest.readingOrder.mapIndexed { index, item ->
-              this.processSpineItem(index, item, manifest.toc?.getOrNull(index))
+              this.processSpineItem(context, index, item, manifest.toc?.getOrNull(index))
             }
           )
         )
@@ -42,15 +46,18 @@ data class ExoManifest(
       MIMEType("application", "octet-stream", mapOf())
 
     private fun processSpineItem(
+      context: Context,
       index: Int,
       item: PlayerManifestLink,
       tocElement: PlayerManifestLink?
     ): ExoManifestSpineItem {
 
-      val title = if (tocElement != null) {
-        tocElement.title
-      } else {
+      val title = if (!tocElement?.title.isNullOrBlank()) {
+        tocElement?.title
+      } else if (!item.title.isNullOrBlank()) {
         item.title
+      } else {
+        context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1)
       }
 
       val type =

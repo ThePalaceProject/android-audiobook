@@ -22,7 +22,7 @@
     {
       "href": "ee2176d6-c36f-4215-9365-b305514acd64.MP3.mp3",
       "type": "audio/mpeg",
-      "title": "9780061552137_001_MP3.mp3",
+      "title": null,
       "duration": 487,
       "bitrate": 192,
       "properties": {
@@ -106,7 +106,7 @@
     {
       "href": "0079b4de-6bd1-43d5-a082-afa89134957c.MP3.mp3",
       "type": "audio/mpeg",
-      "title": "9780061552137_007_MP3.mp3",
+      "title": "null",
       "duration": 539,
       "bitrate": 192,
       "properties": {
@@ -130,7 +130,7 @@
   "toc": [
     {
       "href": "ee2176d6-c36f-4215-9365-b305514acd64.MP3.mp3#t=0",
-      "title": "Chapter 1"
+      "title": null
     },
     {
       "href": "75272c5c-28c0-4603-9f30-967167072575.MP3.mp3#t=0",

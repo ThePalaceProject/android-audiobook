@@ -87,7 +87,7 @@ class ExoAudioBook private constructor(
     manifest: PlayerManifest
   ) {
     this.logger.debug("replacing manifest")
-    return when (val result = ExoManifest.transform(manifest)) {
+    return when (val result = ExoManifest.transform(context, manifest)) {
       is PlayerResult.Success ->
         this.replaceManifestWith(result.result)
       is PlayerResult.Failure ->

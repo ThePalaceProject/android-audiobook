@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.tests.open_access
 
+import android.content.Context
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -19,6 +20,8 @@ abstract class ExoManifestContract {
 
   abstract fun log(): Logger
 
+  abstract fun context(): Context
+
   @Test
   fun testOkFlatlandGardeur() {
     val result =
@@ -36,7 +39,7 @@ abstract class ExoManifestContract {
 
     val manifest = success.result
 
-    val exo_result = ExoManifest.transform(manifest)
+    val exo_result = ExoManifest.transform(context(), manifest)
     this.log().debug("exo_result: {}", exo_result)
     assertTrue(exo_result is PlayerResult.Success, "Result is success")
 
@@ -299,7 +302,7 @@ abstract class ExoManifestContract {
 
     val manifest = success.result
 
-    val exo_result = ExoManifest.transform(manifest)
+    val exo_result = ExoManifest.transform(context(), manifest)
     this.log().debug("exo_result: {}", exo_result)
     assertTrue(exo_result is PlayerResult.Success, "Result is success")
 
@@ -323,7 +326,7 @@ abstract class ExoManifestContract {
     )
 
     Assertions.assertEquals(
-      manifest.toc?.get(0)?.title,
+      "Track 1",
       exo.spineItems[0].title
     )
     Assertions.assertEquals(
