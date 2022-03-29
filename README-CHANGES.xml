@@ -156,11 +156,15 @@
         <c:change date="2022-02-15T00:00:00+00:00" summary="Added dimension ratio to audiobook cover image"/>
       </c:changes>
     </c:release>
-    <c:release date="2022-03-26T10:47:46+00:00" is-open="true" ticket-system="org.nypl.jira" version="6.10.2">
+    <c:release date="2022-03-29T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.11.0">
       <c:changes>
         <c:change date="2022-03-13T00:00:00+00:00" summary="Added support for LCP-protected audio books."/>
         <c:change date="2022-03-22T00:00:00+00:00" summary="Changed displaying title for audiobook chapters with no or null title"/>
-        <c:change date="2022-03-26T10:47:46+00:00" summary="Added support to audiobook titles based on the table of contents"/>
+      </c:changes>
+    </c:release>
+    <c:release date="2022-03-29T17:14:43+00:00" is-open="true" ticket-system="org.nypl.jira" version="6.11.1">
+      <c:changes>
+        <c:change date="2022-03-29T17:47:46+00:00" summary="Added support to audiobook titles based on the table of contents"/>
       </c:changes>
     </c:release>
   </c:releases>
