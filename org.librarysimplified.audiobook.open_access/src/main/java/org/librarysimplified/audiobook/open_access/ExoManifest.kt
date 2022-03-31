@@ -28,7 +28,7 @@ data class ExoManifest(
     fun transform(context: Context, manifest: PlayerManifest): PlayerResult<ExoManifest, Exception> {
       try {
 
-        val spineItems = if (manifest.toc != null) {
+        val spineItems = if (!manifest.toc.isNullOrEmpty()) {
           val items = arrayListOf<PlayerManifestLink>()
           manifest.toc?.forEach { tocElement ->
             if (!tocElement.children.isNullOrEmpty()) {
