@@ -16,7 +16,7 @@ sealed class OPAManifestURI {
 
   data class Direct(
     val targetURI: URI,
-    val scope: String
+    val scope: String? = null,
   ) : OPAManifestURI()
 
   /**
