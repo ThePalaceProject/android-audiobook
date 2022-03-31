@@ -34,6 +34,7 @@ class WebPubLinkParser(
   private var isTemplated: Boolean = false
   private val extras: MutableMap<String, PlayerManifestScalar> = mutableMapOf()
   private var properties: PlayerManifestLinkProperties = PlayerManifestLinkProperties()
+  private var children = mutableListOf<PlayerManifestLink>()
   private var title: String? = null
   private var type: MIMEType? = null
   private var width: BigInteger? = null
@@ -135,6 +136,21 @@ class WebPubLinkParser(
         isOptional = true
       )
 
+    val childrenSchema =
+      FRParserObjectFieldSchema(
+        name = "children",
+        parser = {
+          FRValueParsers.forArrayOrSingle(
+            {
+              WebPubLinkParser { _, children ->
+                this.children.add(children)
+              }
+            }
+          )
+        },
+        isOptional = true
+      )
+
     val propertiesSchema =
       FRParserObjectFieldSchema(
         name = "properties",
@@ -174,6 +190,7 @@ class WebPubLinkParser(
       fields = listOf(
         alternatesSchema,
         bitrateSchema,
+        childrenSchema,
         durationSchema,
         heightSchema,
         hrefSchema,
@@ -203,6 +220,7 @@ class WebPubLinkParser(
         PlayerManifestLink.LinkTemplated(
           alternates = this.alternates.toList(),
           bitrate = this.bitrate,
+          children = this.children,
           duration = this.duration,
           height = this.height?.toInt(),
           href = this.href ?: "",
@@ -219,6 +237,7 @@ class WebPubLinkParser(
           PlayerManifestLink.LinkBasic(
             alternates = this.alternates.toList(),
             bitrate = this.bitrate,
+            children = this.children,
             duration = this.duration,
             height = this.height?.toInt(),
             href = this.href?.let { URI(it) },

@@ -27,13 +27,27 @@ data class ExoManifest(
 
     fun transform(context: Context, manifest: PlayerManifest): PlayerResult<ExoManifest, Exception> {
       try {
+
+        val spineItems = if (manifest.toc != null) {
+          val items = arrayListOf<PlayerManifestLink>()
+          manifest.toc?.forEach { tocElement ->
+            if (!tocElement.children.isNullOrEmpty()) {
+              items.addAll(tocElement.children.orEmpty())
+            } else {
+              items.add(tocElement)
+            }
+          }
+          items
+        } else {
+          manifest.readingOrder
+        }
         return PlayerResult.Success(
           ExoManifest(
             context,
             manifest.metadata.title,
             manifest.metadata.identifier,
-            manifest.readingOrder.mapIndexed { index, item ->
-              this.processSpineItem(context, index, item, manifest.toc?.getOrNull(index))
+            spineItems.mapIndexed { index, item ->
+              this.processSpineItem(context, index, item)
             }
           )
         )
@@ -48,13 +62,10 @@ data class ExoManifest(
     private fun processSpineItem(
       context: Context,
       index: Int,
-      item: PlayerManifestLink,
-      tocElement: PlayerManifestLink?
+      item: PlayerManifestLink
     ): ExoManifestSpineItem {
 
-      val title = if (!tocElement?.title.isNullOrBlank()) {
-        tocElement?.title
-      } else if (!item.title.isNullOrBlank()) {
+      val title = if (!item.title.isNullOrBlank()) {
         item.title
       } else {
         context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1)

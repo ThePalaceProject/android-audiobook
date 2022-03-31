@@ -535,6 +535,147 @@ abstract class ExoManifestContract {
     )
   }
 
+  @Test
+  fun testOkFlatlandTOC() {
+
+    val result =
+      ManifestParsers.parse(
+        uri = URI.create("urn:flatland"),
+        streams = resource("flatland_toc.audiobook-manifest.json"),
+        extensions = listOf()
+      )
+
+    this.log().debug("result: {}", result)
+    assertTrue(result is ParseResult.Success, "Result is success")
+
+    val success: ParseResult.Success<PlayerManifest> =
+      result as ParseResult.Success<PlayerManifest>
+
+    val manifest = success.result
+
+    val exo_result = ExoManifest.transform(context(), manifest)
+    this.log().debug("exo_result: {}", exo_result)
+    assertTrue(exo_result is PlayerResult.Success, "Result is success")
+
+    val exo_success: PlayerResult.Success<ExoManifest, Exception> =
+      exo_result as PlayerResult.Success<ExoManifest, Exception>
+
+    val exo = exo_success.result
+
+    Assertions.assertEquals(
+      "Flatland",
+      exo.title
+    )
+    Assertions.assertEquals(
+      "https://librivox.org/flatland-a-romance-of-many-dimensions-by-edwin-abbott-abbott/",
+      exo.id
+    )
+
+    Assertions.assertNotEquals(
+      manifest.readingOrder.size,
+      exo.spineItems.size
+    )
+
+    Assertions.assertEquals(
+      22,
+      exo.spineItems.size
+    )
+
+    val titles = listOf(
+      "Section 1 - Of the Nature of Flatland",
+      "Section 2 - Of the Climate and Houses in Flatland",
+      "Section 3 - Concerning the Inhabitants of Flatland",
+      "Section 4 - Concerning the Women",
+      "Section 5 - Of our Methods of Recognizing one another",
+      "Section 6 - Of Recognition by Sight",
+      "Section 7 - Concerning Irregular Figures",
+      "Section 8 - Of the Ancient Practice of Painting",
+      "Section 9 - Of the Universal Colour Bill",
+      "Section 10 - Of the Suppression of the Chromatic Sedition",
+      "Section 11 - Concerning our Priests",
+      "Section 12 - Of the Doctrine of our Priests",
+      "Section 13 - How I had a Vision of Lineland",
+      "Section 14 - How I vainly tried to explain the nature of Flatland",
+      "Section 15 - Concerning a Stranger from Spaceland",
+      "Section 16 - How the Stranger vainly endeavoured to reveal to me in words the mysteries of Spaceland",
+      "Section 17 - How the Sphere, having in vain tried words, resorted to deeds",
+      "Section 18 - How I came to Spaceland, and what I saw there",
+      "Section 19 - How, though the Sphere shewed me other mysteries of Spaceland, I still desire more; and what came of it",
+      "Section 20 - How the Sphere encouraged me in a Vision",
+      "Section 21 - How I tried to teach the Theory of Three Dimensions to my Grandson, and with what success",
+      "Section 22 - How I then tried to diffuse the Theory of Three Dimensions by other means, and of the result"
+    )
+
+    titles.forEachIndexed { index, title ->
+      Assertions.assertEquals(title, exo.spineItems[index].title)
+    }
+//    Assertions.assertEquals(
+//      "0",
+//      exo.spineItems[2].part.toString()
+//    )
+//    Assertions.assertEquals(
+//      "0",
+//      exo.spineItems[3].part.toString()
+//    )
+//    Assertions.assertEquals(
+//      "0",
+//      exo.spineItems[4].part.toString()
+//    )
+//    Assertions.assertEquals(
+//      "0",
+//      exo.spineItems[5].part.toString()
+//    )
+//    Assertions.assertEquals(
+//      "0",
+//      exo.spineItems[6].part.toString()
+//    )
+//    Assertions.assertEquals(
+//      "0",
+//      exo.spineItems[7].part.toString()
+//    )
+//    Assertions.assertEquals(
+//      "0",
+//      exo.spineItems[8].part.toString()
+//    )
+//
+//    Assertions.assertEquals(
+//      "0",
+//      exo.spineItems[0].chapter.toString()
+//    )
+//    Assertions.assertEquals(
+//      "1",
+//      exo.spineItems[1].chapter.toString()
+//    )
+//    Assertions.assertEquals(
+//      "2",
+//      exo.spineItems[2].chapter.toString()
+//    )
+//    Assertions.assertEquals(
+//      "3",
+//      exo.spineItems[3].chapter.toString()
+//    )
+//    Assertions.assertEquals(
+//      "4",
+//      exo.spineItems[4].chapter.toString()
+//    )
+//    Assertions.assertEquals(
+//      "5",
+//      exo.spineItems[5].chapter.toString()
+//    )
+//    Assertions.assertEquals(
+//      "6",
+//      exo.spineItems[6].chapter.toString()
+//    )
+//    Assertions.assertEquals(
+//      "7",
+//      exo.spineItems[7].chapter.toString()
+//    )
+//    Assertions.assertEquals(
+//      "8",
+//      exo.spineItems[8].chapter.toString()
+//    )
+  }
+
   private fun resource(name: String): ByteArray {
     val path = "/org/librarysimplified/audiobook/tests/" + name
     return ExoManifestContract::class.java.getResourceAsStream(path)?.readBytes()
