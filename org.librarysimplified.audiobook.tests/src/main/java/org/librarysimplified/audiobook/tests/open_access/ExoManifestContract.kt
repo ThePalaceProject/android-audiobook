@@ -574,7 +574,6 @@ abstract class ExoManifestContract {
     )
 
     exo.spineItems.forEachIndexed { index, spineItem ->
-
       Assertions.assertEquals(
         titles[index],
         spineItem.title
