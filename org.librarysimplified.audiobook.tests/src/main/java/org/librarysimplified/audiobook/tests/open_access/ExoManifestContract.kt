@@ -360,34 +360,32 @@ abstract class ExoManifestContract {
       exo.spineItems[6].title
     )
 
-    Assertions.assertEquals(
-      "audio/mpeg",
-      exo.spineItems[0].type.fullType
-    )
-    Assertions.assertEquals(
-      "audio/mpeg",
-      exo.spineItems[1].type.fullType
-    )
-    Assertions.assertEquals(
-      "audio/mpeg",
-      exo.spineItems[2].type.fullType
-    )
-    Assertions.assertEquals(
-      "audio/mpeg",
-      exo.spineItems[3].type.fullType
-    )
-    Assertions.assertEquals(
-      "audio/mpeg",
-      exo.spineItems[4].type.fullType
-    )
-    Assertions.assertEquals(
-      "audio/mpeg",
-      exo.spineItems[5].type.fullType
-    )
-    Assertions.assertEquals(
-      "audio/mpeg",
-      exo.spineItems[6].type.fullType
-    )
+    exo.spineItems.forEachIndexed { index, spineItem ->
+      Assertions.assertEquals(
+        "audio/mpeg",
+        spineItem.type.fullType
+      )
+
+      Assertions.assertEquals(
+        "0.0",
+        spineItem.offset.toString()
+      )
+
+      Assertions.assertEquals(
+        "0",
+        spineItem.part.toString()
+      )
+
+      Assertions.assertEquals(
+        index.toString(),
+        spineItem.chapter.toString()
+      )
+
+      Assertions.assertEquals(
+        "http://readium.org/2014/01/lcp",
+        spineItem.originalLink.properties.encrypted?.scheme
+      )
+    }
 
     Assertions.assertEquals(
       "487.0",
@@ -446,93 +444,6 @@ abstract class ExoManifestContract {
       "0079b4de-6bd1-43d5-a082-afa89134957c.MP3.mp3",
       exo.spineItems[6].uri.toString()
     )
-
-    Assertions.assertEquals(
-      "0",
-      exo.spineItems[0].part.toString()
-    )
-    Assertions.assertEquals(
-      "0",
-      exo.spineItems[1].part.toString()
-    )
-    Assertions.assertEquals(
-      "0",
-      exo.spineItems[2].part.toString()
-    )
-    Assertions.assertEquals(
-      "0",
-      exo.spineItems[3].part.toString()
-    )
-    Assertions.assertEquals(
-      "0",
-      exo.spineItems[4].part.toString()
-    )
-    Assertions.assertEquals(
-      "0",
-      exo.spineItems[5].part.toString()
-    )
-    Assertions.assertEquals(
-      "0",
-      exo.spineItems[6].part.toString()
-    )
-
-    Assertions.assertEquals(
-      "0",
-      exo.spineItems[0].chapter.toString()
-    )
-    Assertions.assertEquals(
-      "1",
-      exo.spineItems[1].chapter.toString()
-    )
-    Assertions.assertEquals(
-      "2",
-      exo.spineItems[2].chapter.toString()
-    )
-    Assertions.assertEquals(
-      "3",
-      exo.spineItems[3].chapter.toString()
-    )
-    Assertions.assertEquals(
-      "4",
-      exo.spineItems[4].chapter.toString()
-    )
-    Assertions.assertEquals(
-      "5",
-      exo.spineItems[5].chapter.toString()
-    )
-    Assertions.assertEquals(
-      "6",
-      exo.spineItems[6].chapter.toString()
-    )
-
-    Assertions.assertEquals(
-      "http://readium.org/2014/01/lcp",
-      exo.spineItems[0].originalLink.properties.encrypted?.scheme
-    )
-    Assertions.assertEquals(
-      "http://readium.org/2014/01/lcp",
-      exo.spineItems[1].originalLink.properties.encrypted?.scheme
-    )
-    Assertions.assertEquals(
-      "http://readium.org/2014/01/lcp",
-      exo.spineItems[2].originalLink.properties.encrypted?.scheme
-    )
-    Assertions.assertEquals(
-      "http://readium.org/2014/01/lcp",
-      exo.spineItems[3].originalLink.properties.encrypted?.scheme
-    )
-    Assertions.assertEquals(
-      "http://readium.org/2014/01/lcp",
-      exo.spineItems[4].originalLink.properties.encrypted?.scheme
-    )
-    Assertions.assertEquals(
-      "http://readium.org/2014/01/lcp",
-      exo.spineItems[5].originalLink.properties.encrypted?.scheme
-    )
-    Assertions.assertEquals(
-      "http://readium.org/2014/01/lcp",
-      exo.spineItems[6].originalLink.properties.encrypted?.scheme
-    )
   }
 
   @Test
@@ -577,11 +488,12 @@ abstract class ExoManifestContract {
     )
 
     Assertions.assertEquals(
-      22,
+      24,
       exo.spineItems.size
     )
 
     val titles = listOf(
+      "Part 1 - This World",
       "Section 1 - Of the Nature of Flatland",
       "Section 2 - Of the Climate and Houses in Flatland",
       "Section 3 - Concerning the Inhabitants of Flatland",
@@ -594,6 +506,7 @@ abstract class ExoManifestContract {
       "Section 10 - Of the Suppression of the Chromatic Sedition",
       "Section 11 - Concerning our Priests",
       "Section 12 - Of the Doctrine of our Priests",
+      "Part 2 - Other Worlds",
       "Section 13 - How I had a Vision of Lineland",
       "Section 14 - How I vainly tried to explain the nature of Flatland",
       "Section 15 - Concerning a Stranger from Spaceland",
@@ -606,8 +519,91 @@ abstract class ExoManifestContract {
       "Section 22 - How I then tried to diffuse the Theory of Three Dimensions by other means, and of the result"
     )
 
-    titles.forEachIndexed { index, title ->
-      Assertions.assertEquals(title, exo.spineItems[index].title)
+    val offsets = listOf(
+      71.0,
+      80.0,
+      415.0,
+      789.0,
+      18.0,
+      882.0,
+      17.0,
+      948.0,
+      17.0,
+      465.0,
+      1124.0,
+      17.0,
+      452.0,
+      17.0,
+      25.0,
+      802.0,
+      564.0,
+      564.0,
+      1728.0,
+      16.0,
+      981.0,
+      2098.0,
+      18.0,
+      455.0
+    )
+
+    val durations = listOf(
+      9.0,
+      335.0,
+      374.0,
+      582.0,
+      864.0,
+      787.0,
+      931.0,
+      558.0,
+      448.0,
+      659.0,
+      674.0,
+      435.0,
+      773.0,
+      8.0,
+      777.0,
+      857.0,
+      0.0,
+      1164.0,
+      358.0,
+      965.0,
+      1117.0,
+      564.0,
+      437.0,
+      722.0
+    )
+
+    exo.spineItems.forEachIndexed { index, spineItem ->
+
+      Assertions.assertEquals(
+        titles[index],
+        spineItem.title
+      )
+
+      Assertions.assertEquals(
+        offsets[index],
+        spineItem.offset
+      )
+
+      Assertions.assertEquals(
+        durations[index],
+        spineItem.duration
+      )
+
+      Assertions.assertEquals(
+        "audio/mpeg",
+        spineItem.type.fullType
+      )
+
+      Assertions.assertEquals(
+        "0",
+        spineItem.part.toString()
+      )
+
+      Assertions.assertEquals(
+        index.toString(),
+        spineItem.chapter.toString()
+      )
     }
   }
 
