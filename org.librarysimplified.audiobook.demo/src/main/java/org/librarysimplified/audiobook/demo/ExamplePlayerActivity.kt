@@ -540,6 +540,8 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     this.player.movePlayheadToLocation(lastPlayed)
     this.playerEvents = this.player.events.subscribe(this::onPlayerEvent)
 
+    this.startAllPartsDownloading()
+
     /*
      * Create and load the main player fragment into the holder view declared in the activity.
      */
@@ -554,6 +556,10 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
           .commit()
       }
     )
+  }
+
+  private fun startAllPartsDownloading() {
+    this.book.wholeBookDownloadTask.fetch()
   }
 
   /**
