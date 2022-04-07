@@ -14,6 +14,12 @@
   </Preset>
 
   <Preset
+      name="Flatland TOC"
+      location="https://raw.githubusercontent.com/readium/webpub-manifest/master/examples/Flatland/manifest.json">
+    <AuthenticationNone />
+  </Preset>
+
+  <Preset
     name="Archive.org (Tom Sawyer)"
     location="https://api.archivelab.org/books/tom_sawyer_librivox/opds_audio_manifest">
     <AuthenticationNone />
