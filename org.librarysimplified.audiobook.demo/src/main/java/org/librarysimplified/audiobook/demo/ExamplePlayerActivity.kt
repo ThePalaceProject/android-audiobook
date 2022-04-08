@@ -649,7 +649,8 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
 
         this.supportFragmentManager
           .beginTransaction()
-          .replace(R.id.example_player_fragment_holder, fragment, "PLAYER_TOC")
+          .hide(this.playerFragment)
+          .add(R.id.example_player_fragment_holder, fragment, "PLAYER_TOC")
           .addToBackStack(null)
           .commit()
       }

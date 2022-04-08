@@ -118,20 +118,17 @@ data class ExoManifest(
                 wholeDuration.toInt() - tocElementOffset
               }
 
-              // fallback
               else -> {
-                tocElementOffset
+                null
               }
             }
 
           }
           wholeDuration != -1.0 -> {
             wholeDuration.toInt() - tocElementOffset
-
-            // fallback
           }
           else -> {
-            tocElementOffset
+            null
           }
         }
 
