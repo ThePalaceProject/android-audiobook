@@ -70,6 +70,11 @@ sealed class PlayerManifestLink {
   abstract val alternates: List<PlayerManifestLink>
 
   /**
+   * Children of the player manifest element.
+   */
+  abstract val children: List<PlayerManifestLink>?
+
+  /**
    * `true` if the link may expire.
    */
 
@@ -81,6 +86,7 @@ sealed class PlayerManifestLink {
 
   data class LinkBasic(
     val href: URI?,
+    override val children: List<PlayerManifestLink>? = null,
     override val type: MIMEType? = null,
     override val relation: List<String> = listOf(),
     override val title: String? = null,
@@ -102,6 +108,7 @@ sealed class PlayerManifestLink {
 
   data class LinkTemplated(
     val href: String,
+    override val children: List<PlayerManifestLink>? = null,
     override val type: MIMEType? = null,
     override val relation: List<String> = listOf(),
     override val title: String? = null,

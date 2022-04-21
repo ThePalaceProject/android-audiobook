@@ -28,7 +28,7 @@ class ExoAudioBookProvider(
     extensions: List<PlayerExtensionType>
   ): PlayerResult<PlayerAudioBookType, Exception> {
     try {
-      return when (val parsed = ExoManifest.transform(this.manifest)) {
+      return when (val parsed = ExoManifest.transform(context, this.manifest)) {
         is PlayerResult.Success ->
           PlayerResult.Success(
             ExoAudioBook.create(

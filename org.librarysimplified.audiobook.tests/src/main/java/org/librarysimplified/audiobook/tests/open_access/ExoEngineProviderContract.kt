@@ -1015,7 +1015,8 @@ abstract class ExoEngineProviderContract {
           encrypted = null
         ),
         links = listOf(),
-        extensions = listOf()
+        extensions = listOf(),
+        toc = listOf()
       )
 
     val request =
@@ -1073,7 +1074,8 @@ abstract class ExoEngineProviderContract {
           encrypted = null
         ),
         links = listOf(),
-        extensions = listOf()
+        extensions = listOf(),
+        toc = listOf()
       )
 
     val request =

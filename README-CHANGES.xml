@@ -165,6 +165,8 @@
     <c:release date="2022-04-13T09:37:50+00:00" is-open="true" ticket-system="org.nypl.jira" version="6.11.1">
       <c:changes>
         <c:change date="2022-03-31T00:00:00+00:00" summary="Make scope, client key, and client secret optional for OverDrive downloads."/>
+        <c:change date="2022-04-04T00:00:00+00:00" summary="Added support to audiobook titles based on the table of contents"/>
+        <c:change date="2022-04-04T00:00:00+00:00" summary="Added logic to handle offset on LCP and ExoSpine elements"/>
         <c:change date="2022-04-13T09:37:50+00:00" summary="Removed padding from audiobook cover image"/>
       </c:changes>
     </c:release>

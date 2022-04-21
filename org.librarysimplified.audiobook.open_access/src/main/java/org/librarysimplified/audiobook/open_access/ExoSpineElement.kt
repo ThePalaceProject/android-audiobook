@@ -60,7 +60,11 @@ class ExoSpineElement(
       this.itemManifest.title,
       this.itemManifest.part,
       this.itemManifest.chapter,
-      0
+      if (this.itemManifest.offset != null) {
+        (this.itemManifest.offset * 1000.0).toLong()
+      } else {
+        0L
+      }
     )
 
   override val title: String?

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 
 class LCPEngineProviderTest : LCPEngineProviderContract() {
   override fun log(): Logger {
-    return LoggerFactory.getLogger(ExoEngineProviderTest::class.java)
+    return LoggerFactory.getLogger(LCPEngineProviderTest::class.java)
   }
 
   override fun context(): Context {
