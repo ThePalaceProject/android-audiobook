@@ -162,7 +162,7 @@
         <c:change date="2022-03-22T00:00:00+00:00" summary="Changed displaying title for audiobook chapters with no or null title"/>
       </c:changes>
     </c:release>
-    <c:release date="2022-04-13T09:37:50+00:00" is-open="true" ticket-system="org.nypl.jira" version="6.11.1">
+    <c:release date="2022-04-13T09:37:50+00:00" is-open="true" ticket-system="org.nypl.jira" version="7.0.0">
       <c:changes>
         <c:change date="2022-03-31T00:00:00+00:00" summary="Make scope, client key, and client secret optional for OverDrive downloads."/>
         <c:change date="2022-04-04T00:00:00+00:00" summary="Added support to audiobook titles based on the table of contents"/>
