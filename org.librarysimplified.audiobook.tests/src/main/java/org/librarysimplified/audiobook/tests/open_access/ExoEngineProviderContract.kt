@@ -135,6 +135,28 @@ abstract class ExoEngineProviderContract {
   }
 
   /**
+   * Test that the engine accepts the Summer Wives (Feedbooks) book.
+   */
+
+  @Test
+  fun testAudioEnginesFeedbooks() {
+    val manifest = this.parseManifest("summerwives.audiobook-manifest.json")
+    val request = PlayerAudioEngineRequest(
+      manifest = manifest,
+      filter = { true },
+      downloadProvider = DishonestDownloadProvider(),
+      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+    )
+    val engine_provider = ExoEngineProvider()
+    val book_provider = engine_provider.tryRequest(request)
+    Assertions.assertNotNull(book_provider, "Engine must handle manifest")
+    val book_provider_nn = book_provider!!
+    val result = book_provider_nn.create(this.context())
+    this.log().debug("testAudioEnginesFeedbooks:result: {}", result)
+    Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
+  }
+
+  /**
    * Test that the engine rejects the Best New Horror (LCP) book.
    */
 
