@@ -170,10 +170,13 @@
         <c:change date="2022-04-13T00:00:00+00:00" summary="Removed padding from audiobook cover image"/>
       </c:changes>
     </c:release>
-    <c:release date="2022-04-29T13:02:56+00:00" is-open="false" ticket-system="org.nypl.jira" version="7.0.1">
+    <c:release date="2022-04-29T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="7.0.1">
       <c:changes>
         <c:change date="2022-04-29T00:00:00+00:00" summary="Fixed Feedbooks manifests not being accepted by the open access engine."/>
       </c:changes>
+    </c:release>
+    <c:release date="2022-04-29T13:16:20+00:00" is-open="true" ticket-system="org.nypl.jira" version="7.0.2">
+      <c:changes/>
     </c:release>
   </c:releases>
   <c:ticket-systems>
