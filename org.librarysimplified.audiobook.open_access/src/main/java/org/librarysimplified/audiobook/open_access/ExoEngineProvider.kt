@@ -44,10 +44,16 @@ class ExoEngineProvider(
       return null
     }
 
+    val acceptedEncryptionSchemes = hashSetOf(
+      "http://www.feedbooks.com/audiobooks/access-restriction",
+      "https://www.feedbooks.com/audiobooks/access-restriction"
+    )
+
     if (manifest.readingOrder.any {
-      it.properties.encrypted != null
+      it.properties.encrypted != null &&
+        !acceptedEncryptionSchemes.contains(it.properties.encrypted!!.scheme)
     }) {
-      this.log.debug("cannot support a book in which any item in the reading order is encrypted")
+      this.log.debug("cannot support a book in which any item in the reading order has encryption scheme not in [{}]", acceptedEncryptionSchemes.joinToString())
       return null
     }
 
