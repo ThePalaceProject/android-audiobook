@@ -37,8 +37,6 @@ class MockingAudioBook(
   fun createSpineElement(id: String, title: String, duration: Duration): MockingSpineElement {
     val element = MockingSpineElement(
       bookMocking = this,
-      downloadProvider = this.downloadProvider,
-      downloadStatusExecutor = this.downloadStatusExecutor,
       downloadStatusEvents = this.statusEvents,
       index = spineItems.size,
       duration = duration,
@@ -47,6 +45,14 @@ class MockingAudioBook(
     )
     this.spineItems.add(element)
     return element
+  }
+
+  fun createDownloadTask(elements: List<MockingSpineElement>): MockingDownloadTask {
+    return MockingDownloadTask(
+      downloadStatusExecutor = this.downloadStatusExecutor,
+      downloadProvider = this.downloadProvider,
+      spineElements = elements
+    )
   }
 
   override var supportsStreaming: Boolean = false

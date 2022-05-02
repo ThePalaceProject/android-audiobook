@@ -12,12 +12,12 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.Play
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
-import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutorService
+import kotlin.random.Random
 
 /**
  * A fake download task.
@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutorService
 class MockingDownloadTask(
   private val downloadStatusExecutor: ExecutorService,
   private val downloadProvider: PlayerDownloadProviderType,
-  private val originalLink: PlayerManifestLink,
   private val spineElements: List<MockingSpineElement>
 ) : PlayerDownloadTaskType {
 
@@ -87,7 +86,7 @@ class MockingDownloadTask(
     val future =
       this.downloadProvider.download(
         PlayerDownloadRequest(
-          uri = URI.create("urn:" + this.originalLink.toString()),
+          uri = URI.create("urn:" + Random.nextInt()),
           credentials = null,
           outputFile = File("/"),
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.mocking 1.0.0"),
