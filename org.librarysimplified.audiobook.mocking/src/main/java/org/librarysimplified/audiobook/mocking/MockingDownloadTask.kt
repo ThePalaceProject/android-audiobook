@@ -10,7 +10,9 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.Play
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
@@ -24,7 +26,8 @@ import java.util.concurrent.ExecutorService
 class MockingDownloadTask(
   private val downloadStatusExecutor: ExecutorService,
   private val downloadProvider: PlayerDownloadProviderType,
-  private val spineElement: MockingSpineElement
+  private val originalLink: PlayerManifestLink,
+  private val spineElements: List<MockingSpineElement>
 ) : PlayerDownloadTaskType {
 
   private val log = LoggerFactory.getLogger(MockingDownloadTask::class.java)
@@ -59,17 +62,23 @@ class MockingDownloadTask(
 
   private fun onNotDownloaded() {
     this.log.debug("not downloaded")
-    this.spineElement.setDownloadStatus(PlayerSpineElementNotDownloaded(this.spineElement))
+    this.spineElements.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerSpineElementNotDownloaded(spineElement))
+    }
   }
 
   private fun onDownloading(percent: Int) {
     this.percent = percent
-    this.spineElement.setDownloadStatus(PlayerSpineElementDownloading(this.spineElement, percent))
+    this.spineElements.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerSpineElementDownloading(spineElement, percent))
+    }
   }
 
   private fun onDownloaded() {
     this.log.debug("downloaded")
-    this.spineElement.setDownloadStatus(PlayerSpineElementDownloaded(this.spineElement))
+    this.spineElements.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerSpineElementDownloaded(spineElement))
+    }
   }
 
   private fun onStartDownload(): ListenableFuture<Unit> {
@@ -78,7 +87,7 @@ class MockingDownloadTask(
     val future =
       this.downloadProvider.download(
         PlayerDownloadRequest(
-          uri = URI.create("urn:" + this.spineElement.index),
+          uri = URI.create("urn:" + this.originalLink.toString()),
           credentials = null,
           outputFile = File("/"),
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.mocking 1.0.0"),
@@ -126,11 +135,13 @@ class MockingDownloadTask(
     this.log.error("onDownloadFailed: ", e)
     this.stateSetCurrent(State.Initial)
     this.onBroadcastState()
-    this.spineElement.setDownloadStatus(
-      PlayerSpineElementDownloadFailed(
-        this.spineElement, e, e.message ?: "Missing exception message"
+    this.spineElements.forEach { spineElement ->
+      spineElement.setDownloadStatus(
+        PlayerSpineElementDownloadFailed(
+          spineElement, e, e.message ?: "Missing exception message"
+        )
       )
-    )
+    }
   }
 
   private fun onDownloadCompleted() {
@@ -187,4 +198,7 @@ class MockingDownloadTask(
 
   override val progress: Double
     get() = this.percent.toDouble()
+
+  override val spineItems: List<PlayerSpineElementType>
+    get() = this.spineElements
 }

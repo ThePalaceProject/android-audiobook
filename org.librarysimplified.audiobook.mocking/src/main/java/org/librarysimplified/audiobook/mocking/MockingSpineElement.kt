@@ -3,7 +3,6 @@ package org.librarysimplified.audiobook.mocking
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
-import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
@@ -62,15 +61,4 @@ class MockingSpineElement(
 
   override val downloadStatus: PlayerSpineElementDownloadStatus
     get() = this.downloadStatusValue
-
-  private val downloadTaskValue =
-    MockingDownloadTask(
-      downloadStatusExecutor = this.downloadStatusExecutor,
-      downloadProvider = this.downloadProvider,
-      spineElement = this
-    )
-
-  override fun downloadTask(): PlayerDownloadTaskType {
-    return this.downloadTaskValue
-  }
 }

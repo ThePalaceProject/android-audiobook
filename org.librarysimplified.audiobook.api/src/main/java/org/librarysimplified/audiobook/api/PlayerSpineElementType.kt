@@ -73,13 +73,4 @@ interface PlayerSpineElementType {
    */
 
   val downloadTasksSupported: Boolean
-
-  /**
-   * The download task for the spine item.
-   *
-   * @see downloadTasksSupported
-   */
-
-  @Throws(UnsupportedOperationException::class)
-  fun downloadTask(): PlayerDownloadTaskType
 }

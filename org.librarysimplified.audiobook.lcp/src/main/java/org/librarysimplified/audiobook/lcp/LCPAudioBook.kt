@@ -3,10 +3,10 @@ package org.librarysimplified.audiobook.lcp
 import android.content.Context
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.SettableFuture
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
@@ -66,6 +66,7 @@ class LCPAudioBook private constructor(
     override fun cancel() {}
     override fun delete() {}
     override val progress = 1.0
+    override val spineItems = listOf<PlayerSpineElementType>()
   }
 
   override fun replaceManifest(
@@ -177,6 +178,9 @@ class LCPAudioBook private constructor(
       this.spineElementDownloadStatus.onCompleted()
     }
   }
+
+  override val downloadTasks: List<PlayerDownloadTaskType>
+    get() = emptyList()
 
   override val isClosed: Boolean
     get() = this.isClosedNow.get()

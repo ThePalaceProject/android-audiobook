@@ -7,7 +7,6 @@ import org.librarysimplified.audiobook.api.*
 import org.librarysimplified.audiobook.lcp.LCPEngineProvider
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
-import org.librarysimplified.audiobook.open_access.ExoEngineProvider
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.librarysimplified.audiobook.tests.DishonestDownloadProvider
 import org.mockito.Mockito
@@ -91,24 +90,6 @@ abstract class LCPEngineProviderContract {
     val engine_provider = LCPEngineProvider()
     val book_provider = engine_provider.tryRequest(request)
     Assertions.assertNull(book_provider, "Engine must reject open access manifest")
-  }
-
-  /**
-   * Test that the engine rejects the Summer Wives (Feedbooks) book.
-   */
-
-  @Test
-  fun feedbooksManifest_isRejected() {
-    val manifest = this.parseManifest("summerwives.audiobook-manifest.json")
-    val request = PlayerAudioEngineRequest(
-      manifest = manifest,
-      filter = { true },
-      downloadProvider = DishonestDownloadProvider(),
-      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
-    )
-    val engine_provider = LCPEngineProvider()
-    val book_provider = engine_provider.tryRequest(request)
-    Assertions.assertNull(book_provider, "Engine must reject Feedbooks manifest")
   }
 
   /**

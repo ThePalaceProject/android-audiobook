@@ -11,10 +11,7 @@ import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.librarysimplified.audiobook.api.PlayerAudioBookType
-import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
-import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
-import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.*
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterWaiting
@@ -24,19 +21,16 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
-import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
-import org.librarysimplified.audiobook.api.PlayerType
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestMetadata
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.open_access.ExoDownloadTask
 import org.librarysimplified.audiobook.open_access.ExoEngineProvider
 import org.librarysimplified.audiobook.open_access.ExoEngineThread
 import org.librarysimplified.audiobook.open_access.ExoSpineElement
@@ -275,11 +269,11 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.spine[0].downloadTask().delete()
+    book.downloadTasks.first().delete()
     Thread.sleep(1000L)
 
     player.play()
-    this.downloadSpineItemAndWait(book.spine[0])
+    this.downloadSpineItemAndWait(book.downloadTasks.first())
     Thread.sleep(1000L)
 
     player.close()
@@ -336,10 +330,10 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.spine[0].downloadTask().delete()
+    book.downloadTasks.first().delete()
     Thread.sleep(1000L)
 
-    this.downloadSpineItemAndWait(book.spine[0])
+    this.downloadSpineItemAndWait(book.downloadTasks.first())
     Thread.sleep(1000L)
 
     player.play()
@@ -383,10 +377,11 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.spine[0].downloadTask().delete()
+    book.downloadTasks.first().delete()
+    book.downloadTasks.first().delete()
     Thread.sleep(1000L)
 
-    this.downloadSpineItemAndWait(book.spine[0])
+    this.downloadSpineItemAndWait(book.downloadTasks.first())
     Thread.sleep(1000L)
 
     player.play()
@@ -442,12 +437,12 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.spine[0].downloadTask().delete()
-    book.spine[1].downloadTask().delete()
+    book.downloadTasks.first().delete()
+    book.downloadTasks[1].delete()
     Thread.sleep(1000L)
 
-    this.downloadSpineItemAndWait(book.spine[0])
-    this.downloadSpineItemAndWait(book.spine[1])
+    this.downloadSpineItemAndWait(book.downloadTasks.first())
+    this.downloadSpineItemAndWait(book.downloadTasks[1])
     Thread.sleep(1000L)
 
     player.play()
@@ -506,15 +501,15 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.spine[0].downloadTask().delete()
+    book.downloadTasks.first().delete()
     Thread.sleep(1000L)
 
-    this.downloadSpineItemAndWait(book.spine[0])
+    this.downloadSpineItemAndWait(book.downloadTasks.first())
     Thread.sleep(1000L)
 
     player.play()
     Thread.sleep(1000L)
-    book.spine[0].downloadTask().delete()
+    book.downloadTasks.first().delete()
     Thread.sleep(2000L)
 
     player.close()
@@ -559,12 +554,12 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.spine[0].downloadTask().delete()
-    book.spine[1].downloadTask().delete()
+    book.downloadTasks.first().delete()
+    book.downloadTasks[1].delete()
     Thread.sleep(1000L)
 
-    this.downloadSpineItemAndWait(book.spine[0])
-    this.downloadSpineItemAndWait(book.spine[1])
+    this.downloadSpineItemAndWait(book.downloadTasks.first())
+    this.downloadSpineItemAndWait(book.downloadTasks[1])
 
     player.play()
     player.skipToNextChapter()
@@ -624,12 +619,12 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.spine[0].downloadTask().delete()
-    book.spine[1].downloadTask().delete()
+    book.downloadTasks.first().delete()
+    book.downloadTasks[1].delete()
     Thread.sleep(1000L)
 
-    this.downloadSpineItemAndWait(book.spine[0])
-    this.downloadSpineItemAndWait(book.spine[1])
+    this.downloadSpineItemAndWait(book.downloadTasks.first())
+    this.downloadSpineItemAndWait(book.downloadTasks[1])
     Thread.sleep(1000L)
 
     player.playAtLocation(book.spine[1].position)
@@ -697,12 +692,12 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.spine[0].downloadTask().delete()
-    book.spine[1].downloadTask().delete()
+    book.downloadTasks.first().delete()
+    book.downloadTasks[1].delete()
     Thread.sleep(1000L)
 
-    this.downloadSpineItemAndWait(book.spine[0])
-    this.downloadSpineItemAndWait(book.spine[1])
+    this.downloadSpineItemAndWait(book.downloadTasks.first())
+    this.downloadSpineItemAndWait(book.downloadTasks[1])
     Thread.sleep(1000L)
 
     player.playAtLocation(book.spine[1].position)
@@ -757,12 +752,12 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.spine[0].downloadTask().delete()
-    book.spine[1].downloadTask().delete()
+    book.downloadTasks.first().delete()
+    book.downloadTasks[1].delete()
     Thread.sleep(1000L)
 
-    this.downloadSpineItemAndWait(book.spine[0])
-    this.downloadSpineItemAndWait(book.spine[1])
+    this.downloadSpineItemAndWait(book.downloadTasks.first())
+    this.downloadSpineItemAndWait(book.downloadTasks[1])
     Thread.sleep(1000L)
 
     player.playAtBookStart()
@@ -790,13 +785,13 @@ abstract class ExoEngineProviderContract {
     }
   }
 
-  private fun downloadSpineItemAndWait(spineItem: PlayerSpineElementType) {
-    spineItem.downloadTask().delete()
-    spineItem.downloadTask().fetch()
+  private fun downloadSpineItemAndWait(downloadTask: PlayerDownloadTaskType) {
+    downloadTask.delete()
+    downloadTask.fetch()
 
     var downloaded = false
     while (!downloaded) {
-      val status = spineItem.downloadStatus
+      val status = downloadTask.spineItems.first().downloadStatus
       this.log().debug("spine element status: {}", status)
 
       when (status) {
@@ -1058,8 +1053,8 @@ abstract class ExoEngineProviderContract {
     val audioBook =
       (result as PlayerResult.Success).result
 
-    audioBook.spine[0].downloadTask().fetch()
-    audioBook.spine[1].downloadTask().fetch()
+    audioBook.downloadTasks.first().fetch()
+    audioBook.downloadTasks[1].fetch()
 
     Thread.sleep(1_000L)
 

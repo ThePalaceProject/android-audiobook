@@ -6,6 +6,7 @@ import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
@@ -64,6 +65,9 @@ class MockingAudioBook(
 
   override val spineElementDownloadStatus: Observable<PlayerSpineElementDownloadStatus>
     get() = this.statusEvents
+
+  override val downloadTasks: List<PlayerDownloadTaskType>
+    get() = listOf(this.wholeTask)
 
   override val wholeBookDownloadTask: PlayerDownloadWholeBookTaskType
     get() = this.wholeTask

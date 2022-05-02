@@ -139,7 +139,7 @@ class PlayerFragment : Fragment() {
     super.onCreate(state)
 
     this.parameters =
-      this.arguments!!.getSerializable(parametersKey)
+      requireArguments().getSerializable(parametersKey)
         as PlayerFragmentParameters
     this.timeStrings =
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)

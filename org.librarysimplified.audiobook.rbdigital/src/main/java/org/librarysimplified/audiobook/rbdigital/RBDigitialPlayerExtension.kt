@@ -35,7 +35,7 @@ class RBDigitialPlayerExtension : PlayerExtensionType {
         link = link
       )
     } else {
-      return null
+      null
     }
   }
 

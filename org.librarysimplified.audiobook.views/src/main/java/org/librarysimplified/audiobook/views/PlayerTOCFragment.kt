@@ -103,8 +103,8 @@ class PlayerTOCFragment : Fragment() {
     super.onAttach(context)
 
     this.parameters =
-      this.arguments!!.getSerializable(parametersKey)
-      as PlayerTOCFragmentParameters
+      this.requireArguments().getSerializable(parametersKey)
+        as PlayerTOCFragmentParameters
 
     if (context is PlayerFragmentListenerType) {
       this.listener = context
@@ -116,6 +116,7 @@ class PlayerTOCFragment : Fragment() {
         PlayerTOCAdapter(
           context = context,
           spineElements = this.book.spine,
+          downloadTasks = this.book.downloadTasks,
           onSelect = { item -> this.onTOCItemSelected(item) }
         )
 
@@ -174,7 +175,7 @@ class PlayerTOCFragment : Fragment() {
       if (refreshVisibleNow != refreshVisibleThen || cancelVisibleNow != cancelVisibleThen) {
         this.menuRefreshAll.isVisible = refreshVisibleNow
         this.menuCancelAll.isVisible = cancelVisibleNow
-        this.activity!!.invalidateOptionsMenu()
+        this.requireActivity().invalidateOptionsMenu()
       }
     }
   }
@@ -252,7 +253,7 @@ class PlayerTOCFragment : Fragment() {
     try {
       this.listener.onPlayerAccessibilityEvent(
         PlayerAccessibilityChapterSelected(
-          this.context!!.getString(R.string.audiobook_accessibility_toc_selected, item.index + 1)
+          this.getString(R.string.audiobook_accessibility_toc_selected, item.index + 1)
         )
       )
     } catch (ex: Exception) {

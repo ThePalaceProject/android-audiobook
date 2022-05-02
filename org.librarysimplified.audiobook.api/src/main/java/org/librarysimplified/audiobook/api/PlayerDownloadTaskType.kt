@@ -35,4 +35,10 @@ interface PlayerDownloadTaskType {
    */
 
   val progress: Double
+
+  /**
+   * The list of spine items related to the download task.
+   */
+
+  val spineItems: List<PlayerSpineElementType>
 }
