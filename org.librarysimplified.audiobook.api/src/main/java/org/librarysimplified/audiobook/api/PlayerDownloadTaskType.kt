@@ -31,6 +31,12 @@ interface PlayerDownloadTaskType {
   fun delete()
 
   /**
+   * Checks if a specific spine element belongs to this task's spine items list.
+   */
+
+  fun fulfillsSpineElement(spineElement: PlayerSpineElementType): Boolean
+
+  /**
    * The current download progress in the range [0, 1]
    */
 

@@ -29,6 +29,10 @@ class ExoDownloadWholeBookTask(
     }
   }
 
+  override fun fulfillsSpineElement(spineElement: PlayerSpineElementType): Boolean {
+    return spineItems.contains(spineElement)
+  }
+
   override val progress: Double
     get() = calculateProgress()
 

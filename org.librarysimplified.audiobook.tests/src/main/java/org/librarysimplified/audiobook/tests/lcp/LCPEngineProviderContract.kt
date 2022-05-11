@@ -93,6 +93,24 @@ abstract class LCPEngineProviderContract {
   }
 
   /**
+   * Test that the engine rejects the Summer Wives (Feedbooks) book.
+   */
+
+  @Test
+  fun feedbooksManifest_isRejected() {
+    val manifest = this.parseManifest("summerwives.audiobook-manifest.json")
+    val request = PlayerAudioEngineRequest(
+      manifest = manifest,
+      filter = { true },
+      downloadProvider = DishonestDownloadProvider(),
+      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+    )
+    val engine_provider = LCPEngineProvider()
+    val book_provider = engine_provider.tryRequest(request)
+    Assertions.assertNull(book_provider, "Engine must reject Feedbooks manifest")
+  }
+
+  /**
    * Test that the player does not support streaming.
    */
 

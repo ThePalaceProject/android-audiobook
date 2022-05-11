@@ -238,7 +238,7 @@ class ExoDownloadTask(
     }
   }
 
-  fun isSpineElementFromList(spineElement: ExoSpineElement): Boolean {
+  override fun fulfillsSpineElement(spineElement: PlayerSpineElementType): Boolean {
     return spineElements.contains(spineElement)
   }
 

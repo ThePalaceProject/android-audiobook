@@ -181,6 +181,10 @@ class MockingDownloadTask(
     }
   }
 
+  override fun fulfillsSpineElement(spineElement: PlayerSpineElementType): Boolean {
+    return spineElements.contains(spineElement)
+  }
+
   private fun onDeleteDownloading(state: State.Downloading) {
     this.log.debug("cancelling download in progress")
 

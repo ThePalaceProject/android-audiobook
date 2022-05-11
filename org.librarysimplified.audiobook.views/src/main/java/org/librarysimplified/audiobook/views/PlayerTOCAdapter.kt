@@ -107,7 +107,7 @@ class PlayerTOCAdapter(
           if (item.downloadTasksSupported) {
             holder.notDownloadedStreamableRefresh.setOnClickListener {
               downloadTasks.firstOrNull { task ->
-                task.spineItems.contains(item)
+                task.fulfillsSpineElement(item)
               }?.fetch()
             }
             holder.notDownloadedStreamableRefresh.contentDescription =
@@ -127,7 +127,7 @@ class PlayerTOCAdapter(
           if (item.downloadTasksSupported) {
             holder.notDownloadedStreamableRefresh.setOnClickListener {
               downloadTasks.firstOrNull { task ->
-                task.spineItems.contains(item)
+                task.fulfillsSpineElement(item)
               }?.fetch()
             }
             holder.notDownloadedStreamableRefresh.contentDescription =
@@ -193,7 +193,7 @@ class PlayerTOCAdapter(
         if (item.downloadTasksSupported) {
           holder.downloadFailedRefresh.setOnClickListener {
             val task = downloadTasks.firstOrNull { task ->
-              task.spineItems.contains(item)
+              task.fulfillsSpineElement(item)
             }
             task?.cancel()
             task?.fetch()
@@ -288,7 +288,7 @@ class PlayerTOCAdapter(
           R.string.audiobook_part_download_stop,
           { _: DialogInterface, _: Int ->
             downloadTasks.firstOrNull { task ->
-              task.spineItems.contains(item)
+              task.fulfillsSpineElement(item)
             }?.cancel()
           }
         )

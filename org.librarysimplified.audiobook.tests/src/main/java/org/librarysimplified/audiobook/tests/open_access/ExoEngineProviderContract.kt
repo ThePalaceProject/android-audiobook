@@ -11,7 +11,11 @@ import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.librarysimplified.audiobook.api.*
+import org.librarysimplified.audiobook.api.PlayerAudioBookType
+import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
+import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
+import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterWaiting
@@ -21,16 +25,18 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerType
+import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestMetadata
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
-import org.librarysimplified.audiobook.open_access.ExoDownloadTask
 import org.librarysimplified.audiobook.open_access.ExoEngineProvider
 import org.librarysimplified.audiobook.open_access.ExoEngineThread
 import org.librarysimplified.audiobook.open_access.ExoSpineElement
@@ -377,7 +383,6 @@ abstract class ExoEngineProviderContract {
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
 
-    book.downloadTasks.first().delete()
     book.downloadTasks.first().delete()
     Thread.sleep(1000L)
 
