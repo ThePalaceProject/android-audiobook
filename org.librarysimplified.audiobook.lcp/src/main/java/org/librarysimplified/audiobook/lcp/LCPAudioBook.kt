@@ -67,6 +67,7 @@ class LCPAudioBook private constructor(
     override fun delete() {}
     override val progress = 1.0
     override val spineItems = listOf<PlayerSpineElementType>()
+    override fun fulfillsSpineElement(spineElement: PlayerSpineElementType) = false
   }
 
   override fun replaceManifest(
