@@ -36,7 +36,7 @@ plugins {
 
 ext {
   androidBuildToolsVersion = "30.0.2"
-  androidCompileSDKVersion = 28
+  androidCompileSDKVersion = 31
   androidMinimumSDKVersion = 21
   androidTargetSDKVersion = 28
 

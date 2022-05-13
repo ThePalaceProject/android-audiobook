@@ -1,6 +1,9 @@
 package org.librarysimplified.audiobook.tests.local
 
 import android.content.Context
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
+import org.librarysimplified.audiobook.tests.R
 import org.librarysimplified.audiobook.tests.lcp.LCPEngineProviderContract
 import org.mockito.Mockito
 import org.slf4j.Logger
@@ -13,6 +16,10 @@ class LCPEngineProviderTest : LCPEngineProviderContract() {
 
   override fun context(): Context {
     val context = Mockito.mock(Context::class.java)
+
+    Mockito.`when`(context.getString(eq(R.string.player_manifest_audiobook_default_track_n), any()))
+      .thenReturn("Track #")
+
     return context
   }
 

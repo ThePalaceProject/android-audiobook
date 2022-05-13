@@ -60,6 +60,8 @@ import org.librarysimplified.audiobook.views.PlayerPlaybackRateFragment
 import org.librarysimplified.audiobook.views.PlayerSleepTimerFragment
 import org.librarysimplified.audiobook.views.PlayerTOCFragment
 import org.librarysimplified.audiobook.views.PlayerTOCFragmentParameters
+import org.librarysimplified.http.api.LSHTTPClientConfiguration
+import org.librarysimplified.http.vanilla.LSHTTPClients
 import org.slf4j.LoggerFactory
 import rx.Subscription
 import java.io.File
@@ -83,6 +85,14 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   }
 
   private val userAgent = PlayerUserAgent("org.librarysimplified.audiobook.demo.main_ui")
+
+  private val httpClient = LSHTTPClients().create(
+    context = this,
+    configuration = LSHTTPClientConfiguration(
+      applicationName = "org.librarysimplified.audiobook.demo.ExamplePlayerActivity",
+      applicationVersion = "1.0.0"
+    )
+  )
 
   private lateinit var bookmarks: ExampleBookmarkDatabase
   private lateinit var examplePlayerFetchingFragment: ExamplePlayerFetchingFragment
@@ -280,6 +290,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
           ManifestFulfillmentBasicParameters(
             uri = URI.create(parameters.fetchURI),
             credentials = null,
+            httpClient = this.httpClient,
             userAgent = this.userAgent
           )
         )
@@ -300,6 +311,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
           ManifestFulfillmentBasicParameters(
             uri = URI.create(parameters.fetchURI),
             credentials = credentials,
+            httpClient = this.httpClient,
             userAgent = this.userAgent
           )
         )
@@ -320,6 +332,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
           ManifestFulfillmentBasicParameters(
             uri = URI.create(parameters.fetchURI),
             credentials = credentials,
+            httpClient = this.httpClient,
             userAgent = this.userAgent
           )
         )
@@ -420,7 +433,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
       throw exception
     }
 
-    val (_, downloadBytes) = (downloadResult as PlayerResult.Success).result
+    val (_, _, downloadBytes) = (downloadResult as PlayerResult.Success).result
     cacheManifest(downloadBytes)
 
     val parseResult =

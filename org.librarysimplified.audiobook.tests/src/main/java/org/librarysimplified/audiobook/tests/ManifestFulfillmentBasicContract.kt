@@ -16,21 +16,40 @@ import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicCredentials
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicProvider
+import org.librarysimplified.http.api.*
+import org.librarysimplified.http.vanilla.internal.LSHTTPClient
+import org.librarysimplified.http.vanilla.internal.LSHTTPResponse
+import org.mockito.Mock
 import org.mockito.Mockito
 import java.net.URI
 import java.net.URL
 
 abstract class ManifestFulfillmentBasicContract {
 
-  private lateinit var call: Call
-  private lateinit var client: OkHttpClient
+  private lateinit var client: LSHTTPClient
+  private lateinit var requestBuilder: LSHTTPRequestBuilderType
+  private lateinit var request: LSHTTPRequestType
 
   @BeforeEach
   fun testSetup() {
     this.client =
-      Mockito.mock(OkHttpClient::class.java)
-    this.call =
-      Mockito.mock(Call::class.java)
+      Mockito.mock(LSHTTPClient::class.java)
+    this.requestBuilder =
+      Mockito.mock(LSHTTPRequestBuilderType::class.java)
+    this.request =
+      Mockito.mock(LSHTTPRequestType::class.java)
+
+    Mockito.`when`(this.client.newRequest(any<URI>()))
+      .thenReturn(this.requestBuilder)
+
+    Mockito.`when`(this.requestBuilder.setAuthorization(any()))
+      .thenReturn(this.requestBuilder)
+    Mockito.`when`(this.requestBuilder.addHeader(any(), any()))
+      .thenReturn(this.requestBuilder)
+    Mockito.`when`(this.requestBuilder.allowRedirects(any()))
+      .thenReturn(this.requestBuilder)
+    Mockito.`when`(this.requestBuilder.build())
+      .thenReturn(this.request)
   }
 
   /**
@@ -39,8 +58,9 @@ abstract class ManifestFulfillmentBasicContract {
 
   @Test
   fun test404() {
-    val response =
-      Response.Builder()
+    val response = LSHTTPResponse.ofOkResponse(
+      client = this.client,
+      response = Response.Builder()
         .code(404)
         .message("NOT FOUND")
         .protocol(Protocol.HTTP_1_1)
@@ -50,16 +70,13 @@ abstract class ManifestFulfillmentBasicContract {
             .build()
         )
         .build()
+    )
 
-    Mockito.`when`(this.client.newCall(any()))
-      .thenReturn(this.call)
-    Mockito.`when`(this.call.execute())
+    Mockito.`when`(this.request.execute())
       .thenReturn(response)
 
     val provider =
-      ManifestFulfillmentBasicProvider(
-        client = this.client
-      )
+      ManifestFulfillmentBasicProvider()
 
     val strategy =
       provider.create(
@@ -69,7 +86,8 @@ abstract class ManifestFulfillmentBasicContract {
           credentials = ManifestFulfillmentBasicCredentials(
             userName = "user",
             password = "password"
-          )
+          ),
+          httpClient = this.client
         )
       )
 
@@ -90,8 +108,9 @@ abstract class ManifestFulfillmentBasicContract {
 
   @Test
   fun testOK() {
-    val response =
-      Response.Builder()
+    val response = LSHTTPResponse.ofOkResponse(
+      client = this.client,
+      response = Response.Builder()
         .code(200)
         .message("OK")
         .protocol(Protocol.HTTP_1_1)
@@ -107,16 +126,13 @@ abstract class ManifestFulfillmentBasicContract {
           )
         )
         .build()
+    )
 
-    Mockito.`when`(this.client.newCall(any()))
-      .thenReturn(this.call)
-    Mockito.`when`(this.call.execute())
+    Mockito.`when`(this.request.execute())
       .thenReturn(response)
 
     val provider =
-      ManifestFulfillmentBasicProvider(
-        client = this.client
-      )
+      ManifestFulfillmentBasicProvider()
 
     val strategy =
       provider.create(
@@ -126,7 +142,8 @@ abstract class ManifestFulfillmentBasicContract {
           credentials = ManifestFulfillmentBasicCredentials(
             userName = "user",
             password = "password"
-          )
+          ),
+          httpClient = this.client
         )
       )
 
@@ -135,5 +152,65 @@ abstract class ManifestFulfillmentBasicContract {
 
     val data = result.result
     Assertions.assertEquals("Some text.", String(data.data))
+  }
+
+  /**
+   * The authorization used to perform the request is returned.
+   */
+
+  @Test
+  fun testBearerToken() {
+    val response = LSHTTPResponse.ofOkResponse(
+      client = this.client,
+      response = Response.Builder()
+        .code(200)
+        .message("OK")
+        .protocol(Protocol.HTTP_1_1)
+        .request(
+          Request.Builder()
+            .url(URL("http://www.example.com"))
+            .tag(LSHTTPRequestProperties::class.java, LSHTTPRequestProperties(
+              target = URI("http://www.example.com"),
+              cookies = sortedMapOf(),
+              headers = sortedMapOf(),
+              method = LSHTTPRequestBuilderType.Method.Get,
+              authorization = LSHTTPAuthorizationBearerToken.ofToken("abcd"),
+              otherProperties = mapOf()
+            ))
+            .build()
+        )
+        .body(
+          ResponseBody.create(
+            "text/plain".toMediaTypeOrNull(),
+            "Some text."
+          )
+        )
+        .build()
+    )
+
+    Mockito.`when`(this.request.execute())
+      .thenReturn(response)
+
+    val provider =
+      ManifestFulfillmentBasicProvider()
+
+    val strategy =
+      provider.create(
+        configuration = ManifestFulfillmentBasicParameters(
+          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          uri = URI.create("http://www.example.com"),
+          credentials = ManifestFulfillmentBasicCredentials(
+            userName = "user",
+            password = "password"
+          ),
+          httpClient = this.client
+        )
+      )
+
+    val result =
+      strategy.execute() as PlayerResult.Success
+
+    val data = result.result
+    Assertions.assertEquals("Bearer abcd", data.authorization?.toHeaderValue())
   }
 }
