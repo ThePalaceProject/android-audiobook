@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class ExoAudioBook private constructor(
   private val manifest: ExoManifest,
+  override val downloadTasks: List<ExoDownloadTask>,
   private val context: Context,
   private val engineExecutor: ScheduledExecutorService,
   override val spine: List<ExoSpineElement>,
@@ -153,47 +154,61 @@ class ExoAudioBook private constructor(
       val elementsById = HashMap<String, ExoSpineElement>()
       val elementsByPart = TreeMap<Int, TreeMap<Int, PlayerSpineElementType>>()
 
-      var index = 0
+      var manifestIndex = 0
       var spineItemPrevious: ExoSpineElement? = null
-      manifest.spineItems.forEach { spineItem ->
 
-        val duration =
-          spineItem.duration?.let { time ->
-            Duration.standardSeconds(Math.floor(time).toLong())
-          }
-        val partFile =
-          File(directory, "$index.part")
+      val downloadTasks = manifest.spineItems.groupBy { manifestSpineItem ->
+        manifestSpineItem.originalLink
+      }.map { entry ->
 
-        val element =
-          ExoSpineElement(
+        val originalLink = entry.key
+        val spineItems = entry.value.mapIndexed { index, manifestSpineItem ->
+
+          val duration =
+            manifestSpineItem.duration?.let { time ->
+              Duration.standardSeconds(Math.floor(time).toLong())
+            }
+
+          val spineItem = ExoSpineElement(
             downloadStatusEvents = statusEvents,
             bookID = bookId,
-            itemManifest = spineItem,
-            partFile = partFile,
-            extensions = extensions,
-            downloadProvider = downloadProvider,
+            itemManifest = manifestSpineItem,
             index = index,
             nextElement = null,
             previousElement = spineItemPrevious,
-            duration = duration,
-            engineExecutor = engineExecutor,
-            userAgent = userAgent
+            duration = duration
           )
 
-        elements.add(element)
-        elementsById.put(element.id, element)
-        this.addElementByPartAndChapter(elementsByPart, element)
-        ++index
+          elements.add(spineItem)
+          elementsById[spineItem.id] = spineItem
+          this.addElementByPartAndChapter(elementsByPart, spineItem)
 
-        /*
-         * Make the "next" field of the previous element point to the current element.
-         */
+          /*
+           * Make the "next" field of the previous element point to the current element.
+           */
+          val previous = spineItemPrevious
+          if (previous != null) {
+            previous.nextElement = spineItem
+          }
+          spineItemPrevious = spineItem
 
-        val previous = spineItemPrevious
-        if (previous != null) {
-          previous.nextElement = element
+          spineItem
         }
-        spineItemPrevious = element
+
+        manifestIndex++
+
+        val partFile =
+          File(directory, "$manifestIndex.part")
+
+        ExoDownloadTask(
+          downloadStatusExecutor = engineExecutor,
+          downloadProvider = downloadProvider,
+          originalLink = originalLink,
+          partFile = partFile,
+          spineElements = spineItems,
+          userAgent = userAgent,
+          extensions = extensions
+        )
       }
 
       val book =
@@ -206,7 +221,8 @@ class ExoAudioBook private constructor(
           spine = elements,
           spineByID = elementsById,
           spineByPartAndChapter = elementsByPart as SortedMap<Int, SortedMap<Int, PlayerSpineElementType>>,
-          spineElementDownloadStatus = statusEvents
+          spineElementDownloadStatus = statusEvents,
+          downloadTasks = downloadTasks
         )
 
       for (e in elements) {

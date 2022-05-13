@@ -73,14 +73,19 @@ class SandboxPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     this.book.supportsStreaming = false
 
     for (i in 1..100) {
+
       val e = this.book.createSpineElement(
         "id$i",
         this.lorem.lines[i % this.lorem.lines.size],
         Duration.standardSeconds(20)
       )
 
+      val downloadTask = this.book.createDownloadTask(
+        listOf(e)
+      )
+
       if (!i.toString().endsWith("3")) {
-        e.downloadTask().fetch()
+        downloadTask.fetch()
       }
     }
 

@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import org.joda.time.Duration
 import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
@@ -28,6 +29,7 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementType
 class PlayerTOCAdapter(
   private val context: Context,
   private val spineElements: List<PlayerSpineElementType>,
+  private val downloadTasks: List<PlayerDownloadTaskType>,
   private val onSelect: (PlayerSpineElementType) -> Unit,
 ) :
   RecyclerView.Adapter<PlayerTOCAdapter.ViewHolder>() {
@@ -103,7 +105,11 @@ class PlayerTOCAdapter(
           holder.buttonsNotDownloadedStreamable.visibility = VISIBLE
 
           if (item.downloadTasksSupported) {
-            holder.notDownloadedStreamableRefresh.setOnClickListener { item.downloadTask().fetch() }
+            holder.notDownloadedStreamableRefresh.setOnClickListener {
+              downloadTasks.firstOrNull { task ->
+                task.fulfillsSpineElement(item)
+              }?.fetch()
+            }
             holder.notDownloadedStreamableRefresh.contentDescription =
               this.context.getString(
                 R.string.audiobook_accessibility_toc_download,
@@ -119,7 +125,11 @@ class PlayerTOCAdapter(
           holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
 
           if (item.downloadTasksSupported) {
-            holder.notDownloadedStreamableRefresh.setOnClickListener { item.downloadTask().fetch() }
+            holder.notDownloadedStreamableRefresh.setOnClickListener {
+              downloadTasks.firstOrNull { task ->
+                task.fulfillsSpineElement(item)
+              }?.fetch()
+            }
             holder.notDownloadedStreamableRefresh.contentDescription =
               this.context.getString(
                 R.string.audiobook_accessibility_toc_download,
@@ -168,7 +178,9 @@ class PlayerTOCAdapter(
         holder.view.isEnabled = true
 
         holder.downloadedDurationText.text =
-          item.duration?.let { this.periodFormatter.print(it.toPeriod()) } ?: ""
+          item.duration?.let {
+            this.periodFormatter.print(it.toPeriod())
+          } ?: ""
       }
 
       is PlayerSpineElementDownloadFailed -> {
@@ -180,8 +192,11 @@ class PlayerTOCAdapter(
 
         if (item.downloadTasksSupported) {
           holder.downloadFailedRefresh.setOnClickListener {
-            item.downloadTask().cancel()
-            item.downloadTask().fetch()
+            val task = downloadTasks.firstOrNull { task ->
+              task.fulfillsSpineElement(item)
+            }
+            task?.cancel()
+            task?.fetch()
           }
           holder.downloadFailedRefresh.contentDescription =
             this.context.getString(R.string.audiobook_accessibility_toc_retry, normalIndex)
@@ -271,7 +286,11 @@ class PlayerTOCAdapter(
         .setMessage(R.string.audiobook_part_download_stop_confirm)
         .setPositiveButton(
           R.string.audiobook_part_download_stop,
-          { _: DialogInterface, _: Int -> item.downloadTask().cancel() }
+          { _: DialogInterface, _: Int ->
+            downloadTasks.firstOrNull { task ->
+              task.fulfillsSpineElement(item)
+            }?.cancel()
+          }
         )
         .setNegativeButton(
           R.string.audiobook_part_download_continue,

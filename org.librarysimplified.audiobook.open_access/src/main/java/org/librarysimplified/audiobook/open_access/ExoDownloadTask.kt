@@ -12,6 +12,7 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.Play
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
@@ -19,6 +20,7 @@ import org.librarysimplified.audiobook.open_access.ExoDownloadTask.State.Downloa
 import org.librarysimplified.audiobook.open_access.ExoDownloadTask.State.Downloading
 import org.librarysimplified.audiobook.open_access.ExoDownloadTask.State.Initial
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutorService
@@ -30,9 +32,11 @@ import java.util.concurrent.ExecutorService
 class ExoDownloadTask(
   private val downloadStatusExecutor: ExecutorService,
   private val downloadProvider: PlayerDownloadProviderType,
-  private val spineElement: ExoSpineElement,
+  private val originalLink: PlayerManifestLink,
+  private val spineElements: List<ExoSpineElement>,
   private val userAgent: PlayerUserAgent,
-  private val extensions: List<PlayerExtensionType>
+  private val extensions: List<PlayerExtensionType>,
+  val partFile: File
 ) : PlayerDownloadTaskType {
 
   private val log = LoggerFactory.getLogger(ExoDownloadTask::class.java)
@@ -41,7 +45,7 @@ class ExoDownloadTask(
   private val stateLock: Any = Object()
   @GuardedBy("stateLock")
   private var state: State =
-    when (this.spineElement.partFile.isFile) {
+    when (this.partFile.isFile) {
       true -> Downloaded
       false -> Initial
     }
@@ -72,35 +76,27 @@ class ExoDownloadTask(
 
   private fun onNotDownloaded() {
     this.log.debug("not downloaded")
-    this.spineElement.setDownloadStatus(PlayerSpineElementNotDownloaded(this.spineElement))
+    this.spineElements.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerSpineElementNotDownloaded(spineElement))
+    }
   }
 
   private fun onDownloading(percent: Int) {
     this.percent = percent
-    this.spineElement.setDownloadStatus(PlayerSpineElementDownloading(this.spineElement, percent))
+    this.spineElements.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerSpineElementDownloading(spineElement, percent))
+    }
   }
 
   private fun onDownloaded() {
     this.log.debug("downloaded")
-    this.spineElement.setDownloadStatus(PlayerSpineElementDownloaded(this.spineElement))
+    this.spineElements.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerSpineElementDownloaded(spineElement))
+    }
   }
 
-  private fun onStartDownload(
-    targetLink: PlayerManifestLink
-  ): ListenableFuture<Unit> {
-    this.log.debug("download: {}", targetLink.hrefURI)
-
-    val request =
-      PlayerDownloadRequest(
-        uri = targetLink.hrefURI ?: URI.create("urn:missing"),
-        credentials = null,
-        outputFile = this.spineElement.partFile,
-        userAgent = this.userAgent,
-        onProgress = { percent -> this.onDownloading(percent) }
-      )
-
-    val future =
-      this.onStartDownloadForRequest(request, targetLink)
+  private fun createDownloadingRequest(future: ListenableFuture<Unit>,
+                                       targetLink: PlayerManifestLink) {
 
     this.stateSetCurrent(Downloading(future))
     this.onBroadcastState()
@@ -132,6 +128,24 @@ class ExoDownloadTask(
       },
       this.downloadStatusExecutor
     )
+  }
+
+  private fun onStartDownload(): ListenableFuture<Unit> {
+    this.log.debug("download: {}", this.originalLink.hrefURI)
+
+    val request =
+      PlayerDownloadRequest(
+        uri = this.originalLink.hrefURI ?: URI.create("urn:missing"),
+        credentials = null,
+        outputFile = this.partFile,
+        userAgent = this.userAgent,
+        onProgress = { percent -> this.onDownloading(percent) }
+      )
+
+    val future =
+      this.onStartDownloadForRequest(request, this.originalLink)
+
+    this.createDownloadingRequest(future, this.originalLink)
 
     return future
   }
@@ -166,21 +180,25 @@ class ExoDownloadTask(
   private fun onDownloadExpired(exception: Exception) {
     this.log.error("onDownloadExpired: ", exception)
     this.stateSetCurrent(Initial)
-    this.spineElement.setDownloadStatus(
-      PlayerSpineElementDownloadExpired(
-        this.spineElement, exception, exception.message ?: "Missing exception message"
+    this.spineElements.forEach { spineElement ->
+      spineElement.setDownloadStatus(
+        PlayerSpineElementDownloadExpired(
+          spineElement, exception, exception.message ?: "Missing exception message"
+        )
       )
-    )
+    }
   }
 
   private fun onDownloadFailed(exception: Exception) {
     this.log.error("onDownloadFailed: ", exception)
     this.stateSetCurrent(Initial)
-    this.spineElement.setDownloadStatus(
-      PlayerSpineElementDownloadFailed(
-        this.spineElement, exception, exception.message ?: "Missing exception message"
+    this.spineElements.forEach { spineElement ->
+      spineElement.setDownloadStatus(
+        PlayerSpineElementDownloadFailed(
+          spineElement, exception, exception.message ?: "Missing exception message"
+        )
       )
-    )
+    }
   }
 
   private fun onDownloadCompleted() {
@@ -198,10 +216,10 @@ class ExoDownloadTask(
   }
 
   private fun onDeleteDownloaded() {
-    this.log.debug("deleting file {}", this.spineElement.partFile)
+    this.log.debug("deleting file {}", this.partFile)
 
     try {
-      ExoFileIO.fileDelete(this.spineElement.partFile)
+      ExoFileIO.fileDelete(this.partFile)
     } catch (e: Exception) {
       this.log.error("failed to delete file: ", e)
     } finally {
@@ -220,13 +238,23 @@ class ExoDownloadTask(
     }
   }
 
+  override fun fulfillsSpineElement(spineElement: PlayerSpineElementType): Boolean {
+    return spineElements.contains(spineElement)
+  }
+
   override fun fetch() {
     this.log.debug("fetch")
 
     when (this.stateGetCurrent()) {
-      Initial -> this.onStartDownload(this.spineElement.itemManifest.originalLink)
-      Downloaded -> this.onDownloaded()
-      is Downloading -> this.onDownloading(this.percent)
+      Initial -> {
+        this.onStartDownload()
+      }
+      Downloaded -> {
+        this.onDownloaded()
+      }
+      is Downloading -> {
+        this.onDownloading(this.percent)
+      }
     }
   }
 
@@ -243,4 +271,7 @@ class ExoDownloadTask(
 
   override val progress: Double
     get() = this.percent.toDouble()
+
+  override val spineItems: List<PlayerSpineElementType>
+    get() = this.spineElements
 }

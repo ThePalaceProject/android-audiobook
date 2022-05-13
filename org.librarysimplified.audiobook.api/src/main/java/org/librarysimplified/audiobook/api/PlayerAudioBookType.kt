@@ -46,6 +46,11 @@ interface PlayerAudioBookType : Closeable {
   val spine: List<PlayerSpineElementType>
 
   /**
+   * The list of download tasks for each available audiobook file.
+   */
+  val downloadTasks: List<PlayerDownloadTaskType>
+
+  /**
    * The spine items organized by their unique IDs.
    */
 

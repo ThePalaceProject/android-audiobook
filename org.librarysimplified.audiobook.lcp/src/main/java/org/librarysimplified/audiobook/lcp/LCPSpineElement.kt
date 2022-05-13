@@ -49,23 +49,6 @@ class LCPSpineElement(
   override val title: String?
     get() = this.itemManifest.title
 
-  /**
-   * LCP-protected books are packaged, so the whole book will have been downloaded before being
-   * handed to the player. This downloadTask simply no-ops all of its methods, and reports that
-   * download is complete.
-   */
-
-  private val downloadTask = object : PlayerDownloadTaskType {
-    override fun fetch() {}
-    override fun cancel() {}
-    override fun delete() {}
-    override val progress = 1.0
-  }
-
-  override fun downloadTask(): PlayerDownloadTaskType {
-    return this.downloadTask
-  }
-
   fun setBook(book: LCPAudioBook) {
     this.bookActual = book
   }

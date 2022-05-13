@@ -333,7 +333,7 @@ class ExoAudioBookPlayer private constructor(
       DefaultUriDataSource(this.context, null, this.userAgent)
 
     val uri =
-      Uri.fromFile(spineElement.partFile)
+      Uri.fromFile(book.downloadTasks.first { it.fulfillsSpineElement(spineElement) }.partFile)
 
     val sampleSource =
       ExtractorSampleSource(

@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.mocking
 
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
-import org.slf4j.LoggerFactory
+import org.librarysimplified.audiobook.api.PlayerSpineElementType
 
 /**
  * A fake download task.
@@ -11,24 +11,35 @@ class MockingDownloadWholeBookTask(
   private val audioBook: MockingAudioBook
 ) : PlayerDownloadWholeBookTaskType {
 
-  private val log = LoggerFactory.getLogger(MockingDownloadWholeBookTask::class.java)
-
   override fun fetch() {
-    this.audioBook.spine.map { item -> item.downloadTask().fetch() }
+    this.audioBook.downloadTasks.forEach { task ->
+      task.fetch()
+    }
   }
 
   override fun cancel() {
-    this.audioBook.spine.map { item -> item.downloadTask().cancel() }
+    this.audioBook.downloadTasks.forEach { task ->
+      task.cancel()
+    }
   }
 
   override fun delete() {
-    this.audioBook.spine.map { item -> item.downloadTask().delete() }
+    this.audioBook.downloadTasks.forEach { task ->
+      task.delete()
+    }
+  }
+
+  override fun fulfillsSpineElement(spineElement: PlayerSpineElementType): Boolean {
+    return spineItems.contains(spineElement)
   }
 
   override val progress: Double
     get() = calculateProgress()
 
+  override val spineItems: List<PlayerSpineElementType>
+    get() = this.audioBook.spineItems
+
   private fun calculateProgress(): Double {
-    return this.audioBook.spine.sumByDouble { item -> item.downloadTask().progress } / this.audioBook.spine.size
+    return this.audioBook.downloadTasks.sumOf { task -> task.progress } / this.audioBook.downloadTasks.size
   }
 }
