@@ -33,6 +33,8 @@ dependencies {
   implementation libs.androidx.recycler.view
   implementation libs.kotlin.stdlib
   implementation libs.okhttp3
+  implementation libs.palace.http.api
+  implementation libs.palace.http.vanilla
   implementation libs.slf4j
   implementation libs.logback.android
   implementation libs.nypl.theme

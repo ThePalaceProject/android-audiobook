@@ -24,6 +24,8 @@ dependencies {
   implementation libs.junit.jupiter.api
   implementation libs.junit.jupiter.engine
   implementation libs.mockito.kotlin
+  implementation libs.palace.http.api
+  implementation libs.palace.http.vanilla
   implementation libs.r2.streamer
 
   testImplementation libs.logback.classic

@@ -3,12 +3,16 @@ package org.librarysimplified.audiobook.manifest_fulfill.basic
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import one.irradia.mime.api.MIMEType
 import one.irradia.mime.vanilla.MIMEParser
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorType
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
+import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
+import org.librarysimplified.http.api.LSHTTPRequestBuilderType.AllowRedirects.ALLOW_UNSAFE_REDIRECTS
+import org.librarysimplified.http.api.LSHTTPResponseStatus
 import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.subjects.PublishSubject
@@ -40,26 +44,29 @@ class ManifestFulfillmentBasic(
       )
     )
 
-    val requestBuilder = Request.Builder()
     val credentials = this.configuration.credentials
-    if (credentials != null) {
-      val credential =
-        Credentials.basic(credentials.userName, credentials.password)
-      requestBuilder.header("Authorization", credential)
-    }
+    val httpClient = this.configuration.httpClient
 
-    val request =
-      requestBuilder
-        .url(this.configuration.uri.toURL())
-        .header("User-Agent", this.configuration.userAgent.userAgent)
-        .build()
+    val request = httpClient.newRequest(this.configuration.uri)
+      .apply {
+        if (credentials != null) {
+          setAuthorization(
+            LSHTTPAuthorizationBasic.ofUsernamePassword(
+              credentials.userName,
+              credentials.password
+            )
+          )
+        }
+      }
+      .addHeader("User-Agent", this.configuration.userAgent.userAgent)
+      .allowRedirects(ALLOW_UNSAFE_REDIRECTS)
+      .build()
 
-    val call = this.client.newCall(request)
-    val response = call.execute()
-    val bodyData = response.body?.bytes() ?: ByteArray(0)
-    val responseCode = response.code
-    val responseMessage = response.message
-    val contentType = response.header("Content-Type") ?: "application/octet-stream"
+    val response = request.execute()
+
+    val responseCode = response.properties?.status ?: 0
+    val responseMessage = response.properties?.message ?: ""
+    val contentType = response.properties?.contentType?.toString() ?: "application/octet-stream"
 
     this.logger.debug(
       "received: {} {} for {} ({})",
@@ -75,26 +82,43 @@ class ManifestFulfillmentBasic(
       )
     )
 
-    if (!response.isSuccessful) {
-      return PlayerResult.Failure(
-        HTTPRequestFailed(
-          message = responseMessage,
-          serverData = ManifestFulfillmentErrorType.ServerData(
-            uri = this.configuration.uri,
-            code = responseCode,
-            receivedBody = bodyData,
-            receivedContentType = contentType
+    return when (val status = response.status) {
+      is LSHTTPResponseStatus.Responded.OK -> {
+        PlayerResult.unit(
+          ManifestFulfilled(
+            contentType = MIMEParser.parseRaisingException(contentType),
+            authorization = status.properties.authorization,
+            data = status.bodyStream?.readBytes() ?: ByteArray(0)
           )
         )
-      )
+      }
+      is LSHTTPResponseStatus.Responded.Error -> {
+        PlayerResult.Failure(
+          HTTPRequestFailed(
+            message = responseMessage,
+            serverData = ManifestFulfillmentErrorType.ServerData(
+              uri = this.configuration.uri,
+              code = responseCode,
+              receivedBody = status.bodyStream?.readBytes() ?: ByteArray(0),
+              receivedContentType = contentType
+            )
+          )
+        )
+      }
+      is LSHTTPResponseStatus.Failed -> {
+        PlayerResult.Failure(
+          HTTPRequestFailed(
+            message = responseMessage,
+            serverData = ManifestFulfillmentErrorType.ServerData(
+              uri = this.configuration.uri,
+              code = responseCode,
+              receivedBody = ByteArray(0),
+              receivedContentType = contentType
+            )
+          )
+        )
+      }
     }
-
-    return PlayerResult.unit(
-      ManifestFulfilled(
-        contentType = MIMEParser.parseRaisingException(contentType),
-        data = bodyData
-      )
-    )
   }
 
   override fun close() {
