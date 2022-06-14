@@ -201,7 +201,7 @@
         android:layout_height="0dp"
         android:layout_margin="16dp"
         android:contentDescription="@string/audiobook_accessibility_book_cover"
-        android:scaleType="centerCrop"
+        android:scaleType="fitXY"
         android:src="@drawable/icon"
         app:layout_constraintBottom_toTopOf="@id/player_waiting_buffering"
         app:layout_constraintEnd_toEndOf="parent"
