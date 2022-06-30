@@ -25,6 +25,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.NORMAL_TIME
 import org.librarysimplified.audiobook.api.PlayerPosition
@@ -116,7 +117,8 @@ class ExoAudioBookPlayer private constructor(
      */
 
     data class ExoPlayerStateWaitingForElement(
-      var spineElement: ExoSpineElement
+      var spineElement: ExoSpineElement,
+      var offset: Long
     ) :
       ExoPlayerState()
 
@@ -261,8 +263,7 @@ class ExoAudioBookPlayer private constructor(
    */
 
   private inner class PlaybackObserver(
-    private val spineElement: ExoSpineElement,
-    private var initialSeek: Long?
+    private val spineElement: ExoSpineElement
   ) : Runnable {
 
     private var gracePeriod: Int = 1
@@ -273,22 +274,6 @@ class ExoAudioBookPlayer private constructor(
       val position = bookPlayer.exoPlayer.currentPosition
       bookPlayer.log.debug("playback: {}/{}", position, duration)
       this.spineElement.duration = Duration.millis(duration)
-
-      /*
-       * Perform the initial seek, if necessary.
-       */
-
-      val seek = this.initialSeek
-      if (seek != null) {
-        bookPlayer.engineExecutor.execute {
-          if (seek < 0L) {
-            bookPlayer.seek(duration + seek)
-          } else {
-            bookPlayer.seek(seek)
-          }
-        }
-        this.initialSeek = null
-      }
 
       /*
        * Report the current playback status.
@@ -318,65 +303,16 @@ class ExoAudioBookPlayer private constructor(
     }
   }
 
-  private fun openSpineElement(
-    spineElement: ExoSpineElement,
-    offset: Long
-  ): ScheduledFuture<*> {
-    this.log.debug("openSpineElement: {} (offset {})", spineElement.index, offset)
-
-    /*
-     * Set up an audio renderer for the spine element and tell ExoPlayer to prepare it and then
-     * play when ready.
-     */
-
-    val dataSource =
-      DefaultUriDataSource(this.context, null, this.userAgent)
-
-    val uri =
-      Uri.fromFile(book.downloadTasks.first { it.fulfillsSpineElement(spineElement) }.partFile)
-
-    val sampleSource =
-      ExtractorSampleSource(
-        uri,
-        dataSource,
-        this.allocator,
-        this.bufferSegmentCount * this.bufferSegmentSize,
-        null,
-        null,
-        0
-      )
-
-    this.exoAudioRenderer =
-      MediaCodecAudioTrackRenderer(
-        sampleSource,
-        MediaCodecSelector.DEFAULT,
-        null,
-        true,
-        null,
-        null,
-        AudioCapabilities.getCapabilities(this.context),
-        AudioManager.STREAM_MUSIC
-      )
-
-    this.exoPlayer.prepare(this.exoAudioRenderer)
-    this.seek(offset)
-    this.exoPlayer.playWhenReady = true
-
-    this.setPlayerPlaybackRate(this.currentPlaybackRate)
-    return this.schedulePlaybackObserverForSpineElement(spineElement, initialSeek = null)
-  }
-
   /**
    * Schedule a playback observer that will check the current state of playback once per second.
    */
 
   private fun schedulePlaybackObserverForSpineElement(
-    spineElement: ExoSpineElement,
-    initialSeek: Long?
+    spineElement: ExoSpineElement
   ): ScheduledFuture<*> {
 
     return this.engineExecutor.scheduleAtFixedRate(
-      this.PlaybackObserver(spineElement, initialSeek), 1L, 1L, SECONDS
+      this.PlaybackObserver(spineElement), 1L, 1L, SECONDS
     )
   }
 
@@ -448,7 +384,7 @@ class ExoAudioBookPlayer private constructor(
             is PlayerSpineElementDownloadFailed -> Unit
             is PlayerSpineElementDownloaded -> {
               this.log.debug("spine element status changed, trying to start playback")
-              this.playSpineElementIfAvailable(currentState.spineElement, 0)
+              this.playSpineElementIfAvailable(currentState.spineElement, currentState.offset)
               Unit
             }
           }
@@ -553,7 +489,7 @@ class ExoAudioBookPlayer private constructor(
       return SKIP_TO_CHAPTER_NONEXISTENT
     }
 
-    return this.playSpineElementIfAvailable(next, offset)
+    return this.playSpineElementIfAvailable(next, offset, playAutomatically = true)
   }
 
   private fun playPreviousSpineElementIfAvailable(
@@ -568,12 +504,13 @@ class ExoAudioBookPlayer private constructor(
       return SKIP_TO_CHAPTER_NONEXISTENT
     }
 
-    return this.playSpineElementIfAvailable(previous, offset)
+    return this.playSpineElementIfAvailable(previous, offset, playAutomatically = true)
   }
 
   private fun playSpineElementIfAvailable(
     element: ExoSpineElement,
-    offset: Long
+    offset: Long,
+    playAutomatically: Boolean = false
   ): SkipChapterStatus {
     this.log.debug("playSpineElementIfAvailable: {}", element.index)
     this.playNothing()
@@ -588,29 +525,89 @@ class ExoAudioBookPlayer private constructor(
           element.index, downloadStatus
         )
 
-        this.stateSet(ExoPlayerStateWaitingForElement(spineElement = element))
+        this.stateSet(ExoPlayerStateWaitingForElement(spineElement = element, offset = offset))
         this.statusEvents.onNext(PlayerEventChapterWaiting(element))
         SKIP_TO_CHAPTER_NOT_DOWNLOADED
       }
 
       is PlayerSpineElementDownloaded -> {
-        this.playSpineElementUnconditionally(element, offset)
+        this.handleActionOnSpineElement(element, offset, playAutomatically)
         SKIP_TO_CHAPTER_READY
       }
     }
   }
 
-  private fun playSpineElementUnconditionally(element: ExoSpineElement, offset: Long = 0) {
-    this.log.debug("playSpineElementUnconditionally: {}", element.index)
+  private fun handleActionOnSpineElement(
+    element: ExoSpineElement,
+    offset: Long,
+    playAutomatically: Boolean
+  ) {
+    this.log.debug("handling action on element with index: {}", element.index)
 
-    this.stateSet(
-      ExoPlayerStatePlaying(
-        spineElement = element,
-        observerTask = this.openSpineElement(element, offset)
+    this.preparePlayer(element, offset, playAutomatically)
+
+    if (playAutomatically) {
+      this.stateSet(
+        ExoPlayerStatePlaying(
+          spineElement = element,
+          observerTask = this.schedulePlaybackObserverForSpineElement(element)
+        )
       )
-    )
-    this.statusEvents.onNext(PlayerEventPlaybackStarted(element, offset))
+      this.statusEvents.onNext(PlayerEventPlaybackStarted(element, offset))
+    } else {
+      this.stateSet(ExoPlayerStateStopped(element))
+      this.statusEvents.onNext(PlayerEventPlaybackWaitingForAction(element, offset))
+    }
+
     this.currentPlaybackOffset = offset
+  }
+
+  private fun preparePlayer(
+    spineElement: ExoSpineElement,
+    offset: Long,
+    playAutomatically: Boolean)
+  {
+    this.log.debug("preparePlayer: {} (offset {})", spineElement.index, offset)
+
+    /*
+     * Set up an audio renderer for the spine element and tell ExoPlayer to prepare it and then
+     * play when ready.
+     */
+
+    val dataSource =
+      DefaultUriDataSource(this.context, null, this.userAgent)
+
+    val uri =
+      Uri.fromFile(book.downloadTasks.first { it.fulfillsSpineElement(spineElement) }.partFile)
+
+    val sampleSource =
+      ExtractorSampleSource(
+        uri,
+        dataSource,
+        this.allocator,
+        this.bufferSegmentCount * this.bufferSegmentSize,
+        null,
+        null,
+        0
+      )
+
+    this.exoAudioRenderer =
+      MediaCodecAudioTrackRenderer(
+        sampleSource,
+        MediaCodecSelector.DEFAULT,
+        null,
+        true,
+        null,
+        null,
+        AudioCapabilities.getCapabilities(this.context),
+        AudioManager.STREAM_MUSIC
+      )
+
+    this.exoPlayer.prepare(this.exoAudioRenderer)
+    this.seek(offset)
+    this.exoPlayer.playWhenReady = playAutomatically
+
+    this.setPlayerPlaybackRate(this.currentPlaybackRate)
   }
 
   private fun seek(offsetMs: Long) {
@@ -644,7 +641,7 @@ class ExoAudioBookPlayer private constructor(
         this.opPlayStopped(state)
 
       is ExoPlayerStateWaitingForElement -> {
-        this.playSpineElementIfAvailable(state.spineElement, offset = 0)
+        this.playSpineElementIfAvailable(state.spineElement, offset = state.offset)
         Unit
       }
     }
@@ -660,8 +657,7 @@ class ExoAudioBookPlayer private constructor(
       ExoPlayerStatePlaying(
         spineElement = state.spineElement,
         observerTask = this.schedulePlaybackObserverForSpineElement(
-          spineElement = state.spineElement,
-          initialSeek = null
+          spineElement = state.spineElement
         )
       )
     )
@@ -851,7 +847,7 @@ class ExoAudioBookPlayer private constructor(
     }
   }
 
-  private fun opPlayAtLocation(location: PlayerPosition) {
+  private fun opPlayAtLocation(location: PlayerPosition, playAutomatically: Boolean = false) {
     ExoEngineThread.checkIsExoEngineThread()
     this.log.debug("opPlayAtLocation: {}", location)
 
@@ -873,9 +869,12 @@ class ExoAudioBookPlayer private constructor(
 
     if (requestedSpineElement == currentSpineElement) {
       this.seek(location.offsetMilliseconds)
-      this.opPlay()
+      if (playAutomatically) {
+        this.opPlay()
+      }
     } else {
-      this.playSpineElementIfAvailable(requestedSpineElement, location.offsetMilliseconds)
+      this.playSpineElementIfAvailable(requestedSpineElement, location.offsetMilliseconds,
+        playAutomatically)
     }
   }
 
@@ -888,10 +887,10 @@ class ExoAudioBookPlayer private constructor(
     }
   }
 
-  private fun opMovePlayheadToLocation(location: PlayerPosition) {
+  private fun opMovePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean = false) {
     ExoEngineThread.checkIsExoEngineThread()
     this.log.debug("opMovePlayheadToLocation: {}", location)
-    this.opPlayAtLocation(location)
+    this.opPlayAtLocation(location, playAutomatically)
     this.opPause()
   }
 
@@ -966,12 +965,12 @@ class ExoAudioBookPlayer private constructor(
 
   override fun playAtLocation(location: PlayerPosition) {
     this.checkNotClosed()
-    this.engineExecutor.execute { this.opPlayAtLocation(location) }
+    this.engineExecutor.execute { this.opPlayAtLocation(location, playAutomatically = true) }
   }
 
-  override fun movePlayheadToLocation(location: PlayerPosition) {
+  override fun movePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean) {
     this.checkNotClosed()
-    this.engineExecutor.execute { this.opMovePlayheadToLocation(location) }
+    this.engineExecutor.execute { this.opMovePlayheadToLocation(location, playAutomatically) }
   }
 
   override fun playAtBookStart() {

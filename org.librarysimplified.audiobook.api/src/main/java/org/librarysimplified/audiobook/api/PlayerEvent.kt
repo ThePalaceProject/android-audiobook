@@ -60,6 +60,16 @@ sealed class PlayerEvent {
     ) : PlayerEventWithSpineElement()
 
     /**
+     * The given spine item is ready to be played, but waiting for the user's action since it
+     * won't automatically start playing.
+     */
+
+    data class PlayerEventPlaybackWaitingForAction(
+      override val spineElement: PlayerSpineElementType,
+      val offsetMilliseconds: Long
+    ) : PlayerEventWithSpineElement()
+
+    /**
      * The given spine item is playing, and this event is a progress update indicating how far
      * along playback is.
      */

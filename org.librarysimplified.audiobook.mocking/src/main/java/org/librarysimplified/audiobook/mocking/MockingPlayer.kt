@@ -119,7 +119,7 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
 
   override fun movePlayheadToBookStart() {
     this.log.debug("movePlayheadToBookStart")
-    this.movePlayheadToLocation(this.book.spineItems.first().position)
+    this.movePlayheadToLocation(this.book.spineItems.first().position, playAutomatically = true)
   }
 
   private fun goToChapter(chapter: Int) {
@@ -132,7 +132,7 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
     }
   }
 
-  override fun movePlayheadToLocation(location: PlayerPosition) {
+  override fun movePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean) {
     this.log.debug("movePlayheadToLocation {} {} {}", location.part, location.chapter, location.offsetMilliseconds)
     this.callEvents.onNext("movePlayheadToLocation ${location.part} ${location.chapter} ${location.offsetMilliseconds}")
     this.goToChapter(location.chapter)

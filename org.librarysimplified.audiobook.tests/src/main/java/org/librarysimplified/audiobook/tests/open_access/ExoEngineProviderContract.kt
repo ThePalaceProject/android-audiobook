@@ -25,6 +25,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
@@ -827,6 +828,8 @@ abstract class ExoEngineProviderContract {
         "playbackChapterCompleted ${event.spineElement.index}"
       is PlayerEventChapterWaiting ->
         "playbackChapterWaiting ${event.spineElement.index}"
+      is PlayerEventPlaybackWaitingForAction ->
+        "playbackWaitingForAction ${event.spineElement.index} ${event.offsetMilliseconds}"
       is PlayerEventPlaybackPaused ->
         "playbackPaused ${event.spineElement.index} ${event.offsetMilliseconds}"
       is PlayerEventPlaybackStopped ->

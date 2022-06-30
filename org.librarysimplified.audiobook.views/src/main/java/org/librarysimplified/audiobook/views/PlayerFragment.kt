@@ -12,12 +12,14 @@ import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
@@ -36,6 +38,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerCancelled
@@ -95,6 +98,8 @@ class PlayerFragment : Fragment() {
   private lateinit var player: PlayerType
   private lateinit var playerAuthorView: TextView
   private lateinit var playerBookmark: ImageView
+  private lateinit var playerCommands: ViewGroup
+  private lateinit var playerDownloadingChapter: ProgressBar
   private lateinit var playerInfoModel: PlayerInfoModel
   private lateinit var playerPosition: SeekBar
   private lateinit var playerService: PlayerService
@@ -451,6 +456,9 @@ class PlayerFragment : Fragment() {
     this.playerBookmark = view.findViewById(R.id.player_bookmark)
     this.playerBookmark.alpha = 0.0f
 
+    this.playerDownloadingChapter = view.findViewById(R.id.player_downloading_chapter)
+    this.playerCommands = view.findViewById(R.id.player_commands)
+
     this.playerTitleView = view.findViewById(R.id.player_title)
     this.playerAuthorView = view.findViewById(R.id.player_author)
 
@@ -508,7 +516,7 @@ class PlayerFragment : Fragment() {
       if (this.player.isPlaying) {
         this.player.playAtLocation(target)
       } else {
-        this.player.movePlayheadToLocation(target)
+        this.player.movePlayheadToLocation(target, playAutomatically = true)
       }
     }
   }
@@ -542,6 +550,8 @@ class PlayerFragment : Fragment() {
         this.onPlayerEventChapterWaiting(event)
       is PlayerEventPlaybackProgressUpdate ->
         this.onPlayerEventPlaybackProgressUpdate(event)
+      is PlayerEventPlaybackWaitingForAction ->
+        this.onPlayerEventPlaybackWaitingForAction(event)
       is PlayerEventChapterCompleted ->
         this.onPlayerEventChapterCompleted()
       is PlayerEventPlaybackPaused ->
@@ -578,7 +588,9 @@ class PlayerFragment : Fragment() {
       Runnable {
         safelyPerformOperations {
           val text = this.getString(R.string.audiobook_player_error, event.errorCode)
-          this.playerWaiting.setText(text)
+          this.playerDownloadingChapter.visibility = GONE
+          this.playerCommands.visibility = VISIBLE
+          this.playerWaiting.text = text
           this.playerWaiting.contentDescription = null
           this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityErrorOccurred(text))
 
@@ -596,9 +608,11 @@ class PlayerFragment : Fragment() {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
+          this.playerDownloadingChapter.visibility = VISIBLE
+          this.playerCommands.visibility = GONE
           val text =
             this.getString(R.string.audiobook_player_waiting, event.spineElement.index + 1)
-          this.playerWaiting.setText(text)
+          this.playerWaiting.text = text
           this.playerWaiting.contentDescription = null
           this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityIsWaitingForChapter(text))
 
@@ -665,6 +679,25 @@ class PlayerFragment : Fragment() {
     )
   }
 
+  private fun onPlayerEventPlaybackWaitingForAction(event: PlayerEventPlaybackWaitingForAction) {
+    UIThread.runOnUIThread(
+      Runnable {
+        safelyPerformOperations {
+          this.playerDownloadingChapter.visibility = GONE
+          this.playerCommands.visibility = VISIBLE
+          this.playerWaiting.text = ""
+          this.currentPlaybackRate = this.player.playbackRate
+          this.playPauseButton.setImageResource(R.drawable.play_icon)
+          this.playPauseButton.setOnClickListener { this.onPressedPlay() }
+          this.playPauseButton.contentDescription =
+            this.getString(R.string.audiobook_accessibility_play)
+          this.configureSpineElementText(event.spineElement, isPlaying = false)
+          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+        }
+      }
+    )
+  }
+
   private fun onPlayerEventPlaybackPaused(event: PlayerEventPlaybackPaused) {
     this.onPlayerBufferingStopped()
 
@@ -717,6 +750,8 @@ class PlayerFragment : Fragment() {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
+          this.playerDownloadingChapter.visibility = GONE
+          this.playerCommands.visibility = VISIBLE
           this.playPauseButton.setImageResource(R.drawable.pause_icon)
           this.playPauseButton.setOnClickListener { this.onPressedPause() }
           this.playPauseButton.contentDescription =
@@ -735,6 +770,8 @@ class PlayerFragment : Fragment() {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
+          this.playerDownloadingChapter.visibility = GONE
+          this.playerCommands.visibility = VISIBLE
           this.player.playbackRate = this.currentPlaybackRate
           this.playPauseButton.setImageResource(R.drawable.pause_icon)
           this.playPauseButton.setOnClickListener { this.onPressedPause() }

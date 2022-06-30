@@ -24,6 +24,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.NORMAL_TIME
 import org.librarysimplified.audiobook.api.PlayerPosition
@@ -249,8 +250,7 @@ class LCPAudioBookPlayer private constructor(
    */
 
   private inner class PlaybackObserver(
-    private val spineElement: LCPSpineElement,
-    private var initialSeek: Long?
+    private val spineElement: LCPSpineElement
   ) : Runnable {
 
     private var gracePeriod: Int = 1
@@ -261,22 +261,6 @@ class LCPAudioBookPlayer private constructor(
       val position = bookPlayer.exoPlayer.currentPosition
       bookPlayer.log.debug("playback: {}/{}", position, duration)
       this.spineElement.duration = Duration.millis(duration)
-
-      /*
-       * Perform the initial seek, if necessary.
-       */
-
-      val seek = this.initialSeek
-      if (seek != null) {
-        bookPlayer.engineExecutor.execute {
-          if (seek < 0L) {
-            bookPlayer.seek(duration + seek)
-          } else {
-            bookPlayer.seek(seek)
-          }
-        }
-        this.initialSeek = null
-      }
 
       /*
        * Report the current playback status.
@@ -306,65 +290,16 @@ class LCPAudioBookPlayer private constructor(
     }
   }
 
-  private fun openSpineElement(
-    spineElement: LCPSpineElement,
-    offset: Long
-  ): ScheduledFuture<*> {
-    this.log.debug("openSpineElement: {} (offset {})", spineElement.index, offset)
-
-    /*
-     * Set up an audio renderer for the spine element and tell ExoPlayer to prepare it and then
-     * play when ready.
-     */
-
-    val uri = Uri.parse(
-      spineElement.itemManifest.uri.toString().let {
-        if (it.startsWith("/")) it else "/$it"
-      }
-    )
-
-    val sampleSource =
-      ExtractorSampleSource(
-        uri,
-        this.dataSource,
-        this.allocator,
-        this.bufferSegmentCount * this.bufferSegmentSize,
-        null,
-        null,
-        0
-      )
-
-    this.exoAudioRenderer =
-      MediaCodecAudioTrackRenderer(
-        sampleSource,
-        MediaCodecSelector.DEFAULT,
-        null,
-        true,
-        null,
-        null,
-        AudioCapabilities.getCapabilities(this.context),
-        AudioManager.STREAM_MUSIC
-      )
-
-    this.exoPlayer.prepare(this.exoAudioRenderer)
-    this.seek(offset)
-    this.exoPlayer.playWhenReady = true
-
-    this.setPlayerPlaybackRate(this.currentPlaybackRate)
-    return this.schedulePlaybackObserverForSpineElement(spineElement, initialSeek = null)
-  }
-
   /**
    * Schedule a playback observer that will check the current state of playback once per second.
    */
 
   private fun schedulePlaybackObserverForSpineElement(
-    spineElement: LCPSpineElement,
-    initialSeek: Long?
+    spineElement: LCPSpineElement
   ): ScheduledFuture<*> {
 
     return this.engineExecutor.scheduleAtFixedRate(
-      this.PlaybackObserver(spineElement, initialSeek), 1L, 1L, SECONDS
+      this.PlaybackObserver(spineElement), 1L, 1L, SECONDS
     )
   }
 
@@ -458,7 +393,7 @@ class LCPAudioBookPlayer private constructor(
       return SKIP_TO_CHAPTER_NONEXISTENT
     }
 
-    return this.skipToSpineElement(next, offset)
+    return this.skipToSpineElement(next, offset, playAutomatically = true)
   }
 
   private fun playPreviousSpineElementIfAvailable(
@@ -473,31 +408,93 @@ class LCPAudioBookPlayer private constructor(
       return SKIP_TO_CHAPTER_NONEXISTENT
     }
 
-    return this.skipToSpineElement(previous, offset)
+    return this.skipToSpineElement(previous, offset, playAutomatically = true)
   }
 
   private fun skipToSpineElement(
     element: LCPSpineElement,
-    offset: Long
+    offset: Long,
+    playAutomatically: Boolean = false
   ): SkipChapterStatus {
     this.log.debug("skipToSpineElement: {}", element.index)
     this.playNothing()
-    this.playSpineElement(element, offset)
+    this.handleActionOnSpineElement(element, offset, playAutomatically)
 
     return SKIP_TO_CHAPTER_READY
   }
 
-  private fun playSpineElement(element: LCPSpineElement, offset: Long = 0) {
-    this.log.debug("playSpineElement: {}", element.index)
+  private fun handleActionOnSpineElement(
+    element: LCPSpineElement,
+    offset: Long,
+    playAutomatically: Boolean
+  ) {
+    this.log.debug("handling action on element with index: {}", element.index)
 
-    this.stateSet(
-      LCPPlayerStatePlaying(
-        spineElement = element,
-        observerTask = this.openSpineElement(element, offset)
+    this.preparePlayer(element, offset, playAutomatically)
+
+    if (playAutomatically) {
+      this.stateSet(
+        LCPPlayerStatePlaying(
+          spineElement = element,
+          observerTask = this.schedulePlaybackObserverForSpineElement(element)
+        )
       )
-    )
-    this.statusEvents.onNext(PlayerEventPlaybackStarted(element, offset))
+      this.statusEvents.onNext(PlayerEventPlaybackStarted(element, offset))
+    } else {
+      this.stateSet(LCPPlayerStateStopped(element))
+      this.statusEvents.onNext(PlayerEventPlaybackWaitingForAction(element, offset))
+    }
+
     this.currentPlaybackOffset = offset
+  }
+
+  private fun preparePlayer(
+    spineElement: LCPSpineElement,
+    offset: Long,
+    playAutomatically: Boolean)
+  {
+    this.log.debug("preparePlayer: {} (offset {})", spineElement.index, offset)
+
+
+    /*
+     * Set up an audio renderer for the spine element and tell ExoPlayer to prepare it and then
+     * play when ready.
+     */
+
+    val uri = Uri.parse(
+      spineElement.itemManifest.uri.toString().let {
+        if (it.startsWith("/")) it else "/$it"
+      }
+    )
+
+    val sampleSource =
+      ExtractorSampleSource(
+        uri,
+        this.dataSource,
+        this.allocator,
+        this.bufferSegmentCount * this.bufferSegmentSize,
+        null,
+        null,
+        0
+      )
+
+    this.exoAudioRenderer =
+      MediaCodecAudioTrackRenderer(
+        sampleSource,
+        MediaCodecSelector.DEFAULT,
+        null,
+        true,
+        null,
+        null,
+        AudioCapabilities.getCapabilities(this.context),
+        AudioManager.STREAM_MUSIC
+      )
+
+    this.exoPlayer.prepare(this.exoAudioRenderer)
+    this.seek(offset)
+    this.exoPlayer.playWhenReady = playAutomatically
+
+    this.setPlayerPlaybackRate(this.currentPlaybackRate)
   }
 
   private fun seek(offsetMs: Long) {
@@ -542,8 +539,7 @@ class LCPAudioBookPlayer private constructor(
       LCPPlayerStatePlaying(
         spineElement = state.spineElement,
         observerTask = this.schedulePlaybackObserverForSpineElement(
-          spineElement = state.spineElement,
-          initialSeek = null
+          spineElement = state.spineElement
         )
       )
     )
@@ -720,7 +716,7 @@ class LCPAudioBookPlayer private constructor(
     }
   }
 
-  private fun opPlayAtLocation(location: PlayerPosition) {
+  private fun opPlayAtLocation(location: PlayerPosition, playAutomatically: Boolean = false) {
     ExoEngineThread.checkIsExoEngineThread()
     this.log.debug("opPlayAtLocation: {}", location)
 
@@ -742,9 +738,12 @@ class LCPAudioBookPlayer private constructor(
 
     if (requestedSpineElement == currentSpineElement) {
       this.seek(location.offsetMilliseconds)
-      this.opPlay()
+
+      if (playAutomatically) {
+        this.opPlay()
+      }
     } else {
-      this.skipToSpineElement(requestedSpineElement, location.offsetMilliseconds)
+      this.skipToSpineElement(requestedSpineElement, location.offsetMilliseconds, playAutomatically)
     }
   }
 
@@ -756,10 +755,10 @@ class LCPAudioBookPlayer private constructor(
     }
   }
 
-  private fun opMovePlayheadToLocation(location: PlayerPosition) {
+  private fun opMovePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean = false) {
     ExoEngineThread.checkIsExoEngineThread()
     this.log.debug("opMovePlayheadToLocation: {}", location)
-    this.opPlayAtLocation(location)
+    this.opPlayAtLocation(location, playAutomatically)
     this.opPause()
   }
 
@@ -834,9 +833,8 @@ class LCPAudioBookPlayer private constructor(
     this.engineExecutor.execute { this.opPlayAtLocation(location) }
   }
 
-  override fun movePlayheadToLocation(location: PlayerPosition) {
-    this.checkNotClosed()
-    this.engineExecutor.execute { this.opMovePlayheadToLocation(location) }
+  override fun movePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean) {
+    this.engineExecutor.execute { this.opMovePlayheadToLocation(location, playAutomatically) }
   }
 
   override fun playAtBookStart() {
