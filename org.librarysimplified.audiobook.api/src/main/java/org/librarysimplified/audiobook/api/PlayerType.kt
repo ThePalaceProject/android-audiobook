@@ -131,7 +131,8 @@ interface PlayerType : AutoCloseable {
    */
 
   fun movePlayheadToLocation(
-    location: PlayerPosition
+    location: PlayerPosition,
+    playAutomatically: Boolean
   )
 
   /**

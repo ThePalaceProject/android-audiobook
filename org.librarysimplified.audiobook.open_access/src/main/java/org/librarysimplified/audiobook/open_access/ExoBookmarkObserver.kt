@@ -14,6 +14,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerType
 import org.slf4j.LoggerFactory
 import rx.Subscription
@@ -54,7 +55,8 @@ class ExoBookmarkObserver private constructor(
       is PlayerEventPlaybackBuffering,
       is PlayerEventPlaybackPaused,
       is PlayerEventPlaybackStarted,
-      is PlayerEventPlaybackStopped ->
+      is PlayerEventPlaybackStopped,
+      is PlayerEventPlaybackWaitingForAction ->
         Unit
     }
   }

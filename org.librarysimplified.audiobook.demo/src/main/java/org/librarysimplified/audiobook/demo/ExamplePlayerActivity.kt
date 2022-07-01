@@ -23,6 +23,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
@@ -550,7 +551,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     this.playerInitialized = true
 
     val lastPlayed = this.bookmarks.bookmarkFindLastReadLocation(book.id.value)
-    this.player.movePlayheadToLocation(lastPlayed)
+    this.player.movePlayheadToLocation(lastPlayed, playAutomatically = false)
     this.playerEvents = this.player.events.subscribe(this::onPlayerEvent)
 
     this.startAllPartsDownloading()
@@ -762,7 +763,8 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
       is PlayerEventPlaybackPaused,
       is PlayerEventPlaybackProgressUpdate,
       is PlayerEventPlaybackStarted,
-      is PlayerEventPlaybackStopped ->
+      is PlayerEventPlaybackStopped,
+      is PlayerEventPlaybackWaitingForAction ->
         Unit
     }
   }

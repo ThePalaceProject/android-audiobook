@@ -175,11 +175,13 @@
         <c:change date="2022-04-29T00:00:00+00:00" summary="Fixed Feedbooks manifests not being accepted by the open access engine."/>
       </c:changes>
     </c:release>
-    <c:release date="2022-06-14T16:52:15+00:00" is-open="true" ticket-system="org.nypl.jira" version="7.0.2">
+    <c:release date="2022-06-30T13:31:27+00:00" is-open="true" ticket-system="org.nypl.jira" version="7.0.2">
       <c:changes>
         <c:change date="2022-05-02T00:00:00+00:00" summary="Fixed audiobook chapters/tracks downloading logic to prevent the download of repeated files"/>
         <c:change date="2022-05-17T00:00:00+00:00" summary="Added support for bearer token downloads of manifests and audio files."/>
-        <c:change date="2022-06-14T16:52:15+00:00" summary="Adjusted audiobook cover image scaling type"/>
+        <c:change date="2022-06-14T00:00:00+00:00" summary="Adjusted audiobook cover image scaling type"/>
+        <c:change date="2022-06-30T00:00:00+00:00" summary="Added support to bookmarks"/>
+        <c:change date="2022-06-30T13:31:27+00:00" summary="Changed audiobook behaviour to not start automatically playing"/>
       </c:changes>
     </c:release>
   </c:releases>
