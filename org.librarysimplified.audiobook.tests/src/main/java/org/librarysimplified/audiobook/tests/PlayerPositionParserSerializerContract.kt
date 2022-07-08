@@ -76,7 +76,7 @@ abstract class PlayerPositionParserSerializerContract {
       PlayerPosition("A Title", 23, 137, 183991238L)
     )
 
-    (node["position"] as ObjectNode).remove("part")
+    (node["location"] as ObjectNode).remove("part")
 
     val result =
       parser.parseFromObjectNode(node)
@@ -93,7 +93,7 @@ abstract class PlayerPositionParserSerializerContract {
       PlayerPosition("A Title", 23, 137, 183991238L)
     )
 
-    (node["position"] as ObjectNode).remove("chapter")
+    (node["location"] as ObjectNode).remove("chapter")
 
     val result =
       parser.parseFromObjectNode(node)
@@ -110,7 +110,7 @@ abstract class PlayerPositionParserSerializerContract {
       PlayerPosition("A Title", 23, 137, 183991238L)
     )
 
-    (node["position"] as ObjectNode).remove("offsetMilliseconds")
+    (node["location"] as ObjectNode).remove("time")
 
     val result =
       parser.parseFromObjectNode(node)
@@ -127,7 +127,7 @@ abstract class PlayerPositionParserSerializerContract {
       PlayerPosition("A Title", 23, 137, 183991238L)
     )
 
-    (node["position"] as ObjectNode).remove("title")
+    (node["location"] as ObjectNode).remove("title")
 
     val result =
       parser.parseFromObjectNode(node)
@@ -173,7 +173,7 @@ abstract class PlayerPositionParserSerializerContract {
       PlayerPosition("Something", 23, 137, 183991238L)
     )
 
-    val objectNode = node["position"] as ObjectNode
+    val objectNode = node["location"] as ObjectNode
     objectNode.put("title", null as String?)
 
     val result =
