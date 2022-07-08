@@ -16,6 +16,9 @@ object PlayerPositions : PlayerPositionParserType, PlayerPositionSerializerType 
         1 -> {
           return parseFromObjectNodeV1(node)
         }
+        2 -> {
+          return parseFromObjectNodeV2(node)
+        }
       }
 
       throw PlayerJSONParseException("Unsupported format version: $version")
@@ -47,19 +50,40 @@ object PlayerPositions : PlayerPositionParserType, PlayerPositionSerializerType 
     )
   }
 
+  @Throws(PlayerJSONParseException::class)
+  private fun parseFromObjectNodeV2(node: ObjectNode): PlayerResult<PlayerPosition, Exception> {
+    val locationNode =
+      PlayerJSONParserUtilities.getObject(node, "location")
+    val chapter =
+      PlayerJSONParserUtilities.getInteger(locationNode, "chapter")
+    val part =
+      PlayerJSONParserUtilities.getInteger(locationNode, "part")
+    val offsetMilliseconds =
+      PlayerJSONParserUtilities.getBigInteger(locationNode, "time").toLong()
+    val title =
+      PlayerJSONParserUtilities.getStringOptional(locationNode, "title")
+
+    return PlayerResult.Success(
+      PlayerPosition(
+        title = title,
+        part = part,
+        chapter = chapter,
+        offsetMilliseconds = offsetMilliseconds
+      )
+    )
+  }
+
   override fun serializeToObjectNode(position: PlayerPosition): ObjectNode {
     val objects = ObjectMapper()
     val node = objects.createObjectNode()
-    node.put("@version", 1)
+    node.put("@version", 2)
 
-    val positionNode = objects.createObjectNode()
-    positionNode.put("chapter", position.chapter)
-    positionNode.put("part", position.part)
-    positionNode.put("offsetMilliseconds", position.offsetMilliseconds)
-    if (position.title != null) {
-      positionNode.put("title", position.title)
-    }
-    node.set<ObjectNode>("position", positionNode)
+    val locationNode = objects.createObjectNode()
+    locationNode.put("chapter", position.chapter)
+    locationNode.put("part", position.part)
+    locationNode.put("time", position.offsetMilliseconds)
+    locationNode.put("title", position.title)
+    node.set<ObjectNode>("location", locationNode)
     return node
   }
 }
