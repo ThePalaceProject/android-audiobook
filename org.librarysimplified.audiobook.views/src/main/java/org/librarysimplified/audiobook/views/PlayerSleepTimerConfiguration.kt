@@ -46,5 +46,5 @@ enum class PlayerSleepTimerConfiguration {
    * The sleep timer will finish at the end of the current chapter.
    */
 
-  END_OF_CHAPTER,
+  END_OF_CHAPTER
 }
