@@ -1,6 +1,8 @@
 package org.librarysimplified.audiobook.views
 
 import androidx.annotation.ColorInt
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.NORMAL_TIME
 import java.io.Serializable
 
 /**
@@ -17,5 +19,8 @@ data class PlayerFragmentParameters(
     message = "Colors should now be taken from the colorPrimary attribute of the current application theme",
     level = DeprecationLevel.WARNING
   )
-  @ColorInt val primaryColor: Int? = null
+  @ColorInt val primaryColor: Int? = null,
+
+  val currentRate: PlayerPlaybackRate? = NORMAL_TIME
+
 ) : Serializable
