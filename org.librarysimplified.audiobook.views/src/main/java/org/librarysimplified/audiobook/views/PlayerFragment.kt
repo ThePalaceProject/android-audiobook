@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
@@ -491,6 +492,8 @@ class PlayerFragment : Fragment() {
       }
     })
 
+    this.playerPosition.setOnTouchListener { _, event -> handleTouchOnSeekbar(event) }
+
     this.playerTimeCurrent = view.findViewById(R.id.player_time)!!
     this.playerTimeMaximum = view.findViewById(R.id.player_time_maximum)!!
     this.playerSpineElement = view.findViewById(R.id.player_spine_element)!!
@@ -503,9 +506,38 @@ class PlayerFragment : Fragment() {
     initializeService()
   }
 
+  private fun handleTouchOnSeekbar(event: MotionEvent?): Boolean {
+    when (event?.action) {
+      MotionEvent.ACTION_DOWN -> {
+        return if (wasSeekbarThumbClicked(event)) {
+          playerPositionDragging = true
+          playerPosition.onTouchEvent(event)
+        } else {
+          true
+        }
+      }
+      MotionEvent.ACTION_UP -> {
+        playerPositionDragging = false
+        return if (wasSeekbarThumbClicked(event)) {
+          playerPosition.onTouchEvent(event)
+        } else {
+          true
+        }
+      }
+      MotionEvent.ACTION_MOVE -> {
+        if (!playerPositionDragging) {
+          return true
+        }
+      }
+      MotionEvent.ACTION_CANCEL ->
+        playerPositionDragging = false
+    }
+
+    return playerPosition.onTouchEvent(event)
+  }
+
   private fun onProgressBarDraggingStopped() {
     this.log.debug("onProgressBarDraggingStopped")
-    this.playerPositionDragging = false
 
     val spine = this.playerPositionCurrentSpine
     if (spine != null) {
@@ -521,9 +553,12 @@ class PlayerFragment : Fragment() {
     }
   }
 
+  private fun wasSeekbarThumbClicked(event: MotionEvent): Boolean {
+    return this.playerPosition.thumb.bounds.contains(event.x.toInt(), event.y.toInt())
+  }
+
   private fun onProgressBarDraggingStarted() {
     this.log.debug("onProgressBarDraggingStarted")
-    this.playerPositionDragging = true
   }
 
   private fun onProgressBarChanged(progress: Int, fromUser: Boolean) {
