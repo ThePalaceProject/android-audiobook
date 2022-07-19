@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorBackgroundFloating"
+    android:orientation="vertical">
 
-<androidx.recyclerview.widget.RecyclerView
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:tools="http://schemas.android.com/tools"
-  android:background="?attr/colorBackgroundFloating"
-  android:id="@+id/list"
-  android:name="org.librarysimplified.audiobook.views.PlayerSleepTimerFragment"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:paddingTop="16dp"
-  app:layoutManager="LinearLayoutManager"
-  tools:context="org.librarysimplified.audiobook.views.PlayerSleepTimerFragment"
-  tools:listitem="@layout/player_sleep_item_view" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
+        android:name="org.librarysimplified.audiobook.views.PlayerSleepTimerFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="8dp"
+        app:layoutManager="LinearLayoutManager"
+        tools:context="org.librarysimplified.audiobook.views.PlayerSleepTimerFragment"
+        tools:listitem="@layout/player_sleep_item_view" />
+
+    <TextView
+        android:id="@+id/cancel_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:padding="16dp"
+        android:textSize="24sp"
+        android:text="@string/audiobook_player_options_cancel" />
+
+</LinearLayout>

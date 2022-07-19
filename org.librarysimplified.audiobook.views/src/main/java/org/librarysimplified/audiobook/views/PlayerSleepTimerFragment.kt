@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -47,14 +48,23 @@ class PlayerSleepTimerFragment : DialogFragment() {
     state: Bundle?
   ): View {
 
-    val view: RecyclerView =
-      inflater.inflate(R.layout.player_sleep_timer_view, container, false) as RecyclerView
+    val view: ViewGroup =
+      inflater.inflate(R.layout.player_sleep_timer_view, container, false) as ViewGroup
 
+    val list: RecyclerView =
+      view.findViewById(R.id.list)
     this.dialog?.setTitle(R.string.audiobook_player_menu_sleep_title)
 
-    view.layoutManager = LinearLayoutManager(view.context)
-    view.setHasFixedSize(true)
-    view.adapter = this.adapter
+    list.layoutManager = LinearLayoutManager(view.context)
+    list.setHasFixedSize(true)
+    list.adapter = this.adapter
+
+    val cancelButton: TextView =
+      view.findViewById(R.id.cancel_button)
+
+    cancelButton.setOnClickListener {
+      dismiss()
+    }
 
     return view
   }
@@ -63,7 +73,7 @@ class PlayerSleepTimerFragment : DialogFragment() {
     super.onAttach(context)
 
     this.parameters =
-      this.arguments!!.getSerializable(parametersKey)
+      requireArguments().getSerializable(parametersKey)
       as PlayerFragmentParameters
 
     if (context is PlayerFragmentListenerType) {
@@ -100,7 +110,7 @@ class PlayerSleepTimerFragment : DialogFragment() {
 
   private fun enabledSleepTimerConfigurations(): List<PlayerSleepTimerConfiguration> {
     val nowEnabled =
-      this.context!!.resources.getBoolean(R.bool.audiobook_player_debug_sleep_timer_now_enabled)
+      requireContext().resources.getBoolean(R.bool.audiobook_player_debug_sleep_timer_now_enabled)
     return values().toList().filter { configuration ->
       when (configuration) {
         MINUTES_15, MINUTES_30, MINUTES_45, MINUTES_60, OFF, END_OF_CHAPTER -> true

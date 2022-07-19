@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -37,14 +38,23 @@ class PlayerPlaybackRateFragment : DialogFragment() {
     state: Bundle?
   ): View {
 
-    val view: RecyclerView =
-      inflater.inflate(R.layout.player_rate_view, container, false) as RecyclerView
+    val view: ViewGroup =
+      inflater.inflate(R.layout.player_rate_view, container, false) as ViewGroup
 
+    val list: RecyclerView =
+      view.findViewById(R.id.list)
     this.dialog?.setTitle(R.string.audiobook_player_menu_playback_rate_title)
 
-    view.layoutManager = LinearLayoutManager(view.context)
-    view.setHasFixedSize(true)
-    view.adapter = this.adapter
+    list.layoutManager = LinearLayoutManager(view.context)
+    list.setHasFixedSize(true)
+    list.adapter = this.adapter
+
+    val cancelButton: TextView =
+      view.findViewById(R.id.cancel_button)
+
+    cancelButton.setOnClickListener {
+      dismiss()
+    }
 
     return view
   }
@@ -53,7 +63,7 @@ class PlayerPlaybackRateFragment : DialogFragment() {
     super.onAttach(context)
 
     this.parameters =
-      this.arguments!!.getSerializable(parametersKey)
+      requireArguments().getSerializable(parametersKey)
       as PlayerFragmentParameters
 
     if (context is PlayerFragmentListenerType) {
