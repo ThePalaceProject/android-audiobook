@@ -183,6 +183,7 @@
         <c:change date="2022-06-30T00:00:00+00:00" summary="Added support to bookmarks"/>
         <c:change date="2022-06-30T00:00:00+00:00" summary="Changed audiobook behaviour to not start automatically playing"/>
         <c:change date="2022-07-08T00:00:00+00:00" summary="Updated PlayerPositions method to support new audiobook bookmark version"/>
+        <c:change date="2022-07-15T17:37:03+00:00" summary="Added 'Cancel' option to player settings dialogs."/>
         <c:change date="2022-07-18T10:47:05+00:00" summary="Disabled click on audiobook seekbar."/>
       </c:changes>
     </c:release>
