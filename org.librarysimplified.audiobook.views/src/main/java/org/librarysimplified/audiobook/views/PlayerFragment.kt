@@ -478,19 +478,6 @@ class PlayerFragment : Fragment() {
     this.playerPosition = view.findViewById(R.id.player_progress)!!
     this.playerPosition.isEnabled = false
     this.playerPositionDragging = false
-    this.playerPosition.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-      override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        this@PlayerFragment.onProgressBarChanged(progress, fromUser)
-      }
-
-      override fun onStartTrackingTouch(seekBar: SeekBar) {
-        this@PlayerFragment.onProgressBarDraggingStarted()
-      }
-
-      override fun onStopTrackingTouch(seekBar: SeekBar) {
-        this@PlayerFragment.onProgressBarDraggingStopped()
-      }
-    })
 
     this.playerPosition.setOnTouchListener { _, event -> handleTouchOnSeekbar(event) }
 
@@ -517,8 +504,12 @@ class PlayerFragment : Fragment() {
         }
       }
       MotionEvent.ACTION_UP -> {
+        val wasDragging = playerPositionDragging
         playerPositionDragging = false
         return if (wasSeekbarThumbClicked(event)) {
+          if (wasDragging) {
+            onProgressBarDraggingStopped()
+          }
           playerPosition.onTouchEvent(event)
         } else {
           true
