@@ -548,14 +548,6 @@ class PlayerFragment : Fragment() {
     return this.playerPosition.thumb.bounds.contains(event.x.toInt(), event.y.toInt())
   }
 
-  private fun onProgressBarDraggingStarted() {
-    this.log.debug("onProgressBarDraggingStarted")
-  }
-
-  private fun onProgressBarChanged(progress: Int, fromUser: Boolean) {
-    this.log.debug("onProgressBarChanged: {} {}", progress, fromUser)
-  }
-
   private fun onPlayerEventsCompleted() {
     this.log.debug("onPlayerEventsCompleted")
   }
