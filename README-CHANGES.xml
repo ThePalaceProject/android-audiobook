@@ -185,6 +185,7 @@
         <c:change date="2022-07-08T00:00:00+00:00" summary="Updated PlayerPositions method to support new audiobook bookmark version"/>
         <c:change date="2022-07-15T00:00:00+00:00" summary="Added 'Cancel' option to player settings dialogs."/>
         <c:change date="2022-07-18T00:00:00+00:00" summary="Disabled click on audiobook seekbar."/>
+        <c:change date="2022-07-19T10:40:12+00:00" summary="Updated audiobook playback rate with saved value."/>
         <c:change date="2022-07-20T15:21:54+00:00" summary="Fixed audiobook not playing from correct position after dragging seekbar"/>
       </c:changes>
     </c:release>

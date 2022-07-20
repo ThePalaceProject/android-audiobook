@@ -493,8 +493,6 @@ class LCPAudioBookPlayer private constructor(
     this.exoPlayer.prepare(this.exoAudioRenderer)
     this.seek(offset)
     this.exoPlayer.playWhenReady = playAutomatically
-
-    this.setPlayerPlaybackRate(this.currentPlaybackRate)
   }
 
   private fun seek(offsetMs: Long) {

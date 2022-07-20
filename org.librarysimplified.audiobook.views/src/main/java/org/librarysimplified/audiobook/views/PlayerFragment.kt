@@ -149,6 +149,8 @@ class PlayerFragment : Fragment() {
         as PlayerFragmentParameters
     this.timeStrings =
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
+
+    this.player.playbackRate = this.parameters.currentRate ?: PlayerPlaybackRate.NORMAL_TIME
   }
 
   override fun onAttach(context: Context) {
