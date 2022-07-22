@@ -11,7 +11,8 @@
         android:id="@+id/list"
         android:name="org.librarysimplified.audiobook.views.PlayerSleepTimerFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:paddingTop="8dp"
         app:layoutManager="LinearLayoutManager"
         tools:context="org.librarysimplified.audiobook.views.PlayerSleepTimerFragment"
@@ -21,9 +22,8 @@
         android:id="@+id/cancel_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:gravity="center"
-        android:padding="16dp"
+        android:padding="24dp"
         android:textSize="24sp"
         android:text="@string/audiobook_player_options_cancel" />
 
