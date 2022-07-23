@@ -3,12 +3,15 @@ package org.librarysimplified.audiobook.tests.open_access
 import android.content.Context
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
 import org.librarysimplified.audiobook.api.PlayerResult
+import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.open_access.ExoSpineElement
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.librarysimplified.audiobook.tests.ExoUriDownloadProvider
 import org.slf4j.Logger
@@ -46,12 +49,19 @@ abstract class ExoDownloadContract {
       }
     }
 
+    var audiobook: PlayerAudioBookType? = null
+
     val engine =
       PlayerAudioEngines.findBestFor(
         PlayerAudioEngineRequest(
           manifest = manifest,
           filter = { true },
-          downloadProvider = ExoUriDownloadProvider(urisDownloadMap),
+          downloadProvider = ExoUriDownloadProvider(
+            onRequestSuccessfullyCompleted = { uri ->
+              updateAudiobookSpineItemsWithUri(audiobook, uri)
+            },
+            uriDownloadTimes = urisDownloadMap
+          ),
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
         )
       )
@@ -66,7 +76,7 @@ abstract class ExoDownloadContract {
 
     Assertions.assertNotNull(engine)
 
-    val audiobook = (bookResult as PlayerResult.Success).result
+    audiobook = (bookResult as PlayerResult.Success).result
 
     // start downloading the book
     audiobook.wholeBookDownloadTask.fetch()
@@ -77,6 +87,20 @@ abstract class ExoDownloadContract {
     // confirm that all the URIs were downloaded just once
     urisDownloadMap.keys.forEach {
       Assertions.assertTrue(urisDownloadMap[it] == 1)
+    }
+  }
+
+  private fun updateAudiobookSpineItemsWithUri(
+    audioBook: PlayerAudioBookType?,
+    uri: URI
+  ) {
+
+    audioBook?.downloadTasks?.find { task ->
+      task.spineItems.filterIsInstance<ExoSpineElement>().any { item ->
+        item.itemManifest.uri == uri
+      }
+    }?.spineItems?.filterIsInstance<ExoSpineElement>()?.forEach { spineItem ->
+      spineItem.setDownloadStatus(PlayerSpineElementDownloaded(spineItem))
     }
   }
 
