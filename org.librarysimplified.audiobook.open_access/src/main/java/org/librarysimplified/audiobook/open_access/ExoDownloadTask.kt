@@ -112,7 +112,7 @@ class ExoDownloadTask(
           this@ExoDownloadTask.onDownloadCompleted()
         }
 
-        override fun onFailure(exception: Throwable?) {
+        override fun onFailure(exception: Throwable) {
           when (exception) {
             is CancellationException ->
               this@ExoDownloadTask.onDownloadCancelled()
