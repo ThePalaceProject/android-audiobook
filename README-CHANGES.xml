@@ -188,6 +188,7 @@
         <c:change date="2022-07-19T00:00:00+00:00" summary="Updated audiobook playback rate with saved value."/>
         <c:change date="2022-07-20T00:00:00+00:00" summary="Fixed audiobook not playing from correct position after dragging seekbar"/>
         <c:change date="2022-07-21T00:00:00+00:00" summary="Fixed empty gap instead of cancel button on sleep timer and playback rate dialogs"/>
+        <c:change date="2022-07-23T11:35:01+00:00" summary="Fixed chaotical chapter downloading after clicking on a specific chapter to download"/>
         <c:change date="2022-07-25T13:16:28+00:00" summary="Fixed some issues while dragging the player's seekbar."/>
       </c:changes>
     </c:release>
