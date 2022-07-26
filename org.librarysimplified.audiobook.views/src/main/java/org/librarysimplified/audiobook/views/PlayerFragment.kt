@@ -114,6 +114,7 @@ class PlayerFragment : Fragment() {
   private lateinit var sleepTimer: PlayerSleepTimerType
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
   private lateinit var toolbar: Toolbar
+  private var clickedOnThumb: Boolean = false
   private var playerBufferingStillOngoing: Boolean = false
   private var playerBufferingTask: ScheduledFuture<*>? = null
   private var playerPositionDragging: Boolean = false
@@ -498,32 +499,32 @@ class PlayerFragment : Fragment() {
   private fun handleTouchOnSeekbar(event: MotionEvent?): Boolean {
     when (event?.action) {
       MotionEvent.ACTION_DOWN -> {
-        return if (wasSeekbarThumbClicked(event)) {
-          playerPositionDragging = true
-          playerPosition.onTouchEvent(event)
-        } else {
-          true
-        }
-      }
-      MotionEvent.ACTION_UP -> {
-        val wasDragging = playerPositionDragging
-        playerPositionDragging = false
-        return if (wasSeekbarThumbClicked(event)) {
-          if (wasDragging) {
-            onProgressBarDraggingStopped()
-          }
-          playerPosition.onTouchEvent(event)
-        } else {
-          true
-        }
-      }
-      MotionEvent.ACTION_MOVE -> {
-        if (!playerPositionDragging) {
+        clickedOnThumb = wasSeekbarThumbClicked(event)
+        if (!clickedOnThumb) {
           return true
         }
       }
-      MotionEvent.ACTION_CANCEL ->
+      MotionEvent.ACTION_UP -> {
+        if (clickedOnThumb && playerPositionDragging) {
+          playerPositionDragging = false
+          clickedOnThumb = false
+          onProgressBarDraggingStopped()
+        } else {
+          playerPositionDragging = false
+          clickedOnThumb = false
+          return true
+        }
+      }
+      MotionEvent.ACTION_MOVE -> {
+        if (!clickedOnThumb) {
+          return true
+        }
+        playerPositionDragging = true
+      }
+      MotionEvent.ACTION_CANCEL -> {
         playerPositionDragging = false
+        clickedOnThumb = false
+      }
     }
 
     return playerPosition.onTouchEvent(event)
