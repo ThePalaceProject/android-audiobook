@@ -162,7 +162,7 @@ class ExoAudioBook private constructor(
       }.map { entry ->
 
         val originalLink = entry.key
-        val spineItems = entry.value.mapIndexed { index, manifestSpineItem ->
+        val spineItems = entry.value.map { manifestSpineItem ->
 
           val duration =
             manifestSpineItem.duration?.let { time ->
@@ -173,7 +173,7 @@ class ExoAudioBook private constructor(
             downloadStatusEvents = statusEvents,
             bookID = bookId,
             itemManifest = manifestSpineItem,
-            index = index,
+            index = manifestIndex,
             nextElement = null,
             previousElement = spineItemPrevious,
             duration = duration
