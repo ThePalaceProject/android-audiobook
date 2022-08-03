@@ -150,8 +150,6 @@ class PlayerFragment : Fragment() {
         as PlayerFragmentParameters
     this.timeStrings =
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
-
-    this.player.playbackRate = this.parameters.currentRate ?: PlayerPlaybackRate.NORMAL_TIME
   }
 
   override fun onAttach(context: Context) {
@@ -493,6 +491,8 @@ class PlayerFragment : Fragment() {
     this.playerTitleView.text = this.listener.onPlayerWantsTitle()
     this.playerAuthorView.text = this.listener.onPlayerWantsAuthor()
 
+    this.player.playbackRate = this.parameters.currentRate ?: PlayerPlaybackRate.NORMAL_TIME
+
     initializeService()
   }
 
@@ -586,15 +586,19 @@ class PlayerFragment : Fragment() {
       PlayerEventManifestUpdated ->
         this.onPlayerEventManifestUpdated()
       is PlayerEventCreateBookmark ->
-        this.onPlayerEventCreateBookmark()
+        this.onPlayerEventCreateBookmark(event)
     }
   }
 
   /*
-   * Show a small icon to demonstrate that a bookmark was created.
+   * Show a small icon to demonstrate that a remote bookmark was created.
    */
 
-  private fun onPlayerEventCreateBookmark() {
+  private fun onPlayerEventCreateBookmark(event: PlayerEventCreateBookmark) {
+    if (event.isLocalBookmark) {
+      return
+    }
+
     UIThread.runOnUIThread {
       safelyPerformOperations {
         this.playerBookmark.alpha = 0.5f
