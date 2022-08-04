@@ -123,7 +123,8 @@ sealed class PlayerEvent {
 
     data class PlayerEventCreateBookmark(
       override val spineElement: PlayerSpineElementType,
-      val offsetMilliseconds: Long
+      val offsetMilliseconds: Long,
+      val isLocalBookmark: Boolean
     ) : PlayerEventWithSpineElement()
   }
 }
