@@ -833,7 +833,8 @@ class PlayerFragment : Fragment() {
     }
 
     this.playerTimeMaximum.text =
-      PlayerTimeStrings.hourMinuteSecondTextFromDurationOptional(spineElement.duration)
+      PlayerTimeStrings.hourMinuteSecondTextFromDurationOptional(spineElement.duration
+        ?.minus(offsetMilliseconds))
     this.playerTimeMaximum.contentDescription =
       this.playerTimeRemainingSpokenOptional(offsetMilliseconds, spineElement.duration)
 
