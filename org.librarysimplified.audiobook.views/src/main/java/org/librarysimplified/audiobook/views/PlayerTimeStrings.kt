@@ -76,15 +76,6 @@ object PlayerTimeStrings {
     }
   }
 
-  private val hourMinuteFormatter: PeriodFormatter =
-    PeriodFormatterBuilder()
-      .minimumPrintedDigits(2)
-      .appendHours()
-      .appendLiteral(" hr ")
-      .appendMinutes()
-      .appendLiteral(" min remaining")
-      .toFormatter()
-
   private val hourMinuteSecondFormatter: PeriodFormatter =
     PeriodFormatterBuilder()
       .printZeroAlways()
