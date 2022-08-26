@@ -103,6 +103,7 @@ class PlayerFragment : Fragment() {
   private lateinit var playerDownloadingChapter: ProgressBar
   private lateinit var playerInfoModel: PlayerInfoModel
   private lateinit var playerPosition: SeekBar
+  private lateinit var playerRemainingChapterTime: TextView
   private lateinit var playerService: PlayerService
   private lateinit var playerSkipBackwardButton: ImageView
   private lateinit var playerSkipForwardButton: ImageView
@@ -484,6 +485,7 @@ class PlayerFragment : Fragment() {
 
     this.playerTimeCurrent = view.findViewById(R.id.player_time)!!
     this.playerTimeMaximum = view.findViewById(R.id.player_time_maximum)!!
+    this.playerRemainingChapterTime = view.findViewById(R.id.player_remaining_chapter_time)!!
     this.playerSpineElement = view.findViewById(R.id.player_spine_element)!!
     this.playerSpineElement.text = this.spineElementText(this.book.spine.first())
 
@@ -832,6 +834,12 @@ class PlayerFragment : Fragment() {
         TimeUnit.MILLISECONDS.toSeconds(offsetMilliseconds).toInt()
     }
 
+    playerRemainingChapterTime.text =
+      PlayerTimeStrings.hourMinuteTextFromRemainingTime(
+        requireContext(),
+        getCurrentAudiobookRemainingDuration(spineElement) - offsetMilliseconds
+    )
+
     this.playerTimeMaximum.text =
       PlayerTimeStrings.hourMinuteSecondTextFromDurationOptional(spineElement.duration
         ?.minus(offsetMilliseconds))
@@ -861,6 +869,17 @@ class PlayerFragment : Fragment() {
       R.string.audiobook_accessibility_player_time_current,
       PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(this.timeStrings, offsetMilliseconds)
     )
+  }
+
+  private fun getCurrentAudiobookRemainingDuration(spineElement: PlayerSpineElementType): Long {
+    val totalDuration = book.spine.sumOf { it.duration?.millis ?: 0L }
+    val totalTimeElapsed = if (spineElement.index == 0) {
+      0L
+    } else {
+      book.spine.subList(0, spineElement.index).sumOf { it.duration?.millis ?: 0L }
+    }
+
+    return totalDuration - totalTimeElapsed
   }
 
   private fun playerTimeRemainingSpoken(
