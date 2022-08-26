@@ -122,8 +122,8 @@ object PlayerTimeStrings {
 
   fun hourMinuteTextFromRemainingTime(context: Context, remainingTime: Long): String {
 
-    val minutes = (remainingTime / 60000).toInt()
-    val hours = minutes / 60
+    val minutes = ((remainingTime / (60 * 1000)) % 60).toInt()
+    val hours = ((remainingTime / (1000 * 60 * 60)) % 24).toInt()
 
     return if (hours == 0) {
       context.getString(R.string.audiobook_player_remaining_time_minutes_only, minutes)
