@@ -113,7 +113,7 @@ object PlayerTimeStrings {
 
   fun hourMinuteTextFromRemainingTime(context: Context, remainingTime: Long): String {
 
-    val minutes = ((remainingTime / (60 * 1000)) % 60).toInt()
+    val minutes = ((remainingTime / (1000 * 60)) % 60).toInt()
     val hours = ((remainingTime / (1000 * 60 * 60)) % 24).toInt()
 
     return if (hours == 0) {
