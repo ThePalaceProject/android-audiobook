@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.views
 
+import android.content.Context
 import android.content.res.Resources
 import org.joda.time.Duration
 import org.joda.time.Period
@@ -107,7 +108,19 @@ object PlayerTimeStrings {
   }
 
   fun hourMinuteSecondTextFromDurationOptional(duration: Duration?): String {
-    return duration?.let { time -> hourMinuteSecondTextFromDuration(time) } ?: ""
+    return duration?.let { time -> hourMinuteSecondTextFromDuration(time) }.orEmpty()
+  }
+
+  fun hourMinuteTextFromRemainingTime(context: Context, remainingTime: Long): String {
+
+    val minutes = ((remainingTime / (1000 * 60)) % 60).toInt()
+    val hours = (remainingTime / (1000 * 60 * 60)).toInt()
+
+    return if (hours == 0) {
+      context.getString(R.string.audiobook_player_remaining_time_minutes_only, minutes)
+    } else {
+      context.getString(R.string.audiobook_player_remaining_time, hours, minutes)
+    }
   }
 
   fun hourMinuteSecondTextFromDuration(duration: Duration): String {

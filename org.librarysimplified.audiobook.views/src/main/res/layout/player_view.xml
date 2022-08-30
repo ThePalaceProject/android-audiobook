@@ -30,7 +30,7 @@
         android:ellipsize="end"
         android:gravity="center"
         android:lines="1"
-        android:textSize="24sp"
+        android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -47,11 +47,24 @@
         android:ellipsize="end"
         android:gravity="center"
         android:lines="1"
-        android:textSize="18sp"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/player_title"
         tools:text="Very, very, very long placeholder text that should never be seen in practice." />
+
+    <TextView
+        android:id="@+id/player_remaining_book_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:lines="1"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/player_author"
+        tools:text="4 hr 56 min remaining" />
 
     <SeekBar
         android:id="@+id/player_progress"
@@ -65,7 +78,7 @@
         android:scaleY="2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/player_author" />
+        app:layout_constraintTop_toBottomOf="@id/player_remaining_book_time" />
 
     <TextView
         android:id="@+id/player_time"

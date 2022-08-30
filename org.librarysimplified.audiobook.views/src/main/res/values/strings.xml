@@ -5,6 +5,9 @@
   <string name="audiobook_player_play">Play</string>
   <string name="audiobook_player_pause">Pause</string>
 
+  <string name="audiobook_player_remaining_time">%1$d hr %2$d min remaining</string>
+  <string name="audiobook_player_remaining_time_minutes_only">%d min remaining</string>
+
   <string name="audiobook_part_delete_confirm">Delete this book part?</string>
   <string name="audiobook_part_delete">Delete</string>
   <string name="audiobook_part_delete_keep">Keep</string>
