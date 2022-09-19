@@ -193,12 +193,15 @@
         <c:change date="2022-08-03T00:00:00+00:00" summary="Fixed audiobook bookmarks not being saved after exiting the player."/>
       </c:changes>
     </c:release>
-    <c:release date="2022-09-19T02:00:54+00:00" is-open="false" ticket-system="org.nypl.jira" version="8.0.1">
+    <c:release date="2022-09-19T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="8.0.1">
       <c:changes>
         <c:change date="2022-08-10T00:00:00+00:00" summary="Change chapter duration on audiobook player."/>
         <c:change date="2022-08-26T00:00:00+00:00" summary="Added audiobook's remaining time label to player."/>
         <c:change date="2022-09-07T00:00:00+00:00" summary="Fixed crash on MediaButton receiver."/>
       </c:changes>
+    </c:release>
+    <c:release date="2022-09-19T02:13:27+00:00" is-open="true" ticket-system="org.nypl.jira" version="8.0.2">
+      <c:changes/>
     </c:release>
   </c:releases>
   <c:ticket-systems>
