@@ -783,12 +783,13 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     // initiate the audio playback attributes
     val playbackAttributes = AudioAttributes.Builder()
       .setUsage(AudioAttributes.USAGE_MEDIA)
-      .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+      .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
       .build()
 
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       audioRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
         .setAudioAttributes(playbackAttributes)
+        .setWillPauseWhenDucked(true)
         .setAcceptsDelayedFocusGain(true)
         .setOnAudioFocusChangeListener(this)
         .build()
