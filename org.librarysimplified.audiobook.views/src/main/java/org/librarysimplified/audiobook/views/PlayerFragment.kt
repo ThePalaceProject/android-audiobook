@@ -6,6 +6,9 @@ import android.content.Context.BIND_AUTO_CREATE
 import android.content.Intent
 import android.content.ServiceConnection
 import android.graphics.Bitmap
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -68,7 +71,7 @@ import java.util.concurrent.TimeUnit
  * interface. An exception will be raised if this is not the case.
  */
 
-class PlayerFragment : Fragment() {
+class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
   companion object {
 
@@ -115,11 +118,14 @@ class PlayerFragment : Fragment() {
   private lateinit var sleepTimer: PlayerSleepTimerType
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
   private lateinit var toolbar: Toolbar
+  private var audioFocusDelayed: Boolean = false
   private var clickedOnThumb: Boolean = false
+  private var playOnAudioFocus: Boolean = false
   private var playerBufferingStillOngoing: Boolean = false
   private var playerBufferingTask: ScheduledFuture<*>? = null
   private var playerPositionDragging: Boolean = false
 
+  private var audioRequest: AudioFocusRequest? = null
   private var currentPlaybackRate: PlayerPlaybackRate = PlayerPlaybackRate.NORMAL_TIME
   private var playerPositionCurrentSpine: PlayerSpineElementType? = null
   private var playerPositionCurrentOffset: Long = 0L
@@ -127,6 +133,10 @@ class PlayerFragment : Fragment() {
   private var playerSleepTimerEventSubscription: Subscription? = null
 
   private val log = LoggerFactory.getLogger(PlayerFragment::class.java)
+
+  private val audioManager by lazy {
+    requireActivity().getSystemService(Context.AUDIO_SERVICE) as AudioManager
+  }
 
   private val serviceConnection = object : ServiceConnection {
 
@@ -202,7 +212,7 @@ class PlayerFragment : Fragment() {
   }
 
   private fun onPlayerSleepTimerEventFinished() {
-    this.onPressedPause()
+    this.onPressedPause(abandonAudioFocus = false)
 
     UIThread.runOnUIThread(
       Runnable {
@@ -348,6 +358,7 @@ class PlayerFragment : Fragment() {
   override fun onDestroyView() {
     this.log.debug("onDestroyView")
     super.onDestroyView()
+    abandonAudioFocus()
     this.playerEventSubscription?.unsubscribe()
     this.playerSleepTimerEventSubscription?.unsubscribe()
     this.onPlayerBufferingStopped()
@@ -743,7 +754,83 @@ class PlayerFragment : Fragment() {
     )
   }
 
+  override fun onAudioFocusChange(focusChange: Int) {
+    when (focusChange) {
+      AudioManager.AUDIOFOCUS_GAIN -> {
+        if ((playOnAudioFocus || audioFocusDelayed) && !player.isPlaying) {
+          audioFocusDelayed = false
+          playOnAudioFocus = false
+          startPlaying()
+        }
+      }
+      AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK,
+      AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+        if (player.isPlaying) {
+          playOnAudioFocus = true
+          audioFocusDelayed = false
+          onPressedPause(abandonAudioFocus = false)
+        }
+      }
+      AudioManager.AUDIOFOCUS_LOSS -> {
+        audioFocusDelayed = false
+        playOnAudioFocus = false
+        onPressedPause(abandonAudioFocus = true)
+      }
+    }
+  }
+
+  private fun requestAudioFocus(): Int {
+    // initiate the audio playback attributes
+    val playbackAttributes = AudioAttributes.Builder()
+      .setUsage(AudioAttributes.USAGE_MEDIA)
+      .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+      .build()
+
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      audioRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+        .setAudioAttributes(playbackAttributes)
+        .setAcceptsDelayedFocusGain(true)
+        .setOnAudioFocusChangeListener(this)
+        .build()
+
+      audioManager.requestAudioFocus(audioRequest!!)
+
+    } else {
+      audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
+        AudioManager.AUDIOFOCUS_GAIN)
+    }
+  }
+
+  private fun abandonAudioFocus() {
+    this.log.debug("Abandoning audio focus")
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      if (audioRequest != null) {
+        audioManager.abandonAudioFocusRequest(audioRequest!!)
+      }
+    } else {
+      audioManager.abandonAudioFocus(this)
+    }
+  }
+
   private fun onPressedPlay() {
+    when (requestAudioFocus()) {
+      AudioManager.AUDIOFOCUS_REQUEST_GRANTED -> {
+        this.log.debug("Audio focus request granted")
+        startPlaying()
+      }
+      AudioManager.AUDIOFOCUS_REQUEST_DELAYED -> {
+        this.log.debug("Audio focus request delayed")
+        audioFocusDelayed = true
+      }
+      AudioManager.AUDIOFOCUS_REQUEST_FAILED -> {
+        // the system denied access to the audio focus, so we do nothing
+        this.log.debug("Audio focus request failed")
+      }
+    }
+  }
+
+  private fun startPlaying() {
     this.player.play()
     this.sleepTimer.unpause()
     this.playerInfoModel = this.playerInfoModel.copy(
@@ -752,7 +839,11 @@ class PlayerFragment : Fragment() {
     this.playerService.updatePlayerInfo(this.playerInfoModel)
   }
 
-  private fun onPressedPause() {
+  private fun onPressedPause(abandonAudioFocus: Boolean) {
+    if (abandonAudioFocus) {
+      abandonAudioFocus()
+    }
+
     this.player.pause()
     this.sleepTimer.pause()
     this.playerInfoModel = this.playerInfoModel.copy(
@@ -780,7 +871,7 @@ class PlayerFragment : Fragment() {
           this.playerDownloadingChapter.visibility = GONE
           this.playerCommands.visibility = VISIBLE
           this.playPauseButton.setImageResource(R.drawable.pause_icon)
-          this.playPauseButton.setOnClickListener { this.onPressedPause() }
+          this.playPauseButton.setOnClickListener { this.onPressedPause(abandonAudioFocus = true) }
           this.playPauseButton.contentDescription =
             this.getString(R.string.audiobook_accessibility_pause)
           this.playerWaiting.text = ""
@@ -801,7 +892,7 @@ class PlayerFragment : Fragment() {
           this.playerCommands.visibility = VISIBLE
           this.player.playbackRate = this.currentPlaybackRate
           this.playPauseButton.setImageResource(R.drawable.pause_icon)
-          this.playPauseButton.setOnClickListener { this.onPressedPause() }
+          this.playPauseButton.setOnClickListener { this.onPressedPause(abandonAudioFocus = true) }
           this.playPauseButton.contentDescription =
             this.getString(R.string.audiobook_accessibility_pause)
           this.configureSpineElementText(event.spineElement, isPlaying = true)
