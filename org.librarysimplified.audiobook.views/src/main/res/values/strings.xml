@@ -60,6 +60,8 @@
   <string name="audiobook_accessibility_minute">Minute</string>
   <string name="audiobook_accessibility_second">Second</string>
 
+  <string name="audiobook_accessibility_navigation_back">Back</string>
+
   <string name="audiobook_accessibility_player_buffering">Player Is Buffering</string>
 
   <string name="audiobook_accessibility_player_time_current">%1$s Played</string>
