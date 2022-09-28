@@ -463,6 +463,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     super.onViewCreated(view, state)
 
     this.toolbar = view.findViewById(R.id.audioBookToolbar)
+    this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
     configureToolbarActions()
 
     this.coverView = view.findViewById(R.id.player_cover)!!
