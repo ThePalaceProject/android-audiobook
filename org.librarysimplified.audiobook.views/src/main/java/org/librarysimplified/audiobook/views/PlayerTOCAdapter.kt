@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -87,7 +88,10 @@ class PlayerTOCAdapter(
 
     holder.titleText.text = title
     holder.titleText.isEnabled = false
-
+    holder.downloadedDurationText.text =
+      item.duration?.let {
+        this.periodFormatter.print(it.toPeriod())
+      } ?: ""
     holder.view.isEnabled = item.book.supportsStreaming
 
     var requiresDownload = false
@@ -96,7 +100,6 @@ class PlayerTOCAdapter(
     val status = item.downloadStatus
     when (status) {
       is PlayerSpineElementNotDownloaded -> {
-        holder.buttonsDownloaded.visibility = INVISIBLE
         holder.buttonsDownloading.visibility = INVISIBLE
         holder.buttonsDownloadFailed.visibility = INVISIBLE
 
@@ -146,7 +149,6 @@ class PlayerTOCAdapter(
       }
 
       is PlayerSpineElementDownloading -> {
-        holder.buttonsDownloaded.visibility = INVISIBLE
         holder.buttonsDownloading.visibility = VISIBLE
         holder.buttonsDownloadFailed.visibility = INVISIBLE
         holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
@@ -169,22 +171,15 @@ class PlayerTOCAdapter(
       }
 
       is PlayerSpineElementDownloaded -> {
-        holder.buttonsDownloaded.visibility = VISIBLE
-        holder.buttonsDownloading.visibility = INVISIBLE
-        holder.buttonsDownloadFailed.visibility = INVISIBLE
-        holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
-        holder.buttonsNotDownloadedNotStreamable.visibility = INVISIBLE
+        holder.buttonsDownloading.visibility = GONE
+        holder.buttonsDownloadFailed.visibility = GONE
+        holder.buttonsNotDownloadedStreamable.visibility = GONE
+        holder.buttonsNotDownloadedNotStreamable.visibility = GONE
 
         holder.view.isEnabled = true
-
-        holder.downloadedDurationText.text =
-          item.duration?.let {
-            this.periodFormatter.print(it.toPeriod())
-          } ?: ""
       }
 
       is PlayerSpineElementDownloadFailed -> {
-        holder.buttonsDownloaded.visibility = INVISIBLE
         holder.buttonsDownloading.visibility = INVISIBLE
         holder.buttonsDownloadFailed.visibility = VISIBLE
         holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
@@ -316,18 +311,16 @@ class PlayerTOCAdapter(
 
   inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
-    val buttons =
-      this.view.findViewById<ViewGroup>(R.id.player_toc_end_controls)
-    val buttonsDownloadFailed =
-      this.buttons.findViewById<ViewGroup>(R.id.player_toc_item_buttons_error)
-    val buttonsDownloaded =
-      this.buttons.findViewById<ViewGroup>(R.id.player_toc_item_buttons_downloaded)
-    val buttonsNotDownloadedNotStreamable =
-      this.buttons.findViewById<ViewGroup>(R.id.player_toc_item_buttons_not_downloaded_not_streamable)
-    val buttonsNotDownloadedStreamable =
-      this.buttons.findViewById<ViewGroup>(R.id.player_toc_item_buttons_not_downloaded_streamable)
-    val buttonsDownloading =
-      this.buttons.findViewById<ViewGroup>(R.id.player_toc_item_buttons_downloading)
+    private val buttons: ViewGroup =
+      this.view.findViewById(R.id.player_toc_end_controls)
+    val buttonsDownloadFailed: ViewGroup =
+      this.buttons.findViewById(R.id.player_toc_item_buttons_error)
+    val buttonsNotDownloadedNotStreamable: ViewGroup =
+      this.buttons.findViewById(R.id.player_toc_item_buttons_not_downloaded_not_streamable)
+    val buttonsNotDownloadedStreamable: ViewGroup =
+      this.buttons.findViewById(R.id.player_toc_item_buttons_not_downloaded_streamable)
+    val buttonsDownloading: ViewGroup =
+      this.buttons.findViewById(R.id.player_toc_item_buttons_downloading)
 
     val titleText: TextView =
       this.view.findViewById(R.id.player_toc_item_view_title)
@@ -340,7 +333,7 @@ class PlayerTOCAdapter(
       this.buttonsDownloadFailed.findViewById(R.id.player_toc_item_download_failed_refresh)
 
     val downloadedDurationText: TextView =
-      this.buttonsDownloaded.findViewById(R.id.player_toc_item_downloaded_duration)
+      this.view.findViewById(R.id.player_toc_item_duration)
 
     val notDownloadedStreamableRefresh: ImageView =
       this.buttonsNotDownloadedStreamable.findViewById(
