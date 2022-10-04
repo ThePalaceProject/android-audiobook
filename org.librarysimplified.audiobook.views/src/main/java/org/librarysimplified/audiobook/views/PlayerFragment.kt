@@ -522,7 +522,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
         if (clickedOnThumb && playerPositionDragging) {
           playerPositionDragging = false
           clickedOnThumb = false
-          onProgressBarDraggingStopped()
+          updateUIOnProgressBarDragging()
         } else {
           playerPositionDragging = false
           clickedOnThumb = false
@@ -534,6 +534,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
           return true
         }
         playerPositionDragging = true
+        updateUIOnProgressBarDragging()
       }
       MotionEvent.ACTION_CANCEL -> {
         playerPositionDragging = false
@@ -544,8 +545,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     return playerPosition.onTouchEvent(event)
   }
 
-  private fun onProgressBarDraggingStopped() {
-    this.log.debug("onProgressBarDraggingStopped")
+  private fun updateUIOnProgressBarDragging() {
+    this.log.debug("updateUIOnProgressBarDragging")
 
     val spine = this.playerPositionCurrentSpine
     if (spine != null) {
