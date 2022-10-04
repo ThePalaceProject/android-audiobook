@@ -788,9 +788,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
       .build()
 
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-      AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       audioRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
         .setAudioAttributes(playbackAttributes)
         .setWillPauseWhenDucked(true)
