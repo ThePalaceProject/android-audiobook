@@ -98,6 +98,12 @@ class PlayerTOCAdapter(
     var failedDownload = false
     var downloading = false
     val status = item.downloadStatus
+    holder.buttons.visibility = if (status !is PlayerSpineElementDownloaded) {
+      VISIBLE
+    } else {
+      GONE
+    }
+
     when (status) {
       is PlayerSpineElementNotDownloaded -> {
         holder.buttonsDownloading.visibility = INVISIBLE
@@ -171,11 +177,6 @@ class PlayerTOCAdapter(
       }
 
       is PlayerSpineElementDownloaded -> {
-        holder.buttonsDownloading.visibility = GONE
-        holder.buttonsDownloadFailed.visibility = GONE
-        holder.buttonsNotDownloadedStreamable.visibility = GONE
-        holder.buttonsNotDownloadedNotStreamable.visibility = GONE
-
         holder.view.isEnabled = true
       }
 
@@ -311,7 +312,7 @@ class PlayerTOCAdapter(
 
   inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
-    private val buttons: ViewGroup =
+    val buttons: ViewGroup =
       this.view.findViewById(R.id.player_toc_end_controls)
     val buttonsDownloadFailed: ViewGroup =
       this.buttons.findViewById(R.id.player_toc_item_buttons_error)
