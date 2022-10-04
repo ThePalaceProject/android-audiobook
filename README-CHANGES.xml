@@ -200,10 +200,11 @@
         <c:change date="2022-09-07T00:00:00+00:00" summary="Fixed crash on MediaButton receiver."/>
       </c:changes>
     </c:release>
-    <c:release date="2022-09-27T23:03:05+00:00" is-open="true" ticket-system="org.nypl.jira" version="8.0.2">
+    <c:release date="2022-09-29T10:39:14+00:00" is-open="true" ticket-system="org.nypl.jira" version="8.0.2">
       <c:changes>
-        <c:change date="2022-09-27T23:03:05+00:00" summary="Added content description to back button on player screen."/>
-        <c:change date="2022-09-26T09:55:24+00:00" summary="Added management of audio coming from different apps."/>
+        <c:change date="2022-09-27T00:00:00+00:00" summary="Added content description to back button on player screen."/>
+        <c:change date="2022-09-26T00:00:00+00:00" summary="Added management of audio coming from different apps."/>
+        <c:change date="2022-09-29T10:39:14+00:00" summary="Fixed audiobook chapter's time elapsed and remaining and book remaining time not being updated when dragging the player seekbar."/>
       </c:changes>
     </c:release>
   </c:releases>
