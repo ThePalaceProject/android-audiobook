@@ -92,10 +92,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   private lateinit var executor: ScheduledExecutorService
   private lateinit var listener: PlayerFragmentListenerType
   private lateinit var menuPlaybackRate: MenuItem
-  private lateinit var menuPlaybackRateText: TextView
   private lateinit var menuSleep: MenuItem
   private lateinit var menuSleepEndOfChapter: ImageView
-  private lateinit var menuSleepText: TextView
   private lateinit var menuTOC: MenuItem
   private lateinit var parameters: PlayerFragmentParameters
   private lateinit var playPauseButton: ImageView
@@ -118,6 +116,10 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   private lateinit var sleepTimer: PlayerSleepTimerType
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
   private lateinit var toolbar: Toolbar
+
+  private var menuPlaybackRateText: TextView? = null
+  private var menuSleepText: TextView? = null
+
   private var audioFocusDelayed: Boolean = false
   private var clickedOnThumb: Boolean = false
   private var playOnAudioFocus: Boolean = false
@@ -217,9 +219,9 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
-          this.menuSleepText.text = ""
-          this.menuSleep.actionView.contentDescription = this.sleepTimerContentDescriptionSetUp()
-          this.menuSleepText.visibility = INVISIBLE
+          this.menuSleepText?.text = ""
+          this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+          this.menuSleepText?.visibility = INVISIBLE
           this.menuSleepEndOfChapter.visibility = INVISIBLE
         }
       }
@@ -230,9 +232,9 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
-          this.menuSleepText.text = ""
-          this.menuSleep.actionView.contentDescription = this.sleepTimerContentDescriptionSetUp()
-          this.menuSleepText.visibility = INVISIBLE
+          this.menuSleepText?.text = ""
+          this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+          this.menuSleepText?.visibility = INVISIBLE
           this.menuSleepEndOfChapter.visibility = INVISIBLE
         }
       }
@@ -245,19 +247,19 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
         safelyPerformOperations {
           val remaining = event.remaining
           if (remaining != null) {
-            this.menuSleep.actionView.contentDescription =
+            this.menuSleep.actionView?.contentDescription =
               this.sleepTimerContentDescriptionForTime(event.paused, remaining)
-            this.menuSleepText.text =
+            this.menuSleepText?.text =
               PlayerTimeStrings.minuteSecondTextFromDuration(remaining)
             this.menuSleepEndOfChapter.visibility = INVISIBLE
           } else {
-            this.menuSleep.actionView.contentDescription =
+            this.menuSleep.actionView?.contentDescription =
               this.sleepTimerContentDescriptionEndOfChapter()
-            this.menuSleepText.text = ""
+            this.menuSleepText?.text = ""
             this.menuSleepEndOfChapter.visibility = VISIBLE
           }
 
-          this.menuSleepText.visibility = VISIBLE
+          this.menuSleepText?.visibility = VISIBLE
         }
       }
     )
@@ -319,9 +321,9 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
-          this.menuSleepText.text = ""
-          this.menuSleepText.contentDescription = this.sleepTimerContentDescriptionSetUp()
-          this.menuSleepText.visibility = INVISIBLE
+          this.menuSleepText?.text = ""
+          this.menuSleepText?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+          this.menuSleepText?.visibility = INVISIBLE
           this.menuSleepEndOfChapter.visibility = INVISIBLE
         }
       }
@@ -388,13 +390,13 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       this.menuPlaybackRate.setOnMenuItemClickListener { this.onMenuPlaybackRateSelected(); true }
     }
 
-    this.menuPlaybackRate.actionView.setOnClickListener { this.onMenuPlaybackRateSelected() }
-    this.menuPlaybackRate.actionView.contentDescription =
+    this.menuPlaybackRate.actionView?.setOnClickListener { this.onMenuPlaybackRateSelected() }
+    this.menuPlaybackRate.actionView?.contentDescription =
       this.playbackRateContentDescription()
     this.menuPlaybackRateText =
-      this.menuPlaybackRate.actionView.findViewById(R.id.player_menu_playback_rate_text)
+      this.menuPlaybackRate.actionView?.findViewById(R.id.player_menu_playback_rate_text)
 
-    this.menuPlaybackRateText.text =
+    this.menuPlaybackRateText?.text =
       PlayerPlaybackRateAdapter.textOfRate(this.player.playbackRate)
 
     /*
@@ -423,15 +425,15 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       this.menuSleep.setOnMenuItemClickListener { this.onMenuSleepSelected() }
     }
 
-    this.menuSleep.actionView.setOnClickListener { this.onMenuSleepSelected() }
-    this.menuSleep.actionView.contentDescription = this.sleepTimerContentDescriptionSetUp()
+    this.menuSleep.actionView?.setOnClickListener { this.onMenuSleepSelected() }
+    this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
 
-    this.menuSleepText = this.menuSleep.actionView.findViewById(R.id.player_menu_sleep_text)
-    this.menuSleepText.text = ""
-    this.menuSleepText.visibility = INVISIBLE
+    this.menuSleepText = this.menuSleep.actionView?.findViewById(R.id.player_menu_sleep_text)
+    this.menuSleepText?.text = ""
+    this.menuSleepText?.visibility = INVISIBLE
 
     this.menuSleepEndOfChapter =
-      this.menuSleep.actionView.findViewById(R.id.player_menu_sleep_end_of_chapter)
+      this.menuSleep.actionView!!.findViewById(R.id.player_menu_sleep_end_of_chapter)
     this.menuSleepEndOfChapter.visibility = INVISIBLE
 
     this.menuTOC = this.toolbar.menu.findItem(R.id.player_menu_toc)
@@ -696,8 +698,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       Runnable {
         safelyPerformOperations {
           this.currentPlaybackRate = event.rate
-          this.menuPlaybackRateText.text = PlayerPlaybackRateAdapter.textOfRate(event.rate)
-          this.menuPlaybackRate.actionView.contentDescription =
+          this.menuPlaybackRateText?.text = PlayerPlaybackRateAdapter.textOfRate(event.rate)
+          this.menuPlaybackRate.actionView?.contentDescription =
             this.playbackRateContentDescription()
         }
       }
