@@ -35,10 +35,10 @@ plugins {
 }
 
 ext {
-  androidBuildToolsVersion = "32.0.0"
-  androidCompileSDKVersion = 32
+  androidBuildToolsVersion = "33.0.0"
+  androidCompileSDKVersion = 33
   androidMinimumSDKVersion = 21
-  androidTargetSDKVersion = 32
+  androidTargetSDKVersion = 33
 
   if (!project.hasProperty("mavenCentralUsername")) {
     logger.warn("No mavenCentralUsername property specified: Using an empty value")
@@ -76,20 +76,6 @@ allprojects { project ->
   version = project.ext["VERSION_NAME"]
 
   apply plugin: 'ca.cutterslade.analyze'
-
-  // Workaround for failing readium nanohttpd artifact downloads. Remove this when readium has
-  // fixed the issue.
-  project.configurations.all {
-    resolutionStrategy {
-      dependencySubstitution {
-        all { DependencySubstitution dependency ->
-          if (dependency.requested instanceof ModuleComponentSelector && dependency.requested.group == 'com.github.edrlab.nanohttpd') {
-            dependency.useTarget ('com.github.readium.nanohttpd:' + dependency.requested.module + ':' + dependency.requested.version, 'because nanohttpd ownership changed from edrlab to readium')
-          }
-        }
-      }
-    }
-  }
 }
 
 // Configure all projects
