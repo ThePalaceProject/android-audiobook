@@ -109,6 +109,8 @@
   <string name="audiobook_accessibility_pause">Pause</string>
   <string name="audiobook_accessibility_book_cover">Book cover</string>
 
+  <string name="audiobook_accessibility_toc_back">Back</string>
+
   <string name="audiobook_accessibility_toc_track_n">Track %1$d</string>
   <string name="audiobook_accessibility_toc_chapter_is_current">Selected</string>
   <string name="audiobook_accessibility_toc_chapter_requires_download">File Must Be Downloaded Before It Can Be Played</string>
