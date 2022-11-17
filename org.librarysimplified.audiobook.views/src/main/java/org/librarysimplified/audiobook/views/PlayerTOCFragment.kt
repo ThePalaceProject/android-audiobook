@@ -10,6 +10,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -60,12 +61,16 @@ class PlayerTOCFragment : Fragment() {
     state: Bundle?
   ): View {
 
-    val view: RecyclerView =
-      inflater.inflate(R.layout.player_toc_view, container, false) as RecyclerView
+    return inflater.inflate(R.layout.player_toc_view, container, false)
+  }
 
-    view.layoutManager = LinearLayoutManager(view.context)
-    view.setHasFixedSize(true)
-    view.adapter = this.adapter
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+
+    val list = view.findViewById<RecyclerView>(R.id.list)
+    list.layoutManager = LinearLayoutManager(view.context)
+    list.setHasFixedSize(true)
+    list.adapter = this.adapter
 
     /*
      * https://jira.nypl.org/browse/SIMPLY-1152
@@ -77,8 +82,12 @@ class PlayerTOCFragment : Fragment() {
      * turns the animation off.
      */
 
-    (view.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
-    return view
+    (list.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+
+    val toolbar = view.findViewById<Toolbar>(R.id.tocToolbar)
+
+    toolbar.setNavigationOnClickListener { activity?.onBackPressed() }
+    toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_toc_back)
   }
 
   override fun onCreate(state: Bundle?) {
