@@ -1002,16 +1002,9 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   }
 
   private fun spineElementText(spineElement: PlayerSpineElementType): String {
-    val title = spineElement.title ?: this.getString(
+    return spineElement.title ?: this.getString(
       R.string.audiobook_player_toc_track_n,
       spineElement.index + 1
-    )
-
-    return this.getString(
-      R.string.audiobook_player_spine_element,
-      title,
-      spineElement.index + 1,
-      spineElement.book.spine.size
     )
   }
 
@@ -1039,13 +1032,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       element.index + 1
     )
 
-    this.playerSpineElement.contentDescription =
-      this.getString(
-        R.string.audiobook_accessibility_chapter_of,
-        accessibilityTitle,
-        element.index + 1,
-        this.book.spine.size
-      )
+    this.playerSpineElement.contentDescription = accessibilityTitle
   }
 
   private fun initializePlayerInfo() {
