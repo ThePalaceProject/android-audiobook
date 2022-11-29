@@ -21,6 +21,9 @@ data class ExoManifest(
 
   companion object {
 
+    private val OCTET_STREAM =
+      MIMEType("application", "octet-stream", mapOf())
+
     /**
      * Parse an ExoPlayer manifest from the given raw manifest.
      */
@@ -51,12 +54,9 @@ data class ExoManifest(
       }
     }
 
-    private val OCTET_STREAM =
-      MIMEType("application", "octet-stream", mapOf())
-
-    private fun getOffsetFromTocElement(tocElement: PlayerManifestLink): Double {
+    private fun getOffsetFromElement(element: PlayerManifestLink): Double {
       val offsetStr = "#t="
-      val href = tocElement.hrefURI.toString()
+      val href = element.hrefURI.toString()
       val offsetIndex = href.indexOf(offsetStr)
       return if (offsetIndex != -1) {
         href.substring(offsetIndex + offsetStr.length).toDouble()
@@ -90,63 +90,41 @@ data class ExoManifest(
         allElementsOfTOC.addAll(tocElement.children.orEmpty())
       }
 
-      allElementsOfTOC.forEachIndexed { index, tocElement ->
-        val href = this.getHrefWithoutOffset(tocElement)
-
-        val readingOrderItem = readingOrderElements.firstOrNull { readingOrderElement ->
-          href == readingOrderElement.hrefURI.toString()
+      readingOrderElements.forEachIndexed { index, readingOrderElement ->
+        val tocElementsWithHref = allElementsOfTOC.filter { tocElement ->
+          val tocHref = this.getHrefWithoutOffset(tocElement)
+          tocHref == readingOrderElement.hrefURI.toString()
         }
 
-        val tocElementOffset = getOffsetFromTocElement(tocElement)
-        val wholeDuration = readingOrderItem?.duration ?: -1.0
+        val offset: Double
+        val title: String?
 
-        val tocElementDuration = when {
-          index != allElementsOfTOC.lastIndex -> {
+        if (tocElementsWithHref.size > 1) {
 
-            val nextTocElement = allElementsOfTOC[index + 1]
-
-            when {
-
-              // if the next toc element has the same href, then it belongs to the same "parent"
-              this.getHrefWithoutOffset(nextTocElement) == href -> {
-                getOffsetFromTocElement(nextTocElement) - tocElementOffset
-              }
-
-              // if the next toc element hasn't the same href, then it belongs to another "parent" and
-              //we need to use the current item's parent duration
-              wholeDuration != -1.0 -> {
-                wholeDuration.toInt() - tocElementOffset
-              }
-
-              else -> {
-                null
-              }
-            }
-
-          }
-          wholeDuration != -1.0 -> {
-            wholeDuration.toInt() - tocElementOffset
-          }
-          else -> {
-            null
-          }
+          // if we have more than one chapter with the same href, the offset will be 0.0 so the
+          // chapter an be played from the beginning
+          offset = 0.0
+          title = tocElementsWithHref.last().title
+        } else if (tocElementsWithHref.isNotEmpty()) {
+          val tocElement = tocElementsWithHref.first()
+          offset = getOffsetFromElement(tocElement)
+          title = tocElement.title
+        } else {
+          offset = getOffsetFromElement(readingOrderElement)
+          title = readingOrderElement.title
         }
 
         spineItems.add(
           ExoManifestSpineItem(
             chapter = index,
-            duration = tocElementDuration,
-            offset = tocElementOffset,
-            originalLink = readingOrderItem ?: tocElement,
+            duration = readingOrderElement.duration ?: -1.0,
+            offset = offset,
+            originalLink = readingOrderElement,
             part = 0,
-            title = tocElement.title
-              ?: context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1),
-            type = readingOrderItem?.type ?: OCTET_STREAM,
-            uri = if (readingOrderItem != null) {
-              this.parseURI(readingOrderItem, index)
-            } else {
-              this.parseURI(tocElement, index)
-            }
+            title = title ?:
+            context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1),
+            type = readingOrderElement.type ?: OCTET_STREAM,
+            uri = this.parseURI(readingOrderElement, index)
           )
         )
       }
@@ -167,7 +145,7 @@ data class ExoManifest(
       }
 
       val type =
-        item.type ?: this.OCTET_STREAM
+        item.type ?: OCTET_STREAM
       val uri =
         this.parseURI(item, index)
 
