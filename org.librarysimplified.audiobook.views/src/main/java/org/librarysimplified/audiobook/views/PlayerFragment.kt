@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Context.BIND_AUTO_CREATE
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.graphics.Bitmap
 import android.media.AudioAttributes
@@ -138,6 +139,16 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
   private val audioManager by lazy {
     requireActivity().getSystemService(Context.AUDIO_SERVICE) as AudioManager
+  }
+
+  private val playerMediaReceiver by lazy {
+    PlayerMediaReceiver(
+      onAudioBecomingNoisy = {
+        onPressedPause(
+          abandonAudioFocus = false
+        )
+      }
+    )
   }
 
   private val serviceConnection = object : ServiceConnection {
@@ -361,6 +372,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     this.log.debug("onDestroyView")
     super.onDestroyView()
     abandonAudioFocus()
+    requireActivity().unregisterReceiver(playerMediaReceiver)
     this.playerEventSubscription?.unsubscribe()
     this.playerSleepTimerEventSubscription?.unsubscribe()
     this.onPlayerBufferingStopped()
@@ -463,6 +475,10 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   override fun onViewCreated(view: View, state: Bundle?) {
     this.log.debug("onViewCreated")
     super.onViewCreated(view, state)
+
+    requireActivity().registerReceiver(playerMediaReceiver,
+      IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+    )
 
     this.toolbar = view.findViewById(R.id.audioBookToolbar)
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
