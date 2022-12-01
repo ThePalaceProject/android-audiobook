@@ -657,7 +657,7 @@ abstract class ExoManifestContract {
     val numberOfParts = 8
 
     Assertions.assertEquals(
-      manifest.readingOrder.size - numberOfParts,
+      manifest.toc.orEmpty().size - numberOfParts,
       exo.spineItems.size
     )
   }
