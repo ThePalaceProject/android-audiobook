@@ -638,7 +638,7 @@ abstract class ExoManifestContract {
       exo.title
     )
     Assertions.assertEquals(
-      "urn:uuid:f1adbad8-3f0d-4cd6-9fe2-a83ba969c069",
+      "urn:isbn:9781603932639",
       exo.id
     )
 

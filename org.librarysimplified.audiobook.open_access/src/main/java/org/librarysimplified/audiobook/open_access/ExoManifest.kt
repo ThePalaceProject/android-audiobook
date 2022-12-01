@@ -36,7 +36,7 @@ data class ExoManifest(
 
         val spineItems = if (!manifest.toc.isNullOrEmpty()) {
 
-          if (manifest.toc?.any { it.children.isNullOrEmpty() } == true) {
+          if (manifest.toc?.any { !it.children.isNullOrEmpty() } == true) {
             getSpineItemsFromTOCWithChildren(context, manifest.readingOrder, manifest.toc!!)
           } else {
             getSpineItemsFromTOC(context, manifest.readingOrder, manifest.toc!!)
