@@ -606,6 +606,63 @@ abstract class ExoManifestContract {
     }
   }
 
+  @Test
+  fun testOkAnnaKareninaTOC() {
+
+    val result =
+      ManifestParsers.parse(
+        uri = URI.create("urn:anna_karenina"),
+        streams = resource("anna_karenina_toc.audiobook-manifest.json"),
+        extensions = listOf()
+      )
+
+    this.log().debug("result: {}", result)
+    assertTrue(result is ParseResult.Success, "Result is success")
+
+    val success: ParseResult.Success<PlayerManifest> =
+      result as ParseResult.Success<PlayerManifest>
+
+    val manifest = success.result
+
+    val exo_result = ExoManifest.transform(context(), manifest)
+    this.log().debug("exo_result: {}", exo_result)
+    assertTrue(exo_result is PlayerResult.Success, "Result is success")
+
+    val exo_success: PlayerResult.Success<ExoManifest, Exception> =
+      exo_result as PlayerResult.Success<ExoManifest, Exception>
+
+    val exo = exo_success.result
+
+    Assertions.assertEquals(
+      "Anna Karenina",
+      exo.title
+    )
+    Assertions.assertEquals(
+      "urn:uuid:f1adbad8-3f0d-4cd6-9fe2-a83ba969c069",
+      exo.id
+    )
+
+    Assertions.assertEquals(
+      manifest.readingOrder.size,
+      239
+    )
+
+    Assertions.assertNotEquals(
+      manifest.readingOrder.size,
+      manifest.toc?.size
+    )
+
+
+    // the book has 8 parts, so the final number of toc elements will be the number of reading order
+    // items minus 8, to match the number of items that were "merged" with the chapters
+    val numberOfParts = 8
+
+    Assertions.assertEquals(
+      manifest.toc?.size,
+      manifest.readingOrder.size - numberOfParts
+    )
+  }
+
   private fun resource(name: String): ByteArray {
     val path = "/org/librarysimplified/audiobook/tests/" + name
     return ExoManifestContract::class.java.getResourceAsStream(path)?.readBytes()

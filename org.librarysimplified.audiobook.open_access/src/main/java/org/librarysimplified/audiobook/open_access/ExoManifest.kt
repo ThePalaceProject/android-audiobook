@@ -35,7 +35,12 @@ data class ExoManifest(
       try {
 
         val spineItems = if (!manifest.toc.isNullOrEmpty()) {
-          getSpineItemsFromTOC(context, manifest.readingOrder, manifest.toc!!)
+
+          if (manifest.toc?.any { it.children.isNullOrEmpty() } == true) {
+            getSpineItemsFromTOCWithChildren(context, manifest.readingOrder, manifest.toc!!)
+          } else {
+            getSpineItemsFromTOC(context, manifest.readingOrder, manifest.toc!!)
+          }
         } else {
           manifest.readingOrder.mapIndexed { index, item ->
             this.processSpineItem(context, index, item)
@@ -125,6 +130,84 @@ data class ExoManifest(
             context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1),
             type = readingOrderElement.type ?: OCTET_STREAM,
             uri = this.parseURI(readingOrderElement, index)
+          )
+        )
+      }
+
+      return spineItems
+    }
+
+    private fun getSpineItemsFromTOCWithChildren(
+      context: Context,
+      readingOrderElements: List<PlayerManifestLink>,
+      tocElements: List<PlayerManifestLink>
+    ): List<ExoManifestSpineItem> {
+
+      val spineItems = arrayListOf<ExoManifestSpineItem>()
+
+      val allElementsOfTOC = arrayListOf<PlayerManifestLink>()
+      tocElements.forEach { tocElement ->
+        allElementsOfTOC.add(tocElement)
+        allElementsOfTOC.addAll(tocElement.children.orEmpty())
+      }
+
+      allElementsOfTOC.forEachIndexed { index, tocElement ->
+        val href = this.getHrefWithoutOffset(tocElement)
+
+        val readingOrderItem = readingOrderElements.firstOrNull { readingOrderElement ->
+          href == readingOrderElement.hrefURI.toString()
+        }
+
+        val tocElementOffset = getOffsetFromElement(tocElement)
+        val wholeDuration = readingOrderItem?.duration ?: -1.0
+
+        val tocElementDuration = when {
+          index != allElementsOfTOC.lastIndex -> {
+
+            val nextTocElement = allElementsOfTOC[index + 1]
+
+            when {
+
+              // if the next toc element has the same href, then it belongs to the same "parent"
+              this.getHrefWithoutOffset(nextTocElement) == href -> {
+                getOffsetFromElement(nextTocElement) - tocElementOffset
+              }
+
+              // if the next toc element hasn't the same href, then it belongs to another "parent"
+              // and we need to use the current item's parent duration
+              wholeDuration != -1.0 -> {
+                wholeDuration.toInt() - tocElementOffset
+              }
+
+              else -> {
+                null
+              }
+            }
+
+          }
+          wholeDuration != -1.0 -> {
+            wholeDuration.toInt() - tocElementOffset
+          }
+          else -> {
+            null
+          }
+        }
+
+        spineItems.add(
+          ExoManifestSpineItem(
+            chapter = index,
+            duration = tocElementDuration,
+            offset = tocElementOffset,
+            originalLink = readingOrderItem ?: tocElement,
+            part = 0,
+            title = tocElement.title
+              ?: context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1),
+            type = readingOrderItem?.type ?: OCTET_STREAM,
+            uri = if (readingOrderItem != null) {
+              this.parseURI(readingOrderItem, index)
+            } else {
+              this.parseURI(tocElement, index)
+            }
           )
         )
       }
