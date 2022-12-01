@@ -658,7 +658,7 @@ abstract class ExoManifestContract {
 
     Assertions.assertEquals(
       manifest.readingOrder.size - numberOfParts,
-      exo.spineItems
+      exo.spineItems.size
     )
   }
 
