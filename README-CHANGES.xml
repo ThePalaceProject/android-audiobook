@@ -213,8 +213,10 @@
         <c:change date="2022-11-28T00:00:00+00:00" summary="Added phones unplugging handling to pause the audiobook when it happens."/>
       </c:changes>
     </c:release>
-    <c:release date="2022-12-08T04:50:46+00:00" is-open="true" ticket-system="org.nypl.jira" version="8.0.3">
-      <c:changes/>
+    <c:release date="2023-01-11T18:27:37+00:00" is-open="true" ticket-system="org.nypl.jira" version="8.0.3">
+      <c:changes>
+        <c:change date="2023-01-11T18:27:37+00:00" summary="Added ability to open the app when clicking on the audiobook's player notification."/>
+      </c:changes>
     </c:release>
   </c:releases>
   <c:ticket-systems>
