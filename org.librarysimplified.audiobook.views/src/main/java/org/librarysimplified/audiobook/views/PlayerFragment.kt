@@ -1058,7 +1058,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       bookName = this.listener.onPlayerWantsTitle(),
       isPlaying = false,
       player = this.player,
-      smallIcon = this.listener.onPlayerNotificationWantsSmallIcon()
+      smallIcon = this.listener.onPlayerNotificationWantsSmallIcon(),
+      notificationIntent = this.listener.onPlayerNotificationWantsIntent()
     )
 
     this.listener.onPlayerNotificationWantsBookCover(this::onBookCoverLoaded)

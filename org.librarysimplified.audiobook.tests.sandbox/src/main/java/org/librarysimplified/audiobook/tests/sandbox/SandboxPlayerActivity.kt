@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.tests.sandbox
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Handler
@@ -184,6 +185,10 @@ class SandboxPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
 
   override fun onPlayerNotificationWantsSmallIcon(): Int {
     return R.drawable.icon
+  }
+
+  override fun onPlayerNotificationWantsIntent(): Intent {
+    return Intent(this, SandboxPlayerActivity::class.java)
   }
 
   override fun onPlayerWantsTitle(): String {

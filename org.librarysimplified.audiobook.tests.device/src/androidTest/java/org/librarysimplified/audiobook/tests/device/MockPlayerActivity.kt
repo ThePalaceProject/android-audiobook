@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.tests.device
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
@@ -100,6 +101,10 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
 
   override fun onPlayerNotificationWantsSmallIcon(): Int {
     return R.drawable.icon
+  }
+
+  override fun onPlayerNotificationWantsIntent(): Intent {
+    return Intent(this, MockPlayerActivity::class.java)
   }
 
   override fun onPlayerWantsTitle(): String {
