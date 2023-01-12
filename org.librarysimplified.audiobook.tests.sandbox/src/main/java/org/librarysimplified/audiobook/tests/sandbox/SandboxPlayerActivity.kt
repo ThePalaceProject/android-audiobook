@@ -15,6 +15,7 @@ import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.mocking.MockingAudioBook
@@ -255,6 +256,10 @@ class SandboxPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
         fragment.show(this.supportFragmentManager, "PLAYER_SLEEP_TIMER")
       }
     )
+  }
+
+  override fun onPlayerSleepTimerUpdated(item: PlayerSleepTimerConfiguration) {
+    // do nothing
   }
 
   override fun onPlayerWantsScheduledExecutor(): ScheduledExecutorService {

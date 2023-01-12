@@ -524,6 +524,9 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     this.playerAuthorView.text = this.listener.onPlayerWantsAuthor()
 
     this.player.playbackRate = this.parameters.currentRate ?: PlayerPlaybackRate.NORMAL_TIME
+    if (this.parameters.currentSleepTimer?.duration != null) {
+      this.sleepTimer.start(this.parameters.currentSleepTimer!!.duration)
+    }
 
     initializeService()
   }
