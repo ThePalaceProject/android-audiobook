@@ -215,6 +215,7 @@
     </c:release>
     <c:release date="2023-01-12T11:58:45+00:00" is-open="true" ticket-system="org.nypl.jira" version="8.0.3">
       <c:changes>
+        <c:change date="2023-01-11T00:00:00+00:00" summary="Added ability to open the app when clicking on the audiobook's player notification."/>
         <c:change date="2023-01-12T11:58:45+00:00" summary="Updated audiobook sleep timer with saved value."/>
       </c:changes>
     </c:release>
