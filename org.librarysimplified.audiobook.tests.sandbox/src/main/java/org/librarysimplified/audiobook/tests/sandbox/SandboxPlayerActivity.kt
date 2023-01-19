@@ -16,7 +16,6 @@ import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.mocking.MockingAudioBook
@@ -263,7 +262,7 @@ class SandboxPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     )
   }
 
-  override fun onPlayerSleepTimerUpdated(item: PlayerSleepTimerConfiguration) {
+  override fun onPlayerSleepTimerUpdated(missingDuration: Long?) {
     // do nothing
   }
 

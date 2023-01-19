@@ -28,7 +28,6 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
@@ -697,7 +696,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     )
   }
 
-  override fun onPlayerSleepTimerUpdated(item: PlayerSleepTimerConfiguration) {
+  override fun onPlayerSleepTimerUpdated(missingDuration: Long?) {
     // do nothing
   }
 

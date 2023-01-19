@@ -3,7 +3,6 @@ package org.librarysimplified.audiobook.views
 import androidx.annotation.ColorInt
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.NORMAL_TIME
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
 import java.io.Serializable
 
 /**
@@ -23,6 +22,6 @@ data class PlayerFragmentParameters(
   @ColorInt val primaryColor: Int? = null,
 
   val currentRate: PlayerPlaybackRate? = NORMAL_TIME,
-  val currentSleepTimer: PlayerSleepTimerConfiguration? = PlayerSleepTimerConfiguration.OFF
+  val currentSleepTimerDuration: Long? = null
 
 ) : Serializable

@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import java.util.concurrent.ScheduledExecutorService
@@ -118,7 +117,12 @@ interface PlayerFragmentListenerType {
 
   fun onPlayerSleepTimerShouldOpen()
 
-  fun onPlayerSleepTimerUpdated(item: PlayerSleepTimerConfiguration)
+  /**
+   * The user has a sleep timer defined for a given audiobook, and every time the timer's value is
+   * updated, either when setting or when the time goes by, this method is called.
+   */
+
+  fun onPlayerSleepTimerUpdated(missingDuration: Long?)
 
   /**
    * The player wants access to a scheduled executor on which it can submit short time-related
