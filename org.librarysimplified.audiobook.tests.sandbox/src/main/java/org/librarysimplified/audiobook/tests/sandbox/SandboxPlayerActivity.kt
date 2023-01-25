@@ -262,7 +262,7 @@ class SandboxPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     )
   }
 
-  override fun onPlayerSleepTimerUpdated(missingDuration: Long?) {
+  override fun onPlayerSleepTimerUpdated(remainingDuration: Long?) {
     // do nothing
   }
 

@@ -696,7 +696,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     )
   }
 
-  override fun onPlayerSleepTimerUpdated(missingDuration: Long?) {
+  override fun onPlayerSleepTimerUpdated(remainingDuration: Long?) {
     // do nothing
   }
 

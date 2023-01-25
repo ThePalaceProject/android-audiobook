@@ -230,7 +230,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
-          this.listener.onPlayerSleepTimerUpdated(missingDuration = null)
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = null)
 
           this.menuSleepText?.text = ""
           this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
@@ -245,7 +245,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
-          this.listener.onPlayerSleepTimerUpdated(missingDuration = null)
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = null)
 
           this.menuSleepText?.text = ""
           this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
@@ -339,7 +339,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
-          this.listener.onPlayerSleepTimerUpdated(missingDuration = null)
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = null)
 
           this.menuSleepText?.text = ""
           this.menuSleepText?.contentDescription = this.sleepTimerContentDescriptionSetUp()

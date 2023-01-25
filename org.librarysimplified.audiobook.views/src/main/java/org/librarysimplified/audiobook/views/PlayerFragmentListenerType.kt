@@ -122,7 +122,7 @@ interface PlayerFragmentListenerType {
    * updated, either when setting or when the time goes by, this method is called.
    */
 
-  fun onPlayerSleepTimerUpdated(missingDuration: Long?)
+  fun onPlayerSleepTimerUpdated(remainingDuration: Long?)
 
   /**
    * The player wants access to a scheduled executor on which it can submit short time-related
