@@ -230,6 +230,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = null)
+
           this.menuSleepText?.text = ""
           this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
           this.menuSleepText?.visibility = INVISIBLE
@@ -243,6 +245,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = null)
+
           this.menuSleepText?.text = ""
           this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
           this.menuSleepText?.visibility = INVISIBLE
@@ -257,6 +261,9 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       Runnable {
         safelyPerformOperations {
           val remaining = event.remaining
+
+          this.listener.onPlayerSleepTimerUpdated(remaining?.millis)
+
           if (remaining != null) {
             this.menuSleep.actionView?.contentDescription =
               this.sleepTimerContentDescriptionForTime(event.paused, remaining)
@@ -332,6 +339,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = null)
+
           this.menuSleepText?.text = ""
           this.menuSleepText?.contentDescription = this.sleepTimerContentDescriptionSetUp()
           this.menuSleepText?.visibility = INVISIBLE
@@ -524,8 +533,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     this.playerAuthorView.text = this.listener.onPlayerWantsAuthor()
 
     this.player.playbackRate = this.parameters.currentRate ?: PlayerPlaybackRate.NORMAL_TIME
-    if (this.parameters.currentSleepTimer?.duration != null) {
-      this.sleepTimer.start(this.parameters.currentSleepTimer!!.duration)
+    if (this.parameters.currentSleepTimerDuration != null) {
+      this.sleepTimer.start(Duration.millis(this.parameters.currentSleepTimerDuration!!))
     }
 
     initializeService()

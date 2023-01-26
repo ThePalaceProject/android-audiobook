@@ -128,7 +128,7 @@ class PlayerSleepTimerFragment : DialogFragment() {
           PlayerSleepTimerAdapter.hasBeenSetToContentDescriptionOf(resources, item)
         )
       )
-      this.listener.onPlayerSleepTimerUpdated(item)
+      this.listener.onPlayerSleepTimerUpdated(item.duration?.millis)
     } catch (ex: Exception) {
       this.log.debug("ignored exception in event handler: ", ex)
     }
