@@ -230,7 +230,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
-          this.listener.onPlayerSleepTimerUpdated(remainingDuration = null)
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
 
           this.menuSleepText?.text = ""
           this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
@@ -245,7 +245,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
-          this.listener.onPlayerSleepTimerUpdated(remainingDuration = null)
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
 
           this.menuSleepText?.text = ""
           this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
@@ -339,7 +339,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
-          this.listener.onPlayerSleepTimerUpdated(remainingDuration = null)
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
 
           this.menuSleepText?.text = ""
           this.menuSleepText?.contentDescription = this.sleepTimerContentDescriptionSetUp()
@@ -533,8 +533,15 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     this.playerAuthorView.text = this.listener.onPlayerWantsAuthor()
 
     this.player.playbackRate = this.parameters.currentRate ?: PlayerPlaybackRate.NORMAL_TIME
+
     if (this.parameters.currentSleepTimerDuration != null) {
-      this.sleepTimer.start(Duration.millis(this.parameters.currentSleepTimerDuration!!))
+      val duration = this.parameters.currentSleepTimerDuration!!
+      if (duration > 0L) {
+        this.sleepTimer.start(Duration.millis(duration))
+      }
+    } else {
+      // if the current duration is null it means the "end of chapter" option was selected
+      this.sleepTimer.start(null)
     }
 
     initializeService()
