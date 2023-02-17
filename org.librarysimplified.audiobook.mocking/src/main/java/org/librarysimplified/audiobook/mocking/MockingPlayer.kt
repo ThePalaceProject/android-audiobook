@@ -81,12 +81,12 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
     this.callEvents.onNext("pause")
   }
 
-  override fun skipToNextChapter() {
+  override fun skipToNextChapter(offset: Long) {
     this.log.debug("skipToNextChapter")
     this.callEvents.onNext("skipToNextChapter")
   }
 
-  override fun skipToPreviousChapter() {
+  override fun skipToPreviousChapter(offset: Long) {
     this.log.debug("skipToPreviousChapter")
     this.callEvents.onNext("skipToPreviousChapter")
   }

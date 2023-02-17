@@ -504,7 +504,13 @@ class ExoAudioBookPlayer private constructor(
       return SKIP_TO_CHAPTER_NONEXISTENT
     }
 
-    return this.playSpineElementIfAvailable(previous, offset, playAutomatically = true)
+    val newOffset = if (previous.duration != null) {
+      previous.duration!!.millis + offset
+    } else {
+      0L
+    }
+
+    return this.playSpineElementIfAvailable(previous, newOffset, playAutomatically = true)
   }
 
   private fun playSpineElementIfAvailable(
@@ -796,9 +802,14 @@ class ExoAudioBookPlayer private constructor(
 
     assert(milliseconds > 0, { "Milliseconds must be positive" })
 
-    val offset =
-      Math.min(this.exoPlayer.duration, this.exoPlayer.currentPosition + milliseconds)
-    this.seek(offset)
+    val nextMs = this.exoPlayer.currentPosition + milliseconds
+
+    if (nextMs > this.exoPlayer.duration) {
+      val offset = nextMs - this.exoPlayer.duration
+      this.skipToNextChapter(offset)
+    } else {
+      this.seek(nextMs)
+    }
 
     return when (val state = this.stateGet()) {
       ExoPlayerStateInitial,
@@ -819,17 +830,12 @@ class ExoAudioBookPlayer private constructor(
 
     assert(milliseconds < 0, { "Milliseconds must be negative" })
 
-    /*
-     * If the current time is in the range [00:00, 00:04], skipping back should switch
-     * to the previous spine element and then jump 15 seconds back from the end of that
-     * element. Otherwise, it should simply skip backwards, clamping the minimum to 00:00.
-     */
+    val nextMs = this.exoPlayer.currentPosition + milliseconds
 
-    val current = this.exoPlayer.currentPosition
-    if (current <= 4_000L) {
-      this.opSkipToPreviousChapter(milliseconds)
+    if (nextMs < 0) {
+      this.skipToPreviousChapter(nextMs)
     } else {
-      this.seek(Math.max(0L, current + milliseconds))
+      this.seek(nextMs)
     }
 
     return when (val state = this.stateGet()) {
@@ -946,14 +952,14 @@ class ExoAudioBookPlayer private constructor(
     this.engineExecutor.execute { this.opPause() }
   }
 
-  override fun skipToNextChapter() {
+  override fun skipToNextChapter(offset: Long) {
     this.checkNotClosed()
-    this.engineExecutor.execute { this.opSkipToNextChapter(offset = 0) }
+    this.engineExecutor.execute { this.opSkipToNextChapter(offset = offset) }
   }
 
-  override fun skipToPreviousChapter() {
+  override fun skipToPreviousChapter(offset: Long) {
     this.checkNotClosed()
-    this.engineExecutor.execute { this.opSkipToPreviousChapter(offset = 0) }
+    this.engineExecutor.execute { this.opSkipToPreviousChapter(offset = offset) }
   }
 
   override fun skipPlayhead(milliseconds: Long) {
