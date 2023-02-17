@@ -34,6 +34,7 @@ import org.librarysimplified.audiobook.lcp.LCPAudioBookPlayer.LCPPlayerState.LCP
 import org.librarysimplified.audiobook.lcp.LCPAudioBookPlayer.LCPPlayerState.LCPPlayerStateStopped
 import org.librarysimplified.audiobook.lcp.LCPAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_NONEXISTENT
 import org.librarysimplified.audiobook.lcp.LCPAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_READY
+import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer
 import org.librarysimplified.audiobook.open_access.ExoBookmarkObserver
 import org.librarysimplified.audiobook.open_access.ExoEngineThread
 import org.readium.r2.shared.publication.asset.FileAsset
@@ -819,12 +820,27 @@ class LCPAudioBookPlayer private constructor(
 
   override fun skipToNextChapter(offset: Long) {
     this.checkNotClosed()
-    this.engineExecutor.execute { this.opSkipToNextChapter(offset = offset) }
+    this.engineExecutor.execute {
+      val status = this.opSkipToNextChapter(offset = offset)
+
+      // if there's no next chapter, the player will go to the end of the chapter
+      if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
+        this.seek(this.exoPlayer.duration)
+      }
+    }
   }
 
   override fun skipToPreviousChapter(offset: Long) {
     this.checkNotClosed()
-    this.engineExecutor.execute { this.opSkipToPreviousChapter(offset = offset) }
+    this.engineExecutor.execute {
+
+      val status = this.opSkipToPreviousChapter(offset = offset)
+
+      // if there's no previous chapter, the player will go to the start of the chapter
+      if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
+        this.seek(0L)
+      }
+    }
   }
 
   override fun skipPlayhead(milliseconds: Long) {

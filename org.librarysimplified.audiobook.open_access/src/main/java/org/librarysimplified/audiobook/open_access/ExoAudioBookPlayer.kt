@@ -806,7 +806,9 @@ class ExoAudioBookPlayer private constructor(
 
     if (nextMs > this.exoPlayer.duration) {
       val offset = nextMs - this.exoPlayer.duration
-      this.skipToNextChapter(offset)
+      this.skipToNextChapter(
+        offset = offset,
+      )
     } else {
       this.seek(nextMs)
     }
@@ -954,12 +956,26 @@ class ExoAudioBookPlayer private constructor(
 
   override fun skipToNextChapter(offset: Long) {
     this.checkNotClosed()
-    this.engineExecutor.execute { this.opSkipToNextChapter(offset = offset) }
+    this.engineExecutor.execute {
+      val status = this.opSkipToNextChapter(offset = offset)
+
+      // if there's no next chapter, the player will go to the end of the chapter
+      if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
+        this.seek(this.exoPlayer.duration)
+      }
+    }
   }
 
   override fun skipToPreviousChapter(offset: Long) {
     this.checkNotClosed()
-    this.engineExecutor.execute { this.opSkipToPreviousChapter(offset = offset) }
+    this.engineExecutor.execute {
+      val status = this.opSkipToPreviousChapter(offset = offset)
+
+      // if there's no previous chapter, the player will go to the start of the chapter
+      if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
+        this.seek(0L)
+      }
+    }
   }
 
   override fun skipPlayhead(milliseconds: Long) {
