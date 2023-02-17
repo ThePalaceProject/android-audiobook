@@ -568,7 +568,7 @@ abstract class ExoEngineProviderContract {
     this.downloadSpineItemAndWait(book.downloadTasks[1])
 
     player.play()
-    player.skipToNextChapter()
+    player.skipToNextChapter(5000L)
     Thread.sleep(10_000L)
 
     player.close()
@@ -634,7 +634,7 @@ abstract class ExoEngineProviderContract {
     Thread.sleep(1000L)
 
     player.playAtLocation(book.spine[1].position)
-    player.skipToPreviousChapter()
+    player.skipToPreviousChapter(5000L)
     Thread.sleep(12_000L)
 
     player.close()
