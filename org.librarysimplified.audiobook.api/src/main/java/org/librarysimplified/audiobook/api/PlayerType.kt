@@ -63,20 +63,20 @@ interface PlayerType : AutoCloseable {
   fun pause()
 
   /**
-   * Skip to the next chapter.
+   * Skip to the next chapter at the given offset.
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  fun skipToNextChapter()
+  fun skipToNextChapter(offset: Long)
 
   /**
-   * Skip to the previous chapter.
+   * Skip to the previous chapter at the given offset.
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  fun skipToPreviousChapter()
+  fun skipToPreviousChapter(offset: Long)
 
   /**
    * Skip forwards/backwards, possibly across chapter boundaries. If the given parameter is
