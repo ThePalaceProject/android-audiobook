@@ -7,13 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.END_OF_CHAPTER
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.MINUTES_15
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.MINUTES_30
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.MINUTES_45
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.MINUTES_60
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.NOW
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.OFF
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.END_OF_CHAPTER
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_15
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_30
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_45
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_60
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.NOW
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.OFF
 
 /**
  * A Recycler view adapter used to display and control a sleep timer configuration menu.

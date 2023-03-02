@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.tests.device
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
@@ -102,6 +103,10 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     return R.drawable.icon
   }
 
+  override fun onPlayerNotificationWantsIntent(): Intent {
+    return Intent(this, MockPlayerActivity::class.java)
+  }
+
   override fun onPlayerWantsTitle(): String {
     return "Any Title"
   }
@@ -163,6 +168,10 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
         )
       fragment.show(this.supportFragmentManager, "PLAYER_SLEEP_TIMER")
     }
+  }
+
+  override fun onPlayerSleepTimerUpdated(remainingDuration: Long?) {
+    // do nothing
   }
 
   override fun onPlayerWantsScheduledExecutor(): ScheduledExecutorService {

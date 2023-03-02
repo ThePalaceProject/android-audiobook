@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.demo
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -641,6 +642,14 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     return R.drawable.icon
   }
 
+  override fun onPlayerNotificationWantsIntent(): Intent {
+    return Intent(this, ExampleConfigurationActivity::class.java).apply {
+      addCategory(Intent.CATEGORY_LAUNCHER)
+      setAction(Intent.ACTION_MAIN)
+      flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+    }
+  }
+
   override fun onPlayerTOCWantsBook(): PlayerAudioBookType {
     this.log.debug("onPlayerTOCWantsBook")
     return this.book
@@ -685,6 +694,10 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
         fragment.show(this.supportFragmentManager, "PLAYER_SLEEP_TIMER")
       }
     )
+  }
+
+  override fun onPlayerSleepTimerUpdated(remainingDuration: Long?) {
+    // do nothing
   }
 
   override fun onPlayerPlaybackRateShouldOpen() {

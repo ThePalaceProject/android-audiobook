@@ -9,18 +9,18 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import org.joda.time.Duration
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilitySleepTimerSettingChanged
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.END_OF_CHAPTER
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.MINUTES_15
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.MINUTES_30
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.MINUTES_45
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.MINUTES_60
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.NOW
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.OFF
-import org.librarysimplified.audiobook.views.PlayerSleepTimerConfiguration.values
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.END_OF_CHAPTER
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_15
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_30
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_45
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_60
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.NOW
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.OFF
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.values
 import org.slf4j.LoggerFactory
 
 /**
@@ -128,40 +128,17 @@ class PlayerSleepTimerFragment : DialogFragment() {
           PlayerSleepTimerAdapter.hasBeenSetToContentDescriptionOf(resources, item)
         )
       )
+      this.listener.onPlayerSleepTimerUpdated(item.duration?.millis)
     } catch (ex: Exception) {
       this.log.debug("ignored exception in event handler: ", ex)
     }
 
-    when (item) {
-      END_OF_CHAPTER -> {
-        this.timer.start(null)
-        this.dismiss()
-      }
-      MINUTES_60 -> {
-        this.timer.start(Duration.standardMinutes(60L))
-        this.dismiss()
-      }
-      MINUTES_45 -> {
-        this.timer.start(Duration.standardMinutes(45L))
-        this.dismiss()
-      }
-      MINUTES_30 -> {
-        this.timer.start(Duration.standardMinutes(30L))
-        this.dismiss()
-      }
-      MINUTES_15 -> {
-        this.timer.start(Duration.standardMinutes(15L))
-        this.dismiss()
-      }
-      NOW -> {
-        this.timer.start(Duration.standardSeconds(1L))
-        this.dismiss()
-      }
-      OFF -> {
-        this.timer.cancel()
-        this.dismiss()
-      }
+    if (item == OFF) {
+      this.timer.cancel()
+    } else {
+      this.timer.start(item.duration)
     }
+    this.dismiss()
   }
 
   companion object {

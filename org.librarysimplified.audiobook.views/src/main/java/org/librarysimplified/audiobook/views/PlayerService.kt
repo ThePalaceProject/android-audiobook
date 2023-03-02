@@ -140,15 +140,25 @@ class PlayerService : Service() {
         .build()
     )
 
+    val contentIntent = PendingIntent.getActivity(
+      this, 0, playerInfo.notificationIntent,
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+      } else {
+        PendingIntent.FLAG_UPDATE_CURRENT
+      }
+    )
+
     val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
       .setContentTitle(this.playerInfo.bookName)
       .setContentText(this.playerInfo.bookChapterName)
       .setStyle(
         androidx.media.app.NotificationCompat.MediaStyle()
-          .setShowActionsInCompactView(0,1,2)
+          .setShowActionsInCompactView(0, 1, 2)
           .setShowCancelButton(false)
           .setMediaSession(mediaSession?.sessionToken)
       )
+      .setContentIntent(contentIntent)
       .setSmallIcon(this.playerInfo.smallIcon)
       .setLargeIcon(this.playerInfo.bookCover)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -176,30 +186,30 @@ class PlayerService : Service() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
       when (intent?.action) {
-          ACTION_BACKWARD -> {
-            playerInfo.player.skipBack()
-            updateNotification()
-          }
-          ACTION_FORWARD -> {
-            playerInfo.player.skipForward()
-            updateNotification()
-          }
-          ACTION_PAUSE -> {
-            mediaSession?.isActive = false
-            playerInfo.player.pause()
-            playerInfo = playerInfo.copy(
-              isPlaying = false
-            )
-            updateNotification()
-          }
-          ACTION_PLAY -> {
-            mediaSession?.isActive = true
-            playerInfo.player.play()
-            playerInfo = playerInfo.copy(
-              isPlaying = true
-            )
-            updateNotification()
-          }
+        ACTION_BACKWARD -> {
+          playerInfo.player.skipBack()
+          updateNotification()
+        }
+        ACTION_FORWARD -> {
+          playerInfo.player.skipForward()
+          updateNotification()
+        }
+        ACTION_PAUSE -> {
+          mediaSession?.isActive = false
+          playerInfo.player.pause()
+          playerInfo = playerInfo.copy(
+            isPlaying = false
+          )
+          updateNotification()
+        }
+        ACTION_PLAY -> {
+          mediaSession?.isActive = true
+          playerInfo.player.play()
+          playerInfo = playerInfo.copy(
+            isPlaying = true
+          )
+          updateNotification()
+        }
       }
     }
   }

@@ -230,6 +230,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
+
           this.menuSleepText?.text = ""
           this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
           this.menuSleepText?.visibility = INVISIBLE
@@ -243,6 +245,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
+
           this.menuSleepText?.text = ""
           this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
           this.menuSleepText?.visibility = INVISIBLE
@@ -257,6 +261,9 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       Runnable {
         safelyPerformOperations {
           val remaining = event.remaining
+
+          this.listener.onPlayerSleepTimerUpdated(remaining?.millis)
+
           if (remaining != null) {
             this.menuSleep.actionView?.contentDescription =
               this.sleepTimerContentDescriptionForTime(event.paused, remaining)
@@ -332,6 +339,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     UIThread.runOnUIThread(
       Runnable {
         safelyPerformOperations {
+          this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
+
           this.menuSleepText?.text = ""
           this.menuSleepText?.contentDescription = this.sleepTimerContentDescriptionSetUp()
           this.menuSleepText?.visibility = INVISIBLE
@@ -524,6 +533,16 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     this.playerAuthorView.text = this.listener.onPlayerWantsAuthor()
 
     this.player.playbackRate = this.parameters.currentRate ?: PlayerPlaybackRate.NORMAL_TIME
+
+    if (this.parameters.currentSleepTimerDuration != null) {
+      val duration = this.parameters.currentSleepTimerDuration!!
+      if (duration > 0L) {
+        this.sleepTimer.start(Duration.millis(duration))
+      }
+    } else {
+      // if the current duration is null it means the "end of chapter" option was selected
+      this.sleepTimer.start(null)
+    }
 
     initializeService()
   }
@@ -1058,7 +1077,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       bookName = this.listener.onPlayerWantsTitle(),
       isPlaying = false,
       player = this.player,
-      smallIcon = this.listener.onPlayerNotificationWantsSmallIcon()
+      smallIcon = this.listener.onPlayerNotificationWantsSmallIcon(),
+      notificationIntent = this.listener.onPlayerNotificationWantsIntent()
     )
 
     this.listener.onPlayerNotificationWantsBookCover(this::onBookCoverLoaded)

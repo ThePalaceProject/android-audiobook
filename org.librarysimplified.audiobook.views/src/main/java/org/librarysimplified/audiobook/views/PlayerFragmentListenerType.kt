@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.views
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
@@ -43,6 +44,12 @@ interface PlayerFragmentListenerType {
    */
   @DrawableRes
   fun onPlayerNotificationWantsSmallIcon(): Int
+
+  /**
+   * A fragment requires the intent to be used to open the app from the audiobook player
+   * notification
+   */
+  fun onPlayerNotificationWantsIntent(): Intent
 
   /**
    * A fragment wants to know the title of the audio book being played. The receiver must return
@@ -109,6 +116,13 @@ interface PlayerFragmentListenerType {
    */
 
   fun onPlayerSleepTimerShouldOpen()
+
+  /**
+   * The user has a sleep timer defined for a given audiobook, and every time the timer's value is
+   * updated, either when setting or when the time goes by, this method is called.
+   */
+
+  fun onPlayerSleepTimerUpdated(remainingDuration: Long?)
 
   /**
    * The player wants access to a scheduled executor on which it can submit short time-related
