@@ -16,7 +16,7 @@ $ git submodule update --remote --recursive
 ```
 
 ```
-$ echo "org.gradle.internal.publish.checksums.insecure=true" >> "$HOME/.gradle/gradle.properties"
+$ echo "systemProp.org.gradle.internal.publish.checksums.insecure=true" >> "$HOME/.gradle/gradle.properties"
 
 $ ./gradlew clean assembleDebug test publishToMavenLocal
 ```
