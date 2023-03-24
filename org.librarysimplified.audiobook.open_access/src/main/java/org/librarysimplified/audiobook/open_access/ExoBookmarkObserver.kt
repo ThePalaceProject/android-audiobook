@@ -27,7 +27,7 @@ class ExoBookmarkObserver private constructor(
   private val logger =
     LoggerFactory.getLogger(ExoBookmarkObserver::class.java)
   private val bookmarkWaitPeriod =
-    Duration.standardSeconds(5L)
+    Duration.standardSeconds(180L)
 
   private var subscription: Subscription
   private var timeAtLast: Instant? = null
