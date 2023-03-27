@@ -647,9 +647,18 @@ abstract class ExoManifestContract {
       239
     )
 
-    Assertions.assertEquals(
+    Assertions.assertNotEquals(
       manifest.readingOrder.size,
       manifest.toc?.size
+    )
+
+    // the book has 8 parts, so the final number of toc elements will be the number of reading order
+    // items minus 8, to match the number of items that were "merged" with the chapters
+    val numberOfParts = 8
+
+    Assertions.assertEquals(
+      manifest.toc.orEmpty().size - numberOfParts,
+      exo.spineItems.size
     )
   }
 
