@@ -552,7 +552,7 @@ abstract class ExoManifestContract {
       374.0,
       600.0,
       864.0,
-      801.0,
+      804.0,
       931.0,
       575.0,
       448.0,
