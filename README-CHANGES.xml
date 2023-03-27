@@ -213,12 +213,16 @@
         <c:change date="2022-11-28T00:00:00+00:00" summary="Added phones unplugging handling to pause the audiobook when it happens."/>
       </c:changes>
     </c:release>
-    <c:release date="2023-03-27T13:35:01+00:00" is-open="true" ticket-system="org.nypl.jira" version="9.0.0">
+    <c:release date="2023-03-14T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="9.0.0">
       <c:changes>
         <c:change date="2023-01-11T00:00:00+00:00" summary="Added ability to open the app when clicking on the audiobook's player notification."/>
         <c:change date="2023-01-19T00:00:00+00:00" summary="Updated audiobook sleep timer value with the remaining duration."/>
         <c:change date="2023-02-17T00:00:00+00:00" summary="Updated behaviour for skipping and rewinding an audiobook for 15 seconds."/>
-        <c:change date="2023-03-27T13:35:01+00:00" summary="Updated audiobook player to support new Audible TOC."/>
+      </c:changes>
+    </c:release>
+    <c:release date="2023-03-27T15:03:01+00:00" is-open="true" ticket-system="org.nypl.jira" version="9.0.1">
+      <c:changes>
+        <c:change date="2023-03-27T15:03:01+00:00" summary="Added support to the new Audible TOC."/>
       </c:changes>
     </c:release>
   </c:releases>
