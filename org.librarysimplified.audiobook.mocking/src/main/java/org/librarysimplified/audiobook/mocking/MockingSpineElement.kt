@@ -45,7 +45,7 @@ class MockingSpineElement(
       }
 
   override val position: PlayerPosition
-    get() = PlayerPosition(title = this.title, offsetMilliseconds = 0, part = 0, chapter = this.index + 1)
+    get() = PlayerPosition(title = this.title, part = 0, chapter = this.index + 1, startOffset = 0L, currentOffset = 0L)
 
   private var downloadStatusValue: PlayerSpineElementDownloadStatus =
     PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded(this)

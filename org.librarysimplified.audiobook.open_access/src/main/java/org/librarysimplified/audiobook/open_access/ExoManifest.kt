@@ -35,12 +35,7 @@ data class ExoManifest(
       try {
 
         val spineItems = if (!manifest.toc.isNullOrEmpty()) {
-
-          if (manifest.toc?.any { !it.children.isNullOrEmpty() } == true) {
-            getSpineItemsFromTOCWithChildren(context, manifest.readingOrder, manifest.toc!!)
-          } else {
-            getSpineItemsFromTOC(context, manifest.readingOrder, manifest.toc!!)
-          }
+          getSpineItemsFromTOC(context, manifest.readingOrder, manifest.toc!!)
         } else {
           manifest.readingOrder.mapIndexed { index, item ->
             this.processSpineItem(context, index, item)
@@ -95,62 +90,6 @@ data class ExoManifest(
         allElementsOfTOC.addAll(tocElement.children.orEmpty())
       }
 
-      readingOrderElements.forEachIndexed { index, readingOrderElement ->
-        val tocElementsWithHref = allElementsOfTOC.filter { tocElement ->
-          val tocHref = this.getHrefWithoutOffset(tocElement)
-          tocHref == readingOrderElement.hrefURI.toString()
-        }
-
-        val offset: Double
-        val title: String?
-
-        if (tocElementsWithHref.size > 1) {
-
-          // if we have more than one chapter with the same href, the offset will be 0.0 so the
-          // chapter an be played from the beginning
-          offset = 0.0
-          title = tocElementsWithHref.last().title
-        } else if (tocElementsWithHref.isNotEmpty()) {
-          val tocElement = tocElementsWithHref.first()
-          offset = getOffsetFromElement(tocElement)
-          title = tocElement.title
-        } else {
-          offset = getOffsetFromElement(readingOrderElement)
-          title = readingOrderElement.title
-        }
-
-        spineItems.add(
-          ExoManifestSpineItem(
-            chapter = index,
-            duration = readingOrderElement.duration ?: -1.0,
-            offset = offset,
-            originalLink = readingOrderElement,
-            part = 0,
-            title = title ?:
-            context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1),
-            type = readingOrderElement.type ?: OCTET_STREAM,
-            uri = this.parseURI(readingOrderElement, index)
-          )
-        )
-      }
-
-      return spineItems
-    }
-
-    private fun getSpineItemsFromTOCWithChildren(
-      context: Context,
-      readingOrderElements: List<PlayerManifestLink>,
-      tocElements: List<PlayerManifestLink>
-    ): List<ExoManifestSpineItem> {
-
-      val spineItems = arrayListOf<ExoManifestSpineItem>()
-
-      val allElementsOfTOC = arrayListOf<PlayerManifestLink>()
-      tocElements.forEach { tocElement ->
-        allElementsOfTOC.add(tocElement)
-        allElementsOfTOC.addAll(tocElement.children.orEmpty())
-      }
-
       allElementsOfTOC.forEachIndexed { index, tocElement ->
         val href = this.getHrefWithoutOffset(tocElement)
 
@@ -165,25 +104,22 @@ data class ExoManifest(
           index != allElementsOfTOC.lastIndex -> {
 
             val nextTocElement = allElementsOfTOC[index + 1]
+            val nextTocElementOffset = getOffsetFromElement(nextTocElement)
 
-            when {
+            // if the next TOC element belongs to the same "parent" we can calculate this element's
+            // duration by calculating their offset difference
+            if (this.getHrefWithoutOffset(nextTocElement) == href) {
+              nextTocElementOffset - tocElementOffset
+            } else if (wholeDuration != -1.0) {
 
-              // if the next toc element has the same href, then it belongs to the same "parent"
-              this.getHrefWithoutOffset(nextTocElement) == href -> {
-                getOffsetFromElement(nextTocElement) - tocElementOffset
-              }
-
-              // if the next toc element hasn't the same href, then it belongs to another "parent"
-              // and we need to use the current item's parent duration
-              wholeDuration != -1.0 -> {
-                wholeDuration.toInt() - tocElementOffset
-              }
-
-              else -> {
-                null
-              }
+              // if the next toc element belongs to a different "parent", i.e., if it has a
+              // different uri, the current element's duration will be its parent's duration minus
+              // its offset plus the offset of the next item, so we don't ignore the seconds before
+              // that next item's offset
+              wholeDuration.toInt() - tocElementOffset + nextTocElementOffset
+            } else {
+              null
             }
-
           }
           wholeDuration != -1.0 -> {
             wholeDuration.toInt() - tocElementOffset

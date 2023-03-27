@@ -35,7 +35,8 @@ class ExampleBookmarkDatabase(private val context: Context) : AutoCloseable {
     val title: String?,
     val part: Int,
     val chapter: Int,
-    val offsetMilliseconds: Long
+    val startOffset: Long,
+    val currentOffset: Long
   ) : Serializable
 
   private fun countBookmarks(map: Map<String, SerializableBookmark>): Int {
@@ -45,7 +46,7 @@ class ExampleBookmarkDatabase(private val context: Context) : AutoCloseable {
   fun bookmarkFindLastReadLocation(
     bookId: String
   ): PlayerPosition {
-    return this.bookmarks[bookId]?.let { fromSerializable(it) } ?: PlayerPosition(null, 0, 0, 0L)
+    return this.bookmarks[bookId]?.let { fromSerializable(it) } ?: PlayerPosition(null, 0, 0, 0L, 0L)
   }
 
   private fun fromSerializable(bookmark: SerializableBookmark): PlayerPosition {
@@ -53,7 +54,8 @@ class ExampleBookmarkDatabase(private val context: Context) : AutoCloseable {
       title = bookmark.title,
       part = bookmark.part,
       chapter = bookmark.chapter,
-      offsetMilliseconds = bookmark.offsetMilliseconds
+      startOffset = bookmark.startOffset,
+      currentOffset = bookmark.currentOffset
     )
   }
 
@@ -84,7 +86,8 @@ class ExampleBookmarkDatabase(private val context: Context) : AutoCloseable {
       title = bookmark.title,
       part = bookmark.part,
       chapter = bookmark.chapter,
-      offsetMilliseconds = bookmark.offsetMilliseconds
+      startOffset = bookmark.startOffset,
+      currentOffset = bookmark.currentOffset
     )
   }
 

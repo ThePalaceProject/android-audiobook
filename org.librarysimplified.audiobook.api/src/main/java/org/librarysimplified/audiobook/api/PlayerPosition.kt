@@ -8,5 +8,6 @@ data class PlayerPosition(
   val title: String?,
   val part: Int,
   val chapter: Int,
-  val offsetMilliseconds: Long
+  val startOffset: Long,
+  val currentOffset: Long
 )

@@ -19,6 +19,9 @@ object PlayerPositions : PlayerPositionParserType, PlayerPositionSerializerType 
         2 -> {
           return parseFromObjectNodeV2(node)
         }
+        3 -> {
+          return parseFromObjectNodeV3(node)
+        }
       }
 
       throw PlayerJSONParseException("Unsupported format version: $version")
@@ -45,7 +48,8 @@ object PlayerPositions : PlayerPositionParserType, PlayerPositionSerializerType 
         title = title,
         part = part,
         chapter = chapter,
-        offsetMilliseconds = offsetMilliseconds
+        startOffset = offsetMilliseconds,
+        currentOffset = offsetMilliseconds
       )
     )
   }
@@ -68,7 +72,34 @@ object PlayerPositions : PlayerPositionParserType, PlayerPositionSerializerType 
         title = title,
         part = part,
         chapter = chapter,
-        offsetMilliseconds = offsetMilliseconds
+        startOffset = offsetMilliseconds,
+        currentOffset = offsetMilliseconds
+      )
+    )
+  }
+
+  @Throws(PlayerJSONParseException::class)
+  private fun parseFromObjectNodeV3(node: ObjectNode): PlayerResult<PlayerPosition, Exception> {
+    val locationNode =
+      PlayerJSONParserUtilities.getObject(node, "location")
+    val chapter =
+      PlayerJSONParserUtilities.getInteger(locationNode, "chapter")
+    val part =
+      PlayerJSONParserUtilities.getInteger(locationNode, "part")
+    val startOffset =
+      PlayerJSONParserUtilities.getBigInteger(locationNode, "startOffset").toLong()
+    val currentOffset =
+      PlayerJSONParserUtilities.getBigInteger(locationNode, "time").toLong()
+    val title =
+      PlayerJSONParserUtilities.getStringOptional(locationNode, "title")
+
+    return PlayerResult.Success(
+      PlayerPosition(
+        title = title,
+        part = part,
+        chapter = chapter,
+        startOffset = startOffset,
+        currentOffset = currentOffset
       )
     )
   }
@@ -76,12 +107,13 @@ object PlayerPositions : PlayerPositionParserType, PlayerPositionSerializerType 
   override fun serializeToObjectNode(position: PlayerPosition): ObjectNode {
     val objects = ObjectMapper()
     val node = objects.createObjectNode()
-    node.put("@version", 2)
+    node.put("@version", 3)
 
     val locationNode = objects.createObjectNode()
     locationNode.put("chapter", position.chapter)
     locationNode.put("part", position.part)
-    locationNode.put("time", position.offsetMilliseconds)
+    locationNode.put("startOffset", position.startOffset)
+    locationNode.put("time", position.currentOffset)
     locationNode.put("title", position.title)
     node.set<ObjectNode>("location", locationNode)
     return node
