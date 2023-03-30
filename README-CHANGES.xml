@@ -223,6 +223,13 @@
     <c:release date="2023-03-14T20:28:43+00:00" is-open="true" ticket-system="org.nypl.jira" version="9.0.1">
       <c:changes/>
     </c:release>
+    <c:release date="2023-03-14T20:28:43+00:00" is-open="true" ticket-system="org.nypl.jira" version="9.0.1">
+      <c:changes/>
+    </c:release>
+    <c:release date="2023-03-14T20:28:43+00:00" is-open="true" ticket-system="org.nypl.jira" version="9.0.2">
+        <c:change date="2023-03-30T00:00:00+00:00" summary="Updated polling interval to save reading position in audiobooks to server from 5 seconds to 15 seconds."/>
+        <c:change date="2023-03-30T00:00:00+00:00" summary="Save reading position to server on play, pause, and stop (which also saves when seeking and changing chapters)."/>
+    </c:release>
   </c:releases>
   <c:ticket-systems>
     <c:ticket-system default="true" id="org.nypl.jira" url="https://jira.nypl.org/browse/"/>
