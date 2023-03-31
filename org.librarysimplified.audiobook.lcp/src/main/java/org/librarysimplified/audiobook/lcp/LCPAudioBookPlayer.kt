@@ -260,7 +260,7 @@ class LCPAudioBookPlayer private constructor(
       location = location,
       playAutomatically = playAutomatically
     )
-    checkIfTrackHasChanged(
+    updateTrackIndex(
       spineElement = spineElementToUpdate!!,
       trackOffset = location.startOffset + location.currentOffset,
       playAutomatically = playAutomatically,
@@ -297,7 +297,7 @@ class LCPAudioBookPlayer private constructor(
       playAutomatically = false
     )
 
-    checkIfTrackHasChanged(
+    updateTrackIndex(
       spineElement = spineElementToUpdate!!,
       trackOffset = location.startOffset + location.currentOffset,
       playAutomatically = false,
@@ -311,7 +311,7 @@ class LCPAudioBookPlayer private constructor(
     val location = if (milliseconds < 0L || milliseconds > 0L) {
       val state = stateGet()
       trackPlaybackOffset += milliseconds
-      checkIfTrackHasChanged(
+      updateTrackIndex(
         spineElement = spineElementToUpdate!!,
         trackOffset = trackPlaybackOffset,
         playAutomatically = state is LCPPlayerState.LCPPlayerStatePlaying,
@@ -407,7 +407,7 @@ class LCPAudioBookPlayer private constructor(
     spineElementToUpdate = null
   }
 
-  private fun checkIfTrackHasChanged(
+  private fun updateTrackIndex(
     spineElement: LCPSpineElement,
     trackOffset: Long,
     playAutomatically: Boolean,
@@ -437,7 +437,7 @@ class LCPAudioBookPlayer private constructor(
       )
     } else if (trackOffset < 0) {
 
-      // the offset is fewer than 0, so we need to get the next track
+      // the offset is fewer than 0, so we need to get the previous track
       setPreviousTrackToPlay(
         index = currentTrackIndex - 1,
         currentOffset = trackOffset
@@ -795,7 +795,7 @@ class LCPAudioBookPlayer private constructor(
     // offset values
     Handler(Looper.getMainLooper()).postDelayed({
 
-      checkIfTrackHasChanged(
+      updateTrackIndex(
         spineElement = chapter,
         trackOffset = chapter.position.startOffset + chapterPlaybackOffset,
         playAutomatically = playAutomatically,
@@ -852,7 +852,7 @@ class LCPAudioBookPlayer private constructor(
 
           val bookPlayer = this@LCPAudioBookPlayer
           trackPlaybackOffset = bookPlayer.exoPlayer.currentPosition
-          checkIfTrackHasChanged(
+          updateTrackIndex(
             spineElement = spineElementToUpdate!!,
             trackOffset = trackPlaybackOffset,
             playAutomatically = true,
