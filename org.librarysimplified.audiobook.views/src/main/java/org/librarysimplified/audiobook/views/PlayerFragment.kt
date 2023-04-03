@@ -588,8 +588,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     val spine = this.playerPositionCurrentSpine
     if (spine != null) {
       val target = spine.position.copy(
-        offsetMilliseconds =
-        TimeUnit.MILLISECONDS.convert(this.playerPosition.progress.toLong(), TimeUnit.SECONDS)
+        currentOffset = TimeUnit.MILLISECONDS.convert(this.playerPosition.progress.toLong(),
+          TimeUnit.SECONDS)
       )
       if (this.player.isPlaying) {
         this.player.playAtLocation(target)

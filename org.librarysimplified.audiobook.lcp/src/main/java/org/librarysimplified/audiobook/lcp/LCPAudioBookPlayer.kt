@@ -5,6 +5,8 @@ import android.media.AudioManager
 import android.media.PlaybackParams
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import com.google.android.exoplayer.ExoPlaybackException
 import com.google.android.exoplayer.ExoPlayer
 import com.google.android.exoplayer.MediaCodecAudioTrackRenderer
@@ -15,26 +17,10 @@ import com.google.android.exoplayer.upstream.Allocator
 import com.google.android.exoplayer.upstream.DefaultAllocator
 import kotlinx.coroutines.runBlocking
 import net.jcip.annotations.GuardedBy
-import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerEvent
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterCompleted
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackPaused
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
-import org.librarysimplified.audiobook.api.PlayerPlaybackRate.NORMAL_TIME
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerType
-import org.librarysimplified.audiobook.lcp.LCPAudioBookPlayer.LCPPlayerState.LCPPlayerStateInitial
-import org.librarysimplified.audiobook.lcp.LCPAudioBookPlayer.LCPPlayerState.LCPPlayerStatePlaying
-import org.librarysimplified.audiobook.lcp.LCPAudioBookPlayer.LCPPlayerState.LCPPlayerStateStopped
-import org.librarysimplified.audiobook.lcp.LCPAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_NONEXISTENT
-import org.librarysimplified.audiobook.lcp.LCPAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_READY
-import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer
 import org.librarysimplified.audiobook.open_access.ExoBookmarkObserver
 import org.librarysimplified.audiobook.open_access.ExoEngineThread
 import org.readium.r2.shared.publication.asset.FileAsset
@@ -50,12 +36,9 @@ import java.io.IOException
 import java.util.concurrent.Callable
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit.SECONDS
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-
-/**
- * An LCP audio book player.
- */
+import kotlin.math.abs
 
 class LCPAudioBookPlayer private constructor(
   private val engineExecutor: ScheduledExecutorService,
@@ -65,121 +48,6 @@ class LCPAudioBookPlayer private constructor(
   private val dataSource: LCPDataSource,
   private val exoPlayer: ExoPlayer,
 ) : PlayerType {
-
-  private val bookmarkObserver: ExoBookmarkObserver
-  private val log = LoggerFactory.getLogger(LCPAudioBookPlayer::class.java)
-  private val bufferSegmentSize = 64 * 1024
-  private val bufferSegmentCount = 256
-  private val closed = AtomicBoolean(false)
-
-  init {
-    this.bookmarkObserver =
-      ExoBookmarkObserver.create(
-        player = this,
-        onBookmarkCreate = this.statusEvents::onNext
-      )
-  }
-
-  /*
-   * The current playback state.
-   */
-
-  private sealed class LCPPlayerState {
-
-    /*
-     * The initial state; no spine element is selected, the player is not playing.
-     */
-
-    object LCPPlayerStateInitial : LCPPlayerState()
-
-    /*
-     * The player is currently playing the given spine element.
-     */
-
-    data class LCPPlayerStatePlaying(
-      var spineElement: LCPSpineElement,
-      val observerTask: ScheduledFuture<*>
-    ) :
-      LCPPlayerState()
-
-    /*
-     * The player was playing the given spine element but is currently paused.
-     */
-
-    data class LCPPlayerStateStopped(
-      var spineElement: LCPSpineElement
-    ) :
-      LCPPlayerState()
-  }
-
-  @Volatile
-  private var currentPlaybackRate: PlayerPlaybackRate = NORMAL_TIME
-
-  @Volatile
-  private var currentPlaybackOffset: Long = 0
-    set(value) {
-      this.log.trace("currentPlaybackOffset: {}", value)
-      field = value
-    }
-
-  private val stateLock: Any = Object()
-
-  @GuardedBy("stateLock")
-  private var state: LCPPlayerState = LCPPlayerStateInitial
-
-  private val allocator: Allocator = DefaultAllocator(this.bufferSegmentSize)
-  private var exoAudioRenderer: MediaCodecAudioTrackRenderer? = null
-
-  private fun stateSet(state: LCPPlayerState) {
-    synchronized(this.stateLock) { this.state = state }
-  }
-
-  private fun stateGet(): LCPPlayerState =
-    synchronized(this.stateLock) { this.state }
-
-  /*
-   * A listener registered with the underlying ExoPlayer instance to observe state changes.
-   */
-
-  private val exoPlayerEventListener = object : ExoPlayer.Listener {
-    override fun onPlayerError(error: ExoPlaybackException?) {
-      this@LCPAudioBookPlayer.log.error("onPlayerError: ", error)
-      this@LCPAudioBookPlayer.statusEvents.onNext(
-        PlayerEventError(
-          spineElement = this@LCPAudioBookPlayer.currentSpineElement(),
-          exception = error,
-          errorCode = -1,
-          offsetMilliseconds = this@LCPAudioBookPlayer.currentPlaybackOffset
-        )
-      )
-    }
-
-    override fun onPlayerStateChanged(playWhenReady: Boolean, stateNow: Int) {
-      val stateName = this.stateName(stateNow)
-      this@LCPAudioBookPlayer.log.debug(
-        "onPlayerStateChanged: {} {} ({})", playWhenReady, stateName, stateNow
-      )
-    }
-
-    private fun stateName(playbackState: Int): String {
-      return when (playbackState) {
-        ExoPlayer.STATE_BUFFERING -> "buffering"
-        ExoPlayer.STATE_ENDED -> "ended"
-        ExoPlayer.STATE_IDLE -> "idle"
-        ExoPlayer.STATE_PREPARING -> "preparing"
-        ExoPlayer.STATE_READY -> "ready"
-        else -> "unrecognized state"
-      }
-    }
-
-    override fun onPlayWhenReadyCommitted() {
-      this@LCPAudioBookPlayer.log.debug("onPlayWhenReadyCommitted")
-    }
-  }
-
-  init {
-    this.exoPlayer.addListener(this.exoPlayerEventListener)
-  }
 
   companion object {
 
@@ -242,76 +110,570 @@ class LCPAudioBookPlayer private constructor(
             statusEvents = statusEvents,
           )
         }
-      ).get(5L, SECONDS)
+      ).get(5L, TimeUnit.SECONDS)
     }
   }
 
-  /**
-   * A playback observer that is called repeatedly to observe the current state of the player.
-   */
+  private val bufferSegmentSize = 64 * 1024
+  private val bufferSegmentCount = 256
+  private val closed = AtomicBoolean(false)
+  private val bookmarkObserver = ExoBookmarkObserver.create(
+    player = this,
+    onBookmarkCreate = this.statusEvents::onNext
+  )
+  private val allocator: Allocator = DefaultAllocator(this.bufferSegmentSize)
+  private var exoAudioRenderer: MediaCodecAudioTrackRenderer? = null
+  private val log = LoggerFactory.getLogger(LCPAudioBookPlayer::class.java)
 
-  private inner class PlaybackObserver(
-    private val spineElement: LCPSpineElement
-  ) : Runnable {
+  @GuardedBy("stateLock")
+  private var state: LCPPlayerState = LCPPlayerState.LCPPlayerStateInitial
+  private val stateLock: Any = Object()
 
-    private var gracePeriod: Int = 1
+  private var playbackObserver: ScheduledFuture<*>? = null
 
-    override fun run() {
-      val bookPlayer = this@LCPAudioBookPlayer
-      val duration = bookPlayer.exoPlayer.duration
-      val position = bookPlayer.exoPlayer.currentPosition
-      bookPlayer.log.debug("playback: {}/{}", position, duration)
-      this.spineElement.duration = Duration.millis(duration)
+  @Volatile
+  private var trackPlaybackOffset: Long = 0
+    set(value) {
+      this.log.trace("trackPlaybackOffset: {}", value)
+      field = value
+    }
 
-      /*
-       * Report the current playback status.
-       */
 
-      bookPlayer.currentPlaybackOffset = position
-      bookPlayer.statusEvents.onNext(
-        PlayerEventPlaybackProgressUpdate(this.spineElement, position)
+  @Volatile
+  private var chapterPlaybackOffset: Long = 0
+    set(value) {
+      this.log.trace("chapterPlaybackOffset: {}", value)
+      field = value
+    }
+
+  @Volatile
+  private var currentPlaybackRate: PlayerPlaybackRate = PlayerPlaybackRate.NORMAL_TIME
+
+  @Volatile
+  private var spineElementToUpdate: LCPSpineElement? = null
+
+  private val tracksToPlay = this.book.spine.map {
+    it.itemManifest.originalLink
+  }.distinct()
+
+  private var trackIndex = -1
+
+  private val exoPlayerEventListener = object : ExoPlayer.Listener {
+    override fun onPlayerError(error: ExoPlaybackException?) {
+      log.error("onPlayerError: ", error)
+      statusEvents.onNext(
+        PlayerEvent.PlayerEventError(
+          spineElement = getCurrentSpineElement(),
+          exception = error,
+          errorCode = -1,
+          offsetMilliseconds = chapterPlaybackOffset
+        )
       )
+    }
 
-      /*
-       * Provide a short grace period before indicating that the current spine element has
-       * finished playing. This avoids a situation where the player indicates that it is at
-       * the end of the audio but the sound hardware has not actually finished playing the last
-       * chunk.
-       */
+    override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+      log.debug(
+        "onPlayerStateChanged: {} {} ({})", playWhenReady, getNameFromPlaybackState(playbackState),
+        playbackState
+      )
+    }
 
-      if (position >= duration) {
-        if (this.gracePeriod == 0) {
-          bookPlayer.currentPlaybackOffset = bookPlayer.exoPlayer.duration
-          bookPlayer.engineExecutor.execute {
-            bookPlayer.opCurrentTrackFinished()
-          }
+    override fun onPlayWhenReadyCommitted() {
+      log.debug("onPlayWhenReadyCommitted")
+    }
+
+    private fun getNameFromPlaybackState(playbackState: Int): String {
+      return when (playbackState) {
+        ExoPlayer.STATE_BUFFERING -> {
+          "buffering"
         }
-        --this.gracePeriod
+        ExoPlayer.STATE_ENDED -> {
+          "ended"
+        }
+        ExoPlayer.STATE_IDLE -> {
+          "idle"
+        }
+        ExoPlayer.STATE_PREPARING -> {
+          "preparing"
+        }
+        ExoPlayer.STATE_READY -> {
+          "ready"
+        }
+        else -> {
+          "unrecognized state"
+        }
       }
     }
   }
 
-  /**
-   * Schedule a playback observer that will check the current state of playback once per second.
-   */
+  init {
+    this.exoPlayer.addListener(this.exoPlayerEventListener)
+  }
 
-  private fun schedulePlaybackObserverForSpineElement(
-    spineElement: LCPSpineElement
-  ): ScheduledFuture<*> {
+  override val isClosed: Boolean
+    get() = this.closed.get()
 
-    return this.engineExecutor.scheduleAtFixedRate(
-      this.PlaybackObserver(spineElement), 1L, 1L, SECONDS
+  override val isPlaying: Boolean
+    get() {
+      this.checkNotClosed()
+      return when (this.stateGet()) {
+        is LCPPlayerState.LCPPlayerStateInitial -> false
+        is LCPPlayerState.LCPPlayerStatePlaying -> true
+        is LCPPlayerState.LCPPlayerStateStopped -> false
+      }
+    }
+
+  override var playbackRate: PlayerPlaybackRate
+    get() {
+      this.checkNotClosed()
+      return this.currentPlaybackRate
+    }
+    set(value) {
+      this.checkNotClosed()
+      this.engineExecutor.execute { this.opSetPlaybackRate(value) }
+    }
+
+  override val events: Observable<PlayerEvent>
+    get() {
+      this.checkNotClosed()
+      return this.statusEvents
+    }
+
+  override fun close() {
+    this.log.debug("close")
+    if (this.closed.compareAndSet(false, true)) {
+      this.engineExecutor.execute { this.opClose() }
+    }
+  }
+
+  override fun movePlayheadToBookStart() {
+    this.log.debug("movePlayheadToBookStart")
+    handleLocationChange(
+      location = this.book.spine.first().position,
+      playAutomatically = false
     )
   }
 
-  /**
-   * Configure the current player to use the given playback rate.
-   */
+  override fun movePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean) {
+    this.log.debug("movePlayheadToLocation: {} {}", location, playAutomatically)
+    handleLocationChange(
+      location = location,
+      playAutomatically = playAutomatically
+    )
+    updateTrackIndex(
+      spineElement = spineElementToUpdate!!,
+      trackOffset = location.startOffset + location.currentOffset,
+      playAutomatically = playAutomatically,
+      updateSeek = true
+    )
+  }
 
-  private fun setPlayerPlaybackRate(newRate: PlayerPlaybackRate) {
-    this.log.debug("setPlayerPlaybackRate: {}", newRate)
+  override fun pause() {
+    this.log.debug("pause")
+    this.checkNotClosed()
+    this.engineExecutor.execute {
+      opPause()
+    }
+  }
 
-    this.statusEvents.onNext(PlayerEventPlaybackRateChanged(newRate))
+  override fun play() {
+    this.log.debug("play")
+    this.checkNotClosed()
+    this.engineExecutor.execute { this.opPlay() }
+    this.exoPlayer.playWhenReady = false
+  }
+
+  override fun playAtBookStart() {
+    this.log.debug("playAtBookStart")
+    this.checkNotClosed()
+    playAtLocation(this.book.spine.first().position)
+  }
+
+  override fun playAtLocation(location: PlayerPosition) {
+    this.log.debug("playAtLocation: {}", location)
+    this.checkNotClosed()
+    handleLocationChange(
+      location = location,
+      playAutomatically = false
+    )
+
+    updateTrackIndex(
+      spineElement = spineElementToUpdate!!,
+      trackOffset = location.startOffset + location.currentOffset,
+      playAutomatically = false,
+      updateSeek = true
+    )
+  }
+
+  override fun skipPlayhead(milliseconds: Long) {
+    this.log.debug("skipPlayhead: {}", milliseconds)
+    this.checkNotClosed()
+    val location = if (milliseconds < 0L || milliseconds > 0L) {
+      val state = stateGet()
+      trackPlaybackOffset += milliseconds
+      updateTrackIndex(
+        spineElement = spineElementToUpdate!!,
+        trackOffset = trackPlaybackOffset,
+        playAutomatically = state is LCPPlayerState.LCPPlayerStatePlaying,
+        updateSeek = true
+      )
+      spineElementToUpdate?.position?.copy(
+        currentOffset = chapterPlaybackOffset + milliseconds
+      )
+    } else {
+      null
+    }
+
+    location ?: return this.log.debug("there isn't a valid location")
+
+    val currentState = stateGet()
+    handleLocationChange(
+      location = location,
+      playAutomatically = currentState is LCPPlayerState.LCPPlayerStatePlaying
+    )
+
+    when (val state = this.stateGet()) {
+      LCPPlayerState.LCPPlayerStateInitial,
+      is LCPPlayerState.LCPPlayerStatePlaying -> {
+        // do nothing
+      }
+      is LCPPlayerState.LCPPlayerStateStopped ->
+        this.statusEvents.onNext(
+          PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackPaused(
+            spineElement = state.spineElement,
+            offsetMilliseconds = chapterPlaybackOffset
+          )
+        )
+    }
+  }
+
+  override fun skipToNextChapter(offset: Long) {
+    this.log.debug("skipToNextChapter: {}", offset)
+    this.checkNotClosed()
+    this.engineExecutor.execute {
+      when (val state = this.stateGet()) {
+        LCPPlayerState.LCPPlayerStateInitial -> {
+          movePlayheadToBookStart()
+        }
+        is LCPPlayerState.LCPPlayerStatePlaying -> {
+          val nextElement = state.spineElement.nextElement as? LCPSpineElement
+            ?: return@execute this.log.debug("there's no next chapter")
+          handleLocationChange(
+            location = nextElement.position,
+            playAutomatically = true
+          )
+        }
+        is LCPPlayerState.LCPPlayerStateStopped -> {
+          val nextElement = state.spineElement.nextElement as? LCPSpineElement
+            ?: return@execute this.log.debug("there's no next chapter")
+          handleLocationChange(
+            location = nextElement.position,
+            playAutomatically = false
+          )
+        }
+      }
+    }
+  }
+
+  override fun skipToPreviousChapter(offset: Long) {
+    this.log.debug("skipToPreviousChapter: {}", offset)
+    this.engineExecutor.execute {
+      when (val state = this.stateGet()) {
+        LCPPlayerState.LCPPlayerStateInitial -> {
+          movePlayheadToBookStart()
+        }
+        is LCPPlayerState.LCPPlayerStatePlaying -> {
+          val previousElement = state.spineElement.previousElement as? LCPSpineElement
+            ?: return@execute this.log.debug("there's no previous chapter")
+          handleLocationChange(
+            location = previousElement.position,
+            playAutomatically = true
+          )
+        }
+        is LCPPlayerState.LCPPlayerStateStopped -> {
+          val previousElement = state.spineElement.previousElement as? LCPSpineElement
+            ?: return@execute this.log.debug("there's no previous chapter")
+          handleLocationChange(
+            location = previousElement.position,
+            playAutomatically = false
+          )
+        }
+      }
+    }
+  }
+
+  private fun cancelCurrentObserver() {
+    playbackObserver?.cancel(true)
+    spineElementToUpdate = null
+  }
+
+  private fun updateTrackIndex(
+    spineElement: LCPSpineElement,
+    trackOffset: Long,
+    playAutomatically: Boolean,
+    updateSeek: Boolean
+  ) {
+    val currentTrackIndex = tracksToPlay.indexOfFirst { file ->
+      spineElement.itemManifest.originalLink.hrefURI == file.hrefURI
+    }
+
+    if (currentTrackIndex == -1) {
+      this.log.debug("there's no track to play")
+      return
+    }
+
+    val currentTrack = tracksToPlay[currentTrackIndex]
+
+    val trackDuration = currentTrack.duration
+      ?: return this.log.debug("track {} duration is null", currentTrack)
+
+    val trackDurationMillis = trackDuration.toLong() * 1000L
+
+    // the offset is greater than the track duration, so we need to get the next track
+    if (trackOffset > trackDurationMillis) {
+      setNextTrackToPlay(
+        index = currentTrackIndex + 1,
+        currentOffset = trackOffset - trackDurationMillis
+      )
+    } else if (trackOffset < 0) {
+
+      // the offset is fewer than 0, so we need to get the previous track
+      setPreviousTrackToPlay(
+        index = currentTrackIndex - 1,
+        currentOffset = trackOffset
+      )
+    } else {
+      trackPlaybackOffset = trackOffset
+    }
+
+    if (trackIndex != currentTrackIndex) {
+      trackIndex = currentTrackIndex
+      preparePlayer(
+        playAutomatically = playAutomatically
+      )
+    }
+
+    if (updateSeek) {
+      seekToTrackPlaybackOffset()
+    }
+  }
+
+  private fun checkNotClosed() {
+    if (this.closed.get()) {
+      throw IllegalStateException("Player has been closed")
+    }
+  }
+
+  private fun getCurrentSpineElement(): LCPSpineElement? {
+    return when (val state = this.stateGet()) {
+      is LCPPlayerState.LCPPlayerStateInitial -> {
+        null
+      }
+      is LCPPlayerState.LCPPlayerStatePlaying -> {
+        state.spineElement
+      }
+      is LCPPlayerState.LCPPlayerStateStopped -> {
+        state.spineElement
+      }
+    }
+  }
+
+  private fun getNextElementWithinOffset(
+    element: LCPSpineElement?,
+    offset: Long
+  ): LCPSpineElement? {
+
+    if (element == null) {
+      chapterPlaybackOffset = spineElementToUpdate?.duration?.millis ?: Long.MAX_VALUE
+      this.log.debug("there's no next element")
+      return null
+    }
+
+    val elementDuration = element.duration?.millis
+
+    if (elementDuration == null) {
+      this.log.debug("the spine element {} duration is null", element)
+      return null
+    }
+
+    return if (offset >= elementDuration) {
+      getNextElementWithinOffset(
+        element = element.nextElement as? LCPSpineElement,
+        offset = offset - elementDuration
+      )
+    } else {
+      chapterPlaybackOffset = offset
+      element
+    }
+  }
+
+  private fun getPreviousElementWithinOffset(
+    element: LCPSpineElement?,
+    offset: Long
+  ): LCPSpineElement? {
+    if (element == null) {
+      this.log.debug("there's no previous element")
+      chapterPlaybackOffset = 0L
+      return null
+    }
+
+    val elementDuration = element.duration?.millis
+
+    if (elementDuration == null) {
+      this.log.debug("the spine element {} duration is null", element)
+      return null
+    }
+
+    val positiveOffset = abs(offset)
+
+    return if (positiveOffset > elementDuration) {
+      getPreviousElementWithinOffset(
+        element = element.previousElement as? LCPSpineElement,
+        offset = elementDuration - positiveOffset
+      )
+    } else {
+      chapterPlaybackOffset = elementDuration - positiveOffset
+      element
+    }
+  }
+
+  private fun handleLocationChange(location: PlayerPosition, playAutomatically: Boolean): Boolean {
+    val spineElement = this.book.spineElementForPartAndChapter(
+      part = location.part,
+      chapter = location.chapter
+    ) as? LCPSpineElement
+
+    if (spineElement == null) {
+      this.log.debug(
+        "there's no spine element for part {} and chapter {}", location.part,
+        location.chapter
+      )
+      return false
+    }
+
+    val elementDuration = spineElement.duration?.millis
+
+    if (elementDuration == null) {
+      this.log.debug("the spine element {} duration is null", spineElement)
+      return false
+    }
+
+    val currentOffset = location.currentOffset
+
+    val chapter = if (currentOffset >= elementDuration) {
+      getNextElementWithinOffset(
+        element = spineElement.nextElement as? LCPSpineElement,
+        offset = currentOffset - elementDuration
+      )
+    } else if (currentOffset < 0) {
+      getPreviousElementWithinOffset(
+        element = spineElement.previousElement as? LCPSpineElement,
+        offset = currentOffset
+      )
+    } else {
+      chapterPlaybackOffset = currentOffset
+      spineElement
+    }
+
+    if (chapter == null) {
+      this.log.debug("there's no chapter to play")
+      return false
+    }
+
+    val hasChapterChanged = spineElementToUpdate != chapter
+
+    // there's not a current element, so we need to create the playback observer
+    if (hasChapterChanged) {
+      cancelCurrentObserver()
+      spineElementToUpdate = chapter
+      startNewSchedulerAfterSomeDelay(
+        chapter = chapter,
+        playAutomatically = playAutomatically
+      )
+    }
+
+    return hasChapterChanged
+  }
+
+  private fun opClose() {
+    ExoEngineThread.checkIsExoEngineThread()
+    this.log.debug("opClose")
+    this.bookmarkObserver.close()
+    this.exoPlayer.stop()
+    this.exoPlayer.release()
+    this.statusEvents.onCompleted()
+    this.playbackObserver?.cancel(true)
+  }
+
+  private fun opPause() {
+    when (val state = this.stateGet()) {
+      LCPPlayerState.LCPPlayerStateInitial -> {
+        this.log.debug("not pausing in the initial state")
+      }
+      is LCPPlayerState.LCPPlayerStatePlaying -> {
+        this.log.debug(
+          "pausing with trackOffset: {} and chapterOffset: {}", trackPlaybackOffset,
+          chapterPlaybackOffset
+        )
+
+        this.exoPlayer.playWhenReady = false
+
+        this.stateSet(LCPPlayerState.LCPPlayerStateStopped(spineElement = state.spineElement))
+        this.statusEvents.onNext(
+          PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackPaused(
+            spineElement = state.spineElement,
+            offsetMilliseconds = chapterPlaybackOffset
+          )
+        )
+      }
+      is LCPPlayerState.LCPPlayerStateStopped -> {
+        this.log.debug("not pausing in the stopped state")
+      }
+    }
+  }
+
+  private fun opPlay() {
+    ExoEngineThread.checkIsExoEngineThread()
+    this.log.debug("opPlay")
+
+    when (val state = this.stateGet()) {
+      LCPPlayerState.LCPPlayerStateInitial -> {
+        movePlayheadToLocation(
+          location = this.book.spine.first().position,
+          playAutomatically = true
+        )
+      }
+      is LCPPlayerState.LCPPlayerStatePlaying -> {
+        this.log.debug("opPlay: already playing")
+      }
+      is LCPPlayerState.LCPPlayerStateStopped -> {
+        this.log.debug("opPlay: play on stopped state")
+
+        this.exoPlayer.playWhenReady = true
+
+        this.stateSet(
+          LCPPlayerState.LCPPlayerStatePlaying(
+            spineElement = state.spineElement
+          )
+        )
+
+        this.statusEvents.onNext(
+          PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted(
+            spineElement = state.spineElement,
+            offsetMilliseconds = chapterPlaybackOffset
+          )
+        )
+      }
+    }
+  }
+
+  private fun opSetPlaybackRate(newRate: PlayerPlaybackRate) {
+    ExoEngineThread.checkIsExoEngineThread()
+    this.log.debug("opSetPlaybackRate: {}", newRate)
+
+    this.currentPlaybackRate = newRate
+
+    this.statusEvents.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(newRate))
 
     /*
      * If the player has not started playing a track, then attempting to set the playback
@@ -327,149 +689,13 @@ class LCPAudioBookPlayer private constructor(
     }
   }
 
-  /**
-   * Forcefully stop playback and reset the player.
-   */
+  private fun preparePlayer(playAutomatically: Boolean) {
+    val trackToPlay = tracksToPlay[trackIndex]
 
-  private fun playNothing() {
-    this.log.debug("playNothing")
-
-    fun resetPlayer() {
-      this.log.debug("playNothing: resetting player")
-      this.exoPlayer.stop()
-      this.exoPlayer.seekTo(0L)
-      this.currentPlaybackOffset = 0
-      this.stateSet(LCPPlayerStateInitial)
-    }
-
-    return when (val currentState = this.stateGet()) {
-      LCPPlayerStateInitial -> resetPlayer()
-
-      is LCPPlayerStatePlaying -> {
-        currentState.observerTask.cancel(true)
-        resetPlayer()
-        this.statusEvents.onNext(PlayerEventPlaybackStopped(currentState.spineElement, 0))
-      }
-
-      is LCPPlayerStateStopped -> {
-        resetPlayer()
-        this.statusEvents.onNext(PlayerEventPlaybackStopped(currentState.spineElement, 0))
-      }
-    }
-  }
-
-  private fun playFirstSpineElementIfAvailable(offset: Long): SkipChapterStatus {
-    this.log.debug("playFirstSpineElementIfAvailable: {}", offset)
-
-    val firstElement = this.book.spine.firstOrNull()
-    if (firstElement == null) {
-      this.log.debug("no available initial spine element")
-      return SKIP_TO_CHAPTER_NONEXISTENT
-    }
-
-    return this.skipToSpineElement(firstElement, offset)
-  }
-
-  private fun playLastSpineElementIfAvailable(offset: Long): SkipChapterStatus {
-    this.log.debug("playLastSpineElementIfAvailable: {}", offset)
-
-    val lastElement = this.book.spine.lastOrNull()
-    if (lastElement == null) {
-      this.log.debug("no available final spine element")
-      return SKIP_TO_CHAPTER_NONEXISTENT
-    }
-
-    return this.skipToSpineElement(lastElement, offset)
-  }
-
-  private fun playNextSpineElementIfAvailable(
-    element: LCPSpineElement,
-    offset: Long
-  ): SkipChapterStatus {
-    this.log.debug("playNextSpineElementIfAvailable: {} {}", element.index, offset)
-
-    val next = element.next as LCPSpineElement?
-    if (next == null) {
-      this.log.debug("spine element {} has no next element", element.index)
-      return SKIP_TO_CHAPTER_NONEXISTENT
-    }
-
-    return this.skipToSpineElement(next, offset, playAutomatically = true)
-  }
-
-  private fun playPreviousSpineElementIfAvailable(
-    element: LCPSpineElement,
-    offset: Long
-  ): SkipChapterStatus {
-    this.log.debug("playPreviousSpineElementIfAvailable: {} {}", element.index, offset)
-
-    val previous = element.previous as LCPSpineElement?
-    if (previous == null) {
-      this.log.debug("spine element {} has no previous element", element.index)
-      return SKIP_TO_CHAPTER_NONEXISTENT
-    }
-
-    val newOffset = if (previous.duration != null) {
-      previous.duration!!.millis + offset
-    } else {
-      0L
-    }
-
-    return this.skipToSpineElement(previous, newOffset, playAutomatically = true)
-  }
-
-  private fun skipToSpineElement(
-    element: LCPSpineElement,
-    offset: Long,
-    playAutomatically: Boolean = false
-  ): SkipChapterStatus {
-    this.log.debug("skipToSpineElement: {}", element.index)
-    this.playNothing()
-    this.handleActionOnSpineElement(element, offset, playAutomatically)
-
-    return SKIP_TO_CHAPTER_READY
-  }
-
-  private fun handleActionOnSpineElement(
-    element: LCPSpineElement,
-    offset: Long,
-    playAutomatically: Boolean
-  ) {
-    this.log.debug("handling action on element with index: {}", element.index)
-
-    this.preparePlayer(element, offset, playAutomatically)
-
-    if (playAutomatically) {
-      this.stateSet(
-        LCPPlayerStatePlaying(
-          spineElement = element,
-          observerTask = this.schedulePlaybackObserverForSpineElement(element)
-        )
-      )
-      this.statusEvents.onNext(PlayerEventPlaybackStarted(element, offset))
-    } else {
-      this.stateSet(LCPPlayerStateStopped(element))
-      this.statusEvents.onNext(PlayerEventPlaybackWaitingForAction(element, offset))
-    }
-
-    this.currentPlaybackOffset = offset
-  }
-
-  private fun preparePlayer(
-    spineElement: LCPSpineElement,
-    offset: Long,
-    playAutomatically: Boolean)
-  {
-    this.log.debug("preparePlayer: {} (offset {})", spineElement.index, offset)
-
-
-    /*
-     * Set up an audio renderer for the spine element and tell ExoPlayer to prepare it and then
-     * play when ready.
-     */
+    this.log.debug("preparePlayer: {} (offset {})", trackToPlay.title, trackPlaybackOffset)
 
     val uri = Uri.parse(
-      spineElement.itemManifest.uri.toString().let {
+      trackToPlay.hrefURI.toString().let {
         if (it.startsWith("/")) it else "/$it"
       }
     )
@@ -498,381 +724,186 @@ class LCPAudioBookPlayer private constructor(
       )
 
     this.exoPlayer.prepare(this.exoAudioRenderer)
-    this.seek(offset)
+    this.seekToTrackPlaybackOffset()
     this.exoPlayer.playWhenReady = playAutomatically
   }
 
-  private fun seek(offsetMs: Long) {
-    this.log.debug("seek: {}", offsetMs)
-    this.exoPlayer.seekTo(offsetMs)
-    this.currentPlaybackOffset = offsetMs
+  private fun schedulePlaybackObserverForSpineElement() {
+    playbackObserver = this.engineExecutor.scheduleAtFixedRate(
+      this.PlaybackObserver(), 1L, 1L, TimeUnit.SECONDS
+    )
   }
 
-  private fun opSetPlaybackRate(newRate: PlayerPlaybackRate) {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opSetPlaybackRate: {}", newRate)
-
-    this.currentPlaybackRate = newRate
-    this.setPlayerPlaybackRate(newRate)
+  private fun seekToTrackPlaybackOffset() {
+    this.log.debug("seekTo: {}", trackPlaybackOffset)
+    this.exoPlayer.seekTo(trackPlaybackOffset)
   }
 
-  private fun opPlay() {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opPlay")
+  private fun setNextTrackToPlay(index: Int, currentOffset: Long) {
+    if (index > tracksToPlay.lastIndex) {
+      trackPlaybackOffset = this.exoPlayer.duration
+      seekToTrackPlaybackOffset()
+      this.log.debug("there's no next track")
+      return
+    }
 
-    return when (val state = this.stateGet()) {
-      is LCPPlayerStateInitial -> {
-        this.playFirstSpineElementIfAvailable(offset = 0)
-        Unit
-      }
+    val nextTrack = tracksToPlay[index]
+    val trackDuration = nextTrack.duration ?: return
+    val trackDurationMillis = trackDuration.toLong() * 1000L
 
-      is LCPPlayerStatePlaying ->
-        this.log.debug("opPlay: already playing")
-
-      is LCPPlayerStateStopped ->
-        this.opPlayStopped(state)
+    return if (currentOffset > trackDurationMillis) {
+      setNextTrackToPlay(
+        index = index + 1,
+        currentOffset = currentOffset - trackDurationMillis
+      )
+    } else {
+      trackIndex = index
+      trackPlaybackOffset = currentOffset
     }
   }
 
-  private fun opPlayStopped(state: LCPPlayerStateStopped) {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opPlayStopped")
+  private fun setPreviousTrackToPlay(index: Int, currentOffset: Long) {
+    if (index < 0) {
+      trackPlaybackOffset = 0L
+      seekToTrackPlaybackOffset()
+      this.log.debug("there's no previous track")
+      return
+    }
 
-    this.exoPlayer.playWhenReady = true
+    val positiveOffset = abs(currentOffset)
+    val previousTrack = tracksToPlay[index]
+    val trackDuration = previousTrack.duration ?: return
+    val trackDurationMillis = trackDuration.toLong() * 1000L
 
-    this.stateSet(
-      LCPPlayerStatePlaying(
-        spineElement = state.spineElement,
-        observerTask = this.schedulePlaybackObserverForSpineElement(
-          spineElement = state.spineElement
-        )
+    if (trackDurationMillis - positiveOffset < 0) {
+      setPreviousTrackToPlay(
+        index = index - 1,
+        currentOffset = trackDurationMillis - positiveOffset
       )
-    )
-
-    this.statusEvents.onNext(
-      PlayerEventPlaybackStarted(
-        state.spineElement, this.currentPlaybackOffset
-      )
-    )
+    } else {
+      trackIndex = index
+      trackPlaybackOffset = trackDurationMillis - positiveOffset
+    }
   }
 
-  private fun opCurrentTrackFinished() {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opCurrentTrackFinished")
+  private fun startNewSchedulerAfterSomeDelay(
+    chapter: LCPSpineElement,
+    playAutomatically: Boolean
+  ) {
 
-    return when (val state = this.stateGet()) {
-      is LCPPlayerStateInitial,
-      is LCPPlayerStateStopped -> {
-        this.log.error("current track is finished but the player thinks it is not playing!")
-        throw Unimplemented()
+    // we are starting a new scheduler after some small delay so the UI can be updated with the last
+    // offset values
+    Handler(Looper.getMainLooper()).postDelayed({
+
+      updateTrackIndex(
+        spineElement = chapter,
+        trackOffset = chapter.position.startOffset + chapterPlaybackOffset,
+        playAutomatically = playAutomatically,
+        updateSeek = true
+      )
+
+      schedulePlaybackObserverForSpineElement()
+
+      if (playAutomatically) {
+        this.stateSet(
+          LCPPlayerState.LCPPlayerStatePlaying(
+            spineElement = chapter
+          )
+        )
+        this.statusEvents.onNext(
+          PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted(
+            spineElement = chapter,
+            offsetMilliseconds = chapterPlaybackOffset
+          )
+        )
+      } else {
+        this.stateSet(
+          LCPPlayerState.LCPPlayerStateStopped(
+            spineElement = chapter
+          )
+        )
+        this.statusEvents.onNext(
+          PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction(
+            spineElement = chapter,
+            offsetMilliseconds = chapterPlaybackOffset
+          )
+        )
       }
+    }, 250L)
+  }
 
-      is LCPPlayerStatePlaying -> {
-        this.statusEvents.onNext(PlayerEventChapterCompleted(state.spineElement))
+  private fun stateGet(): LCPPlayerState {
+    return synchronized(this.stateLock) { this.state }
+  }
 
-        when (this.playNextSpineElementIfAvailable(state.spineElement, offset = 0)) {
-          SKIP_TO_CHAPTER_READY ->
-            Unit
-          SKIP_TO_CHAPTER_NONEXISTENT ->
-            this.playNothing()
+  private fun stateSet(state: LCPPlayerState) {
+    synchronized(this.stateLock) { this.state = state }
+  }
+
+  private inner class PlaybackObserver : Runnable {
+    override fun run() {
+      when (stateGet()) {
+        is LCPPlayerState.LCPPlayerStateInitial,
+        is LCPPlayerState.LCPPlayerStateStopped -> {
+          // do nothing
+        }
+        is LCPPlayerState.LCPPlayerStatePlaying -> {
+          spineElementToUpdate ?: return
+
+          val bookPlayer = this@LCPAudioBookPlayer
+          trackPlaybackOffset = bookPlayer.exoPlayer.currentPosition
+          updateTrackIndex(
+            spineElement = spineElementToUpdate!!,
+            trackOffset = trackPlaybackOffset,
+            playAutomatically = true,
+            updateSeek = false
+          )
+
+          bookPlayer.statusEvents.onNext(
+            PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate(
+              spineElement = spineElementToUpdate!!,
+              offsetMilliseconds = chapterPlaybackOffset
+            )
+          )
+
+          val hasChapterChanged = handleLocationChange(
+            location = spineElementToUpdate!!.position.copy(
+              currentOffset = chapterPlaybackOffset
+            ),
+            playAutomatically = true
+          )
+          if (!hasChapterChanged) {
+            chapterPlaybackOffset += 1000L
+          }
         }
       }
     }
   }
 
-  /**
-   * The status of an attempt to switch to a chapter.
-   */
-
-  private enum class SkipChapterStatus {
-
-    /**
-     * The chapter does not exist and will never exist.
-     */
-
-    SKIP_TO_CHAPTER_NONEXISTENT,
-
-    /**
-     * The chapter exists and is ready for playback.
-     */
-
-    SKIP_TO_CHAPTER_READY
-  }
-
-  private fun opSkipToNextChapter(offset: Long): SkipChapterStatus {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opSkipToNextChapter")
-
-    return when (val state = this.stateGet()) {
-      is LCPPlayerStateInitial ->
-        this.playFirstSpineElementIfAvailable(offset)
-      is LCPPlayerStatePlaying ->
-        this.playNextSpineElementIfAvailable(state.spineElement, offset)
-      is LCPPlayerStateStopped ->
-        this.playNextSpineElementIfAvailable(state.spineElement, offset)
-    }
-  }
-
-  private fun opSkipToPreviousChapter(offset: Long): SkipChapterStatus {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opSkipToPreviousChapter")
-
-    return when (val state = this.stateGet()) {
-      LCPPlayerStateInitial ->
-        this.playLastSpineElementIfAvailable(offset)
-      is LCPPlayerStatePlaying ->
-        this.playPreviousSpineElementIfAvailable(state.spineElement, offset)
-      is LCPPlayerStateStopped ->
-        this.playPreviousSpineElementIfAvailable(state.spineElement, offset)
-    }
-  }
-
-  private fun opPause() {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opPause")
-
-    return when (val state = this.stateGet()) {
-      is LCPPlayerStateInitial ->
-        this.log.debug("not pausing in the initial state")
-      is LCPPlayerStatePlaying ->
-        this.opPausePlaying(state)
-      is LCPPlayerStateStopped ->
-        this.log.debug("not pausing in the stopped state")
-    }
-  }
-
-  private fun opPausePlaying(state: LCPPlayerStatePlaying) {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opPausePlaying: offset: {}", this.currentPlaybackOffset)
-
-    state.observerTask.cancel(true)
-    this.exoPlayer.playWhenReady = false
-
-    this.stateSet(LCPPlayerStateStopped(spineElement = state.spineElement))
-    this.statusEvents.onNext(
-      PlayerEventPlaybackPaused(
-        state.spineElement, this.currentPlaybackOffset
-      )
-    )
-  }
-
-  private fun opSkipPlayhead(milliseconds: Long) {
-    this.log.debug("opSkipPlayhead")
-    return when {
-      milliseconds == 0L -> {
-      }
-      milliseconds > 0 -> opSkipForward(milliseconds)
-      else -> opSkipBack(milliseconds)
-    }
-  }
-
-  private fun opSkipForward(milliseconds: Long) {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opSkipForward")
-
-    assert(milliseconds > 0, { "Milliseconds must be positive" })
-
-    val nextMs = this.exoPlayer.currentPosition + milliseconds
-
-    if (nextMs > this.exoPlayer.duration) {
-      val offset = nextMs - this.exoPlayer.duration
-      this.skipToNextChapter(offset)
-    } else {
-      this.seek(nextMs)
-    }
-
-    return when (val state = this.stateGet()) {
-      LCPPlayerStateInitial,
-      is LCPPlayerStatePlaying ->
-        Unit
-      is LCPPlayerStateStopped ->
-        this.statusEvents.onNext(
-          PlayerEventPlaybackPaused(
-            state.spineElement, this.currentPlaybackOffset
-          )
-        )
-    }
-  }
-
-  private fun opSkipBack(milliseconds: Long) {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opSkipBack")
-
-    assert(milliseconds < 0, { "Milliseconds must be negative" })
-
-    val nextMs = this.exoPlayer.currentPosition + milliseconds
-
-    if (nextMs < 0) {
-      this.skipToPreviousChapter(nextMs)
-    } else {
-      this.seek(nextMs)
-    }
-
-    return when (val state = this.stateGet()) {
-      LCPPlayerStateInitial,
-      is LCPPlayerStatePlaying ->
-        Unit
-      is LCPPlayerStateStopped ->
-        this.statusEvents.onNext(
-          PlayerEventPlaybackPaused(
-            state.spineElement, this.currentPlaybackOffset
-          )
-        )
-    }
-  }
-
-  private fun opPlayAtLocation(location: PlayerPosition, playAutomatically: Boolean = false) {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opPlayAtLocation: {}", location)
-
-    val currentSpineElement =
-      this.currentSpineElement()
-
-    val requestedSpineElement =
-      this.book.spineElementForPartAndChapter(location.part, location.chapter)
-        as LCPSpineElement?
-
-    if (requestedSpineElement == null) {
-      return this.log.debug("spine element does not exist")
-    }
+  private sealed class LCPPlayerState {
 
     /*
-     * If the current spine element is the same as the requested spine element, then it's more
-     * efficient to simply seek to the right offset and start playing.
+     * The initial state; no spine element is selected, the player is not playing.
      */
 
-    if (requestedSpineElement == currentSpineElement) {
-      this.seek(location.offsetMilliseconds)
+    object LCPPlayerStateInitial : LCPPlayerState()
 
-      if (playAutomatically) {
-        this.opPlay()
-      }
-    } else {
-      this.skipToSpineElement(requestedSpineElement, location.offsetMilliseconds, playAutomatically)
-    }
-  }
+    /*
+     * The player is currently playing the given spine element.
+     */
 
-  private fun currentSpineElement(): LCPSpineElement? {
-    return when (val state = this.stateGet()) {
-      LCPPlayerStateInitial -> null
-      is LCPPlayerStatePlaying -> state.spineElement
-      is LCPPlayerStateStopped -> state.spineElement
-    }
-  }
+    data class LCPPlayerStatePlaying(
+      var spineElement: LCPSpineElement
+    ) :
+      LCPPlayerState()
 
-  private fun opMovePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean = false) {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opMovePlayheadToLocation: {}", location)
-    this.opPlayAtLocation(location, playAutomatically)
-    this.opPause()
-  }
+    /*
+     * The player was playing the given spine element but is currently paused.
+     */
 
-  private fun opClose() {
-    ExoEngineThread.checkIsExoEngineThread()
-    this.log.debug("opClose")
-    this.bookmarkObserver.close()
-    this.playNothing()
-    this.exoPlayer.release()
-    this.statusEvents.onCompleted()
-  }
-
-  override val isPlaying: Boolean
-    get() {
-      this.checkNotClosed()
-      return when (this.stateGet()) {
-        is LCPPlayerStateInitial -> false
-        is LCPPlayerStatePlaying -> true
-        is LCPPlayerStateStopped -> false
-      }
-    }
-
-  private fun checkNotClosed() {
-    if (this.closed.get()) {
-      throw IllegalStateException("Player has been closed")
-    }
-  }
-
-  override var playbackRate: PlayerPlaybackRate
-    get() {
-      this.checkNotClosed()
-      return this.currentPlaybackRate
-    }
-    set(value) {
-      this.checkNotClosed()
-      this.engineExecutor.execute { this.opSetPlaybackRate(value) }
-    }
-
-  override val events: Observable<PlayerEvent>
-    get() {
-      this.checkNotClosed()
-      return this.statusEvents
-    }
-
-  override fun play() {
-    this.checkNotClosed()
-    this.engineExecutor.execute { this.opPlay() }
-  }
-
-  override fun pause() {
-    this.checkNotClosed()
-    this.engineExecutor.execute { this.opPause() }
-  }
-
-  override fun skipToNextChapter(offset: Long) {
-    this.checkNotClosed()
-    this.engineExecutor.execute {
-      val status = this.opSkipToNextChapter(offset = offset)
-
-      // if there's no next chapter, the player will go to the end of the chapter
-      if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
-        this.seek(this.exoPlayer.duration)
-      }
-    }
-  }
-
-  override fun skipToPreviousChapter(offset: Long) {
-    this.checkNotClosed()
-    this.engineExecutor.execute {
-
-      val status = this.opSkipToPreviousChapter(offset = offset)
-
-      // if there's no previous chapter, the player will go to the start of the chapter
-      if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
-        this.seek(0L)
-      }
-    }
-  }
-
-  override fun skipPlayhead(milliseconds: Long) {
-    this.checkNotClosed()
-    this.engineExecutor.execute { this.opSkipPlayhead(milliseconds) }
-  }
-
-  override fun playAtLocation(location: PlayerPosition) {
-    this.checkNotClosed()
-    this.engineExecutor.execute { this.opPlayAtLocation(location) }
-  }
-
-  override fun movePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean) {
-    this.engineExecutor.execute { this.opMovePlayheadToLocation(location, playAutomatically) }
-  }
-
-  override fun playAtBookStart() {
-    this.checkNotClosed()
-    this.engineExecutor.execute { this.opPlayAtLocation(this.book.spine.first().position) }
-  }
-
-  override fun movePlayheadToBookStart() {
-    this.checkNotClosed()
-    this.engineExecutor.execute { this.opMovePlayheadToLocation(this.book.spine.first().position) }
-  }
-
-  override val isClosed: Boolean
-    get() = this.closed.get()
-
-  override fun close() {
-    if (this.closed.compareAndSet(false, true)) {
-      this.engineExecutor.execute { this.opClose() }
-    }
+    data class LCPPlayerStateStopped(
+      var spineElement: LCPSpineElement
+    ) :
+      LCPPlayerState()
   }
 }

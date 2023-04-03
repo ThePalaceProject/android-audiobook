@@ -762,7 +762,8 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
             title = event.spineElement.title,
             part = event.spineElement.position.part,
             chapter = event.spineElement.position.chapter,
-            offsetMilliseconds = event.offsetMilliseconds
+            startOffset = event.spineElement.position.startOffset,
+            currentOffset = event.offsetMilliseconds
           )
         )
       }

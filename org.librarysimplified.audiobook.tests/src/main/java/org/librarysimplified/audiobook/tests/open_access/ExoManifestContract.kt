@@ -550,25 +550,25 @@ abstract class ExoManifestContract {
       9.0,
       335.0,
       374.0,
-      582.0,
+      600.0,
       864.0,
-      787.0,
+      804.0,
       931.0,
-      558.0,
+      575.0,
       448.0,
       659.0,
-      674.0,
+      691.0,
       435.0,
-      773.0,
+      790.0,
       8.0,
       777.0,
-      857.0,
+      1421.0,
       0.0,
       1164.0,
-      358.0,
+      374.0,
       965.0,
       1117.0,
-      564.0,
+      582.0,
       437.0,
       722.0
     )
@@ -604,6 +604,58 @@ abstract class ExoManifestContract {
         spineItem.chapter.toString()
       )
     }
+  }
+
+  @Test
+  fun testOkAnnaKareninaTOC() {
+
+    val result =
+      ManifestParsers.parse(
+        uri = URI.create("urn:anna_karenina"),
+        streams = resource("anna_karenina_toc.audiobook-manifest.json"),
+        extensions = listOf()
+      )
+
+    this.log().debug("result: {}", result)
+    assertTrue(result is ParseResult.Success, "Result is success")
+
+    val success: ParseResult.Success<PlayerManifest> =
+      result as ParseResult.Success<PlayerManifest>
+
+    val manifest = success.result
+
+    val exo_result = ExoManifest.transform(context(), manifest)
+    this.log().debug("exo_result: {}", exo_result)
+    assertTrue(exo_result is PlayerResult.Success, "Result is success")
+
+    val exo_success: PlayerResult.Success<ExoManifest, Exception> =
+      exo_result as PlayerResult.Success<ExoManifest, Exception>
+
+    val exo = exo_success.result
+
+    Assertions.assertEquals(
+      "Anna Karenina",
+      exo.title
+    )
+    Assertions.assertEquals(
+      "urn:isbn:9781603932639",
+      exo.id
+    )
+
+    Assertions.assertNotEquals(
+      manifest.readingOrder.size,
+      manifest.toc?.size
+    )
+
+    Assertions.assertEquals(
+      manifest.readingOrder.size,
+      239
+    )
+
+    Assertions.assertEquals(
+      manifest.toc?.size,
+      247
+    )
   }
 
   private fun resource(name: String): ByteArray {

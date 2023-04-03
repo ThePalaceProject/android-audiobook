@@ -3,7 +3,6 @@ package org.librarysimplified.audiobook.lcp
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
-import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
@@ -43,7 +42,8 @@ class LCPSpineElement(
         (this.itemManifest.offset!! * 1000.0).toLong()
       } else {
         0L
-      }
+      },
+      0L
     )
 
   override val title: String?

@@ -874,12 +874,12 @@ class ExoAudioBookPlayer private constructor(
      */
 
     if (requestedSpineElement == currentSpineElement) {
-      this.seek(location.offsetMilliseconds)
+      this.seek(location.currentOffset)
       if (playAutomatically) {
         this.opPlay()
       }
     } else {
-      this.playSpineElementIfAvailable(requestedSpineElement, location.offsetMilliseconds,
+      this.playSpineElementIfAvailable(requestedSpineElement, location.currentOffset,
         playAutomatically)
     }
   }
