@@ -21,6 +21,9 @@ data class ExoManifest(
 
   companion object {
 
+    private val OCTET_STREAM =
+      MIMEType("application", "octet-stream", mapOf())
+
     /**
      * Parse an ExoPlayer manifest from the given raw manifest.
      */
@@ -51,12 +54,9 @@ data class ExoManifest(
       }
     }
 
-    private val OCTET_STREAM =
-      MIMEType("application", "octet-stream", mapOf())
-
-    private fun getOffsetFromTocElement(tocElement: PlayerManifestLink): Double {
+    private fun getOffsetFromElement(element: PlayerManifestLink): Double {
       val offsetStr = "#t="
-      val href = tocElement.hrefURI.toString()
+      val href = element.hrefURI.toString()
       val offsetIndex = href.indexOf(offsetStr)
       return if (offsetIndex != -1) {
         href.substring(offsetIndex + offsetStr.length).toDouble()
@@ -97,32 +97,29 @@ data class ExoManifest(
           href == readingOrderElement.hrefURI.toString()
         }
 
-        val tocElementOffset = getOffsetFromTocElement(tocElement)
+        val tocElementOffset = getOffsetFromElement(tocElement)
         val wholeDuration = readingOrderItem?.duration ?: -1.0
 
         val tocElementDuration = when {
           index != allElementsOfTOC.lastIndex -> {
 
             val nextTocElement = allElementsOfTOC[index + 1]
+            val nextTocElementOffset = getOffsetFromElement(nextTocElement)
 
-            when {
+            // if the next TOC element belongs to the same "parent" we can calculate this element's
+            // duration by calculating their offset difference
+            if (this.getHrefWithoutOffset(nextTocElement) == href) {
+              nextTocElementOffset - tocElementOffset
+            } else if (wholeDuration != -1.0) {
 
-              // if the next toc element has the same href, then it belongs to the same "parent"
-              this.getHrefWithoutOffset(nextTocElement) == href -> {
-                getOffsetFromTocElement(nextTocElement) - tocElementOffset
-              }
-
-              // if the next toc element hasn't the same href, then it belongs to another "parent" and
-              //we need to use the current item's parent duration
-              wholeDuration != -1.0 -> {
-                wholeDuration.toInt() - tocElementOffset
-              }
-
-              else -> {
-                null
-              }
+              // if the next toc element belongs to a different "parent", i.e., if it has a
+              // different uri, the current element's duration will be its parent's duration minus
+              // its offset plus the offset of the next item, so we don't ignore the seconds before
+              // that next item's offset
+              wholeDuration.toInt() - tocElementOffset + nextTocElementOffset
+            } else {
+              null
             }
-
           }
           wholeDuration != -1.0 -> {
             wholeDuration.toInt() - tocElementOffset
@@ -167,7 +164,7 @@ data class ExoManifest(
       }
 
       val type =
-        item.type ?: this.OCTET_STREAM
+        item.type ?: OCTET_STREAM
       val uri =
         this.parseURI(item, index)
 

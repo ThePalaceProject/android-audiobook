@@ -107,8 +107,8 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
   }
 
   override fun playAtLocation(location: PlayerPosition) {
-    this.log.debug("playAtLocation {} {} {}", location.part, location.chapter, location.offsetMilliseconds)
-    this.callEvents.onNext("playAtLocation ${location.part} ${location.chapter} ${location.offsetMilliseconds}")
+    this.log.debug("playAtLocation {} {} {}", location.part, location.chapter, location.currentOffset)
+    this.callEvents.onNext("playAtLocation ${location.part} ${location.chapter} ${location.currentOffset}")
     this.goToChapter(location.chapter)
   }
 
@@ -133,8 +133,8 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
   }
 
   override fun movePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean) {
-    this.log.debug("movePlayheadToLocation {} {} {}", location.part, location.chapter, location.offsetMilliseconds)
-    this.callEvents.onNext("movePlayheadToLocation ${location.part} ${location.chapter} ${location.offsetMilliseconds}")
+    this.log.debug("movePlayheadToLocation {} {} {}", location.part, location.chapter, location.currentOffset)
+    this.callEvents.onNext("movePlayheadToLocation ${location.part} ${location.chapter} ${location.currentOffset}")
     this.goToChapter(location.chapter)
   }
 }

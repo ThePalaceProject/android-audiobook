@@ -85,12 +85,14 @@ class ExoBookmarkObserver private constructor(
       true
     }
 
-    this.onBookmarkCreate(PlayerEventCreateBookmark(event.spineElement, event.offsetMilliseconds,
+    this.onBookmarkCreate(PlayerEventCreateBookmark(event.spineElement,
+      event.spineElement.position.startOffset + event.offsetMilliseconds,
       isLocalBookmark = true))
 
     if (create) {
       this.timeAtLast = timeNow
-      this.onBookmarkCreate(PlayerEventCreateBookmark(event.spineElement, event.offsetMilliseconds,
+      this.onBookmarkCreate(PlayerEventCreateBookmark(event.spineElement,
+        event.spineElement.position.startOffset + event.offsetMilliseconds,
         isLocalBookmark = false))
     }
   }
