@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.util.Log
 import androidx.core.app.NotificationCompat
 
 
@@ -131,6 +132,14 @@ class PlayerService : Service() {
     if (mediaSession == null) {
       mediaSession = MediaSessionCompat(this, PlayerService::class.java.simpleName)
     }
+
+    mediaSession!!.setCallback(object : MediaSessionCompat.Callback() {
+      override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
+        // Handle the media button event here.
+        Log.d("onMediaButtonEvent", "media button event");
+        return true
+      }
+    })
 
     mediaSession?.setMetadata(
       MediaMetadataCompat.Builder()
