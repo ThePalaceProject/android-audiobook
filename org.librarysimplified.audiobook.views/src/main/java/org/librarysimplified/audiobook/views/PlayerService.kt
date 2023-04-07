@@ -11,6 +11,7 @@ import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
+import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
 
 
@@ -136,7 +137,13 @@ class PlayerService : Service() {
     mediaSession!!.setCallback(object : MediaSessionCompat.Callback() {
       override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
         // Handle the media button event here.
-        Log.d("onMediaButtonEvent", "media button event");
+        Log.d("onMediaButtonEvent", mediaButtonEvent.action!!);
+
+        if (Intent.ACTION_MEDIA_BUTTON == mediaButtonEvent.action) {
+          val event: KeyEvent =
+            mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)!!
+          Log.d("onMediaButtonEvent", "KeyCode" + event.getKeyCode())
+        }
         return true
       }
     })
