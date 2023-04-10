@@ -136,13 +136,18 @@ class PlayerService : Service() {
 
     mediaSession!!.setCallback(object : MediaSessionCompat.Callback() {
       override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
-        // Handle the media button event here.
-        Log.d("onMediaButtonEvent", mediaButtonEvent.action!!);
-
         if (Intent.ACTION_MEDIA_BUTTON == mediaButtonEvent.action) {
           val event: KeyEvent =
             mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)!!
-          Log.d("onMediaButtonEvent", "KeyCode" + event.getKeyCode())
+          if (event.getKeyCode().equals("KeyCode126")) {
+            // Standard button for 1-button bluetooth devices - play/pause
+          }
+          else if (event.getKeyCode().equals("KeyCode126")) {
+            // Standard double tap for bluetooth devices - should skip to next track
+          }
+          else if (event.getKeyCode().equals("KeyCode126")) {
+            // Standard triple tap for 1-button bluetooth devices - should skip to previous track
+          }
         }
         return true
       }
