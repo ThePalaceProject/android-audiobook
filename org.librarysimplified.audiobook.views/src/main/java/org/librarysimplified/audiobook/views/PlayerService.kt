@@ -139,7 +139,7 @@ class PlayerService : Service() {
         if (Intent.ACTION_MEDIA_BUTTON == mediaButtonEvent.action) {
           val event: KeyEvent =
             mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)!!
-          if (event.getKeyCode().equals("KeyCode126")) {
+          if (event.getKeyCode() == 126) {
             // Single press for 1-button bluetooth devices - play/pause
             if (playerInfo.isPlaying) {
               playerInfo.player.pause()
@@ -147,13 +147,13 @@ class PlayerService : Service() {
               playerInfo.player.play()
             }
           }
-          else if (event.getKeyCode().equals("KeyCode126")) {
+          else if (event.getKeyCode() == 87) {
             // Double tap for 1-button bluetooth devices - should skip to next track
-            playerInfo.player.skipForward()
+            playerInfo.player.skipToNextChapter(0)
           }
-          else if (event.getKeyCode().equals("KeyCode126")) {
+          else if (event.getKeyCode() == 88) {
             // Triple tap for 1-button bluetooth devices - should skip to previous track
-            playerInfo.player.skipBack()
+            playerInfo.player.skipToPreviousChapter(0)
           }
         }
         return true
