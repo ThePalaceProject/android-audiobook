@@ -227,6 +227,11 @@
         <c:change date="2023-03-30T00:00:00+00:00" summary="Save reading position to server on play, pause, and stop (which also saves when seeking and changing chapters)."/>
       </c:changes>
     </c:release>
+    <c:release date="2023-04-11T16:58:06+00:00" is-open="true" ticket-system="org.nypl.jira" version="10.0.0">
+      <c:changes>
+        <c:change date="2023-04-11T16:58:06+00:00" summary="Bluetooth media controls now play/pause and skip tracks."/>
+      </c:changes>
+    </c:release>
   </c:releases>
   <c:ticket-systems>
     <c:ticket-system default="true" id="org.nypl.jira" url="https://jira.nypl.org/browse/"/>
