@@ -25,6 +25,10 @@ class PlayerService : Service() {
     private const val ACTION_PAUSE = "org.librarysimplified.audiobook.views.action_pause"
     private const val ACTION_PLAY = "org.librarysimplified.audiobook.views.action_play"
 
+    private const val KEY_CODE_PLAY_PAUSE = 126
+    private const val KEY_CODE_SKIP_TO_NEXT_CHAPTER = 87
+    private const val KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER = 88
+
   }
 
   private lateinit var playerReceiver: PlayerBroadcastReceiver
@@ -133,25 +137,22 @@ class PlayerService : Service() {
       mediaSession = MediaSessionCompat(this, PlayerService::class.java.simpleName)
     }
 
-    mediaSession!!.setCallback(object : MediaSessionCompat.Callback() {
+    mediaSession?.setCallback(object : MediaSessionCompat.Callback() {
       override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
         if (Intent.ACTION_MEDIA_BUTTON == mediaButtonEvent.action) {
-          val event: KeyEvent =
-            mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)!!
-          if (event.getKeyCode() == 126) {
-            // Single press for 1-button bluetooth devices - play/pause
+          val event: KeyEvent? =
+            mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
+          if (event?.getKeyCode() == KEY_CODE_PLAY_PAUSE) {
             if (playerInfo.isPlaying) {
               playerInfo.player.pause()
             } else {
               playerInfo.player.play()
             }
           }
-          else if (event.getKeyCode() == 87) {
-            // Double tap for 1-button bluetooth devices - should skip to next track
+          else if (event?.getKeyCode() == KEY_CODE_SKIP_TO_NEXT_CHAPTER) {
             playerInfo.player.skipToNextChapter(0)
           }
-          else if (event.getKeyCode() == 88) {
-            // Triple tap for 1-button bluetooth devices - should skip to previous track
+          else if (event?.getKeyCode() == KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER) {
             playerInfo.player.skipToPreviousChapter(0)
           }
         }
