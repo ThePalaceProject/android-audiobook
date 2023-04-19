@@ -15,7 +15,6 @@ import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
-import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.mocking.MockingAudioBook
@@ -163,7 +162,7 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     }
   }
 
-  override fun onPlayerShouldAddBookmark(position: PlayerPosition?, duration: Duration?) {
+  override fun onPlayerShouldAddBookmark(playerBookmark: PlayerBookmark?) {
     // do nothing
   }
 

@@ -357,8 +357,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   }
 
   private fun onMenuAddBookmarkSelected(): Boolean {
-    val positionAndDuration = player.getCurrentSpineElementPositionAndDuration()
-    this.listener.onPlayerShouldAddBookmark(positionAndDuration.first, positionAndDuration.second)
+    val playerBookmark = player.getCurrentPositionAsPlayerBookmark()
+    this.listener.onPlayerShouldAddBookmark(playerBookmark)
     return true
   }
 

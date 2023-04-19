@@ -15,7 +15,10 @@ import com.google.android.exoplayer.upstream.Allocator
 import com.google.android.exoplayer.upstream.DefaultAllocator
 import com.google.android.exoplayer.upstream.DefaultUriDataSource
 import net.jcip.annotations.GuardedBy
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.joda.time.Duration
+import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
@@ -1003,10 +1006,17 @@ class ExoAudioBookPlayer private constructor(
     this.engineExecutor.execute { this.opMovePlayheadToLocation(this.book.spine.first().position) }
   }
 
-  override fun getCurrentSpineElementPositionAndDuration(): Pair<PlayerPosition?, Duration?> {
-    val currentElement = currentSpineElement()
-    return currentElement?.position?.copy(currentOffset = currentPlaybackOffset) to
-      currentSpineElement()?.duration
+  override fun getCurrentPositionAsPlayerBookmark(): PlayerBookmark? {
+    val currentElement = currentSpineElement() ?: return null
+
+    return PlayerBookmark(
+      date = DateTime.now().toDateTime(DateTimeZone.UTC),
+      position = currentElement.position.copy(
+        currentOffset = currentPlaybackOffset
+      ),
+      duration = currentElement.duration?.millis ?: 0L,
+      uri = currentElement.itemManifest.uri
+    )
   }
 
   override val isClosed: Boolean

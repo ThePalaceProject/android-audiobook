@@ -4,10 +4,8 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
-import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookmark
-import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import java.util.concurrent.ScheduledExecutorService
@@ -77,11 +75,11 @@ interface PlayerFragmentListenerType {
   fun onPlayerWantsSleepTimer(): PlayerSleepTimerType
 
   /**
-   * The user wants to save a bookmark on the audiobook. The caller should return the current spine
-   * element's position and duration that will be saved to the server.
+   * The user wants to save a bookmark on the audiobook. The caller should return a player bookmark
+   * from the player's current position
    */
 
-  fun onPlayerShouldAddBookmark(position: PlayerPosition?, duration: Duration?)
+  fun onPlayerShouldAddBookmark(playerBookmark: PlayerBookmark?)
 
   /**
    * The user has performed an action that requires that the TOC be opened. The caller should

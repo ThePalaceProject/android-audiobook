@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
-import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
@@ -749,8 +748,8 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     return this.sleepTimer
   }
 
-  override fun onPlayerShouldAddBookmark(position: PlayerPosition?, duration: Duration?) {
-    this.log.debug("Bookmark added: $position | $duration")
+  override fun onPlayerShouldAddBookmark(playerBookmark: PlayerBookmark?) {
+    this.log.debug("Bookmark added: $playerBookmark")
     Toast.makeText(this, "Bookmark Added", Toast.LENGTH_SHORT).show()
   }
 

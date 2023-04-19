@@ -1,6 +1,5 @@
 package org.librarysimplified.audiobook.api
 
-import org.joda.time.Duration
 import rx.Observable
 
 /**
@@ -153,8 +152,8 @@ interface PlayerType : AutoCloseable {
   fun movePlayheadToBookStart()
 
   /**
-   * Get the player's current spine element position and duration.
+   * Get the player's current position as player bookmark.
    */
 
-  fun getCurrentSpineElementPositionAndDuration(): Pair<PlayerPosition?, Duration?>
+  fun getCurrentPositionAsPlayerBookmark(): PlayerBookmark?
 }
