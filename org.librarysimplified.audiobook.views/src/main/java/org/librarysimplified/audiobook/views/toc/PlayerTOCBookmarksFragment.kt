@@ -64,6 +64,7 @@ class PlayerTOCBookmarksFragment : Fragment() {
       this.listener = context
 
       val bookmarks = this.listener.onPlayerTOCWantsBookmarks()
+      this.player = this.listener.onPlayerWantsPlayer()
 
       this.adapter = PlayerTOCBookmarkAdapter(
         context = context,
