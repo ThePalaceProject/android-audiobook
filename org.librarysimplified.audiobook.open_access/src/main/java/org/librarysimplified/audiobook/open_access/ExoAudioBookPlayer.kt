@@ -1003,6 +1003,12 @@ class ExoAudioBookPlayer private constructor(
     this.engineExecutor.execute { this.opMovePlayheadToLocation(this.book.spine.first().position) }
   }
 
+  override fun getCurrentSpineElementPositionAndDuration(): Pair<PlayerPosition?, Duration?> {
+    val currentElement = currentSpineElement()
+    return currentElement?.position?.copy(currentOffset = currentPlaybackOffset) to
+      currentSpineElement()?.duration
+  }
+
   override val isClosed: Boolean
     get() = this.closed.get()
 

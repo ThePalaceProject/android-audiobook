@@ -17,6 +17,7 @@ import com.google.android.exoplayer.upstream.Allocator
 import com.google.android.exoplayer.upstream.DefaultAllocator
 import kotlinx.coroutines.runBlocking
 import net.jcip.annotations.GuardedBy
+import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPosition
@@ -252,6 +253,14 @@ class LCPAudioBookPlayer private constructor(
       location = this.book.spine.first().position,
       playAutomatically = false
     )
+  }
+
+  override fun getCurrentSpineElementPositionAndDuration(): Pair<PlayerPosition?, Duration?> {
+    this.log.debug("getCurrentSpineElementPositionAndDuration")
+
+    val currentElement = getCurrentSpineElement()
+    return currentElement?.position?.copy(currentOffset = chapterPlaybackOffset) to
+      currentElement?.duration
   }
 
   override fun movePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean) {

@@ -9,9 +9,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
+import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
+import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
@@ -60,8 +62,7 @@ import org.librarysimplified.audiobook.views.PlayerFragmentListenerType
 import org.librarysimplified.audiobook.views.PlayerFragmentParameters
 import org.librarysimplified.audiobook.views.PlayerPlaybackRateFragment
 import org.librarysimplified.audiobook.views.PlayerSleepTimerFragment
-import org.librarysimplified.audiobook.views.PlayerTOCFragment
-import org.librarysimplified.audiobook.views.PlayerTOCFragmentParameters
+import org.librarysimplified.audiobook.views.toc.PlayerTOCFragment
 import org.librarysimplified.http.api.LSHTTPClientConfiguration
 import org.librarysimplified.http.vanilla.LSHTTPClients
 import org.slf4j.LoggerFactory
@@ -634,6 +635,14 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     }
   }
 
+  override fun onPlayerTOCWantsBookmarks(): List<PlayerBookmark> {
+    return emptyList()
+  }
+
+  override fun onPlayerShouldDeleteBookmark(bookmark: PlayerBookmark) {
+    // do nothing
+  }
+
   override fun onPlayerNotificationWantsBookCover(onBookCoverLoaded: (Bitmap) -> Unit) {
     onBookCoverLoaded(BitmapFactory.decodeResource(resources, R.drawable.example_cover))
   }
@@ -668,7 +677,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
         this.supportActionBar?.setTitle(R.string.exTableOfContents)
 
         val fragment =
-          PlayerTOCFragment.newInstance(PlayerTOCFragmentParameters())
+          PlayerTOCFragment.newInstance()
 
         this.supportFragmentManager
           .beginTransaction()
@@ -738,6 +747,11 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   override fun onPlayerWantsSleepTimer(): PlayerSleepTimerType {
     this.log.debug("onPlayerWantsSleepTimer")
     return this.sleepTimer
+  }
+
+  override fun onPlayerShouldAddBookmark(position: PlayerPosition?, duration: Duration?) {
+    this.log.debug("Bookmark added: $position | $duration")
+    Toast.makeText(this, "Bookmark Added", Toast.LENGTH_SHORT).show()
   }
 
   override fun onPlayerWantsScheduledExecutor(): ScheduledExecutorService {

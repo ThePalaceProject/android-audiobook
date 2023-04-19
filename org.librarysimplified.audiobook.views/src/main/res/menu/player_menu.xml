@@ -20,6 +20,13 @@
     app:showAsAction="always" />
 
   <item
+    android:id="@+id/player_menu_add_bookmark"
+    android:icon="@drawable/ic_bookmark"
+    android:title="@string/audiobook_player_menu_add_bookmark_title"
+    app:iconTint="?attr/simplifiedColorControlActionBar"
+    app:showAsAction="always" />
+
+  <item
     android:id="@+id/player_menu_toc"
     android:icon="@drawable/ic_toc_48"
     android:title="@string/audiobook_player_menu_toc_title"

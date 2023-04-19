@@ -92,6 +92,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   private lateinit var coverView: ImageView
   private lateinit var executor: ScheduledExecutorService
   private lateinit var listener: PlayerFragmentListenerType
+  private lateinit var menuAddBookmark: MenuItem
   private lateinit var menuPlaybackRate: MenuItem
   private lateinit var menuSleep: MenuItem
   private lateinit var menuSleepEndOfChapter: ImageView
@@ -355,6 +356,12 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     return true
   }
 
+  private fun onMenuAddBookmarkSelected(): Boolean {
+    val positionAndDuration = player.getCurrentSpineElementPositionAndDuration()
+    this.listener.onPlayerShouldAddBookmark(positionAndDuration.first, positionAndDuration.second)
+    return true
+  }
+
   private fun onMenuSleepSelected(): Boolean {
     this.listener.onPlayerSleepTimerShouldOpen()
     return true
@@ -459,6 +466,9 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
     this.menuTOC = this.toolbar.menu.findItem(R.id.player_menu_toc)
     this.menuTOC.setOnMenuItemClickListener { this.onMenuTOCSelected() }
+
+    this.menuAddBookmark = this.toolbar.menu.findItem(R.id.player_menu_add_bookmark)
+    this.menuAddBookmark.setOnMenuItemClickListener { this.onMenuAddBookmarkSelected() }
 
     /*
      * Subscribe to player and timer events. We do the subscription here (as late as possible)

@@ -15,7 +15,9 @@ import com.google.common.util.concurrent.MoreExecutors
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
+import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
+import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.mocking.MockingAudioBook
@@ -28,8 +30,7 @@ import org.librarysimplified.audiobook.views.PlayerFragmentListenerType
 import org.librarysimplified.audiobook.views.PlayerFragmentParameters
 import org.librarysimplified.audiobook.views.PlayerPlaybackRateFragment
 import org.librarysimplified.audiobook.views.PlayerSleepTimerFragment
-import org.librarysimplified.audiobook.views.PlayerTOCFragment
-import org.librarysimplified.audiobook.views.PlayerTOCFragmentParameters
+import org.librarysimplified.audiobook.views.toc.PlayerTOCFragment
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -203,9 +204,21 @@ class SandboxPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     return this.timer
   }
 
+  override fun onPlayerShouldAddBookmark(position: PlayerPosition?, duration: Duration?) {
+    // do nothing
+  }
+
+  override fun onPlayerTOCWantsBookmarks(): List<PlayerBookmark> {
+    return emptyList()
+  }
+
+  override fun onPlayerShouldDeleteBookmark(bookmark: PlayerBookmark) {
+    // do nothing
+  }
+
   override fun onPlayerTOCShouldOpen() {
     val fragment =
-      PlayerTOCFragment.newInstance(PlayerTOCFragmentParameters())
+      PlayerTOCFragment.newInstance()
 
     this.supportFragmentManager
       .beginTransaction()
