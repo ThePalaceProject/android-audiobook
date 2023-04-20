@@ -29,7 +29,7 @@
     android:importantForAccessibility="no"
     android:clickable="false"
     android:focusable="false"
-    android:src="@drawable/ic_sleep_48"
+    android:src="@drawable/ic_sleep"
     app:tint="?attr/simplifiedColorControlActionBar" />
 
   <ImageView

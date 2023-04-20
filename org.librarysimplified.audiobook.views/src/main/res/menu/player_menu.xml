@@ -13,7 +13,7 @@
 
   <item
     android:id="@+id/player_menu_sleep"
-    android:icon="@drawable/ic_sleep_48"
+    android:icon="@drawable/ic_sleep"
     android:title="@string/audiobook_player_menu_sleep_title"
     app:actionLayout="@layout/player_menu_sleep_text"
     app:iconTint="?attr/simplifiedColorControlActionBar"
