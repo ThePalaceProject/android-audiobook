@@ -226,6 +226,7 @@
         <c:change date="2023-03-30T00:00:00+00:00" summary="Save reading position to server on play, pause, and stop (which also saves when seeking and changing chapters)."/>
         <c:change date="2023-03-31T00:00:00+00:00" summary="Added support to the new Audible TOC."/>
         <c:change date="2023-04-05T17:07:40+00:00" summary="Updated bookmark saving offset."/>
+        <c:change date="2023-04-11T16:58:06+00:00" summary="Bluetooth media controls now play/pause and skip tracks."/>
       </c:changes>
     </c:release>
   </c:releases>

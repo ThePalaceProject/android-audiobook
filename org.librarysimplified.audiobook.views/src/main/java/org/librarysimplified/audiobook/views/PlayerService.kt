@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
 
 
@@ -23,6 +24,10 @@ class PlayerService : Service() {
     private const val ACTION_FORWARD = "org.librarysimplified.audiobook.views.action_forward"
     private const val ACTION_PAUSE = "org.librarysimplified.audiobook.views.action_pause"
     private const val ACTION_PLAY = "org.librarysimplified.audiobook.views.action_play"
+
+    private const val KEY_CODE_PLAY_PAUSE = 126
+    private const val KEY_CODE_SKIP_TO_NEXT_CHAPTER = 87
+    private const val KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER = 88
 
   }
 
@@ -131,6 +136,29 @@ class PlayerService : Service() {
     if (mediaSession == null) {
       mediaSession = MediaSessionCompat(this, PlayerService::class.java.simpleName)
     }
+
+    mediaSession?.setCallback(object : MediaSessionCompat.Callback() {
+      override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
+        if (Intent.ACTION_MEDIA_BUTTON == mediaButtonEvent.action) {
+          val event: KeyEvent? =
+            mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
+          if (event?.getKeyCode() == KEY_CODE_PLAY_PAUSE) {
+            if (playerInfo.isPlaying) {
+              playerInfo.player.pause()
+            } else {
+              playerInfo.player.play()
+            }
+          }
+          else if (event?.getKeyCode() == KEY_CODE_SKIP_TO_NEXT_CHAPTER) {
+            playerInfo.player.skipToNextChapter(0)
+          }
+          else if (event?.getKeyCode() == KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER) {
+            playerInfo.player.skipToPreviousChapter(0)
+          }
+        }
+        return true
+      }
+    })
 
     mediaSession?.setMetadata(
       MediaMetadataCompat.Builder()
