@@ -220,13 +220,15 @@
         <c:change date="2023-02-17T00:00:00+00:00" summary="Updated behaviour for skipping and rewinding an audiobook for 15 seconds."/>
       </c:changes>
     </c:release>
-    <c:release date="2023-04-20T15:59:44+00:00" is-open="true" ticket-system="org.nypl.jira" version="10.0.0">
+    <c:release date="2023-04-27T09:25:42+00:00" is-open="true" ticket-system="org.nypl.jira" version="10.0.0">
       <c:changes>
         <c:change date="2023-03-30T00:00:00+00:00" summary="Updated polling interval to save reading position in audiobooks to server from 5 seconds to 15 seconds."/>
         <c:change date="2023-03-30T00:00:00+00:00" summary="Save reading position to server on play, pause, and stop (which also saves when seeking and changing chapters)."/>
         <c:change date="2023-03-31T00:00:00+00:00" summary="Added support to the new Audible TOC."/>
         <c:change date="2023-04-05T00:00:00+00:00" summary="Updated bookmark saving offset."/>
-        <c:change date="2023-04-20T15:59:44+00:00" summary="Fixed bug on LCP player audiobook track transition."/>
+        <c:change date="2023-04-11T00:00:00+00:00" summary="Bluetooth media controls now play/pause and skip tracks."/>
+        <c:change date="2023-04-27T00:00:00+00:00" summary="Added audiobook bookmarks."/>
+        <c:change date="2023-04-27T09:25:42+00:00" summary="Fixed bug on LCP player audiobook track transition."/>
       </c:changes>
     </c:release>
   </c:releases>

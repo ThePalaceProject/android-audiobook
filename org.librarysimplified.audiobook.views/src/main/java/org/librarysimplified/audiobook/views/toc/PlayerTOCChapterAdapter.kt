@@ -1,4 +1,4 @@
-package org.librarysimplified.audiobook.views
+package org.librarysimplified.audiobook.views.toc
 
 import android.app.AlertDialog
 import android.content.Context
@@ -22,18 +22,22 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.Play
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
+import org.librarysimplified.audiobook.views.PlayerCircularProgressView
+import org.librarysimplified.audiobook.views.PlayerTimeStrings
+import org.librarysimplified.audiobook.views.R
+import org.librarysimplified.audiobook.views.UIThread
 
 /**
- * A Recycler view adapter used to display and control the table of contents.
+ * A Recycler view adapter used to display and control the chapters of the table of contents.
  */
 
-class PlayerTOCAdapter(
+class PlayerTOCChapterAdapter(
   private val context: Context,
   private val spineElements: List<PlayerSpineElementType>,
   private val downloadTasks: List<PlayerDownloadTaskType>,
   private val onSelect: (PlayerSpineElementType) -> Unit,
 ) :
-  RecyclerView.Adapter<PlayerTOCAdapter.ViewHolder>() {
+  RecyclerView.Adapter<PlayerTOCChapterAdapter.ViewHolder>() {
 
   private val listener: View.OnClickListener
   private var currentSpineElement: Int = -1
@@ -66,7 +70,7 @@ class PlayerTOCAdapter(
 
     val view =
       LayoutInflater.from(parent.context)
-        .inflate(R.layout.player_toc_item_view, parent, false)
+        .inflate(R.layout.player_toc_chapter_item_view, parent, false)
 
     return this.ViewHolder(view)
   }
@@ -91,7 +95,7 @@ class PlayerTOCAdapter(
     holder.downloadedDurationText.text =
       item.duration?.let {
         this.periodFormatter.print(it.toPeriod())
-      } ?: ""
+      }.orEmpty()
     holder.view.isEnabled = item.book.supportsStreaming
 
     var requiresDownload = false
@@ -209,7 +213,7 @@ class PlayerTOCAdapter(
 
     val view = holder.view
     view.tag = item
-    view.setOnClickListener(this@PlayerTOCAdapter.listener)
+    view.setOnClickListener(this@PlayerTOCChapterAdapter.listener)
     view.contentDescription =
       contentDescriptionOf(
         resources = context.resources,
@@ -313,20 +317,20 @@ class PlayerTOCAdapter(
   inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
     val buttons: ViewGroup =
-      this.view.findViewById(R.id.player_toc_end_controls)
+      this.view.findViewById(R.id.player_toc_chapter_end_controls)
     val buttonsDownloadFailed: ViewGroup =
-      this.buttons.findViewById(R.id.player_toc_item_buttons_error)
+      this.buttons.findViewById(R.id.player_toc_chapter_item_buttons_error)
     val buttonsNotDownloadedNotStreamable: ViewGroup =
-      this.buttons.findViewById(R.id.player_toc_item_buttons_not_downloaded_not_streamable)
+      this.buttons.findViewById(R.id.player_toc_chapter_item_buttons_not_downloaded_not_streamable)
     val buttonsNotDownloadedStreamable: ViewGroup =
-      this.buttons.findViewById(R.id.player_toc_item_buttons_not_downloaded_streamable)
+      this.buttons.findViewById(R.id.player_toc_chapter_item_buttons_not_downloaded_streamable)
     val buttonsDownloading: ViewGroup =
-      this.buttons.findViewById(R.id.player_toc_item_buttons_downloading)
+      this.buttons.findViewById(R.id.player_toc_chapter_item_buttons_downloading)
 
     val titleText: TextView =
-      this.view.findViewById(R.id.player_toc_item_view_title)
+      this.view.findViewById(R.id.player_toc_chapter_item_view_title)
     val isCurrent: ImageView =
-      this.view.findViewById(R.id.player_toc_item_is_current)
+      this.view.findViewById(R.id.player_toc_chapter_item_is_current)
 
     val downloadFailedErrorIcon: ImageView =
       this.buttonsDownloadFailed.findViewById(R.id.player_toc_item_download_failed_error_icon)
@@ -334,7 +338,7 @@ class PlayerTOCAdapter(
       this.buttonsDownloadFailed.findViewById(R.id.player_toc_item_download_failed_refresh)
 
     val downloadedDurationText: TextView =
-      this.view.findViewById(R.id.player_toc_item_duration)
+      this.view.findViewById(R.id.player_toc_chapter_item_duration)
 
     val notDownloadedStreamableRefresh: ImageView =
       this.buttonsNotDownloadedStreamable.findViewById(

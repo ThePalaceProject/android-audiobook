@@ -150,4 +150,10 @@ interface PlayerType : AutoCloseable {
    */
 
   fun movePlayheadToBookStart()
+
+  /**
+   * Get the player's current position as player bookmark.
+   */
+
+  fun getCurrentPositionAsPlayerBookmark(): PlayerBookmark?
 }

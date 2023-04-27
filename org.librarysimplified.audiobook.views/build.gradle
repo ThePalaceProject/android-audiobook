@@ -5,6 +5,8 @@ dependencies {
   implementation libs.androidx.constraint.layout
   implementation libs.androidx.media
   implementation libs.androidx.recycler.view
+  implementation libs.androidx.view.pager2
+  implementation libs.google.material
   implementation libs.kotlin.reflect
   implementation libs.kotlin.stdlib
   implementation libs.nypl.theme

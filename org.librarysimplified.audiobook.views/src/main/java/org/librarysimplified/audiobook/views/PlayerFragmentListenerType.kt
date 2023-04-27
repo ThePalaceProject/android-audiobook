@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
+import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import java.util.concurrent.ScheduledExecutorService
@@ -74,6 +75,13 @@ interface PlayerFragmentListenerType {
   fun onPlayerWantsSleepTimer(): PlayerSleepTimerType
 
   /**
+   * The user wants to save a bookmark on the audiobook. The caller should return a player bookmark
+   * from the player's current position
+   */
+
+  fun onPlayerShouldAddBookmark(playerBookmark: PlayerBookmark?)
+
+  /**
    * The user has performed an action that requires that the TOC be opened. The caller should
    * load a fragment capable of displaying the TOC
    * (such as {@link org.librarysimplified.audiobook.views.PlayerTOCFragment}).
@@ -86,6 +94,14 @@ interface PlayerFragmentListenerType {
    */
 
   fun onPlayerTOCWantsBook(): PlayerAudioBookType
+
+  /**
+   * The loaded TOC fragment wants access to the audio book bookmarks.
+   */
+
+  fun onPlayerTOCWantsBookmarks(): List<PlayerBookmark>
+
+  fun onPlayerShouldDeleteBookmark(playerBookmark: PlayerBookmark)
 
   /**
    * The user has closed the table of contents. The callee should remove the TOC fragment from

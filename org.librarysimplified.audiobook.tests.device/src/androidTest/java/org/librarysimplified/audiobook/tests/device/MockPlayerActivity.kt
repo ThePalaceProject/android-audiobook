@@ -13,6 +13,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
+import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
@@ -26,8 +27,7 @@ import org.librarysimplified.audiobook.views.PlayerFragmentListenerType
 import org.librarysimplified.audiobook.views.PlayerFragmentParameters
 import org.librarysimplified.audiobook.views.PlayerPlaybackRateFragment
 import org.librarysimplified.audiobook.views.PlayerSleepTimerFragment
-import org.librarysimplified.audiobook.views.PlayerTOCFragment
-import org.librarysimplified.audiobook.views.PlayerTOCFragmentParameters
+import org.librarysimplified.audiobook.views.toc.PlayerTOCFragment
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -121,11 +121,7 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
 
   override fun onPlayerTOCShouldOpen() {
     val fragment =
-      PlayerTOCFragment.newInstance(
-        PlayerTOCFragmentParameters(
-          primaryColor = Color.parseColor("#f02020")
-        )
-      )
+      PlayerTOCFragment.newInstance()
 
     this.supportFragmentManager
       .beginTransaction()
@@ -142,6 +138,14 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     this.supportFragmentManager.popBackStack()
   }
 
+  override fun onPlayerTOCWantsBookmarks(): List<PlayerBookmark> {
+    return emptyList()
+  }
+
+  override fun onPlayerShouldDeleteBookmark(bookmark: PlayerBookmark) {
+    // do nothing
+  }
+
   override fun onPlayerShouldBeClosed() {
     onBackPressed()
   }
@@ -156,6 +160,10 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
         )
       fragment.show(this.supportFragmentManager, "PLAYER_RATE")
     }
+  }
+
+  override fun onPlayerShouldAddBookmark(playerBookmark: PlayerBookmark?) {
+    // do nothing
   }
 
   override fun onPlayerSleepTimerShouldOpen() {
