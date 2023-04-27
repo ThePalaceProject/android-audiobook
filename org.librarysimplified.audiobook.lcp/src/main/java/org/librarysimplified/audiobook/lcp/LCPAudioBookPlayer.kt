@@ -430,8 +430,12 @@ class LCPAudioBookPlayer private constructor(
     playAutomatically: Boolean,
     updateSeek: Boolean
   ) {
-    val currentTrackIndex = tracksToPlay.indexOfFirst { file ->
-      spineElement.itemManifest.originalLink.hrefURI == file.hrefURI
+    val currentTrackIndex = if (trackIndex != -1) {
+      trackIndex
+    } else {
+      tracksToPlay.indexOfFirst { file ->
+        spineElement.itemManifest.originalLink.hrefURI == file.hrefURI
+      }
     }
 
     if (currentTrackIndex == -1) {
@@ -447,24 +451,25 @@ class LCPAudioBookPlayer private constructor(
     val trackDurationMillis = trackDuration.toLong() * 1000L
 
     // the offset is greater than the track duration, so we need to get the next track
-    if (trackOffset > trackDurationMillis) {
-      setNextTrackToPlay(
+    val newIndex = if (trackOffset > trackDurationMillis) {
+      getIndexToPlayFromNextTrack(
         index = currentTrackIndex + 1,
         currentOffset = trackOffset - trackDurationMillis
       )
     } else if (trackOffset < 0) {
 
       // the offset is fewer than 0, so we need to get the previous track
-      setPreviousTrackToPlay(
+      getIndexToPlayFromPreviousTrackToPlay(
         index = currentTrackIndex - 1,
         currentOffset = trackOffset
       )
     } else {
       trackPlaybackOffset = trackOffset
+      currentTrackIndex
     }
 
-    if (trackIndex != currentTrackIndex) {
-      trackIndex = currentTrackIndex
+    if (trackIndex != newIndex) {
+      trackIndex = newIndex
       preparePlayer(
         playAutomatically = playAutomatically
       )
@@ -756,50 +761,50 @@ class LCPAudioBookPlayer private constructor(
     this.exoPlayer.seekTo(trackPlaybackOffset)
   }
 
-  private fun setNextTrackToPlay(index: Int, currentOffset: Long) {
+  private fun getIndexToPlayFromNextTrack(index: Int, currentOffset: Long): Int {
     if (index > tracksToPlay.lastIndex) {
       trackPlaybackOffset = this.exoPlayer.duration
       seekToTrackPlaybackOffset()
       this.log.debug("there's no next track")
-      return
+      return tracksToPlay.lastIndex
     }
 
     val nextTrack = tracksToPlay[index]
-    val trackDuration = nextTrack.duration ?: return
+    val trackDuration = nextTrack.duration ?: return index
     val trackDurationMillis = trackDuration.toLong() * 1000L
 
     return if (currentOffset > trackDurationMillis) {
-      setNextTrackToPlay(
+      getIndexToPlayFromNextTrack(
         index = index + 1,
         currentOffset = currentOffset - trackDurationMillis
       )
     } else {
-      trackIndex = index
       trackPlaybackOffset = currentOffset
+      index
     }
   }
 
-  private fun setPreviousTrackToPlay(index: Int, currentOffset: Long) {
+  private fun getIndexToPlayFromPreviousTrackToPlay(index: Int, currentOffset: Long): Int {
     if (index < 0) {
       trackPlaybackOffset = 0L
       seekToTrackPlaybackOffset()
       this.log.debug("there's no previous track")
-      return
+      return 0
     }
 
     val positiveOffset = abs(currentOffset)
     val previousTrack = tracksToPlay[index]
-    val trackDuration = previousTrack.duration ?: return
+    val trackDuration = previousTrack.duration ?: return 0
     val trackDurationMillis = trackDuration.toLong() * 1000L
 
-    if (trackDurationMillis - positiveOffset < 0) {
-      setPreviousTrackToPlay(
+    return if (trackDurationMillis - positiveOffset < 0) {
+      getIndexToPlayFromPreviousTrackToPlay(
         index = index - 1,
         currentOffset = trackDurationMillis - positiveOffset
       )
     } else {
-      trackIndex = index
       trackPlaybackOffset = trackDurationMillis - positiveOffset
+      index
     }
   }
 
