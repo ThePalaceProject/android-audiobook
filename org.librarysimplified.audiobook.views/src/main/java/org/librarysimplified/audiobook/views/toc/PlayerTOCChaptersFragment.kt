@@ -1,16 +1,12 @@
-package org.librarysimplified.audiobook.views
+package org.librarysimplified.audiobook.views.toc
 
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,11 +22,14 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.Play
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityChapterSelected
+import org.librarysimplified.audiobook.views.PlayerFragmentListenerType
+import org.librarysimplified.audiobook.views.R
+import org.librarysimplified.audiobook.views.UIThread
 import org.slf4j.LoggerFactory
 import rx.Subscription
 
 /**
- * A table of contents fragment.
+ * A table of content chapters fragment.
  *
  * New instances MUST be created with {@link #newInstance()} rather than calling the constructor
  * directly. The public constructor only exists because the Android API requires it.
@@ -39,18 +38,22 @@ import rx.Subscription
  * interface. An exception will be raised if this is not the case.
  */
 
-class PlayerTOCFragment : Fragment() {
+class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
 
-  private val log = LoggerFactory.getLogger(PlayerTOCFragment::class.java)
+  companion object {
 
-  private lateinit var listener: PlayerFragmentListenerType
-  private lateinit var adapter: PlayerTOCAdapter
+    @JvmStatic
+    fun newInstance(): PlayerTOCChaptersFragment {
+      return PlayerTOCChaptersFragment()
+    }
+  }
+
+  private val log = LoggerFactory.getLogger(PlayerTOCChaptersFragment::class.java)
+
+  private lateinit var adapter: PlayerTOCChapterAdapter
   private lateinit var book: PlayerAudioBookType
+  private lateinit var listener: PlayerFragmentListenerType
   private lateinit var player: PlayerType
-  private lateinit var parameters: PlayerTOCFragmentParameters
-  private var menuInitialized = false
-  private lateinit var menuRefreshAll: MenuItem
-  private lateinit var menuCancelAll: MenuItem
 
   private var bookSubscription: Subscription? = null
   private var playerSubscription: Subscription? = null
@@ -61,7 +64,7 @@ class PlayerTOCFragment : Fragment() {
     state: Bundle?
   ): View {
 
-    return inflater.inflate(R.layout.player_toc_view, container, false)
+    return inflater.inflate(R.layout.fragment_player_toc_chapter_view, container, false)
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -83,22 +86,6 @@ class PlayerTOCFragment : Fragment() {
      */
 
     (list.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
-
-    val toolbar = view.findViewById<Toolbar>(R.id.tocToolbar)
-
-    toolbar.setNavigationOnClickListener { activity?.onBackPressed() }
-    toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_toc_back)
-  }
-
-  override fun onCreate(state: Bundle?) {
-    this.log.debug("onCreate")
-    super.onCreate(state)
-
-    /*
-     * This fragment wants an options menu.
-     */
-
-    this.setHasOptionsMenu(true)
   }
 
   override fun onDestroy() {
@@ -111,10 +98,6 @@ class PlayerTOCFragment : Fragment() {
   override fun onAttach(context: Context) {
     super.onAttach(context)
 
-    this.parameters =
-      this.requireArguments().getSerializable(parametersKey)
-        as PlayerTOCFragmentParameters
-
     if (context is PlayerFragmentListenerType) {
       this.listener = context
 
@@ -122,7 +105,7 @@ class PlayerTOCFragment : Fragment() {
       this.player = this.listener.onPlayerWantsPlayer()
 
       this.adapter =
-        PlayerTOCAdapter(
+        PlayerTOCChapterAdapter(
           context = context,
           spineElements = this.book.spine,
           downloadTasks = this.book.downloadTasks,
@@ -157,77 +140,7 @@ class PlayerTOCFragment : Fragment() {
     }
   }
 
-  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-    this.log.debug("onCreateOptionsMenu")
-    super.onCreateOptionsMenu(menu, inflater)
-
-    inflater.inflate(R.menu.player_toc_menu, menu)
-
-    this.menuRefreshAll = menu.findItem(R.id.player_toc_menu_refresh_all)
-    this.menuCancelAll = menu.findItem(R.id.player_toc_menu_stop_all)
-    this.menuInitialized = true
-    this.menusConfigureVisibility()
-  }
-
-  private fun menusConfigureVisibility() {
-    UIThread.checkIsUIThread()
-
-    if (this.menuInitialized) {
-      val refreshVisibleThen = this.menuRefreshAll.isVisible
-      val cancelVisibleThen = this.menuCancelAll.isVisible
-
-      val refreshVisibleNow =
-        this.book.spine.any { item -> isRefreshable(item) }
-      val cancelVisibleNow =
-        this.book.spine.any { item -> isCancellable(item) }
-
-      if (refreshVisibleNow != refreshVisibleThen || cancelVisibleNow != cancelVisibleThen) {
-        this.menuRefreshAll.isVisible = refreshVisibleNow
-        this.menuCancelAll.isVisible = cancelVisibleNow
-        this.requireActivity().invalidateOptionsMenu()
-      }
-    }
-  }
-
-  private fun isCancellable(item: PlayerSpineElementType): Boolean {
-    return when (item.downloadStatus) {
-      is PlayerSpineElementDownloadExpired -> false
-      is PlayerSpineElementDownloadFailed -> false
-      is PlayerSpineElementNotDownloaded -> false
-      is PlayerSpineElementDownloading -> true
-      is PlayerSpineElementDownloaded -> false
-    }
-  }
-
-  private fun isRefreshable(item: PlayerSpineElementType): Boolean {
-    return when (item.downloadStatus) {
-      is PlayerSpineElementDownloadExpired -> false
-      is PlayerSpineElementDownloadFailed -> true
-      is PlayerSpineElementNotDownloaded -> true
-      is PlayerSpineElementDownloading -> false
-      is PlayerSpineElementDownloaded -> false
-    }
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    val id = item.itemId
-    return when (id) {
-      R.id.player_toc_menu_refresh_all -> {
-        this.onMenuRefreshAllSelected()
-        true
-      }
-      R.id.player_toc_menu_stop_all -> {
-        this.onMenuStopAllSelected()
-        true
-      }
-      else -> {
-        this.log.debug("unrecognized menu item: {}", id)
-        false
-      }
-    }
-  }
-
-  private fun onMenuStopAllSelected() {
+  override fun onMenuStopAllSelected() {
     this.log.debug("onMenuStopAllSelected")
 
     val dialog =
@@ -246,14 +159,14 @@ class PlayerTOCFragment : Fragment() {
     dialog.show()
   }
 
+  override fun onMenuRefreshAllSelected() {
+    this.log.debug("onMenuRefreshAllSelected")
+    this.book.wholeBookDownloadTask.fetch()
+  }
+
   private fun onMenuStopAllSelectedConfirmed() {
     this.log.debug("onMenuStopAllSelectedConfirmed")
     this.book.wholeBookDownloadTask.cancel()
-  }
-
-  private fun onMenuRefreshAllSelected() {
-    this.log.debug("onMenuRefreshAllSelected")
-    this.book.wholeBookDownloadTask.fetch()
   }
 
   private fun onTOCItemSelected(item: PlayerSpineElementType) {
@@ -339,23 +252,8 @@ class PlayerTOCFragment : Fragment() {
       Runnable {
         val spineElement = status.spineElement
         this.adapter.notifyItemChanged(spineElement.index)
-        this.menusConfigureVisibility()
+        (parentFragment as? PlayerTOCMainFragment)?.menusConfigureVisibility()
       }
     )
-  }
-
-  companion object {
-
-    private val parametersKey =
-      "org.librarysimplified.audiobook.views.PlayerTOCFragment.parameters"
-
-    @JvmStatic
-    fun newInstance(parameters: PlayerTOCFragmentParameters): PlayerTOCFragment {
-      val args = Bundle()
-      args.putSerializable(parametersKey, parameters)
-      val fragment = PlayerTOCFragment()
-      fragment.arguments = args
-      return fragment
-    }
   }
 }

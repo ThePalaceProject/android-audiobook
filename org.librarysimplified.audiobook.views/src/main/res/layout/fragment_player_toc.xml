@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/tocToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?android:attr/actionBarTheme"
+        app:navigationIcon="@drawable/back" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tocTabs"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        app:tabGravity="fill"
+        app:tabMaxWidth="0dp"
+        app:tabMode="fixed">
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tocTabChapters"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/audiobook_player_menu_toc_title_chapters" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tocTabBookmarks"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/audiobook_player_menu_toc_title_bookmarks"  />
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/tocViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>

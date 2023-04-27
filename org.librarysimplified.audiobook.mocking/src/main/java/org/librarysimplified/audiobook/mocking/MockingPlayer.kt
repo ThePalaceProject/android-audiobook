@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.mocking
 
+import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
@@ -120,6 +121,11 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
   override fun movePlayheadToBookStart() {
     this.log.debug("movePlayheadToBookStart")
     this.movePlayheadToLocation(this.book.spineItems.first().position, playAutomatically = true)
+  }
+
+  override fun getCurrentPositionAsPlayerBookmark(): PlayerBookmark? {
+    this.log.debug("getCurrentPositionAsPlayerBookmark")
+    return null
   }
 
   private fun goToChapter(chapter: Int) {
