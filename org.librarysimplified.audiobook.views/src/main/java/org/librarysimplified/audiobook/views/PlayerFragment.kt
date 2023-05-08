@@ -793,6 +793,14 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     )
   }
 
+  override fun onResume() {
+    super.onResume()
+    if (this::playerService.isInitialized) {
+      this.playerService.createNotificationChannel()
+      this.playerService.updatePlayerInfo(this.playerInfoModel)
+    }
+  }
+
   override fun onAudioFocusChange(focusChange: Int) {
     when (focusChange) {
       AudioManager.AUDIOFOCUS_GAIN -> {

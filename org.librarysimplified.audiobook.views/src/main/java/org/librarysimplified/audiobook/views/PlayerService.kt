@@ -13,6 +13,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 
 
 class PlayerService : Service() {
@@ -108,7 +109,8 @@ class PlayerService : Service() {
     super.onDestroy()
   }
 
-  private fun createNotificationChannel() {
+
+  fun createNotificationChannel() {
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val notificationManager =
@@ -126,6 +128,15 @@ class PlayerService : Service() {
 
       notificationManager.createNotificationChannel(notificationChannel)
     }
+
+    val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+      .setOngoing(true)
+      .setContentTitle(NOTIFICATION_CHANNEL_NAME)
+      .setPriority(NotificationCompat.PRIORITY_LOW)
+
+    val notification = builder.build()
+    notification.flags = Notification.FLAG_ONGOING_EVENT
+    startForeground(1001, notification)
   }
 
   private fun updateNotification() {
@@ -201,6 +212,7 @@ class PlayerService : Service() {
   inner class PlayerBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
+
       when (intent?.action) {
         ACTION_BACKWARD -> {
           playerInfo.player.skipBack()
