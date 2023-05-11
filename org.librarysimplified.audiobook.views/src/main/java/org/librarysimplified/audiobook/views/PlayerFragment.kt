@@ -557,6 +557,14 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     initializeService()
   }
 
+  override fun onResume() {
+    super.onResume()
+    if (this::playerService.isInitialized) {
+      this.playerService.createNotificationChannel()
+      this.playerService.updatePlayerInfo(this.playerInfoModel)
+    }
+  }
+
   private fun handleTouchOnSeekbar(event: MotionEvent?): Boolean {
     when (event?.action) {
       MotionEvent.ACTION_DOWN -> {
