@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.util.Log
 import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -26,9 +27,12 @@ class PlayerService : Service() {
     private const val ACTION_PAUSE = "org.librarysimplified.audiobook.views.action_pause"
     private const val ACTION_PLAY = "org.librarysimplified.audiobook.views.action_play"
 
-    private const val KEY_CODE_PLAY_PAUSE = 126
+    private const val KEY_CODE_PLAY = 126
+    private const val KEY_CODE_PAUSE = 127
     private const val KEY_CODE_SKIP_TO_NEXT_CHAPTER = 87
     private const val KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER = 88
+    private const val KEY_CODE_REWIND = 89
+    private const val KEY_CODE_FAST_FORWARD = 90
 
   }
 
@@ -152,18 +156,25 @@ class PlayerService : Service() {
         if (Intent.ACTION_MEDIA_BUTTON == mediaButtonEvent.action) {
           val event: KeyEvent? =
             mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
-          if (event?.getKeyCode() == KEY_CODE_PLAY_PAUSE) {
+          Log.d("KeyCode", event?.keyCode.toString())
+          if (event?.keyCode == KEY_CODE_PLAY || event?.keyCode == KEY_CODE_PAUSE) {
             if (playerInfo.isPlaying) {
               playerInfo.player.pause()
             } else {
               playerInfo.player.play()
             }
           }
-          else if (event?.getKeyCode() == KEY_CODE_SKIP_TO_NEXT_CHAPTER) {
+          else if (event?.keyCode == KEY_CODE_SKIP_TO_NEXT_CHAPTER) {
             playerInfo.player.skipToNextChapter(0)
           }
-          else if (event?.getKeyCode() == KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER) {
+          else if (event?.keyCode == KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER) {
             playerInfo.player.skipToPreviousChapter(0)
+          }
+          else if (event?.keyCode == KEY_CODE_FAST_FORWARD) {
+            playerInfo.player.skipForward()
+          }
+          else if (event?.keyCode == KEY_CODE_REWIND) {
+            playerInfo.player.skipBack()
           }
         }
         return true
