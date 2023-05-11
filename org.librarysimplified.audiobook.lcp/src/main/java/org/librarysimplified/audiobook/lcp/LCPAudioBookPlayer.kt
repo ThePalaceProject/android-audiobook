@@ -141,7 +141,6 @@ class LCPAudioBookPlayer private constructor(
       field = value
     }
 
-
   @Volatile
   private var chapterPlaybackOffset: Long = 0
     set(value) {
@@ -251,7 +250,7 @@ class LCPAudioBookPlayer private constructor(
 
   override fun movePlayheadToBookStart() {
     this.log.debug("movePlayheadToBookStart")
-    handleLocationChange(
+    hasChapterChangedAfterHandlingLocation(
       location = this.book.spine.first().position,
       playAutomatically = false
     )
@@ -273,16 +272,19 @@ class LCPAudioBookPlayer private constructor(
 
   override fun movePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean) {
     this.log.debug("movePlayheadToLocation: {} {}", location, playAutomatically)
-    handleLocationChange(
+    val hasChapterChanged = hasChapterChangedAfterHandlingLocation(
       location = location,
       playAutomatically = playAutomatically
     )
-    updateTrackIndex(
-      spineElement = spineElementToUpdate!!,
-      trackOffset = location.startOffset + location.currentOffset,
-      playAutomatically = playAutomatically,
-      updateSeek = true
-    )
+
+    if (!hasChapterChanged) {
+      updateTrackIndex(
+        spineElement = spineElementToUpdate!!,
+        offset = location.startOffset + location.currentOffset,
+        playAutomatically = playAutomatically,
+        updateSeek = true
+      )
+    }
   }
 
   override fun pause() {
@@ -309,31 +311,25 @@ class LCPAudioBookPlayer private constructor(
   override fun playAtLocation(location: PlayerPosition) {
     this.log.debug("playAtLocation: {}", location)
     this.checkNotClosed()
-    handleLocationChange(
+    val hasChapterChanged = hasChapterChangedAfterHandlingLocation(
       location = location,
       playAutomatically = false
     )
 
-    updateTrackIndex(
-      spineElement = spineElementToUpdate!!,
-      trackOffset = location.startOffset + location.currentOffset,
-      playAutomatically = false,
-      updateSeek = true
-    )
+    if (!hasChapterChanged) {
+      updateTrackIndex(
+        spineElement = spineElementToUpdate!!,
+        offset = location.startOffset + location.currentOffset,
+        playAutomatically = false,
+        updateSeek = true
+      )
+    }
   }
 
   override fun skipPlayhead(milliseconds: Long) {
     this.log.debug("skipPlayhead: {}", milliseconds)
     this.checkNotClosed()
     val location = if (milliseconds < 0L || milliseconds > 0L) {
-      val state = stateGet()
-      trackPlaybackOffset += milliseconds
-      updateTrackIndex(
-        spineElement = spineElementToUpdate!!,
-        trackOffset = trackPlaybackOffset,
-        playAutomatically = state is LCPPlayerState.LCPPlayerStatePlaying,
-        updateSeek = true
-      )
       spineElementToUpdate?.position?.copy(
         currentOffset = chapterPlaybackOffset + milliseconds
       )
@@ -344,10 +340,20 @@ class LCPAudioBookPlayer private constructor(
     location ?: return this.log.debug("there isn't a valid location")
 
     val currentState = stateGet()
-    handleLocationChange(
+    val playAutomatically = currentState is LCPPlayerState.LCPPlayerStatePlaying
+    val hasChapterChanged = hasChapterChangedAfterHandlingLocation(
       location = location,
-      playAutomatically = currentState is LCPPlayerState.LCPPlayerStatePlaying
+      playAutomatically = playAutomatically
     )
+
+    if (!hasChapterChanged) {
+      updateTrackIndex(
+        spineElement = spineElementToUpdate!!,
+        offset = location.startOffset + location.currentOffset,
+        playAutomatically = playAutomatically,
+        updateSeek = true
+      )
+    }
 
     when (val state = this.stateGet()) {
       LCPPlayerState.LCPPlayerStateInitial,
@@ -375,18 +381,39 @@ class LCPAudioBookPlayer private constructor(
         is LCPPlayerState.LCPPlayerStatePlaying -> {
           val nextElement = state.spineElement.nextElement as? LCPSpineElement
             ?: return@execute this.log.debug("there's no next chapter")
-          handleLocationChange(
-            location = nextElement.position,
+
+          val location = nextElement.position
+          val hasChapterChanged = hasChapterChangedAfterHandlingLocation(
+            location = location,
             playAutomatically = true
           )
+
+          if (!hasChapterChanged) {
+            updateTrackIndex(
+              spineElement = spineElementToUpdate!!,
+              offset = location.startOffset + location.currentOffset,
+              playAutomatically = true,
+              updateSeek = true
+            )
+          }
         }
         is LCPPlayerState.LCPPlayerStateStopped -> {
           val nextElement = state.spineElement.nextElement as? LCPSpineElement
             ?: return@execute this.log.debug("there's no next chapter")
-          handleLocationChange(
-            location = nextElement.position,
+          val location = nextElement.position
+          val hasChapterChanged = hasChapterChangedAfterHandlingLocation(
+            location = location,
             playAutomatically = false
           )
+
+          if (!hasChapterChanged) {
+            updateTrackIndex(
+              spineElement = spineElementToUpdate!!,
+              offset = location.startOffset + location.currentOffset,
+              playAutomatically = false,
+              updateSeek = true
+            )
+          }
         }
       }
     }
@@ -402,18 +429,41 @@ class LCPAudioBookPlayer private constructor(
         is LCPPlayerState.LCPPlayerStatePlaying -> {
           val previousElement = state.spineElement.previousElement as? LCPSpineElement
             ?: return@execute this.log.debug("there's no previous chapter")
-          handleLocationChange(
-            location = previousElement.position,
+
+          val location = previousElement.position
+
+          val hasChapterChanged = hasChapterChangedAfterHandlingLocation(
+            location = location,
             playAutomatically = true
           )
+
+          if (!hasChapterChanged) {
+            updateTrackIndex(
+              spineElement = spineElementToUpdate!!,
+              offset = location.startOffset + location.currentOffset,
+              playAutomatically = true,
+              updateSeek = true
+            )
+          }
         }
         is LCPPlayerState.LCPPlayerStateStopped -> {
           val previousElement = state.spineElement.previousElement as? LCPSpineElement
             ?: return@execute this.log.debug("there's no previous chapter")
-          handleLocationChange(
-            location = previousElement.position,
+          val location = previousElement.position
+
+          val hasChapterChanged = hasChapterChangedAfterHandlingLocation(
+            location = location,
             playAutomatically = false
           )
+
+          if (!hasChapterChanged) {
+            updateTrackIndex(
+              spineElement = spineElementToUpdate!!,
+              offset = location.startOffset + location.currentOffset,
+              playAutomatically = false,
+              updateSeek = true
+            )
+          }
         }
       }
     }
@@ -424,59 +474,48 @@ class LCPAudioBookPlayer private constructor(
     spineElementToUpdate = null
   }
 
-  private fun updateTrackIndex(
-    spineElement: LCPSpineElement,
-    trackOffset: Long,
-    playAutomatically: Boolean,
-    updateSeek: Boolean
-  ) {
-    val currentTrackIndex = if (trackIndex != -1) {
-      trackIndex
-    } else {
-      tracksToPlay.indexOfFirst { file ->
-        spineElement.itemManifest.originalLink.hrefURI == file.hrefURI
-      }
+  private fun getTrackIndexToPlay(
+    chapterTrackIndex: Int,
+    offset: Long
+  ): Int {
+    if (chapterTrackIndex < 0 || chapterTrackIndex > tracksToPlay.lastIndex) {
+      return -1
     }
 
-    if (currentTrackIndex == -1) {
-      this.log.debug("there's no track to play")
-      return
+    val chapterTrack = tracksToPlay[chapterTrackIndex]
+    val trackDuration = chapterTrack.duration
+
+    if (trackDuration == null) {
+      this.log.debug("track {} duration is null", chapterTrack)
+      return -1
     }
-
-    val currentTrack = tracksToPlay[currentTrackIndex]
-
-    val trackDuration = currentTrack.duration
-      ?: return this.log.debug("track {} duration is null", currentTrack)
 
     val trackDurationMillis = trackDuration.toLong() * 1000L
 
     // the offset is greater than the track duration, so we need to get the next track
-    val newIndex = if (trackOffset > trackDurationMillis) {
-      getIndexToPlayFromNextTrack(
-        index = currentTrackIndex + 1,
-        currentOffset = trackOffset - trackDurationMillis
+    return if (offset > trackDurationMillis) {
+      getTrackIndexToPlay(
+        chapterTrackIndex = chapterTrackIndex + 1,
+        offset = offset - trackDurationMillis
       )
-    } else if (trackOffset < 0) {
+    } else if (offset < 0) {
 
-      // the offset is fewer than 0, so we need to get the previous track
-      getIndexToPlayFromPreviousTrackToPlay(
-        index = currentTrackIndex - 1,
-        currentOffset = trackOffset
-      )
+      if (chapterTrackIndex == 0) {
+        -1
+      } else {
+
+        val previousTrack = tracksToPlay[chapterTrackIndex - 1]
+        val previousTrackDuration = previousTrack.duration?.toLong() ?: 0L
+
+        // the offset is fewer than 0, so we need to get the previous track
+        getTrackIndexToPlay(
+          chapterTrackIndex = chapterTrackIndex - 1,
+          offset = previousTrackDuration + offset
+        )
+      }
     } else {
-      trackPlaybackOffset = trackOffset
-      currentTrackIndex
-    }
-
-    if (trackIndex != newIndex) {
-      trackIndex = newIndex
-      preparePlayer(
-        playAutomatically = playAutomatically
-      )
-    }
-
-    if (updateSeek) {
-      seekToTrackPlaybackOffset()
+      trackPlaybackOffset = offset
+      chapterTrackIndex
     }
   }
 
@@ -559,7 +598,10 @@ class LCPAudioBookPlayer private constructor(
     }
   }
 
-  private fun handleLocationChange(location: PlayerPosition, playAutomatically: Boolean): Boolean {
+  private fun hasChapterChangedAfterHandlingLocation(
+    location: PlayerPosition,
+    playAutomatically: Boolean
+  ): Boolean {
     val spineElement = this.book.spineElementForPartAndChapter(
       part = location.part,
       chapter = location.chapter
@@ -761,53 +803,6 @@ class LCPAudioBookPlayer private constructor(
     this.exoPlayer.seekTo(trackPlaybackOffset)
   }
 
-  private fun getIndexToPlayFromNextTrack(index: Int, currentOffset: Long): Int {
-    if (index > tracksToPlay.lastIndex) {
-      trackPlaybackOffset = this.exoPlayer.duration
-      seekToTrackPlaybackOffset()
-      this.log.debug("there's no next track")
-      return tracksToPlay.lastIndex
-    }
-
-    val nextTrack = tracksToPlay[index]
-    val trackDuration = nextTrack.duration ?: return index
-    val trackDurationMillis = trackDuration.toLong() * 1000L
-
-    return if (currentOffset > trackDurationMillis) {
-      getIndexToPlayFromNextTrack(
-        index = index + 1,
-        currentOffset = currentOffset - trackDurationMillis
-      )
-    } else {
-      trackPlaybackOffset = currentOffset
-      index
-    }
-  }
-
-  private fun getIndexToPlayFromPreviousTrackToPlay(index: Int, currentOffset: Long): Int {
-    if (index < 0) {
-      trackPlaybackOffset = 0L
-      seekToTrackPlaybackOffset()
-      this.log.debug("there's no previous track")
-      return 0
-    }
-
-    val positiveOffset = abs(currentOffset)
-    val previousTrack = tracksToPlay[index]
-    val trackDuration = previousTrack.duration ?: return 0
-    val trackDurationMillis = trackDuration.toLong() * 1000L
-
-    return if (trackDurationMillis - positiveOffset < 0) {
-      getIndexToPlayFromPreviousTrackToPlay(
-        index = index - 1,
-        currentOffset = trackDurationMillis - positiveOffset
-      )
-    } else {
-      trackPlaybackOffset = trackDurationMillis - positiveOffset
-      index
-    }
-  }
-
   private fun startNewSchedulerAfterSomeDelay(
     chapter: LCPSpineElement,
     playAutomatically: Boolean
@@ -819,7 +814,7 @@ class LCPAudioBookPlayer private constructor(
 
       updateTrackIndex(
         spineElement = chapter,
-        trackOffset = chapter.position.startOffset + chapterPlaybackOffset,
+        offset = chapter.position.startOffset + chapterPlaybackOffset,
         playAutomatically = playAutomatically,
         updateSeek = true
       )
@@ -862,6 +857,38 @@ class LCPAudioBookPlayer private constructor(
     synchronized(this.stateLock) { this.state = state }
   }
 
+  private fun updateTrackIndex(
+    spineElement: LCPSpineElement,
+    offset: Long,
+    playAutomatically: Boolean,
+    updateSeek: Boolean
+  ) {
+    val chapterTrackIndex = tracksToPlay.indexOfFirst { file ->
+      spineElement.itemManifest.originalLink.hrefURI == file.hrefURI
+    }
+
+    if (chapterTrackIndex == -1) {
+      this.log.debug("there's no track to play")
+      return
+    }
+
+    val newIndex = getTrackIndexToPlay(
+      chapterTrackIndex = chapterTrackIndex,
+      offset = offset
+    )
+
+    if (trackIndex != newIndex) {
+      trackIndex = newIndex
+      preparePlayer(
+        playAutomatically = playAutomatically
+      )
+    }
+
+    if (updateSeek) {
+      seekToTrackPlaybackOffset()
+    }
+  }
+
   private inner class PlaybackObserver : Runnable {
     override fun run() {
       when (stateGet()) {
@@ -874,12 +901,6 @@ class LCPAudioBookPlayer private constructor(
 
           val bookPlayer = this@LCPAudioBookPlayer
           trackPlaybackOffset = bookPlayer.exoPlayer.currentPosition
-          updateTrackIndex(
-            spineElement = spineElementToUpdate!!,
-            trackOffset = trackPlaybackOffset,
-            playAutomatically = true,
-            updateSeek = false
-          )
 
           bookPlayer.statusEvents.onNext(
             PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate(
@@ -888,13 +909,23 @@ class LCPAudioBookPlayer private constructor(
             )
           )
 
-          val hasChapterChanged = handleLocationChange(
-            location = spineElementToUpdate!!.position.copy(
-              currentOffset = chapterPlaybackOffset
-            ),
+          val location = spineElementToUpdate!!.position.copy(
+            currentOffset = chapterPlaybackOffset
+          )
+
+          val hasChapterChanged = hasChapterChangedAfterHandlingLocation(
+            location = location,
             playAutomatically = true
           )
+
           if (!hasChapterChanged) {
+            updateTrackIndex(
+              spineElement = spineElementToUpdate!!,
+              offset = location.startOffset + location.currentOffset,
+              playAutomatically = true,
+              updateSeek = false
+            )
+
             chapterPlaybackOffset += 1000L
           }
         }
