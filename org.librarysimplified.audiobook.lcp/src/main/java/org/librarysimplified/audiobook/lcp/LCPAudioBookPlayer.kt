@@ -54,10 +54,13 @@ class LCPAudioBookPlayer private constructor(
 
   companion object {
 
+    private const val TIMEOUT_PLAYER_CREATION = 5L
+
     fun create(
       book: LCPAudioBook,
       context: Context,
       engineExecutor: ScheduledExecutorService,
+      manualPassphrase: Boolean
     ): LCPAudioBookPlayer {
 
       val statusEvents =
@@ -113,7 +116,15 @@ class LCPAudioBookPlayer private constructor(
             statusEvents = statusEvents,
           )
         }
-      ).get(5L, TimeUnit.SECONDS)
+      ).get(
+        // if the manual passphrase is enabled, we need to have an infinite timeout, otherwise the
+        // creation could be interrupted before the user wrote the passphrase
+        if (manualPassphrase) {
+          Long.MAX_VALUE
+        } else {
+          TIMEOUT_PLAYER_CREATION
+        }, TimeUnit.SECONDS
+      )
     }
   }
 
