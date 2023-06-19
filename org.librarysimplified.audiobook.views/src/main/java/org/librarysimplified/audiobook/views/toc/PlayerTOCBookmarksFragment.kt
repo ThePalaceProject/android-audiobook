@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,8 +35,9 @@ class PlayerTOCBookmarksFragment : Fragment() {
     }
   }
 
-  private lateinit var listener: PlayerFragmentListenerType
   private lateinit var adapter: PlayerTOCBookmarkAdapter
+  private lateinit var emptyBookmarksText: TextView
+  private lateinit var listener: PlayerFragmentListenerType
   private lateinit var player: PlayerType
 
   override fun onCreateView(
@@ -49,6 +51,12 @@ class PlayerTOCBookmarksFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+
+    emptyBookmarksText = view.findViewById(R.id.empty_bookmarks_text)
+
+    showOrHideEmptyMessage(
+      show = this.adapter.itemCount == 0
+    )
 
     val list = view.findViewById<RecyclerView>(R.id.list)
     list.layoutManager = LinearLayoutManager(view.context)
@@ -65,7 +73,6 @@ class PlayerTOCBookmarksFragment : Fragment() {
 
       val bookmarks = this.listener.onPlayerTOCWantsBookmarks()
       this.player = this.listener.onPlayerWantsPlayer()
-
       this.adapter = PlayerTOCBookmarkAdapter(
         context = context,
         bookmarks = bookmarks,
@@ -104,6 +111,9 @@ class PlayerTOCBookmarksFragment : Fragment() {
     val bookmarks = this.listener.onPlayerTOCWantsBookmarks()
     this.adapter.setBookmarks(bookmarks)
     this.adapter.notifyItemRemoved(index)
+    showOrHideEmptyMessage(
+      show = bookmarks.isEmpty()
+    )
   }
 
   private fun openBookmarkAndClose(position: PlayerPosition) {
@@ -113,5 +123,13 @@ class PlayerTOCBookmarksFragment : Fragment() {
 
   private fun closeTOC() {
     this.listener.onPlayerTOCWantsClose()
+  }
+
+  private fun showOrHideEmptyMessage(show: Boolean) {
+    emptyBookmarksText.visibility = if (show) {
+      View.VISIBLE
+    } else {
+      View.GONE
+    }
   }
 }

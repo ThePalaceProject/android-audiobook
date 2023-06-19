@@ -49,6 +49,7 @@
   <string name="audiobook_player_toc_menu_stop_confirm_positive">Stop</string>
   <string name="audiobook_player_toc_menu_stop_confirm_negative">Continue</string>
 
+  <string name="audiobook_player_toc_bookmarks_empty">There are no bookmarks for this book</string>
   <string name="audiobook_player_toc_bookmarks_dialog_title_delete">Delete</string>
   <string name="audiobook_player_toc_bookmarks_dialog_message_delete">Are you sure you want to delete this bookmark?</string>
 
