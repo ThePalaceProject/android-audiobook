@@ -35,7 +35,8 @@ class LCPAudioBook private constructor(
   override val spineElementDownloadStatus: PublishSubject<PlayerSpineElementDownloadStatus>,
   override val id: PlayerBookID,
   val file: File,
-  val contentProtections: List<ContentProtection>
+  val contentProtections: List<ContentProtection>,
+  val manualPassphrase: Boolean
 ) : PlayerAudioBookType {
 
   private val logger = LoggerFactory.getLogger(LCPAudioBook::class.java)
@@ -47,7 +48,8 @@ class LCPAudioBook private constructor(
     return LCPAudioBookPlayer.create(
       book = this,
       context = this.context,
-      engineExecutor = this.engineExecutor
+      engineExecutor = this.engineExecutor,
+      manualPassphrase = manualPassphrase
     )
   }
 
@@ -82,7 +84,8 @@ class LCPAudioBook private constructor(
       engineExecutor: ScheduledExecutorService,
       manifest: ExoManifest,
       file: File,
-      contentProtections: List<ContentProtection>
+      contentProtections: List<ContentProtection>,
+      manualPassphrase: Boolean
     ): PlayerAudioBookType {
       val bookId = PlayerBookID.transform(manifest.id)
 
@@ -142,7 +145,8 @@ class LCPAudioBook private constructor(
           spineByPartAndChapter = elementsByPart as SortedMap<Int, SortedMap<Int, PlayerSpineElementType>>,
           spineElementDownloadStatus = statusEvents,
           file = file,
-          contentProtections = contentProtections
+          contentProtections = contentProtections,
+          manualPassphrase = manualPassphrase
         )
 
       for (e in elements) {
