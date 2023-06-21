@@ -50,5 +50,10 @@ data class PlayerAudioEngineRequest(
    * Content protections available to unlock the audio book, if it is protected.
    */
 
-  val contentProtections: List<ContentProtection>? = null
+  val contentProtections: List<ContentProtection>? = null,
+
+  /**
+   * A passphrase, if needed, will be manually inserted.
+   */
+  val manualPassphrase: Boolean = false
 )

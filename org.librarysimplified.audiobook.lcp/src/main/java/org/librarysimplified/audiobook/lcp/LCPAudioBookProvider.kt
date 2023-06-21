@@ -20,7 +20,8 @@ class LCPAudioBookProvider(
   private val engineExecutor: ScheduledExecutorService,
   private val manifest: PlayerManifest,
   private val file: File,
-  private val contentProtections: List<ContentProtection>
+  private val contentProtections: List<ContentProtection>,
+  private val manualPassphrase: Boolean
 ) : PlayerAudioBookProviderType {
 
   override fun create(
@@ -36,7 +37,8 @@ class LCPAudioBookProvider(
               engineExecutor = this.engineExecutor,
               manifest = parsed.result,
               file = this.file,
-              contentProtections = this.contentProtections
+              contentProtections = this.contentProtections,
+              manualPassphrase = manualPassphrase
             )
           )
         is Failure ->

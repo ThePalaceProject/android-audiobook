@@ -62,7 +62,8 @@ class LCPEngineProvider(
       engineExecutor = this.engineExecutor,
       manifest = manifest,
       file = request.file!!,
-      contentProtections = request.contentProtections ?: listOf()
+      contentProtections = request.contentProtections ?: listOf(),
+      manualPassphrase = request.manualPassphrase
     )
   }
 
