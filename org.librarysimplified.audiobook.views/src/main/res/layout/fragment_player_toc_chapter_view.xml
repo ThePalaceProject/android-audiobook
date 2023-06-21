@@ -1,10 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/list"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:layoutManager="LinearLayoutManager"
-    tools:context="org.librarysimplified.audiobook.views.toc.PlayerTOCChaptersFragment"
-    tools:listitem="@layout/player_toc_chapter_item_view" />
+    android:layout_height="match_parent">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="LinearLayoutManager"
+        tools:context="org.librarysimplified.audiobook.views.toc.PlayerTOCChaptersFragment"
+        tools:listitem="@layout/player_toc_chapter_item_view" />
+
+    <TextView
+        android:id="@+id/empty_bookmarks_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="24dp"
+        android:gravity="center"
+        android:text="@string/audiobook_player_toc_bookmarks_empty"
+        android:textSize="16sp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</FrameLayout>
