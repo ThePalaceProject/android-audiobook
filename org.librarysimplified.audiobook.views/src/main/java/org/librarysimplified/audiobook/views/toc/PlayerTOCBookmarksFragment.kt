@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -83,9 +84,28 @@ class PlayerTOCBookmarksFragment : Fragment() {
           AlertDialog.Builder(context)
             .setMessage(R.string.audiobook_player_toc_bookmarks_dialog_message_delete)
             .setPositiveButton(R.string.audiobook_player_toc_bookmarks_dialog_title_delete) { dialog, _ ->
-              this.listener.onPlayerShouldDeleteBookmark(bookmark)
-              updateBookmarks(index)
               dialog.dismiss()
+              adapter.setItemBeingDeleted(
+                beingDeleted = true,
+                position = index
+              )
+              this.listener.onPlayerShouldDeleteBookmark(
+                playerBookmark = bookmark,
+                onDeleteOperationCompleted = { wasDeleted ->
+                  if (wasDeleted) {
+                    updateBookmarks(index)
+                  } else {
+                    adapter.setItemBeingDeleted(
+                      beingDeleted = false,
+                      position = index
+                    )
+                    Toast.makeText(
+                      requireContext(), R.string.audiobook_player_toc_bookmarks_error_deleting,
+                      Toast.LENGTH_SHORT
+                    ).show()
+                  }
+                }
+              )
             }
             .setNegativeButton(R.string.audiobook_player_options_cancel) { dialog, _ ->
               dialog.dismiss()

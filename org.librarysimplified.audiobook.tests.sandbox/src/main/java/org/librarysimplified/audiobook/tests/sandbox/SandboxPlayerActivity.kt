@@ -211,7 +211,10 @@ class SandboxPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     return emptyList()
   }
 
-  override fun onPlayerShouldDeleteBookmark(bookmark: PlayerBookmark) {
+  override fun onPlayerShouldDeleteBookmark(
+    playerBookmark: PlayerBookmark,
+    onDeleteOperationCompleted: (Boolean) -> Unit
+  ) {
     // do nothing
   }
 

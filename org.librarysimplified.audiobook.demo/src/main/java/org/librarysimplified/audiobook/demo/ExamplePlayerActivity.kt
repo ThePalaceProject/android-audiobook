@@ -4,11 +4,13 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
+import org.joda.time.DateTime
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
@@ -638,7 +640,10 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     return emptyList()
   }
 
-  override fun onPlayerShouldDeleteBookmark(bookmark: PlayerBookmark) {
+  override fun onPlayerShouldDeleteBookmark(
+    playerBookmark: PlayerBookmark,
+    onDeleteOperationCompleted: (Boolean) -> Unit
+  ) {
     // do nothing
   }
 
