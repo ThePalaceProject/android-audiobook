@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.joda.time.Duration
@@ -60,6 +61,25 @@ class PlayerTOCBookmarkAdapter(
     (holder as? BookmarkViewHolder)?.bind(bookmarks[position])
   }
 
+  fun setItemBeingDeleted(beingDeleted: Boolean, position: Int) {
+    setBookmarks(
+      bookmarks.mapIndexed { index, bookmark ->
+        PlayerBookmark(
+          date = bookmark.date,
+          duration = bookmark.duration,
+          isBeingDeleted = if (position == index) {
+            beingDeleted
+          } else {
+            bookmark.isBeingDeleted
+          },
+          position = bookmark.position,
+          uri = bookmark.uri
+        )
+      }
+    )
+    notifyItemChanged(position)
+  }
+
   fun setBookmarks(bookmarksList: List<PlayerBookmark>) {
     bookmarks = bookmarksList
   }
@@ -73,6 +93,8 @@ class PlayerTOCBookmarkAdapter(
       itemView.findViewById(R.id.player_toc_bookmark_item_view_title)
     private val bookmarkDelete: ImageView =
       itemView.findViewById(R.id.player_toc_bookmark_item_view_delete)
+    private val bookmarkLoading: ProgressBar =
+      itemView.findViewById(R.id.player_toc_bookmark_item_view_loading)
 
     private fun contentDescriptionOf(
       title: String,
@@ -117,6 +139,14 @@ class PlayerTOCBookmarkAdapter(
       bookmarkTitle.text = bookmark.position.title.orEmpty()
       bookmarkOffset.text = periodFormatter.print(offset.toPeriod())
       bookmarkDate.text = bookmarkDateStr
+
+      if (bookmark.isBeingDeleted) {
+        bookmarkDelete.visibility = View.GONE
+        bookmarkLoading.visibility = View.VISIBLE
+      } else {
+        bookmarkDelete.visibility = View.VISIBLE
+        bookmarkLoading.visibility = View.GONE
+      }
 
       itemView.contentDescription = contentDescriptionOf(
         title = bookmark.position.title.orEmpty(),

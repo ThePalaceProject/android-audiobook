@@ -101,7 +101,14 @@ interface PlayerFragmentListenerType {
 
   fun onPlayerTOCWantsBookmarks(): List<PlayerBookmark>
 
-  fun onPlayerShouldDeleteBookmark(playerBookmark: PlayerBookmark)
+  /**
+   * The user wants to delete a bookmark.
+   */
+
+  fun onPlayerShouldDeleteBookmark(
+    playerBookmark: PlayerBookmark,
+    onDeleteOperationCompleted: (Boolean) -> Unit
+  )
 
   /**
    * The user has closed the table of contents. The callee should remove the TOC fragment from

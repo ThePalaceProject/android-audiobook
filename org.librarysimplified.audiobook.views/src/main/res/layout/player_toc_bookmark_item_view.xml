@@ -7,6 +7,14 @@
     android:orientation="horizontal"
     android:padding="16dp">
 
+    <ProgressBar
+        android:id="@+id/player_toc_bookmark_item_view_loading"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:visibility="gone"
+        android:layout_gravity="center_vertical"
+        tools:visibility="visible" />
+
     <ImageView
         android:id="@+id/player_toc_bookmark_item_view_delete"
         android:layout_width="wrap_content"
