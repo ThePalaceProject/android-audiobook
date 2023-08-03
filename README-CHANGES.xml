@@ -220,7 +220,7 @@
         <c:change date="2023-02-17T00:00:00+00:00" summary="Updated behaviour for skipping and rewinding an audiobook for 15 seconds."/>
       </c:changes>
     </c:release>
-    <c:release date="2023-07-04T08:27:49+00:00" is-open="true" ticket-system="org.nypl.jira" version="10.0.0">
+    <c:release date="2023-08-03T09:52:43+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="10.0.0">
       <c:changes>
         <c:change date="2023-03-30T00:00:00+00:00" summary="Updated polling interval to save reading position in audiobooks to server from 5 seconds to 15 seconds."/>
         <c:change date="2023-03-30T00:00:00+00:00" summary="Save reading position to server on play, pause, and stop (which also saves when seeking and changing chapters)."/>
@@ -234,11 +234,17 @@
         <c:change date="2023-05-11T00:00:00+00:00" summary="Fixed track transition on LCP audiobook player."/>
         <c:change date="2023-05-18T00:00:00+00:00" summary="Added support to manually insert a LCP Passphrase."/>
         <c:change date="2023-06-21T00:00:00+00:00" summary="Added message on bookmarks screen when there are no audiobook bookmarks."/>
-        <c:change date="2023-07-04T08:27:49+00:00" summary="Added progress bar to indicate a bookmark is being deleted."/>
+        <c:change date="2023-07-04T00:00:00+00:00" summary="Added progress bar to indicate a bookmark is being deleted."/>
+        <c:change date="2023-08-03T09:52:43+00:00" summary="Updated the scrubber behaviour to make it easier to manipulate, and to avoid flooding the audio engine with seek requests.">
+          <c:tickets>
+            <c:ticket id="PP-83"/>
+          </c:tickets>
+	</c:change>
       </c:changes>
     </c:release>
   </c:releases>
   <c:ticket-systems>
-    <c:ticket-system default="true" id="org.nypl.jira" url="https://jira.nypl.org/browse/"/>
+    <c:ticket-system default="false" id="org.nypl.jira" url="https://jira.nypl.org/browse/"/>
+    <c:ticket-system default="true" id="org.palaceproject.jira" url="https://ebce-lyrasis.atlassian.net/browse/"/>
   </c:ticket-systems>
 </c:changelog>
