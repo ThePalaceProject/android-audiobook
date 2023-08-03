@@ -123,7 +123,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   private var menuSleepText: TextView? = null
 
   private var audioFocusDelayed: Boolean = false
-  private var clickedOnThumb: Boolean = false
   private var playOnAudioFocus: Boolean = false
   private var playerBufferingStillOngoing: Boolean = false
   private var playerBufferingTask: ScheduledFuture<*>? = null
@@ -530,7 +529,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     this.playerPosition.isEnabled = false
     this.playerPositionDragging = false
 
-    this.playerPosition.setOnTouchListener { _, event -> handleTouchOnSeekbar(event) }
+    this.playerPosition.setOnTouchListener { _, event -> this.handleTouchOnSeekbar(event) }
 
     this.playerTimeCurrent = view.findViewById(R.id.player_time)!!
     this.playerTimeMaximum = view.findViewById(R.id.player_time_maximum)!!
@@ -566,42 +565,33 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   }
 
   private fun handleTouchOnSeekbar(event: MotionEvent?): Boolean {
-    when (event?.action) {
+    return when (event?.action) {
       MotionEvent.ACTION_DOWN -> {
-        clickedOnThumb = wasSeekbarThumbClicked(event)
-        if (!clickedOnThumb) {
-          return true
-        }
+        this.playerPositionDragging = true
+        this.playerPosition.onTouchEvent(event)
       }
+
       MotionEvent.ACTION_UP -> {
-        if (clickedOnThumb && playerPositionDragging) {
-          playerPositionDragging = false
-          clickedOnThumb = false
-          updateUIOnProgressBarDragging()
-        } else {
-          playerPositionDragging = false
-          clickedOnThumb = false
-          return true
+        if (this.playerPositionDragging) {
+          this.playerPositionDragging = false
+          this.onReleasedPlayerPositionBar()
         }
+        this.playerPosition.onTouchEvent(event)
       }
-      MotionEvent.ACTION_MOVE -> {
-        if (!clickedOnThumb) {
-          return true
-        }
-        playerPositionDragging = true
-        updateUIOnProgressBarDragging()
-      }
+
       MotionEvent.ACTION_CANCEL -> {
-        playerPositionDragging = false
-        clickedOnThumb = false
+        this.playerPositionDragging = false
+        this.playerPosition.onTouchEvent(event)
+      }
+
+      else -> {
+        this.playerPosition.onTouchEvent(event)
       }
     }
-
-    return playerPosition.onTouchEvent(event)
   }
 
-  private fun updateUIOnProgressBarDragging() {
-    this.log.debug("updateUIOnProgressBarDragging")
+  private fun onReleasedPlayerPositionBar() {
+    this.log.debug("onReleasedPlayerPositionBar")
 
     val spine = this.playerPositionCurrentSpine
     if (spine != null) {
@@ -615,10 +605,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
         this.player.movePlayheadToLocation(target, playAutomatically = true)
       }
     }
-  }
-
-  private fun wasSeekbarThumbClicked(event: MotionEvent): Boolean {
-    return this.playerPosition.thumb.bounds.contains(event.x.toInt(), event.y.toInt())
   }
 
   private fun onPlayerEventsCompleted() {
