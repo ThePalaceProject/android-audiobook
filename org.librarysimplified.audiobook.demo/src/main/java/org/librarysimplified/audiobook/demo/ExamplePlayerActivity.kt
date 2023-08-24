@@ -650,7 +650,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   }
 
   override fun onPlayerNotificationWantsSmallIcon(): Int {
-    return R.drawable.icon
+    return org.librarysimplified.audiobook.views.R.drawable.icon
   }
 
   override fun onPlayerNotificationWantsIntent(): Intent {

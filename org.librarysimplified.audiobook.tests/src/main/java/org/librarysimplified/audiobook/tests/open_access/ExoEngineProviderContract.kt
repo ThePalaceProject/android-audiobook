@@ -801,6 +801,7 @@ abstract class ExoEngineProviderContract {
       this.log().debug("spine element status: {}", status)
 
       when (status) {
+        is PlayerSpineElementDownloadExpired -> Unit
         is PlayerSpineElementNotDownloaded -> Unit
         is PlayerSpineElementDownloading -> Unit
         is PlayerSpineElementDownloaded -> downloaded = true

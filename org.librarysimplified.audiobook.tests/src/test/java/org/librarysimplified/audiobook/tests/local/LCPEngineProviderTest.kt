@@ -17,7 +17,7 @@ class LCPEngineProviderTest : LCPEngineProviderContract() {
   override fun context(): Context {
     val context = Mockito.mock(Context::class.java)
 
-    Mockito.`when`(context.getString(eq(R.string.player_manifest_audiobook_default_track_n), any()))
+    Mockito.`when`(context.getString(eq(org.librarysimplified.audiobook.manifest.api.R.string.player_manifest_audiobook_default_track_n), any()))
       .thenReturn("Track #")
 
     return context

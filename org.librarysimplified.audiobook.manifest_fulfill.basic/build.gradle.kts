@@ -1,0 +1,14 @@
+dependencies {
+  api(project(":org.librarysimplified.audiobook.manifest_fulfill.spi"))
+
+  implementation(project(":org.librarysimplified.audiobook.http"))
+
+  implementation(libs.irradia.mime.vanilla)
+  implementation(libs.kotlin.stdlib)
+  implementation(libs.kotlin.reflect)
+  implementation(libs.okhttp3)
+  implementation(libs.palace.http.api)
+  implementation(libs.slf4j)
+
+  compileOnly(libs.jcip)
+}

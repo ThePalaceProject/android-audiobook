@@ -19,16 +19,25 @@ import androidx.core.content.ContextCompat
  * more of the circle is drawn as the progress value nears {@code 1.0}.
  */
 
-class PlayerCircularProgressView(context: Context, attrs: AttributeSet, defStyleAttr: Int)
-  : View(context, attrs, defStyleAttr) {
+class PlayerCircularProgressView(context: Context, attrs: AttributeSet, defStyleAttr: Int) :
+  View(context, attrs, defStyleAttr) {
 
-  constructor(context: Context, attrs: AttributeSet) : this(context, attrs, R.attr.progressBarStyle)
+  constructor(context: Context, attrs: AttributeSet) :
+    this(context, attrs, org.nypl.simplified.ui.theme.R.attr.progressBarStyle)
 
   private val defaultFgColor: Int
 
   init {
-    val a: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.AppCompatTheme, defStyleAttr, 0)
-    val controlActivatedResource = a.getResourceId(R.styleable.AppCompatTheme_colorControlActivated, android.R.color.black)
+    val a: TypedArray = context.obtainStyledAttributes(
+      attrs,
+      org.nypl.simplified.ui.theme.R.styleable.AppCompatTheme,
+      defStyleAttr,
+      0
+    )
+    val controlActivatedResource = a.getResourceId(
+      org.nypl.simplified.ui.theme.R.styleable.AppCompatTheme_colorControlActivated,
+      android.R.color.black
+    )
     defaultFgColor = ContextCompat.getColor(context, controlActivatedResource)
     a.recycle()
   }

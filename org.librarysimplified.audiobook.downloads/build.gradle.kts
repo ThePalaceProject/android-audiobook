@@ -1,10 +1,8 @@
 dependencies {
   api(project(":org.librarysimplified.audiobook.api"))
-  api(project(":org.librarysimplified.audiobook.parser.api"))
 
   implementation(libs.kotlin.stdlib)
   implementation(libs.kotlin.reflect)
-  implementation(libs.palace.http.api)
-
-  compileOnly(libs.jcip)
+  implementation(libs.okhttp3)
+  implementation(libs.slf4j)
 }
