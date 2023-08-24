@@ -4,6 +4,15 @@ import org.jetbrains.kotlin.de.undercouch.gradle.tasks.download.Download
 import org.jetbrains.kotlin.de.undercouch.gradle.tasks.download.Verify
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
+val gradleVersionRequired = "8.2.1"
+val gradleVersionReceived = gradle.gradleVersion
+
+if (gradleVersionRequired != gradleVersionReceived) {
+    throw GradleException(
+        "Gradle version $gradleVersionRequired is required to run this build. You are using Gradle $gradleVersionReceived"
+    )
+}
+
 plugins {
     id("org.jetbrains.kotlin.jvm")
         .version("1.9.0")
