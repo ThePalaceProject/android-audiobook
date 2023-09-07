@@ -290,7 +290,7 @@ abstract class ExoManifestContract {
   @Test
   fun testOkBestNewHorror() {
     val context = context()
-    Mockito.`when`(context.getString(R.string.player_manifest_audiobook_default_track_n, 1))
+    Mockito.`when`(context.getString(org.librarysimplified.audiobook.manifest.api.R.string.player_manifest_audiobook_default_track_n, 1))
       .thenReturn("Track 1")
 
     val result =

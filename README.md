@@ -1,7 +1,7 @@
 audiobook-android
 ===
 
-[![Build Status](https://img.shields.io/github/workflow/status/ThePalaceProject/android-audiobook/Android%20CI%20(Authenticated)?style=flat-square)](https://github.com/ThePalaceProject/android-audiobook/actions?query=workflow%3A%22Android+CI+%28Authenticated%29%22)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ThePalaceProject/android-audiobook/android-main.yml)](https://github.com/ThePalaceProject/android-audiobook/actions?query=workflow%3A%22Android+CI+%28Authenticated%29%22)
 [![Maven Central](https://img.shields.io/maven-central/v/org.thepalaceproject.audiobook/org.librarysimplified.audiobook.api.svg?style=flat-square)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.librarysimplified.audiobook%22)
 [![Maven Central (snapshot)](https://img.shields.io/nexus/s/https/s01.oss.sonatype.org/org.thepalaceproject.audiobook/org.librarysimplified.audiobook.api.svg?style=flat-square)](https://s01.oss.sonatype.org/content/repositories/snapshots/org.thepalaceproject.audiobook/)
 
@@ -16,20 +16,8 @@ $ git submodule update --remote --recursive
 ```
 
 ```
-$ echo "systemProp.org.gradle.internal.publish.checksums.insecure=true" >> "$HOME/.gradle/gradle.properties"
-
-$ ./gradlew clean assembleDebug test publishToMavenLocal
+$ ./gradlew clean assembleDebug test publish
 ```
-
-#### Insecure checksums?
-
-Astute readers may have noticed the `org.gradle.internal.publish.checksums.insecure` property
-in the initial build instructions. This is necessary because Gradle 6 currently publishes
-checksums that [Maven Central doesn't like](https://github.com/gradle/gradle/issues/11308#issuecomment-554317655).
-Until Maven Central is updated to accept SHA256 and SHA512 checksums, this flag is necessary.
-As all artifacts published to Maven Central are PGP signed, this is not a serious issue; PGP
-signatures combine integrity checking and authentication, so checksum files are essentially
-redundant nowadays.
 
 ### Project Structure
 

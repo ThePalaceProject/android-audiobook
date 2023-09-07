@@ -1,0 +1,32 @@
+dependencies {
+  api(project(":org.librarysimplified.audiobook.api"))
+  api(project(":org.librarysimplified.audiobook.downloads"))
+  api(project(":org.librarysimplified.audiobook.feedbooks"))
+  api(project(":org.librarysimplified.audiobook.json_web_token"))
+  api(project(":org.librarysimplified.audiobook.lcp"))
+  api(project(":org.librarysimplified.audiobook.lcp.license_status"))
+  api(project(":org.librarysimplified.audiobook.license_check.api"))
+  api(project(":org.librarysimplified.audiobook.license_check.spi"))
+  api(project(":org.librarysimplified.audiobook.manifest_fulfill.api"))
+  api(project(":org.librarysimplified.audiobook.manifest_fulfill.basic"))
+  api(project(":org.librarysimplified.audiobook.manifest_fulfill.spi"))
+  api(project(":org.librarysimplified.audiobook.manifest_parser.api"))
+  api(project(":org.librarysimplified.audiobook.manifest_parser.webpub"))
+  api(project(":org.librarysimplified.audiobook.open_access"))
+  api(project(":org.librarysimplified.audiobook.rbdigital"))
+  api(project(":org.librarysimplified.audiobook.views"))
+
+  api(libs.kotlin.stdlib)
+  api(libs.okhttp3)
+  api(libs.quicktheories)
+  api(libs.slf4j)
+
+  implementation(libs.junit.jupiter.api)
+  implementation(libs.junit.jupiter.engine)
+  implementation(libs.mockito.kotlin)
+  implementation(libs.palace.http.api)
+  implementation(libs.palace.http.vanilla)
+  implementation(libs.r2.streamer)
+
+  testImplementation(libs.logback.classic)
+}

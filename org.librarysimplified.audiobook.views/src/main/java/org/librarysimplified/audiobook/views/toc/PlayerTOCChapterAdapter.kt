@@ -17,6 +17,8 @@ import org.joda.time.Duration
 import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
+import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
+import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
@@ -208,6 +210,10 @@ class PlayerTOCChapterAdapter(
 
         failedDownload = true
         requiresDownload = item.book.supportsStreaming == false
+      }
+
+      is PlayerSpineElementDownloadExpired -> {
+        // Nothing to do.
       }
     }
 
