@@ -98,7 +98,6 @@ abstract class PlayerSleepTimerContract {
   @Test
   @Timeout(10)
   fun testCancel() {
-
     val logger = this.logger()
     val timer = this.create()
 

@@ -41,9 +41,9 @@ class ExoDownloadWholeBookTask(
       if (task.spineItems.filterIsInstance<ExoSpineElement>().any { item ->
           item.downloadStatus !is PlayerSpineElementDownloaded
         }) {
-          task.cancel()
-        }
+        task.cancel()
       }
+    }
 
     downloadEventsSubscription?.unsubscribe()
   }
@@ -104,7 +104,6 @@ class ExoDownloadWholeBookTask(
   }
 
   private fun startNextTaskIfOnSequence(fileName: String) {
-
     // the user can download a chapter ahead of the current order, so we need to check if
     // we should move on with the next task in the sequence or not. If the file name is equal
     // to the file name set at the beginning of the task, it means the download started from

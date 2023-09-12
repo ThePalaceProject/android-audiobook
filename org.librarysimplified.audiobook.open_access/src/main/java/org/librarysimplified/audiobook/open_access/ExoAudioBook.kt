@@ -240,7 +240,6 @@ class ExoAudioBook private constructor(
       elementsByPart: TreeMap<Int, TreeMap<Int, PlayerSpineElementType>>,
       element: ExoSpineElement
     ) {
-
       val partChapters: TreeMap<Int, PlayerSpineElementType> =
         if (elementsByPart.containsKey(element.itemManifest.part)) {
           elementsByPart[element.itemManifest.part]!!

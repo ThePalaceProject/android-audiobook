@@ -62,7 +62,6 @@ class LCPAudioBookPlayer private constructor(
       engineExecutor: ScheduledExecutorService,
       manualPassphrase: Boolean
     ): LCPAudioBookPlayer {
-
       val statusEvents =
         BehaviorSubject.create<PlayerEvent>()
 
@@ -510,11 +509,9 @@ class LCPAudioBookPlayer private constructor(
         offset = offset - trackDurationMillis
       )
     } else if (offset < 0) {
-
       if (chapterTrackIndex == 0) {
         -1
       } else {
-
         val previousTrack = tracksToPlay[chapterTrackIndex - 1]
         val previousTrackDuration = previousTrack.duration?.toLong() ?: 0L
 
@@ -554,7 +551,6 @@ class LCPAudioBookPlayer private constructor(
     element: LCPSpineElement?,
     offset: Long
   ): LCPSpineElement? {
-
     if (element == null) {
       chapterPlaybackOffset = spineElementToUpdate?.duration?.millis ?: Long.MAX_VALUE
       this.log.debug("there's no next element")
@@ -818,11 +814,9 @@ class LCPAudioBookPlayer private constructor(
     chapter: LCPSpineElement,
     playAutomatically: Boolean
   ) {
-
     // we are starting a new scheduler after some small delay so the UI can be updated with the last
     // offset values
     Handler(Looper.getMainLooper()).postDelayed({
-
       updateTrackIndex(
         spineElement = chapter,
         offset = chapter.position.startOffset + chapterPlaybackOffset,

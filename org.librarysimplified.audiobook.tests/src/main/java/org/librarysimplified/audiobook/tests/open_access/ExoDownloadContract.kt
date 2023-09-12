@@ -25,7 +25,6 @@ abstract class ExoDownloadContract {
 
   @Test
   fun testDownloadFlatlandURIsJustOnce() {
-
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:flatland"),
@@ -94,7 +93,6 @@ abstract class ExoDownloadContract {
     audioBook: PlayerAudioBookType?,
     uri: URI
   ) {
-
     audioBook?.downloadTasks?.find { task ->
       task.spineItems.filterIsInstance<ExoSpineElement>().any { item ->
         item.itemManifest.uri == uri

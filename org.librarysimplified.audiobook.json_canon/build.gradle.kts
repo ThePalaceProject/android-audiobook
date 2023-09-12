@@ -1,10 +1,10 @@
 dependencies {
-  api(libs.jackson.core)
-  api(libs.jackson.databind)
+    implementation(libs.jackson.annotations)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.databind)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.slf4j)
 
-  implementation(libs.kotlin.stdlib)
-  implementation(libs.kotlin.reflect)
-  implementation(libs.slf4j)
-
-  compileOnly(libs.jcip)
+    compileOnly(libs.jcip)
 }

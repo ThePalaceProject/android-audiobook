@@ -17,7 +17,6 @@ import org.joda.time.Duration
 import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
@@ -67,7 +66,6 @@ class PlayerTOCChapterAdapter(
     parent: ViewGroup,
     viewType: Int
   ): ViewHolder {
-
     UIThread.checkIsUIThread()
 
     val view =
@@ -81,7 +79,6 @@ class PlayerTOCChapterAdapter(
     holder: ViewHolder,
     position: Int
   ) {
-
     UIThread.checkIsUIThread()
 
     val item = this.spineElements[position]
@@ -247,7 +244,6 @@ class PlayerTOCChapterAdapter(
     failedDownload: Boolean,
     downloading: Boolean
   ): String {
-
     val builder = StringBuilder(128)
 
     if (playing) {

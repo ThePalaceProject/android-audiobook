@@ -41,7 +41,6 @@ class FeedbooksPlayerExtension : PlayerExtensionType {
     originalRequest: PlayerDownloadRequest,
     link: PlayerManifestLink
   ): ListenableFuture<Unit>? {
-
     return when (link.properties.encrypted?.scheme) {
       "http://www.feedbooks.com/audiobooks/access-restriction" ->
         this.runBearerTokenRetrieval(
@@ -57,7 +56,6 @@ class FeedbooksPlayerExtension : PlayerExtensionType {
     downloadProvider: PlayerDownloadProviderType,
     originalRequest: PlayerDownloadRequest
   ): ListenableFuture<Unit> {
-
     this.logger.debug("running bearer token authentication for {}", originalRequest.uri)
 
     val currentConfiguration =

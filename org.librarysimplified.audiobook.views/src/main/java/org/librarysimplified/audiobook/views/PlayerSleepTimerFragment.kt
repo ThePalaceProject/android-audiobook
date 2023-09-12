@@ -47,7 +47,6 @@ class PlayerSleepTimerFragment : DialogFragment() {
     container: ViewGroup?,
     state: Bundle?
   ): View {
-
     val view: ViewGroup =
       inflater.inflate(R.layout.player_sleep_timer_view, container, false) as ViewGroup
 
@@ -74,7 +73,7 @@ class PlayerSleepTimerFragment : DialogFragment() {
 
     this.parameters =
       requireArguments().getSerializable(parametersKey)
-      as PlayerFragmentParameters
+        as PlayerFragmentParameters
 
     if (context is PlayerFragmentListenerType) {
       this.listener = context

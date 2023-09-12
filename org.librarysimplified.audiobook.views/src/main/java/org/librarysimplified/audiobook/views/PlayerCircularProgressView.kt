@@ -145,37 +145,35 @@ class PlayerCircularProgressView(context: Context, attrs: AttributeSet, defStyle
       this.invalidate()
     }
 
-  override fun onDraw(canvas: Canvas?) {
+  override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
 
-    if (canvas != null) {
-      this.imageCanvas.drawColor(Color.TRANSPARENT, CLEAR)
+    this.imageCanvas.drawColor(Color.TRANSPARENT, CLEAR)
 
-      this.imageCanvas.drawArc(
-        this.rectOuter,
-        -90.0f,
-        360.0f,
-        true,
-        this.bgPaint
-      )
+    this.imageCanvas.drawArc(
+      this.rectOuter,
+      -90.0f,
+      360.0f,
+      true,
+      this.bgPaint
+    )
 
-      this.imageCanvas.drawArc(
-        this.rectOuter,
-        -90.0f,
-        this.progress * 360.0f,
-        true,
-        this.arcPaint
-      )
+    this.imageCanvas.drawArc(
+      this.rectOuter,
+      -90.0f,
+      this.progress * 360.0f,
+      true,
+      this.arcPaint
+    )
 
-      this.imageCanvas.drawArc(
-        this.rectInner,
-        -90.0f,
-        360.0f,
-        true,
-        this.cutPaint
-      )
+    this.imageCanvas.drawArc(
+      this.rectInner,
+      -90.0f,
+      360.0f,
+      true,
+      this.cutPaint
+    )
 
-      canvas.drawBitmap(this.image, 0.0f, 0.0f, this.emptyPaint)
-    }
+    canvas.drawBitmap(this.image, 0.0f, 0.0f, this.emptyPaint)
   }
 }

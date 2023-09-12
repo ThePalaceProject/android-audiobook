@@ -34,7 +34,6 @@ class FeedbooksParserExtensions : ManifestParserExtensionType {
   override fun metadataObjectSchemas(
     onReceive: (PlayerManifestExtensionValueType) -> Unit
   ): List<FRParserObjectFieldSchema<out PlayerManifestExtensionValueType>> {
-
     val signatureSchema =
       FRParserObjectFieldSchema(
         name = "http://www.feedbooks.com/audiobooks/signature",

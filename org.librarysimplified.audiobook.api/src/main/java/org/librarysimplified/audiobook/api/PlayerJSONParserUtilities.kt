@@ -51,7 +51,6 @@ class PlayerJSONParserUtilities private constructor() {
       key: String?,
       n: JsonNode
     ): ObjectNode {
-
       when (n.nodeType) {
         null,
         ARRAY,
@@ -99,7 +98,6 @@ class PlayerJSONParserUtilities private constructor() {
       s: ObjectNode,
       key: String
     ): ArrayNode {
-
       val n = getNode(s, key)
       when (n.nodeType) {
         ARRAY -> {
@@ -140,7 +138,6 @@ class PlayerJSONParserUtilities private constructor() {
       o: ObjectNode,
       key: String
     ): Boolean {
-
       val v = getNode(o, key)
       when (v.nodeType) {
         null,
@@ -181,7 +178,6 @@ class PlayerJSONParserUtilities private constructor() {
       n: ObjectNode,
       key: String
     ): Int {
-
       val v = getNode(n, key)
       when (v.nodeType) {
         null,
@@ -222,7 +218,6 @@ class PlayerJSONParserUtilities private constructor() {
       s: ObjectNode,
       key: String
     ): JsonNode {
-
       if (s.has(key)) {
         return s.get(key)
       }
@@ -249,7 +244,6 @@ class PlayerJSONParserUtilities private constructor() {
       s: ObjectNode,
       key: String
     ): ObjectNode {
-
       val n = getNode(s, key)
       return checkObject(key, n)
     }
@@ -268,10 +262,11 @@ class PlayerJSONParserUtilities private constructor() {
       s: ObjectNode,
       key: String
     ): ObjectNode? {
-
       return if (s.has(key)) {
         getObject(s, key)
-      } else null
+      } else {
+        null
+      }
     }
 
     /**
@@ -288,7 +283,6 @@ class PlayerJSONParserUtilities private constructor() {
       s: ObjectNode,
       key: String
     ): String {
-
       val v = getNode(s, key)
       when (v.nodeType) {
         null,
@@ -329,10 +323,11 @@ class PlayerJSONParserUtilities private constructor() {
       n: ObjectNode,
       key: String
     ): Int? {
-
       return if (n.has(key)) {
         getInteger(n, key)
-      } else null
+      } else {
+        null
+      }
     }
 
     /**
@@ -349,7 +344,6 @@ class PlayerJSONParserUtilities private constructor() {
       n: ObjectNode,
       key: String
     ): String? {
-
       val v = n[key] ?: return null
       return when (v.nodeType) {
         null,
@@ -392,7 +386,6 @@ class PlayerJSONParserUtilities private constructor() {
       n: ObjectNode,
       key: String
     ): URI {
-
       try {
         return URI(getString(n, key))
       } catch (e: URISyntaxException) {
@@ -417,10 +410,11 @@ class PlayerJSONParserUtilities private constructor() {
       key: String,
       v: Boolean
     ): Boolean {
-
       return if (n.has(key)) {
         getBoolean(n, key)
-      } else v
+      } else {
+        v
+      }
     }
 
     /**
@@ -437,10 +431,11 @@ class PlayerJSONParserUtilities private constructor() {
       n: ObjectNode,
       key: String
     ): BigInteger? {
-
       return if (n.has(key)) {
         getBigInteger(n, key)
-      } else null
+      } else {
+        null
+      }
     }
 
     /**
@@ -457,7 +452,6 @@ class PlayerJSONParserUtilities private constructor() {
       n: ObjectNode,
       key: String
     ): BigInteger {
-
       val v = getNode(n, key)
       when (v.nodeType) {
         null,
@@ -502,10 +496,11 @@ class PlayerJSONParserUtilities private constructor() {
       n: ObjectNode,
       key: String
     ): Double? {
-
       return if (n.has(key)) {
         getDouble(n, key)
-      } else null
+      } else {
+        null
+      }
     }
 
     /**
@@ -522,7 +517,6 @@ class PlayerJSONParserUtilities private constructor() {
       n: ObjectNode,
       key: String
     ): Double {
-
       val v = getNode(n, key)
       when (v.nodeType) {
         null,
@@ -562,7 +556,6 @@ class PlayerJSONParserUtilities private constructor() {
       n: ObjectNode,
       key: String
     ): PlayerManifestScalar? {
-
       val v = getNode(n, key)
       when (v.nodeType) {
         null,

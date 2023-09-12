@@ -1,9 +1,6 @@
 package org.librarysimplified.audiobook.manifest_fulfill.basic
 
-import okhttp3.Credentials
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import one.irradia.mime.api.MIMEType
 import one.irradia.mime.vanilla.MIMEParser
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled

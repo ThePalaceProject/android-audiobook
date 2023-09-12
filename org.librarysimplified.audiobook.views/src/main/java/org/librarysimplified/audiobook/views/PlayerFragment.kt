@@ -395,7 +395,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   }
 
   private fun configureToolbarActions() {
-
     this.toolbar.inflateMenu(R.menu.player_menu)
 
     this.toolbar.setNavigationOnClickListener { this.onToolbarNavigationSelected() }
@@ -838,7 +837,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
         .build()
 
       audioManager.requestAudioFocus(audioRequest!!)
-
     } else {
       audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
         AudioManager.AUDIOFOCUS_GAIN)
@@ -897,9 +895,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   }
 
   private fun safelyPerformOperations(operations: () -> Unit) {
-
     // if the fragment is not attached anymore, we can't perform the operations. This may occur due
-    //to a racing condition
+    // to a racing condition
     if (!this.isAdded) {
       return
     }
@@ -955,7 +952,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     spineElement: PlayerSpineElementType,
     offsetMilliseconds: Long
   ) {
-
     this.playerPosition.max =
       spineElement.duration?.standardSeconds?.toInt() ?: Int.MAX_VALUE
 
@@ -973,7 +969,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       PlayerTimeStrings.hourMinuteTextFromRemainingTime(
         requireContext(),
         getCurrentAudiobookRemainingDuration(spineElement) - offsetMilliseconds
-    )
+      )
 
     this.playerTimeMaximum.text =
       PlayerTimeStrings.hourMinuteSecondTextFromDurationOptional(spineElement.duration
@@ -990,7 +986,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
     // we just update the book chapter on the playerInfoModel if it's been initialized
     if (::playerInfoModel.isInitialized) {
-
       this.playerInfoModel = this.playerInfoModel.copy(
         bookChapterName = this.spineElementText(spineElement)
       )
@@ -1021,7 +1016,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     offsetMilliseconds: Long,
     duration: Duration
   ): String {
-
     val remaining =
       duration.minus(Duration.millis(offsetMilliseconds))
 
@@ -1057,7 +1051,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
     // we just update the book chapter on the playerInfoModel if it's been initialized
     if (::playerInfoModel.isInitialized) {
-
       this.playerInfoModel = this.playerInfoModel.copy(
         bookChapterName = this.spineElementText(element),
         isPlaying = isPlaying

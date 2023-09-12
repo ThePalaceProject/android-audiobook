@@ -1,12 +1,12 @@
 dependencies {
-  api(project(":org.librarysimplified.audiobook.manifest.api"))
-  api(project(":org.librarysimplified.audiobook.license_check.spi"))
+    implementation(project(":org.librarysimplified.audiobook.api"))
+    implementation(project(":org.librarysimplified.audiobook.manifest.api"))
+    implementation(project(":org.librarysimplified.audiobook.license_check.spi"))
 
-  api(libs.rxjava)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.rxjava)
+    implementation(libs.slf4j)
 
-  implementation(libs.kotlin.stdlib)
-  implementation(libs.kotlin.reflect)
-  implementation(libs.slf4j)
-
-  compileOnly(libs.jcip)
+    compileOnly(libs.jcip)
 }

@@ -1,9 +1,9 @@
 dependencies {
-  api(libs.irradia.mime.api)
+    api(libs.irradia.mime.api)
 
-  implementation(libs.kotlin.stdlib)
-  implementation(libs.kotlin.reflect)
-  implementation(libs.slf4j)
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.slf4j)
 
-  compileOnly(libs.jcip)
+    compileOnly(libs.jcip)
 }

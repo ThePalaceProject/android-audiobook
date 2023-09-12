@@ -59,7 +59,6 @@ class PlayerSleepTimerAdapter(
       resources: Resources,
       item: PlayerSleepTimerConfiguration
     ): String {
-
       return when (item) {
         OFF ->
           resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_item_off)
@@ -94,7 +93,6 @@ class PlayerSleepTimerAdapter(
     parent: ViewGroup,
     viewType: Int
   ): ViewHolder {
-
     UIThread.checkIsUIThread()
 
     val view =
@@ -108,7 +106,6 @@ class PlayerSleepTimerAdapter(
     holder: ViewHolder,
     position: Int
   ) {
-
     UIThread.checkIsUIThread()
 
     val item = this.rates[position]

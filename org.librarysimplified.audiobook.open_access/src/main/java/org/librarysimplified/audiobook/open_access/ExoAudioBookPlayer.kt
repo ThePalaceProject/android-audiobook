@@ -226,7 +226,6 @@ class ExoAudioBookPlayer private constructor(
       engineExecutor: ScheduledExecutorService,
       manifestUpdates: Observable<Unit>
     ): ExoAudioBookPlayer {
-
       val statusEvents =
         BehaviorSubject.create<PlayerEvent>()
 
@@ -236,7 +235,6 @@ class ExoAudioBookPlayer private constructor(
 
       return engineExecutor.submit(
         Callable {
-
           /*
            * The rendererCount parameter is not well documented. It appears to be the number of
            * renderers that are required to render a single track. To render a piece of video that
@@ -313,7 +311,6 @@ class ExoAudioBookPlayer private constructor(
   private fun schedulePlaybackObserverForSpineElement(
     spineElement: ExoSpineElement
   ): ScheduledFuture<*> {
-
     return this.engineExecutor.scheduleAtFixedRate(
       this.PlaybackObserver(spineElement), 1L, 1L, SECONDS
     )
@@ -574,8 +571,8 @@ class ExoAudioBookPlayer private constructor(
   private fun preparePlayer(
     spineElement: ExoSpineElement,
     offset: Long,
-    playAutomatically: Boolean)
-  {
+    playAutomatically: Boolean
+  ) {
     this.log.debug("preparePlayer: {} (offset {})", spineElement.index, offset)
 
     /*

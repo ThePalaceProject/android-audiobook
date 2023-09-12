@@ -112,7 +112,6 @@ object PlayerTimeStrings {
   }
 
   fun hourMinuteTextFromRemainingTime(context: Context, remainingTime: Long): String {
-
     val minutes = ((remainingTime / (1000 * 60)) % 60).toInt()
     val hours = (remainingTime / (1000 * 60 * 60)).toInt()
 
@@ -131,7 +130,6 @@ object PlayerTimeStrings {
     translations: SpokenTranslations,
     duration: Duration
   ): String {
-
     val builder = StringBuilder(64)
     var period = duration.toPeriod()
 
@@ -171,7 +169,6 @@ object PlayerTimeStrings {
     translations: SpokenTranslations,
     duration: Duration
   ): String {
-
     val builder = StringBuilder(64)
     var period = duration.toPeriod()
 

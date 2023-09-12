@@ -32,7 +32,7 @@ abstract class LicenseCheckContract {
 
   @TempDir
   @JvmField
-  val tempFolder: File? = null
+  var tempFolder: File? = null
 
   @BeforeEach
   fun testSetup() {
@@ -53,7 +53,7 @@ abstract class LicenseCheckContract {
         manifest = manifest,
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
         checks = listOf(),
-        cacheDirectory = File(tempFolder,"cache")
+        cacheDirectory = File(tempFolder, "cache")
       )
 
     val result =
@@ -85,7 +85,7 @@ abstract class LicenseCheckContract {
           FailingTest(),
           SucceedingTest()
         ),
-        cacheDirectory = File(tempFolder,"cache")
+        cacheDirectory = File(tempFolder, "cache")
       )
 
     val result =
@@ -117,7 +117,7 @@ abstract class LicenseCheckContract {
           CrashingTest(),
           SucceedingTest()
         ),
-        cacheDirectory = File(tempFolder,"cache")
+        cacheDirectory = File(tempFolder, "cache")
       )
 
     val result =
@@ -149,7 +149,7 @@ abstract class LicenseCheckContract {
           NonApplicableTest(),
           NonApplicableTest()
         ),
-        cacheDirectory = File(tempFolder,"cache")
+        cacheDirectory = File(tempFolder, "cache")
       )
 
     val result =

@@ -144,7 +144,6 @@ class WebPubManifestParser(
     tocSchema: FRParserObjectFieldSchema<List<PlayerManifestLink>>,
     context: FRParserContextType
   ): FRParserObjectSchema {
-
     /*
      * Register the existing schema fields, then consult any registered extensions to
      * see if there are more.

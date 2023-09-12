@@ -1,8 +1,8 @@
 package org.librarysimplified.audiobook.api
 
+import net.jcip.annotations.ThreadSafe
 import org.joda.time.Duration
 import rx.Observable
-import javax.annotation.concurrent.ThreadSafe
 
 /**
  * The interface exposed by sleep timer implementations.

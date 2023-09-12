@@ -101,7 +101,6 @@ class PlayerTOCBookmarkAdapter(
       offset: Duration?,
       date: String
     ): String {
-
       val builder = StringBuilder(128)
 
       builder.append(title)

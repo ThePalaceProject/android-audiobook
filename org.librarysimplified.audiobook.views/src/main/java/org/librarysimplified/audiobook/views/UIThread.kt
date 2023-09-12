@@ -58,7 +58,6 @@ internal class UIThread private constructor() {
       r: Runnable,
       ms: Long
     ) {
-
       val looper = Looper.getMainLooper()
       val h = Handler(looper)
       h.postDelayed(r, ms)

@@ -1,11 +1,10 @@
 package org.librarysimplified.audiobook.tests.local
 
 import android.content.Context
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.eq
-import org.librarysimplified.audiobook.tests.R
 import org.librarysimplified.audiobook.tests.lcp.LCPEngineProviderContract
 import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

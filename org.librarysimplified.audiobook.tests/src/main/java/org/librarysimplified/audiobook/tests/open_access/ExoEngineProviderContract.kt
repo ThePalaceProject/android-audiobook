@@ -848,7 +848,6 @@ abstract class ExoEngineProviderContract {
     name: String,
     downloadProvider: PlayerDownloadProviderType = DishonestDownloadProvider()
   ): PlayerAudioBookType {
-
     val manifest = this.parseManifest(name)
     val request =
       PlayerAudioEngineRequest(
@@ -1079,8 +1078,8 @@ abstract class ExoEngineProviderContract {
    * Test that manifest update events are delivered.
    */
 
-  @Test
   // @Timeout(20)
+  @Test
   fun testManifestUpdatedEvents() {
     Assumptions.assumeTrue(this.onRealDevice(), "Test is running on a real device")
 

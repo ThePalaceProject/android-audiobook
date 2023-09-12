@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.api
 
+import net.jcip.annotations.ThreadSafe
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestClose
 import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestFinish
@@ -23,7 +24,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.annotation.concurrent.ThreadSafe
 
 /**
  * The primary implementation of the {@link PlayerSleepTimerType} interface.
@@ -191,7 +191,6 @@ class PlayerSleepTimer private constructor(
              */
 
             processingTimerRequests@ while (true) {
-
               var request: PlayerTimerRequest?
               try {
                 request = this.timer.requests.poll(1L, TimeUnit.SECONDS)

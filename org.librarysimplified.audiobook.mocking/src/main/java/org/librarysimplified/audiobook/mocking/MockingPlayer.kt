@@ -52,7 +52,6 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
     exception: Exception?,
     errorCode: Int
   ) {
-
     this.statusEvents.onNext(
       PlayerEvent.PlayerEventError(
         spineElement = null,
@@ -130,7 +129,7 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
 
   private fun goToChapter(chapter: Int) {
     val element = this.book.spineItems.find {
-      element ->
+        element ->
       element.position.chapter == chapter
     }
     if (element != null) {
