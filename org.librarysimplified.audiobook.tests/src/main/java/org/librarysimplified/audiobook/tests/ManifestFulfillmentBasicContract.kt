@@ -1,9 +1,6 @@
 package org.librarysimplified.audiobook.tests
 
-import com.nhaarman.mockitokotlin2.any
-import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
@@ -16,11 +13,14 @@ import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicCredentials
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicProvider
-import org.librarysimplified.http.api.*
+import org.librarysimplified.http.api.LSHTTPAuthorizationBearerToken
+import org.librarysimplified.http.api.LSHTTPRequestBuilderType
+import org.librarysimplified.http.api.LSHTTPRequestProperties
+import org.librarysimplified.http.api.LSHTTPRequestType
 import org.librarysimplified.http.vanilla.internal.LSHTTPClient
 import org.librarysimplified.http.vanilla.internal.LSHTTPResponse
-import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.kotlin.any
 import java.net.URI
 import java.net.URL
 

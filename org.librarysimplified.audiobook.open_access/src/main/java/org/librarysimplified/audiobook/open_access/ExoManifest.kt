@@ -33,7 +33,6 @@ data class ExoManifest(
       manifest: PlayerManifest
     ): PlayerResult<ExoManifest, Exception> {
       try {
-
         val spineItems = if (!manifest.toc.isNullOrEmpty()) {
           getSpineItemsFromTOC(context, manifest.readingOrder, manifest.toc!!)
         } else {
@@ -81,7 +80,6 @@ data class ExoManifest(
       readingOrderElements: List<PlayerManifestLink>,
       tocElements: List<PlayerManifestLink>
     ): List<ExoManifestSpineItem> {
-
       val spineItems = arrayListOf<ExoManifestSpineItem>()
 
       val allElementsOfTOC = arrayListOf<PlayerManifestLink>()
@@ -102,7 +100,6 @@ data class ExoManifest(
 
         val tocElementDuration = when {
           index != allElementsOfTOC.lastIndex -> {
-
             val nextTocElement = allElementsOfTOC[index + 1]
             val nextTocElementOffset = getOffsetFromElement(nextTocElement)
 
@@ -111,7 +108,6 @@ data class ExoManifest(
             if (this.getHrefWithoutOffset(nextTocElement) == href) {
               nextTocElementOffset - tocElementOffset
             } else if (wholeDuration != -1.0) {
-
               // if the next toc element belongs to a different "parent", i.e., if it has a
               // different uri, the current element's duration will be its parent's duration minus
               // its offset plus the offset of the next item, so we don't ignore the seconds before
@@ -156,7 +152,6 @@ data class ExoManifest(
       index: Int,
       item: PlayerManifestLink
     ): ExoManifestSpineItem {
-
       val title = if (!item.title.isNullOrBlank()) {
         item.title
       } else {

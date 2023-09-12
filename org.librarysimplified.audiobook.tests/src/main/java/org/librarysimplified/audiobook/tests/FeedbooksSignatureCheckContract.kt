@@ -32,7 +32,7 @@ abstract class FeedbooksSignatureCheckContract {
 
   @TempDir
   @JvmField
-  val tempFolder: File? = null
+  var tempFolder: File? = null
 
   @BeforeEach
   fun testSetup() {

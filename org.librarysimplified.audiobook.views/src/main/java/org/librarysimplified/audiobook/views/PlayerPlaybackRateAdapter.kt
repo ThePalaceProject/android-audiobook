@@ -1,13 +1,9 @@
 package org.librarysimplified.audiobook.views
 
 import android.content.res.Resources
-import android.graphics.PorterDuff
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
@@ -50,7 +46,6 @@ class PlayerPlaybackRateAdapter(
       resources: Resources,
       item: PlayerPlaybackRate
     ): String {
-
       return StringBuilder(128)
         .append(resources.getString(R.string.audiobook_accessibility_playback_speed_set_to))
         .append(" ")
@@ -103,7 +98,6 @@ class PlayerPlaybackRateAdapter(
     parent: ViewGroup,
     viewType: Int
   ): ViewHolder {
-
     UIThread.checkIsUIThread()
 
     val view =
@@ -117,7 +111,6 @@ class PlayerPlaybackRateAdapter(
     holder: ViewHolder,
     position: Int
   ) {
-
     UIThread.checkIsUIThread()
 
     val item = this.rates[position]

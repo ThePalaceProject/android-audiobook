@@ -12,12 +12,13 @@ import java.net.URI
  * and the number of times they were downloaded.
  */
 
-class ExoUriDownloadProvider(private val onRequestSuccessfullyCompleted: (URI) -> Unit,
-                             private val uriDownloadTimes: HashMap<URI, Int>) :
+class ExoUriDownloadProvider(
+  private val onRequestSuccessfullyCompleted: (URI) -> Unit,
+  private val uriDownloadTimes: HashMap<URI, Int>
+) :
   PlayerDownloadProviderType {
 
   override fun download(request: PlayerDownloadRequest): ListenableFuture<Unit> {
-
     val numberOfTimesUriWasDownloaded = uriDownloadTimes[request.uri]
 
     // check if this URI is in the map and if it's not add it with

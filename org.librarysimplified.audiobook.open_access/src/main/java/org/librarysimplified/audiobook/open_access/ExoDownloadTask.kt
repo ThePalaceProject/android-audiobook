@@ -43,6 +43,7 @@ class ExoDownloadTask(
 
   private var percent: Int = 0
   private val stateLock: Any = Object()
+
   @GuardedBy("stateLock")
   private var state: State =
     when (this.partFile.isFile) {
@@ -95,9 +96,10 @@ class ExoDownloadTask(
     }
   }
 
-  private fun createDownloadingRequest(future: ListenableFuture<Unit>,
-                                       targetLink: PlayerManifestLink) {
-
+  private fun createDownloadingRequest(
+    future: ListenableFuture<Unit>,
+    targetLink: PlayerManifestLink
+  ) {
     this.stateSetCurrent(Downloading(future))
     this.onBroadcastState()
 

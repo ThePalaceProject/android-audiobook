@@ -85,8 +85,8 @@ class ResourceDownloadProvider private constructor(
     }
 
     /*
-      * Check if the future has been cancelled. If it has, don't start copying.
-      */
+     * Check if the future has been cancelled. If it has, don't start copying.
+     */
 
     if (result.isCancelled) {
       this.log.debug("download cancelled")
@@ -127,14 +127,12 @@ class ResourceDownloadProvider private constructor(
     expectedLength: Long,
     result: SettableFuture<Unit>
   ) {
-
     var progressPrevious = 0.0
     var progressCurrent = 0.0
     var received = 0L
     val buffer = ByteArray(1024)
 
     while (true) {
-
       /*
        * Check if the future has been cancelled. If it has, stop copying.
        */

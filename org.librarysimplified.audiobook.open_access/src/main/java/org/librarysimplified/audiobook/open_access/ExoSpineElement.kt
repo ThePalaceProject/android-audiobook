@@ -29,6 +29,7 @@ class ExoSpineElement(
    */
 
   private val statusLock: Any = Object()
+
   @GuardedBy("statusLock")
   private var statusNow: PlayerSpineElementDownloadStatus =
     PlayerSpineElementNotDownloaded(this)

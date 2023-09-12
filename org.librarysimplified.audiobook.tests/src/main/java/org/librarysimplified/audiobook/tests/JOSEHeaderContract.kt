@@ -22,7 +22,7 @@ abstract class JOSEHeaderContract {
       JOSEHeader.parse(
         uri = URI("urn:test"),
         data =
-          """{ }""".toByteArray()
+        """{ }""".toByteArray()
       ) as ParseResult.Success
 
     val token = result.result
@@ -39,10 +39,10 @@ abstract class JOSEHeaderContract {
       JOSEHeader.parse(
         uri = URI("urn:test"),
         data =
-          """
+        """
      {"typ":"JWT",
       "alg":"HS256"}
-          """.trimIndent().toByteArray()
+        """.trimIndent().toByteArray()
       ) as ParseResult.Success
 
     val token = result.result

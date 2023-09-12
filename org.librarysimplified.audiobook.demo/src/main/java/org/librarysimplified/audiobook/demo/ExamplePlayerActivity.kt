@@ -584,7 +584,6 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   private fun configurePlayerExtensions(
     parameters: ExamplePlayerParameters
   ): List<PlayerExtensionType> {
-
     val extensions =
       ServiceLoader.load(PlayerExtensionType::class.java)
         .toList()

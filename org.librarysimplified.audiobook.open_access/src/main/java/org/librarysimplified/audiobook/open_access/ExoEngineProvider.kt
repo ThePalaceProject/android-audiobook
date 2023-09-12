@@ -21,7 +21,7 @@ class ExoEngineProvider(
 ) : PlayerAudioEngineProviderType {
 
   constructor() : this({
-    runnable ->
+      runnable ->
     ExoEngineThread.create(runnable)
   })
 
@@ -50,9 +50,9 @@ class ExoEngineProvider(
     )
 
     if (manifest.readingOrder.any {
-      it.properties.encrypted != null &&
-        !acceptedEncryptionSchemes.contains(it.properties.encrypted!!.scheme)
-    }) {
+        it.properties.encrypted != null &&
+          !acceptedEncryptionSchemes.contains(it.properties.encrypted!!.scheme)
+      }) {
       this.log.debug("cannot support a book in which any item in the reading order has encryption scheme not in [{}]", acceptedEncryptionSchemes.joinToString())
       return null
     }

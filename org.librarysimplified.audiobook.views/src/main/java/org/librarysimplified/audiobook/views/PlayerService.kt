@@ -1,6 +1,10 @@
 package org.librarysimplified.audiobook.views
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,8 +17,6 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-
 
 class PlayerService : Service() {
 
@@ -33,7 +35,6 @@ class PlayerService : Service() {
     private const val KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER = 88
     private const val KEY_CODE_REWIND = 89
     private const val KEY_CODE_FAST_FORWARD = 90
-
   }
 
   private lateinit var playerReceiver: PlayerBroadcastReceiver
@@ -117,7 +118,6 @@ class PlayerService : Service() {
   }
 
   fun createNotificationChannel() {
-
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val notificationManager =
         getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -146,7 +146,6 @@ class PlayerService : Service() {
   }
 
   private fun updateNotification() {
-
     if (mediaSession == null) {
       mediaSession = MediaSessionCompat(this, PlayerService::class.java.simpleName)
     }
@@ -163,17 +162,13 @@ class PlayerService : Service() {
             } else {
               playerInfo.player.play()
             }
-          }
-          else if (event?.keyCode == KEY_CODE_SKIP_TO_NEXT_CHAPTER) {
+          } else if (event?.keyCode == KEY_CODE_SKIP_TO_NEXT_CHAPTER) {
             playerInfo.player.skipToNextChapter(0)
-          }
-          else if (event?.keyCode == KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER) {
+          } else if (event?.keyCode == KEY_CODE_SKIP_TO_PREVIOUS_CHAPTER) {
             playerInfo.player.skipToPreviousChapter(0)
-          }
-          else if (event?.keyCode == KEY_CODE_FAST_FORWARD) {
+          } else if (event?.keyCode == KEY_CODE_FAST_FORWARD) {
             playerInfo.player.skipForward()
-          }
-          else if (event?.keyCode == KEY_CODE_REWIND) {
+          } else if (event?.keyCode == KEY_CODE_REWIND) {
             playerInfo.player.skipBack()
           }
         }

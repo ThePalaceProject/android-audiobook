@@ -45,7 +45,6 @@ class RBDigitialPlayerExtension : PlayerExtensionType {
     originalRequest: PlayerDownloadRequest,
     link: PlayerManifestLink
   ): FluentFuture<Unit> {
-
     if (link !is PlayerManifestLink.LinkBasic) {
       return FluentFuture.from(
         Futures.immediateFailedFuture(

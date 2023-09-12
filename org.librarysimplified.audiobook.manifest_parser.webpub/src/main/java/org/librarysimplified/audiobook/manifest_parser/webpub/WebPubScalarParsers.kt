@@ -23,8 +23,7 @@ object WebPubScalarParsers {
       if (text.startsWith("0")) {
         // If the text begins with "0", parse it into a string to ensure that the leading "0" is retained.
         PlayerManifestScalarString(text)
-      }
-      else {
+      } else {
         when (val integer = text.toIntOrNull()) {
           null ->
             when (val double = text.toDoubleOrNull()) {

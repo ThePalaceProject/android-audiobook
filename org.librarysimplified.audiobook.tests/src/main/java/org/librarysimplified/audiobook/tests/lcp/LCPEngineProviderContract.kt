@@ -3,7 +3,11 @@ package org.librarysimplified.audiobook.tests.lcp
 import android.content.Context
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.librarysimplified.audiobook.api.*
+import org.librarysimplified.audiobook.api.PlayerAudioBookType
+import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
+import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
+import org.librarysimplified.audiobook.api.PlayerResult
+import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.lcp.LCPEngineProvider
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
@@ -124,7 +128,6 @@ abstract class LCPEngineProviderContract {
     name: String,
     downloadProvider: PlayerDownloadProviderType = DishonestDownloadProvider()
   ): PlayerAudioBookType {
-
     val manifest = this.parseManifest(name)
     val request =
       PlayerAudioEngineRequest(

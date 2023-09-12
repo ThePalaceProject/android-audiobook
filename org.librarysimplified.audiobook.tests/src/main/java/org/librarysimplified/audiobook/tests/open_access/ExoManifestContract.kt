@@ -448,7 +448,6 @@ abstract class ExoManifestContract {
 
   @Test
   fun testOkFlatlandTOC() {
-
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:flatland"),
@@ -608,7 +607,6 @@ abstract class ExoManifestContract {
 
   @Test
   fun testOkAnnaKareninaTOC() {
-
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:anna_karenina"),

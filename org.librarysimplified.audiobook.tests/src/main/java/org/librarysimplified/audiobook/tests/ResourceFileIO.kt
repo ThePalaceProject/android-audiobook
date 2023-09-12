@@ -21,7 +21,6 @@ internal object ResourceFileIO {
   @Throws(IOException::class)
   fun fileDelete(f: File) {
     if (f.exists()) {
-
       /**
        * This is a workaround for the broken semantics of
        * Android FAT32 filesystems. Essentially, deleting a file and then
@@ -71,7 +70,6 @@ internal object ResourceFileIO {
     from: File,
     to: File
   ) {
-
     if (!from.renameTo(to)) {
       if (!from.isFile) {
         throw IOException(

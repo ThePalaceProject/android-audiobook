@@ -46,7 +46,6 @@ class PlayerTOCBookmarksFragment : Fragment() {
     container: ViewGroup?,
     state: Bundle?
   ): View {
-
     return inflater.inflate(R.layout.fragment_player_toc_chapter_view, container, false)
   }
 

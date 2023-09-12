@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory
  * interface. An exception will be raised if this is not the case.
  */
 
-class PlayerTOCFragment: Fragment(), PlayerTOCMainFragment {
+class PlayerTOCFragment : Fragment(), PlayerTOCMainFragment {
 
   companion object {
     fun newInstance(): PlayerTOCFragment {

@@ -103,7 +103,6 @@ internal class LCPDataSource(private val publication: Publication) : UriDataSour
 
       openedResource.position += data.count()
       return data.count()
-
     } catch (e: Exception) {
       if (e is InterruptedException) {
         return 0

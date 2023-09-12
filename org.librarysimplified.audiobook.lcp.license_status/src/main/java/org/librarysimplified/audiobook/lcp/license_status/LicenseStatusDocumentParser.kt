@@ -32,7 +32,6 @@ class LicenseStatusDocumentParser(
   override fun schema(
     context: FRParserContextType
   ): FRParserObjectSchema {
-
     val statusSchema =
       FRParserObjectFieldSchema(
         name = "status",
