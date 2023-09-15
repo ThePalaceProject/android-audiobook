@@ -6,6 +6,23 @@ pluginManagement {
     }
 }
 
+fun propertyOptional(name: String): String? {
+    val map = settings.extra
+    if (map.has(name)) {
+        return map[name] as String?
+    }
+    return null
+}
+
+fun property(name: String): String {
+    return propertyOptional(name) ?: throw GradleException("Required property $name is not defined.")
+}
+
+fun propertyBooleanOptional(name: String, defaultValue: Boolean): Boolean {
+    val value = propertyOptional(name) ?: return defaultValue
+    return value.toBooleanStrict()
+}
+
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
@@ -36,6 +53,13 @@ dependencyResolutionManagement {
 
         maven {
             url = uri("https://jitpack.io")
+        }
+
+        if (propertyBooleanOptional("org.thepalaceproject.audiobook.demo.with_findaway", false)) {
+            maven {
+                url = uri("http://maven.findawayworld.com/artifactory/libs-release/")
+                isAllowInsecureProtocol = true
+            }
         }
 
         /*

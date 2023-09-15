@@ -99,7 +99,6 @@ dependencies {
     implementation(libs.androidx.appcompat.resources)
 }
 
-
 afterEvaluate {
     tasks.matching { task -> task.name.contains("UnitTest") }
         .forEach { task -> task.enabled = true }
