@@ -207,15 +207,15 @@ class PlayerService : Service() {
       .setLargeIcon(this.playerInfo.bookCover)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
       .setNotificationSilent()
-      .addAction(NotificationCompat.Action(R.drawable.ic_backward, "Backward", backwardIntent))
+      .addAction(NotificationCompat.Action(R.drawable.round_replay_24, "Backward", backwardIntent))
       .addAction(
         if (this.playerInfo.isPlaying) {
-          NotificationCompat.Action(R.drawable.ic_pause, "Pause", pauseIntent)
+          NotificationCompat.Action(R.drawable.round_pause_24, "Pause", pauseIntent)
         } else {
-          NotificationCompat.Action(R.drawable.ic_play, "Play", playIntent)
+          NotificationCompat.Action(R.drawable.baseline_play_arrow_24, "Play", playIntent)
         }
       )
-      .addAction(NotificationCompat.Action(R.drawable.ic_forward, "Forward", forwardIntent))
+      .addAction(NotificationCompat.Action(R.drawable.round_arrow, "Forward", forwardIntent))
       .build()
 
     startForeground(1, notification)

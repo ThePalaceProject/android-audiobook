@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-  <item
-    android:id="@+id/player_toc_menu_refresh_all"
-    android:title="@string/audiobook_player_toc_menu_refresh_all"
-    android:icon="@drawable/toc_refresh"
-    android:contentDescription="@string/audiobook_accessibility_toc_refresh_all"
-    android:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/player_toc_menu_refresh_all"
+        android:contentDescription="@string/audiobook_accessibility_toc_refresh_all"
+        android:icon="@drawable/round_replay_24"
+        android:title="@string/audiobook_player_toc_menu_refresh_all"
+        app:showAsAction="ifRoom" />
 
-  <item
-    android:id="@+id/player_toc_menu_stop_all"
-    android:title="@string/audiobook_player_toc_menu_stop_all"
-    android:icon="@drawable/toc_cancel"
-    android:contentDescription="@string/audiobook_accessibility_toc_stop_all"
-    android:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/player_toc_menu_stop_all"
+        android:contentDescription="@string/audiobook_accessibility_toc_stop_all"
+        android:icon="@drawable/outline_cancel_24"
+        android:title="@string/audiobook_player_toc_menu_stop_all"
+        app:showAsAction="ifRoom" />
 
 </menu>

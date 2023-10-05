@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.webkit)
 
+    implementation(libs.google.exoplayer)
     implementation(libs.google.failureaccess)
     implementation(libs.google.guava)
     implementation(libs.google.material)
@@ -113,11 +114,11 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core.jvm)
     implementation(libs.logback.android)
-    implementation(libs.nypl.theme)
     implementation(libs.okhttp3)
     implementation(libs.okio)
     implementation(libs.palace.http.api)
     implementation(libs.palace.http.vanilla)
+    implementation(libs.palace.theme)
     implementation(libs.rxjava)
     implementation(libs.slf4j)
 

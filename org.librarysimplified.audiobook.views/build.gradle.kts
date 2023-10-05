@@ -32,7 +32,7 @@ dependencies {
     implementation(libs.joda.time)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
-    implementation(libs.nypl.theme)
+    implementation(libs.palace.theme)
     implementation(libs.rxjava)
     implementation(libs.slf4j)
 }

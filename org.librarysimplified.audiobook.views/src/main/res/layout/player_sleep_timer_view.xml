@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -24,7 +25,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="24dp"
-        android:textSize="24sp"
-        android:text="@string/audiobook_player_options_cancel" />
+        android:text="@string/audiobook_player_options_cancel"
+        android:textSize="24sp" />
 
 </LinearLayout>

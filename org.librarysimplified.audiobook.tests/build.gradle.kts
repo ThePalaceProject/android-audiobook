@@ -69,6 +69,7 @@ val dependencyObjects = listOf(
     libs.ow2.asm.tree,
     libs.palace.http.api,
     libs.palace.http.vanilla,
+    libs.palace.theme,
     libs.quicktheories,
     libs.r2.shared,
     libs.r2.streamer,
