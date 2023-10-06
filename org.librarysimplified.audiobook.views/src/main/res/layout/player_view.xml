@@ -13,6 +13,8 @@
         android:layout_height="?attr/actionBarSize"
         android:minHeight="?attr/actionBarSize"
         android:padding="0dp"
+        android:theme="@style/Palace.Legacy.ToolbarTheme"
+        app:popupTheme="@style/Palace.Legacy.ToolbarPopupTheme"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/back"
         tools:title="Placeholder" />
