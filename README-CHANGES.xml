@@ -242,8 +242,21 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2023-08-18T16:17:23+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="11.0.1">
-      <c:changes/>
+    <c:release date="2023-10-06T10:48:02+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="11.0.1">
+      <c:changes>
+        <c:change date="2023-10-06T00:00:00+00:00" summary="Use the new Palace theme.">
+          <c:tickets>
+            <c:ticket id="PP-529"/>
+            <c:ticket id="PP-533"/>
+          </c:tickets>
+        </c:change>
+        <c:change date="2023-10-06T10:48:02+00:00" summary="Set the skip duration to 30 seconds.">
+          <c:tickets>
+            <c:ticket id="PP-529"/>
+            <c:ticket id="PP-533"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
     </c:release>
   </c:releases>
   <c:ticket-systems>
