@@ -57,7 +57,6 @@ val dependencyObjects = listOf(
     libs.net.minidev.accessors.smart,
     libs.net.minidev.json.smart,
     libs.nimbus.jose.jwt,
-    libs.nypl.theme,
     libs.objenesis,
     libs.okhttp3,
     libs.okhttp3,
