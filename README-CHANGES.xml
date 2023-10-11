@@ -242,7 +242,10 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2023-10-11T16:19:36+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.1.0">
+    <c:release date="2023-10-11T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.1.0">
+      <c:changes/>
+    </c:release>
+    <c:release date="2023-10-11T17:25:43+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="11.1.1">
       <c:changes/>
     </c:release>
   </c:releases>
