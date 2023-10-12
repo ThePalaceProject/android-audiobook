@@ -40,7 +40,6 @@ class PlayerSleepTimerFragment : DialogFragment() {
   private lateinit var adapter: PlayerSleepTimerAdapter
   private lateinit var timer: PlayerSleepTimerType
   private lateinit var player: PlayerType
-  private lateinit var parameters: PlayerFragmentParameters
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -70,10 +69,6 @@ class PlayerSleepTimerFragment : DialogFragment() {
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
-
-    this.parameters =
-      requireArguments().getSerializable(parametersKey)
-        as PlayerFragmentParameters
 
     if (context is PlayerFragmentListenerType) {
       this.listener = context
@@ -132,26 +127,20 @@ class PlayerSleepTimerFragment : DialogFragment() {
       this.log.debug("ignored exception in event handler: ", ex)
     }
 
-    if (item == OFF) {
-      this.timer.cancel()
-    } else {
-      this.timer.start(item.duration)
+    this.timer.cancel()
+    if (item != OFF) {
+      this.timer.setDuration(item.duration)
+      if (this.player.isPlaying) {
+        this.timer.start()
+      }
     }
     this.dismiss()
   }
 
   companion object {
-
-    const val parametersKey =
-      "org.librarysimplified.audiobook.views.PlayerSleepTimerFragment.parameters"
-
     @JvmStatic
-    fun newInstance(parameters: PlayerFragmentParameters): PlayerSleepTimerFragment {
-      val args = Bundle()
-      args.putSerializable(parametersKey, parameters)
-      val fragment = PlayerSleepTimerFragment()
-      fragment.arguments = args
-      return fragment
+    fun newInstance(): PlayerSleepTimerFragment {
+      return PlayerSleepTimerFragment()
     }
   }
 }
