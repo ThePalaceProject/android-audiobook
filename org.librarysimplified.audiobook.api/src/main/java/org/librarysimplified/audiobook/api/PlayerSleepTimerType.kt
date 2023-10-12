@@ -15,7 +15,7 @@ import rx.Observable
 interface PlayerSleepTimerType : AutoCloseable {
 
   /**
-   * Start the timer. If a duration is given, the timer will count down over the given duration
+   * Start the timer. If a duration has been given, the timer will count down over the given duration
    * and will periodically publish events giving the remaining time. If no duration is given, the
    * timer will wait indefinitely for a call to {@link #finish()}. If the timer is paused, the
    * timer will be unpaused.
@@ -26,7 +26,18 @@ interface PlayerSleepTimerType : AutoCloseable {
    */
 
   @Throws(java.lang.IllegalStateException::class)
-  fun start(time: Duration?)
+  fun start()
+
+  /**
+   * Sets the duration of the timer.
+   *
+   * @param time The total duration for which the timer will run
+   *
+   * @throws java.lang.IllegalStateException If and only if the player is closed
+   */
+
+  @Throws(java.lang.IllegalStateException::class)
+  fun setDuration(time: Duration?)
 
   /**
    * Cancel the timer. The timer will stop and will publish an event indicating the current
@@ -103,4 +114,6 @@ interface PlayerSleepTimerType : AutoCloseable {
    */
 
   val isRunning: Running?
+
+  val hasCurrentTime: Boolean
 }

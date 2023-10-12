@@ -325,8 +325,10 @@ class ExoAudioBookPlayer private constructor(
   private fun onDownloadStatusChanged(status: PlayerSpineElementDownloadStatus) {
     ExoEngineThread.checkIsExoEngineThread()
 
-    return when (val currentState = this.stateGet()) {
-      ExoPlayerStateInitial -> Unit
+    when (val currentState = this.stateGet()) {
+      ExoPlayerStateInitial -> {
+        // do nothing
+      }
 
       /*
        * If the we're playing the current spine element, and the status is anything other
@@ -343,9 +345,10 @@ class ExoAudioBookPlayer private constructor(
               this.log.debug("spine element status changed, stopping playback")
               this.playNothing()
             }
-            is PlayerSpineElementDownloaded -> Unit
+            is PlayerSpineElementDownloaded -> {
+              // do nothing
+            }
           }
-        } else {
         }
       }
 
@@ -366,7 +369,6 @@ class ExoAudioBookPlayer private constructor(
             }
             is PlayerSpineElementDownloaded -> Unit
           }
-        } else {
         }
       }
 
@@ -385,10 +387,8 @@ class ExoAudioBookPlayer private constructor(
             is PlayerSpineElementDownloaded -> {
               this.log.debug("spine element status changed, trying to start playback")
               this.playSpineElementIfAvailable(currentState.spineElement, currentState.offset)
-              Unit
             }
           }
-        } else {
         }
       }
     }
@@ -632,10 +632,9 @@ class ExoAudioBookPlayer private constructor(
     ExoEngineThread.checkIsExoEngineThread()
     this.log.debug("opPlay")
 
-    return when (val state = this.stateGet()) {
+    when (val state = this.stateGet()) {
       is ExoPlayerStateInitial -> {
         this.playFirstSpineElementIfAvailable(offset = 0)
-        Unit
       }
 
       is ExoPlayerStatePlaying ->
@@ -646,7 +645,6 @@ class ExoAudioBookPlayer private constructor(
 
       is ExoPlayerStateWaitingForElement -> {
         this.playSpineElementIfAvailable(state.spineElement, offset = state.offset)
-        Unit
       }
     }
   }

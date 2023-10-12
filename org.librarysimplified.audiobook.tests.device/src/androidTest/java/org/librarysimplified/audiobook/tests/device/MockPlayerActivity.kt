@@ -172,11 +172,7 @@ class MockPlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   override fun onPlayerSleepTimerShouldOpen() {
     Handler(Looper.getMainLooper()).post {
       val fragment =
-        PlayerSleepTimerFragment.newInstance(
-          PlayerFragmentParameters(
-            primaryColor = Color.parseColor("#f02020")
-          )
-        )
+        PlayerSleepTimerFragment.newInstance()
       fragment.show(this.supportFragmentManager, "PLAYER_SLEEP_TIMER")
     }
   }
