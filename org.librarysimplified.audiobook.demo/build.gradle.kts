@@ -113,11 +113,11 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core.jvm)
     implementation(libs.logback.android)
-    implementation(libs.nypl.theme)
     implementation(libs.okhttp3)
     implementation(libs.okio)
     implementation(libs.palace.http.api)
     implementation(libs.palace.http.vanilla)
+    implementation(libs.palace.theme)
     implementation(libs.rxjava)
     implementation(libs.slf4j)
 

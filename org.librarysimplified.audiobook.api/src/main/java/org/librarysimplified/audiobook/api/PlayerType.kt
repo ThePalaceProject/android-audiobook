@@ -93,23 +93,23 @@ interface PlayerType : AutoCloseable {
   fun skipPlayhead(milliseconds: Long)
 
   /**
-   * Skip forward 15 seconds and start playback
+   * Skip forward 30 seconds and start playback
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
   fun skipForward() {
-    this.skipPlayhead(15_000L)
+    this.skipPlayhead(30_000L)
   }
 
   /**
-   * Skip back 15 seconds and start playback
+   * Skip back 30 seconds and start playback
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
   fun skipBack() {
-    this.skipPlayhead(-15_000L)
+    this.skipPlayhead(-30_000L)
   }
 
   /**

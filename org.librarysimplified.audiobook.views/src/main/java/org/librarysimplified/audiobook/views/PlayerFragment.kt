@@ -749,7 +749,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
     UIThread.runOnUIThread(
       Runnable {
-        this.playPauseButton.setImageResource(R.drawable.play_icon)
+        this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
         this.playPauseButton.setOnClickListener { this.onPressedPlay() }
         this.playPauseButton.contentDescription =
           this.getString(R.string.audiobook_accessibility_play)
@@ -767,7 +767,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
           this.playerCommands.visibility = VISIBLE
           this.playerWaiting.text = ""
           this.currentPlaybackRate = this.player.playbackRate
-          this.playPauseButton.setImageResource(R.drawable.play_icon)
+          this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
           this.playPauseButton.setOnClickListener { this.onPressedPlay() }
           this.playPauseButton.contentDescription =
             this.getString(R.string.audiobook_accessibility_play)
@@ -785,7 +785,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       Runnable {
         safelyPerformOperations {
           this.currentPlaybackRate = this.player.playbackRate
-          this.playPauseButton.setImageResource(R.drawable.play_icon)
+          this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
           this.playPauseButton.setOnClickListener { this.onPressedPlay() }
           this.playPauseButton.contentDescription =
             this.getString(R.string.audiobook_accessibility_play)
@@ -919,7 +919,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
         safelyPerformOperations {
           this.playerDownloadingChapter.visibility = GONE
           this.playerCommands.visibility = VISIBLE
-          this.playPauseButton.setImageResource(R.drawable.pause_icon)
+          this.playPauseButton.setImageResource(R.drawable.round_pause_24)
           this.playPauseButton.setOnClickListener { this.onPressedPause(abandonAudioFocus = true) }
           this.playPauseButton.contentDescription =
             this.getString(R.string.audiobook_accessibility_pause)
@@ -940,7 +940,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
           this.playerDownloadingChapter.visibility = GONE
           this.playerCommands.visibility = VISIBLE
           this.player.playbackRate = this.currentPlaybackRate
-          this.playPauseButton.setImageResource(R.drawable.pause_icon)
+          this.playPauseButton.setImageResource(R.drawable.round_pause_24)
           this.playPauseButton.setOnClickListener { this.onPressedPause(abandonAudioFocus = true) }
           this.playPauseButton.contentDescription =
             this.getString(R.string.audiobook_accessibility_pause)

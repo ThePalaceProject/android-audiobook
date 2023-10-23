@@ -13,7 +13,7 @@
   <application
     android:allowBackup="false"
     android:icon="@mipmap/ic_launcher"
-    android:theme="@style/AudioBooksWithActionBar"
+    android:theme="@style/PalaceTheme.WithActionBar"
     android:usesCleartextTraffic="true"
     android:label="@string/exAppName">
 

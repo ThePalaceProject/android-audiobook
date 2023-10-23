@@ -112,7 +112,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   override fun onCreate(state: Bundle?) {
     super.onCreate(null)
 
-    this.setTheme(R.style.AudioBooksWithActionBar)
+    this.setTheme(org.thepalaceproject.theme.core.R.style.PalaceTheme_WithoutActionBar)
     this.setContentView(R.layout.example_player_activity)
     this.supportActionBar?.setTitle(R.string.exAppName)
     this.bookmarks = ExampleBookmarkDatabase(this)
@@ -650,7 +650,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   }
 
   override fun onPlayerNotificationWantsSmallIcon(): Int {
-    return org.librarysimplified.audiobook.views.R.drawable.icon
+    return org.librarysimplified.audiobook.views.R.drawable.baseline_work_24
   }
 
   override fun onPlayerNotificationWantsIntent(): Intent {

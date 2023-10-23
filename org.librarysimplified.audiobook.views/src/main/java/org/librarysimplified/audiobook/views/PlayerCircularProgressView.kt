@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.views
 
 import android.content.Context
-import android.content.res.TypedArray
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -23,23 +22,12 @@ class PlayerCircularProgressView(context: Context, attrs: AttributeSet, defStyle
   View(context, attrs, defStyleAttr) {
 
   constructor(context: Context, attrs: AttributeSet) :
-    this(context, attrs, org.nypl.simplified.ui.theme.R.attr.progressBarStyle)
+    this(context, attrs, org.thepalaceproject.theme.core.R.style.Palace_CircularProgressIndicator)
 
   private val defaultFgColor: Int
 
   init {
-    val a: TypedArray = context.obtainStyledAttributes(
-      attrs,
-      org.nypl.simplified.ui.theme.R.styleable.AppCompatTheme,
-      defStyleAttr,
-      0
-    )
-    val controlActivatedResource = a.getResourceId(
-      org.nypl.simplified.ui.theme.R.styleable.AppCompatTheme_colorControlActivated,
-      android.R.color.black
-    )
-    defaultFgColor = ContextCompat.getColor(context, controlActivatedResource)
-    a.recycle()
+    defaultFgColor = ContextCompat.getColor(context, android.R.color.black)
   }
 
   private val defaultBgColor: Int = Color.parseColor("#cccccc")
