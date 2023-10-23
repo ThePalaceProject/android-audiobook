@@ -608,6 +608,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
               issuerURL = credentials.issuerURL
             )
         }
+
         else -> {
           this.log.debug("no feedbooks extension configuration is necessary")
         }
@@ -700,7 +701,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     ExampleUIThread.runOnUIThread(
       Runnable {
         val fragment =
-          PlayerSleepTimerFragment.newInstance(PlayerFragmentParameters())
+          PlayerSleepTimerFragment.newInstance()
         fragment.show(this.supportFragmentManager, "PLAYER_SLEEP_TIMER")
       }
     )

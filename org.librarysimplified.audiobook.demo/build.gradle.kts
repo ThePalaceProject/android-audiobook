@@ -95,7 +95,6 @@ dependencies {
     implementation(libs.androidx.viewpager)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.webkit)
-
     implementation(libs.google.exoplayer)
     implementation(libs.google.failureaccess)
     implementation(libs.google.guava)

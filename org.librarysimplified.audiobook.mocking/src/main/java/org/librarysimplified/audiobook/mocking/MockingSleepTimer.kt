@@ -16,8 +16,13 @@ class MockingSleepTimer : PlayerSleepTimerType {
   private var running: PlayerSleepTimerType.Running? = null
   private var closed: Boolean = false
   private var paused: Boolean = false
+  private var time: Duration? = null
 
-  override fun start(time: Duration?) {
+  override fun setDuration(time: Duration?) {
+    this.time = time
+  }
+
+  override fun start() {
     this.running = PlayerSleepTimerType.Running(this.paused, time)
     this.events.onNext(PlayerSleepTimerEvent.PlayerSleepTimerRunning(this.paused, time))
   }
@@ -51,4 +56,7 @@ class MockingSleepTimer : PlayerSleepTimerType {
 
   override val isRunning: PlayerSleepTimerType.Running?
     get() = this.running
+
+  override val hasCurrentTime: Boolean
+    get() = this.time != null
 }

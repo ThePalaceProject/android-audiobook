@@ -85,6 +85,7 @@ class PlayerSleepTimer private constructor(
 
   private val log: Logger = LoggerFactory.getLogger(PlayerSleepTimer::class.java)
   private val closed: AtomicBoolean = AtomicBoolean(false)
+  private var currentTime: Duration? = null
   private val taskFuture: Future<*>
   private val task: PlayerSleepTimerTask
   private val requests: ArrayBlockingQueue<PlayerTimerRequest> = ArrayBlockingQueue(16)
@@ -136,11 +137,10 @@ class PlayerSleepTimer private constructor(
              * request.
              */
 
-            var initialRequest: PlayerTimerRequest?
-            try {
-              initialRequest = this.timer.requests.take()
+            val initialRequest: PlayerTimerRequest? = try {
+              this.timer.requests.take()
             } catch (e: InterruptedException) {
-              initialRequest = null
+              null
             }
 
             if (this.timer.isClosed) {
@@ -191,11 +191,10 @@ class PlayerSleepTimer private constructor(
              */
 
             processingTimerRequests@ while (true) {
-              var request: PlayerTimerRequest?
-              try {
-                request = this.timer.requests.poll(1L, TimeUnit.SECONDS)
+              val request: PlayerTimerRequest? = try {
+                this.timer.requests.poll(1L, TimeUnit.SECONDS)
               } catch (e: InterruptedException) {
-                request = null
+                null
               }
 
               when (request) {
@@ -316,9 +315,14 @@ class PlayerSleepTimer private constructor(
     }
   }
 
-  override fun start(time: Duration?) {
+  override fun setDuration(time: Duration?) {
     this.checkIsNotClosed()
-    this.requests.offer(PlayerTimerRequestStart(time), 10L, TimeUnit.MILLISECONDS)
+    currentTime = time
+  }
+
+  override fun start() {
+    this.checkIsNotClosed()
+    this.requests.offer(PlayerTimerRequestStart(currentTime), 10L, TimeUnit.MILLISECONDS)
   }
 
   override fun cancel() {
@@ -357,4 +361,7 @@ class PlayerSleepTimer private constructor(
 
   override val isRunning: Running?
     get() = this.task.running
+
+  override val hasCurrentTime: Boolean
+    get() = this.currentTime != null
 }

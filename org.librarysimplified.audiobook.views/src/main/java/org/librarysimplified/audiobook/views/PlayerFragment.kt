@@ -545,11 +545,11 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     if (this.parameters.currentSleepTimerDuration != null) {
       val duration = this.parameters.currentSleepTimerDuration!!
       if (duration > 0L) {
-        this.sleepTimer.start(Duration.millis(duration))
+        this.sleepTimer.setDuration(Duration.millis(duration))
       }
     } else {
       // if the current duration is null it means the "end of chapter" option was selected
-      this.sleepTimer.start(null)
+      this.sleepTimer.setDuration(null)
     }
 
     initializeService()
@@ -874,7 +874,15 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
   private fun startPlaying() {
     this.player.play()
-    this.sleepTimer.unpause()
+
+    if (sleepTimer.hasCurrentTime) {
+      if (sleepTimer.isRunning != null) {
+        this.sleepTimer.unpause()
+      } else {
+        this.sleepTimer.start()
+      }
+    }
+
     this.playerInfoModel = this.playerInfoModel.copy(
       isPlaying = true
     )

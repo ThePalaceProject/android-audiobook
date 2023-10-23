@@ -66,7 +66,8 @@ abstract class PlayerSleepTimerContract {
     )
 
     logger.debug("starting timer")
-    timer.start(Duration.millis(3000L))
+    timer.setDuration(Duration.millis(3000L))
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(1000L)
@@ -121,7 +122,8 @@ abstract class PlayerSleepTimerContract {
     )
 
     logger.debug("starting timer")
-    timer.start(Duration.millis(3000L))
+    timer.setDuration(Duration.millis(3000L))
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(1000L)
@@ -177,7 +179,8 @@ abstract class PlayerSleepTimerContract {
     )
 
     logger.debug("starting timer")
-    timer.start(Duration.millis(3000L))
+    timer.setDuration(Duration.millis(3000L))
+    timer.start()
 
     logger.debug("cancelling timer")
     timer.cancel()
@@ -234,13 +237,15 @@ abstract class PlayerSleepTimerContract {
     }
 
     logger.debug("starting timer")
-    timer.start(Duration.millis(4000L))
+    timer.setDuration(Duration.millis(4000L))
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(1000L)
 
     logger.debug("restarting timer")
-    timer.start(Duration.millis(6000L))
+    timer.setDuration(Duration.millis(6000L))
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(1000L)
@@ -288,13 +293,15 @@ abstract class PlayerSleepTimerContract {
     )
 
     logger.debug("starting timer")
-    timer.start(Duration.millis(1000L))
+    timer.setDuration(Duration.millis(1000L))
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(2000L)
 
     logger.debug("restarting timer")
-    timer.start(Duration.millis(1000L))
+    timer.setDuration(Duration.millis(1000L))
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(2000L)
@@ -346,7 +353,8 @@ abstract class PlayerSleepTimerContract {
     )
 
     logger.debug("starting timer")
-    timer.start(null)
+    timer.setDuration(null)
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(1000L)
@@ -406,7 +414,8 @@ abstract class PlayerSleepTimerContract {
     )
 
     logger.debug("starting timer")
-    timer.start(Duration.standardSeconds(2L))
+    timer.setDuration(Duration.standardSeconds(2L))
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(500L)
@@ -459,7 +468,8 @@ abstract class PlayerSleepTimerContract {
     )
 
     logger.debug("starting timer")
-    timer.start(Duration.millis(3000L))
+    timer.setDuration(Duration.millis(3000L))
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(1000L)
@@ -519,7 +529,8 @@ abstract class PlayerSleepTimerContract {
     )
 
     logger.debug("starting timer")
-    timer.start(Duration.millis(3000L))
+    timer.setDuration(Duration.millis(3000L))
+    timer.start()
 
     logger.debug("waiting for timer")
     timer.pause()
@@ -588,7 +599,8 @@ abstract class PlayerSleepTimerContract {
     )
 
     logger.debug("starting timer")
-    timer.start(Duration.millis(3000L))
+    timer.setDuration(Duration.millis(3000L))
+    timer.start()
 
     logger.debug("waiting for timer")
     Thread.sleep(1000L)
