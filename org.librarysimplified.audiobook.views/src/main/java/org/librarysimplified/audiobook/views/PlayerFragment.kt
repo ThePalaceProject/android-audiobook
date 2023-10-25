@@ -47,6 +47,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerCancelled
+import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerDurationUpdated
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerFinished
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerRunning
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerStopped
@@ -221,6 +222,9 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
         this.onPlayerSleepTimerEventCancelled()
       PlayerSleepTimerFinished ->
         this.onPlayerSleepTimerEventFinished()
+      is PlayerSleepTimerDurationUpdated -> {
+        this.onPlayerSleepTimerDurationUpdated(event)
+      }
     }
   }
 
@@ -268,7 +272,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
             this.menuSleep.actionView?.contentDescription =
               this.sleepTimerContentDescriptionForTime(event.paused, remaining)
             this.menuSleepText?.text =
-              PlayerTimeStrings.minuteSecondTextFromDuration(remaining)
+              PlayerTimeStrings.hourMinuteSecondTextFromDuration(remaining)
             this.menuSleepEndOfChapter.visibility = INVISIBLE
           } else {
             this.menuSleep.actionView?.contentDescription =
@@ -278,6 +282,24 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
           }
 
           this.menuSleepText?.visibility = VISIBLE
+        }
+      }
+    )
+  }
+
+  private fun onPlayerSleepTimerDurationUpdated(event: PlayerSleepTimerDurationUpdated) {
+    UIThread.runOnUIThread(
+      Runnable {
+        safelyPerformOperations {
+          val duration = event.remaining
+          if (duration != null) {
+            this.menuSleepText?.text =
+              PlayerTimeStrings.hourMinuteSecondTextFromDuration(duration)
+            this.menuSleepText?.visibility = VISIBLE
+          } else {
+            this.menuSleepText?.text = ""
+            this.menuSleepText?.visibility = INVISIBLE
+          }
         }
       }
     )
@@ -456,7 +478,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
     this.menuSleepText = this.menuSleep.actionView?.findViewById(R.id.player_menu_sleep_text)
     this.menuSleepText?.text = ""
-    this.menuSleepText?.visibility = INVISIBLE
+//    this.menuSleepText?.visibility = INVISIBLE
 
     this.menuSleepEndOfChapter =
       this.menuSleep.actionView!!.findViewById(R.id.player_menu_sleep_end_of_chapter)
@@ -543,9 +565,13 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     this.player.playbackRate = this.parameters.currentRate ?: PlayerPlaybackRate.NORMAL_TIME
 
     if (this.parameters.currentSleepTimerDuration != null) {
-      val duration = this.parameters.currentSleepTimerDuration!!
-      if (duration > 0L) {
-        this.sleepTimer.setDuration(Duration.millis(duration))
+      val durationMillis = this.parameters.currentSleepTimerDuration!!
+      if (durationMillis > 0L) {
+        val duration = Duration.millis(durationMillis)
+        this.sleepTimer.setDuration(duration)
+        this.menuSleepText?.text =
+          PlayerTimeStrings.hourMinuteSecondTextFromDuration(duration)
+        this.menuSleepText?.visibility = VISIBLE
       }
     } else {
       // if the current duration is null it means the "end of chapter" option was selected

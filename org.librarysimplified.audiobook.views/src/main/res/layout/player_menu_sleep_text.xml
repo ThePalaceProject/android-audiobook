@@ -1,43 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="48dp"
-    android:layout_height="48dp">
+    android:layout_height="48dp"
+    android:orientation="vertical"
+    tools:background="#fff">
 
     <TextView
         android:id="@+id/player_menu_sleep_text"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
         android:clickable="false"
         android:focusable="false"
         android:gravity="center"
         android:importantForAccessibility="no"
-        android:text="00:00"
+        android:textColor="#000"
         android:textSize="7sp"
         android:textStyle="bold"
-        android:translationX="-2dp"
-        android:translationY="8dp"
-        android:typeface="monospace" />
+        android:typeface="monospace"
+        tools:text="00:00" />
 
     <ImageView
         android:id="@+id/player_menu_sleep_image"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_centerInParent="true"
+        android:layout_gravity="center"
         android:clickable="false"
         android:focusable="false"
         android:importantForAccessibility="no"
-        android:src="@drawable/baseline_nightlight_round_24" />
+        android:src="@drawable/baseline_nightlight_round_24"
+        tools:tint="#000" />
 
     <ImageView
         android:id="@+id/player_menu_sleep_end_of_chapter"
         android:layout_width="12dp"
         android:layout_height="12dp"
-        android:layout_centerInParent="true"
+        android:layout_gravity="bottom|start"
         android:clickable="false"
         android:focusable="false"
         android:importantForAccessibility="no"
-        android:src="@drawable/baseline_book_24"
-        android:translationX="-8dp" />
+        android:src="@drawable/baseline_book_24" />
 
-</RelativeLayout>
+</FrameLayout>

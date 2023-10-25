@@ -8,7 +8,9 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.P
 import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestStart
 import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestStop
 import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestUnpause
+import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestUpdateDuration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerCancelled
+import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerDurationUpdated
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerFinished
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerRunning
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerStopped
@@ -66,6 +68,14 @@ class PlayerSleepTimer private constructor(
      */
 
     object PlayerTimerRequestFinish : PlayerTimerRequest()
+
+    /**
+     * Request that the timer updates its duration.
+     */
+
+    class PlayerTimerRequestUpdateDuration(
+      val duration: Duration?
+    ) : PlayerTimerRequest()
 
     /**
      * Request that the timer start now and count down over the given duration. If the timer
@@ -150,6 +160,13 @@ class PlayerSleepTimer private constructor(
             when (initialRequest) {
               null, PlayerTimerRequestClose -> {
                 return
+              }
+
+              is PlayerTimerRequestUpdateDuration -> {
+                this.log.debug("received update duration request: {}", initialRequest.duration)
+                this.timer.statusEvents.onNext(
+                  PlayerSleepTimerDurationUpdated(initialRequest.duration)
+                )
               }
 
               is PlayerTimerRequestStart -> {
@@ -237,6 +254,13 @@ class PlayerSleepTimer private constructor(
                   continue@processingTimerRequests
                 }
 
+                is PlayerTimerRequestUpdateDuration -> {
+                  this.log.debug("updating duration")
+                  this.timer.statusEvents.onNext(
+                    PlayerSleepTimerDurationUpdated(request.duration)
+                  )
+                }
+
                 PlayerTimerRequestStop -> {
                   this.log.debug("stopping timer")
                   this.paused = false
@@ -317,6 +341,7 @@ class PlayerSleepTimer private constructor(
 
   override fun setDuration(time: Duration?) {
     this.checkIsNotClosed()
+    this.requests.offer(PlayerTimerRequestUpdateDuration(time))
     currentTime = time
   }
 
