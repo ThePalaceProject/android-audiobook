@@ -13,13 +13,13 @@
     android:gravity="center"
     android:textSize="8sp"
     android:text="1.5x"
-    android:textColor="@android:color/white" />
+    android:textColor="@color/PalacePrimaryForegroundColor" />
 
   <ImageView
     android:id="@+id/player_menu_playback_rate_image"
     android:layout_centerInParent="true"
     android:layout_width="32dp"
     android:layout_height="32dp"
-    android:src="@drawable/ic_speed_48" />
+    android:src="@drawable/toolbar_speed" />
 
 </RelativeLayout>

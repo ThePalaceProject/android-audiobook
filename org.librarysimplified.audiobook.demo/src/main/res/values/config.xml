@@ -20,8 +20,7 @@
   <string name="exLocation">Manifest Location</string>
   <string name="exPlay">Play</string>
   <string name="exPresets">Presets</string>
-  <string name="exTitle">AudioBook API Demo</string>
-  <array name="exAuthenticationTypes">
+    <array name="exAuthenticationTypes">
     <item>@string/exAuthNone</item>
     <item>@string/exAuthBasic</item>
     <item>@string/exAuthBasicFeedbooks</item>
@@ -30,8 +29,7 @@
   <string name="exTableOfContents">Table Of Contents</string>
 
   <!-- Set the primary color to a shade of blue. -->
-  <color name="audiobook_player_primary">#161aaf</color>
 
-  <!-- Enable the "now" setting in the sleep timer. -->
+    <!-- Enable the "now" setting in the sleep timer. -->
   <bool name="audiobook_player_debug_sleep_timer_now_enabled">true</bool>
 </resources>

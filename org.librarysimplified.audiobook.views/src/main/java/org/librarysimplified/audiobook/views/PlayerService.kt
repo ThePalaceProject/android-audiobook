@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -47,44 +48,28 @@ class PlayerService : Service() {
   private val backwardIntent by lazy {
     PendingIntent.getBroadcast(
       this, 0, Intent(ACTION_BACKWARD),
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-      } else {
-        PendingIntent.FLAG_UPDATE_CURRENT
-      }
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
   }
 
   private val forwardIntent by lazy {
     PendingIntent.getBroadcast(
       this, 0, Intent(ACTION_FORWARD),
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-      } else {
-        PendingIntent.FLAG_UPDATE_CURRENT
-      }
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
   }
 
   private val pauseIntent by lazy {
     PendingIntent.getBroadcast(
       this, 0, Intent(ACTION_PAUSE),
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-      } else {
-        PendingIntent.FLAG_UPDATE_CURRENT
-      }
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
   }
 
   private val playIntent by lazy {
     PendingIntent.getBroadcast(
       this, 0, Intent(ACTION_PLAY),
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-      } else {
-        PendingIntent.FLAG_UPDATE_CURRENT
-      }
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
   }
 
@@ -96,12 +81,18 @@ class PlayerService : Service() {
     this.playerReceiver =
       PlayerBroadcastReceiver()
 
-    registerReceiver(this.playerReceiver, IntentFilter().apply {
+    val intentFilter = IntentFilter().apply {
       addAction(ACTION_BACKWARD)
       addAction(ACTION_FORWARD)
       addAction(ACTION_PAUSE)
       addAction(ACTION_PLAY)
-    })
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      registerReceiver(this.playerReceiver, intentFilter, RECEIVER_EXPORTED)
+    } else {
+      registerReceiver(this.playerReceiver, intentFilter)
+    }
 
     createNotificationChannel()
 
@@ -142,7 +133,12 @@ class PlayerService : Service() {
 
     val notification = builder.build()
     notification.flags = Notification.FLAG_ONGOING_EVENT
-    startForeground(1001, notification)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      startForeground(1001, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+    } else {
+      startForeground(1001, notification)
+    }
   }
 
   private fun updateNotification() {
@@ -184,13 +180,9 @@ class PlayerService : Service() {
         .build()
     )
 
-    val contentIntent = PendingIntent.getActivity(
-      this, 0, playerInfo.notificationIntent,
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-      } else {
-        PendingIntent.FLAG_UPDATE_CURRENT
-      }
+    val contentIntent = PendingIntent.getActivity(this, 0,
+      playerInfo.notificationIntent,
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
     val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
@@ -218,7 +210,11 @@ class PlayerService : Service() {
       .addAction(NotificationCompat.Action(R.drawable.round_arrow, "Forward", forwardIntent))
       .build()
 
-    startForeground(1, notification)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+    } else {
+      startForeground(1, notification)
+    }
   }
 
   fun updatePlayerInfo(playerInfo: PlayerInfoModel) {

@@ -3,6 +3,7 @@ package org.librarysimplified.audiobook.views
 import android.content.ComponentName
 import android.content.Context
 import android.content.Context.BIND_AUTO_CREATE
+import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
@@ -515,9 +516,13 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     this.log.debug("onViewCreated")
     super.onViewCreated(view, state)
 
-    requireActivity().registerReceiver(playerMediaReceiver,
-      IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
-    )
+    val intentFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      requireActivity().registerReceiver(playerMediaReceiver, intentFilter, RECEIVER_EXPORTED)
+    } else {
+      requireActivity().registerReceiver(playerMediaReceiver, intentFilter)
+    }
 
     this.toolbar = view.findViewById(R.id.audioBookToolbar)
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
