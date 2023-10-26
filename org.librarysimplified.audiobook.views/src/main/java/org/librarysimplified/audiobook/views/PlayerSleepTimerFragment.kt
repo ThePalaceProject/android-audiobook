@@ -132,6 +132,8 @@ class PlayerSleepTimerFragment : DialogFragment() {
       this.timer.setDuration(item.duration)
       if (this.player.isPlaying) {
         this.timer.start()
+      } else {
+        this.timer
       }
     }
     this.dismiss()

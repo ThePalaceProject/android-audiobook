@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerCancelled
+import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerDurationUpdated
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerFinished
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerRunning
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerStopped
@@ -57,6 +58,7 @@ abstract class PlayerSleepTimerContract {
             PlayerSleepTimerStopped -> "stopped"
             is PlayerSleepTimerRunning -> "running"
             is PlayerSleepTimerCancelled -> "cancelled"
+            is PlayerSleepTimerDurationUpdated -> "duration updated"
             PlayerSleepTimerFinished -> "finished"
           }
         )
@@ -82,14 +84,15 @@ abstract class PlayerSleepTimerContract {
     waitLatch.await()
 
     logger.debug("events: {}", events)
-    Assertions.assertEquals(7, events.size)
+    Assertions.assertEquals(8, events.size)
     Assertions.assertEquals("stopped", events[0])
-    Assertions.assertEquals("running", events[1])
+    Assertions.assertEquals("duration updated", events[1])
     Assertions.assertEquals("running", events[2])
     Assertions.assertEquals("running", events[3])
     Assertions.assertEquals("running", events[4])
-    Assertions.assertEquals("finished", events[5])
-    Assertions.assertEquals("stopped", events[6])
+    Assertions.assertEquals("running", events[5])
+    Assertions.assertEquals("finished", events[6])
+    Assertions.assertEquals("stopped", events[7])
   }
 
   /**
@@ -113,6 +116,7 @@ abstract class PlayerSleepTimerContract {
             PlayerSleepTimerStopped -> "stopped"
             is PlayerSleepTimerRunning -> "running"
             is PlayerSleepTimerCancelled -> "cancelled"
+            is PlayerSleepTimerDurationUpdated -> "duration updated"
             PlayerSleepTimerFinished -> "finished"
           }
         )
@@ -142,8 +146,10 @@ abstract class PlayerSleepTimerContract {
     waitLatch.await()
 
     logger.debug("events: {}", events)
-    Assertions.assertTrue(events.size >= 4, "Must receive at least 4 events")
+    Assertions.assertTrue(events.size >= 5, "Must receive at least 5 events")
     Assertions.assertEquals("stopped", events.first())
+    Assertions.assertEquals("duration updated", events[1])
+    Assertions.assertTrue(events.contains("stopped"), "Received at least a stopped event")
     Assertions.assertTrue(events.contains("cancelled"), "Received at least a cancelled event")
     Assertions.assertTrue(events.contains("running"), "Received at least a running event")
     Assertions.assertEquals("stopped", events.last())
@@ -170,6 +176,7 @@ abstract class PlayerSleepTimerContract {
             PlayerSleepTimerStopped -> "stopped"
             is PlayerSleepTimerRunning -> "running"
             is PlayerSleepTimerCancelled -> "cancelled"
+            is PlayerSleepTimerDurationUpdated -> "duration updated"
             PlayerSleepTimerFinished -> "finished"
           }
         )
@@ -193,8 +200,9 @@ abstract class PlayerSleepTimerContract {
     waitLatch.await()
 
     logger.debug("events: {}", events)
-    Assertions.assertTrue(events.size >= 1, "Must have received at least one events")
+    Assertions.assertTrue(events.size >= 2, "Must have received at least two events")
     Assertions.assertEquals("stopped", events.first())
+    Assertions.assertEquals("duration updated", events[1])
 
     /*
      * This is timing sensitive. We may not receive a cancelled event if the timer doesn't even
@@ -231,6 +239,7 @@ abstract class PlayerSleepTimerContract {
           PlayerSleepTimerStopped -> "stopped"
           is PlayerSleepTimerRunning -> "running " + event.remaining
           is PlayerSleepTimerCancelled -> "cancelled"
+          is PlayerSleepTimerDurationUpdated -> "duration updated"
           PlayerSleepTimerFinished -> "finished"
         }
       )
@@ -256,8 +265,9 @@ abstract class PlayerSleepTimerContract {
     Thread.sleep(1000L)
 
     logger.debug("events: {}", events)
-    Assertions.assertTrue(events.size >= 4, "Must have received at least 4 events")
+    Assertions.assertTrue(events.size >= 5, "Must have received at least 5 events")
     Assertions.assertEquals("stopped", events.first())
+    Assertions.assertEquals("duration updated", events[1])
     Assertions.assertTrue(events.contains("running PT4S"))
     Assertions.assertTrue(events.contains("running PT6S"))
     Assertions.assertEquals("stopped", events.last())
@@ -284,6 +294,7 @@ abstract class PlayerSleepTimerContract {
             PlayerSleepTimerStopped -> "stopped"
             is PlayerSleepTimerRunning -> "running " + event.remaining
             is PlayerSleepTimerCancelled -> "cancelled"
+            is PlayerSleepTimerDurationUpdated -> "duration updated"
             PlayerSleepTimerFinished -> "finished"
           }
         )
@@ -312,15 +323,17 @@ abstract class PlayerSleepTimerContract {
     waitLatch.await()
 
     logger.debug("events: {}", events)
-    Assertions.assertEquals(8, events.size, "Must have received 8 events")
+    Assertions.assertEquals(10, events.size, "Must have received 10 events")
     Assertions.assertEquals("stopped", events[0])
-    Assertions.assertEquals("running PT1S", events[1])
-    Assertions.assertEquals("running PT0S", events[2])
-    Assertions.assertEquals("finished", events[3])
-    Assertions.assertEquals("running PT1S", events[4])
-    Assertions.assertEquals("running PT0S", events[5])
-    Assertions.assertEquals("finished", events[6])
-    Assertions.assertEquals("stopped", events[7])
+    Assertions.assertEquals("duration updated", events[1])
+    Assertions.assertEquals("running PT1S", events[2])
+    Assertions.assertEquals("running PT0S", events[3])
+    Assertions.assertEquals("finished", events[4])
+    Assertions.assertEquals("duration updated", events[5])
+    Assertions.assertEquals("running PT1S", events[6])
+    Assertions.assertEquals("running PT0S", events[7])
+    Assertions.assertEquals("finished", events[8])
+    Assertions.assertEquals("stopped", events[9])
   }
 
   /**
@@ -344,6 +357,7 @@ abstract class PlayerSleepTimerContract {
             PlayerSleepTimerStopped -> "stopped"
             is PlayerSleepTimerRunning -> "running " + event.remaining
             is PlayerSleepTimerCancelled -> "cancelled"
+            is PlayerSleepTimerDurationUpdated -> "duration updated"
             PlayerSleepTimerFinished -> "finished"
           }
         )
@@ -377,11 +391,12 @@ abstract class PlayerSleepTimerContract {
     waitLatch.await()
 
     logger.debug("events: {}", events)
-    Assertions.assertEquals(4, events.size, "Must have received 4 events")
+    Assertions.assertEquals(5, events.size, "Must have received 4 events")
     Assertions.assertEquals("stopped", events[0])
-    Assertions.assertEquals("running null", events[1])
-    Assertions.assertEquals("finished", events[2])
-    Assertions.assertEquals("stopped", events[3])
+    Assertions.assertEquals("duration updated", events[1])
+    Assertions.assertEquals("running null", events[2])
+    Assertions.assertEquals("finished", events[3])
+    Assertions.assertEquals("stopped", events[4])
   }
 
   /**
@@ -405,6 +420,7 @@ abstract class PlayerSleepTimerContract {
             PlayerSleepTimerStopped -> "stopped"
             is PlayerSleepTimerRunning -> "running " + event.remaining
             is PlayerSleepTimerCancelled -> "cancelled"
+            is PlayerSleepTimerDurationUpdated -> "duration updated"
             PlayerSleepTimerFinished -> "finished"
           }
         )
@@ -431,11 +447,12 @@ abstract class PlayerSleepTimerContract {
     waitLatch.await()
 
     logger.debug("events: {}", events)
-    Assertions.assertEquals(4, events.size, "Must have received 4 events")
+    Assertions.assertEquals(5, events.size, "Must have received 5 events")
     Assertions.assertEquals("stopped", events[0])
-    Assertions.assertEquals("running PT2S", events[1])
-    Assertions.assertEquals("finished", events[2])
-    Assertions.assertEquals("stopped", events[3])
+    Assertions.assertEquals("duration updated", events[1])
+    Assertions.assertEquals("running PT2S", events[2])
+    Assertions.assertEquals("finished", events[3])
+    Assertions.assertEquals("stopped", events[4])
   }
 
   /**
@@ -459,6 +476,7 @@ abstract class PlayerSleepTimerContract {
             PlayerSleepTimerStopped -> "stopped"
             is PlayerSleepTimerRunning -> "running" + (if (event.paused) " paused" else "")
             is PlayerSleepTimerCancelled -> "cancelled"
+            is PlayerSleepTimerDurationUpdated -> "duration updated"
             PlayerSleepTimerFinished -> "finished"
           }
         )
@@ -492,11 +510,12 @@ abstract class PlayerSleepTimerContract {
     logger.debug("distinctEvents: {}", distinctEvents)
 
     logger.debug("events: {}", events)
-    Assertions.assertEquals(4, distinctEvents.size)
+    Assertions.assertEquals(5, distinctEvents.size)
     Assertions.assertEquals("stopped", distinctEvents[0])
-    Assertions.assertEquals("running", distinctEvents[1])
-    Assertions.assertEquals("running paused", distinctEvents[2])
-    Assertions.assertEquals("stopped", distinctEvents[3])
+    Assertions.assertEquals("duration updated", distinctEvents[1])
+    Assertions.assertEquals("running", distinctEvents[2])
+    Assertions.assertEquals("running paused", distinctEvents[3])
+    Assertions.assertEquals("stopped", distinctEvents[4])
   }
 
   /**
@@ -520,6 +539,7 @@ abstract class PlayerSleepTimerContract {
             PlayerSleepTimerStopped -> "stopped"
             is PlayerSleepTimerRunning -> "running" + (if (event.paused) " paused" else "")
             is PlayerSleepTimerCancelled -> "cancelled"
+            is PlayerSleepTimerDurationUpdated -> "duration updated"
             PlayerSleepTimerFinished -> "finished"
           }
         )
@@ -560,13 +580,14 @@ abstract class PlayerSleepTimerContract {
     val distinctEvents = withoutSuccessiveDuplicates(events)
     logger.debug("distinctEvents: {}", distinctEvents)
 
-    Assertions.assertEquals(6, distinctEvents.size)
+    Assertions.assertEquals(7, distinctEvents.size)
     Assertions.assertEquals("stopped", distinctEvents[0])
-    Assertions.assertEquals("running", distinctEvents[1])
-    Assertions.assertEquals("running paused", distinctEvents[2])
-    Assertions.assertEquals("running", distinctEvents[3])
-    Assertions.assertEquals("finished", distinctEvents[4])
-    Assertions.assertEquals("stopped", distinctEvents[5])
+    Assertions.assertEquals("duration updated", distinctEvents[1])
+    Assertions.assertEquals("running", distinctEvents[2])
+    Assertions.assertEquals("running paused", distinctEvents[3])
+    Assertions.assertEquals("running", distinctEvents[4])
+    Assertions.assertEquals("finished", distinctEvents[5])
+    Assertions.assertEquals("stopped", distinctEvents[6])
   }
 
   /**
@@ -590,6 +611,7 @@ abstract class PlayerSleepTimerContract {
             PlayerSleepTimerStopped -> "stopped"
             is PlayerSleepTimerRunning -> "running" + (if (event.paused) " paused" else "")
             is PlayerSleepTimerCancelled -> "cancelled"
+            is PlayerSleepTimerDurationUpdated -> "duration updated"
             PlayerSleepTimerFinished -> "finished"
           }
         )
@@ -627,11 +649,12 @@ abstract class PlayerSleepTimerContract {
     val distinctEvents = withoutSuccessiveDuplicates(events)
     logger.debug("distinctEvents: {}", distinctEvents)
 
-    Assertions.assertEquals(4, distinctEvents.size)
+    Assertions.assertEquals(5, distinctEvents.size)
     Assertions.assertEquals("stopped", distinctEvents[0])
-    Assertions.assertEquals("running", distinctEvents[1])
-    Assertions.assertEquals("finished", distinctEvents[2])
-    Assertions.assertEquals("stopped", distinctEvents[3])
+    Assertions.assertEquals("duration updated", distinctEvents[1])
+    Assertions.assertEquals("running", distinctEvents[2])
+    Assertions.assertEquals("finished", distinctEvents[3])
+    Assertions.assertEquals("stopped", distinctEvents[4])
   }
 
   private fun <T> withoutSuccessiveDuplicates(values: List<T>): List<T> {

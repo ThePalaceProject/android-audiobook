@@ -15,6 +15,14 @@ sealed class PlayerSleepTimerEvent {
   object PlayerSleepTimerStopped : PlayerSleepTimerEvent()
 
   /**
+   * This state will be published to update the timer's duration.
+   */
+
+  data class PlayerSleepTimerDurationUpdated(
+    val remaining: Duration?
+  ) : PlayerSleepTimerEvent()
+
+  /**
    * The sleep timer is currently running. This state will be published frequently while the sleep
    * timer is counting down. If a duration was specified when the timer was started, the given
    * duration indicates the amount of time remaining.
