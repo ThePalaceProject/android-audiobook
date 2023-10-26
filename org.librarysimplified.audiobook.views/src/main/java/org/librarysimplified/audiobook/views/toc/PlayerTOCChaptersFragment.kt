@@ -1,6 +1,5 @@
 package org.librarysimplified.audiobook.views.toc
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
@@ -11,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
@@ -143,7 +143,7 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
     this.log.debug("onMenuStopAllSelected")
 
     val dialog =
-      AlertDialog.Builder(this.context)
+      MaterialAlertDialogBuilder(this.requireContext())
         .setCancelable(true)
         .setMessage(R.string.audiobook_player_toc_menu_stop_all_confirm)
         .setPositiveButton(
