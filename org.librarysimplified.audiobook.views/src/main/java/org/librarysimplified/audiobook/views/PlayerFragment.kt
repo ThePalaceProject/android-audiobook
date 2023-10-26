@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.graphics.Bitmap
-import android.graphics.PorterDuff
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -451,7 +450,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       this.menuSleep.actionView = actionView
       this.menuSleep.setOnMenuItemClickListener { this.onMenuSleepSelected() }
     }
-
 
     this.menuSleep.actionView?.setOnClickListener { this.onMenuSleepSelected() }
     this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
