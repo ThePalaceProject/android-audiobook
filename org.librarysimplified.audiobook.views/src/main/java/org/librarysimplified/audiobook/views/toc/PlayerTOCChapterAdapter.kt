@@ -1,6 +1,5 @@
 package org.librarysimplified.audiobook.views.toc
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.res.Resources
@@ -13,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.joda.time.Duration
 import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
@@ -283,7 +283,7 @@ class PlayerTOCChapterAdapter(
 
   private fun onConfirmCancelDownloading(item: PlayerSpineElementType) {
     val dialog =
-      AlertDialog.Builder(this.context)
+      MaterialAlertDialogBuilder(this.context)
         .setCancelable(true)
         .setMessage(R.string.audiobook_part_download_stop_confirm)
         .setPositiveButton(

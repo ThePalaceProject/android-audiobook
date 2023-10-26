@@ -1,6 +1,5 @@
 package org.librarysimplified.audiobook.views.toc
 
-import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.views.PlayerFragmentListenerType
@@ -80,7 +80,7 @@ class PlayerTOCBookmarksFragment : Fragment() {
           openBookmarkAndClose(bookmarkPosition)
         },
         onDelete = { index, bookmark ->
-          AlertDialog.Builder(context)
+          MaterialAlertDialogBuilder(context)
             .setMessage(R.string.audiobook_player_toc_bookmarks_dialog_message_delete)
             .setPositiveButton(R.string.audiobook_player_toc_bookmarks_dialog_title_delete) { dialog, _ ->
               dialog.dismiss()
