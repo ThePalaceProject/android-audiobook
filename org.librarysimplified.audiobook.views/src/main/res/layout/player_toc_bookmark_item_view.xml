@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="80dp"
@@ -20,8 +21,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
+        android:tintMode="multiply"
         android:contentDescription="@string/audiobook_accessibility_toc_bookmark_delete"
-        android:src="@drawable/ic_delete" />
+        android:src="@drawable/ic_delete"
+        app:tint="@color/PalaceTextColor" />
 
     <LinearLayout
         android:layout_width="0dp"

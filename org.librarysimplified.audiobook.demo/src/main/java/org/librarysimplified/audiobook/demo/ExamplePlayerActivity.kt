@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
+import org.joda.time.DateTime
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
@@ -635,7 +636,26 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   }
 
   override fun onPlayerTOCWantsBookmarks(): List<PlayerBookmark> {
-    return emptyList()
+    return listOf(
+      PlayerBookmark(
+        DateTime.now(),
+        PlayerPosition("Example 1", 1, 1, 0L, 0L),
+        100L,
+        null
+      ),
+      PlayerBookmark(
+        DateTime.now(),
+        PlayerPosition("Example 2", 2, 1, 0L, 0L),
+        100L,
+        null
+      ),
+      PlayerBookmark(
+        DateTime.now(),
+        PlayerPosition("Example 3", 3, 1, 0L, 0L),
+        100L,
+        null
+      )
+    )
   }
 
   override fun onPlayerShouldDeleteBookmark(
