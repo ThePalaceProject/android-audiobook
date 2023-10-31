@@ -272,7 +272,7 @@
         <c:change date="2023-10-26T00:00:00+00:00" summary="Show sleep timer value without pressing the Play button."/>
       </c:changes>
     </c:release>
-    <c:release date="2023-10-31T19:01:15+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.4.0">
+    <c:release date="2023-10-31T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.4.0">
       <c:changes>
         <c:change date="2023-10-31T00:00:00+00:00" summary="Fix some lifecycle-related crashes.">
           <c:tickets>
@@ -280,6 +280,9 @@
           </c:tickets>
         </c:change>
       </c:changes>
+    </c:release>
+    <c:release date="2023-10-31T20:21:59+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="11.5.0">
+      <c:changes/>
     </c:release>
   </c:releases>
   <c:ticket-systems>
