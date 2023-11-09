@@ -88,7 +88,7 @@ class ExoDownloadWholeBookTask(
       return
     }
 
-    when (status) {
+    return when (status) {
       is PlayerSpineElementDownloaded -> {
         this.log.debug("[{}]: onDownloadStatusUpdated: completed downloading task", element.id)
         startNextTaskIfOnSequence(downloadTask.partFile.name)
@@ -97,8 +97,14 @@ class ExoDownloadWholeBookTask(
         this.log.error("[{}]: onDownloadStatusUpdated: failed downloading task", element.id)
         startNextTaskIfOnSequence(downloadTask.partFile.name)
       }
-      else -> {
-        this.log.debug("[{}]: onDownloadStatusUpdated: {}", element.id, status)
+      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired -> {
+        this.log.debug("[{}]: onDownloadStatusUpdated: download expired", element.id)
+      }
+      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading -> {
+        // Ignore this, as the volume of log messages would otherwise be excessive.
+      }
+      is PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded -> {
+        this.log.debug("[{}]: onDownloadStatusUpdated: not yet downloaded", element.id)
       }
     }
   }
