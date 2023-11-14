@@ -14,21 +14,28 @@ class ExoPlayerZeroBugDetection(
 ) {
   private val logger = LoggerFactory.getLogger(ExoPlayerZeroBugDetection::class.java)
   private val trackDurations: MutableMap<Int, Long> = mutableMapOf()
-  private var logged = false
+  private var done = false
 
   fun recordTrackDuration(
     index: Int,
     duration: Long
   ) {
     try {
-      this.trackDurations[index] = duration
+      if (this.done) {
+        return
+      }
+      if (duration != 0L) {
+        this.done = true
+        return
+      }
+
+      this.trackDurations[index] = 0L
       if (this.trackDurations.size == this.tracks.size) {
-        if (!this.logged) {
-          this.logger.error(
-            "Possible audio engine bug: All {} tracks have a zero duration!",
-            this.trackDurations.size
-          )
-        }
+        this.logger.error(
+          "Possible audio engine bug: All {} tracks have a zero duration!",
+          this.trackDurations.size
+        )
+        this.done = true
       }
     } catch (e: Throwable) {
       // Ignore everything
