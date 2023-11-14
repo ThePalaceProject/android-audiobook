@@ -70,6 +70,7 @@ class ExoAudioBookPlayer private constructor(
   manifestUpdates: Observable<Unit>
 ) : PlayerType {
 
+  private val zeroBugTracker: ExoPlayerZeroBugDetection
   private val bookmarkObserver: ExoBookmarkObserver
   private val manifestSubscription: Subscription
   private val log = LoggerFactory.getLogger(ExoAudioBookPlayer::class.java)
@@ -87,6 +88,7 @@ class ExoAudioBookPlayer private constructor(
         player = this,
         onBookmarkCreate = this.statusEvents::onNext
       )
+    this.zeroBugTracker = ExoPlayerZeroBugDetection(book.spine)
   }
 
   private fun onManifestUpdated() {
@@ -610,6 +612,7 @@ class ExoAudioBookPlayer private constructor(
       )
 
     this.exoPlayer.prepare(this.exoAudioRenderer)
+    this.zeroBugTracker.recordTrackDuration(spineElement.index, this.exoPlayer.duration)
     this.seek(offset)
     this.exoPlayer.playWhenReady = playAutomatically
   }
