@@ -168,7 +168,8 @@ class LCPAudioBookPlayer private constructor(
     it.itemManifest.originalLink
   }.distinct()
 
-  private var trackIndex = -1
+  @Volatile
+  private var currentTrackIndex: Int? = null
 
   private val exoPlayerEventListener = object : ExoPlayer.Listener {
     override fun onPlayerError(error: ExoPlaybackException?) {
@@ -760,8 +761,8 @@ class LCPAudioBookPlayer private constructor(
     }
   }
 
-  private fun preparePlayer(playAutomatically: Boolean) {
-    val trackToPlay = tracksToPlay[trackIndex]
+  private fun preparePlayer(playAutomatically: Boolean, newTrackIndex: Int) {
+    val trackToPlay = tracksToPlay[newTrackIndex]
 
     this.log.debug("preparePlayer: {} (offset {})", trackToPlay.title, trackPlaybackOffset)
 
@@ -882,10 +883,16 @@ class LCPAudioBookPlayer private constructor(
       offset = offset
     )
 
-    if (trackIndex != newIndex) {
-      trackIndex = newIndex
+    if (newIndex == -1) {
+      this.log.debug("there's no track to play")
+      return
+    }
+
+    if (currentTrackIndex != newIndex) {
+      currentTrackIndex = newIndex
       preparePlayer(
-        playAutomatically = playAutomatically
+        playAutomatically = playAutomatically,
+        newTrackIndex = newIndex
       )
     }
 
