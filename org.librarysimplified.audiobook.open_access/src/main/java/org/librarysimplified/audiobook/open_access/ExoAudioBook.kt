@@ -37,7 +37,6 @@ class ExoAudioBook private constructor(
   override val spineByPartAndChapter: SortedMap<Int, SortedMap<Int, PlayerSpineElementType>>,
   override val spineElementDownloadStatus: PublishSubject<PlayerSpineElementDownloadStatus>,
   override val id: PlayerBookID,
-  private val engineProvider: ExoEngineProvider
 ) : PlayerAudioBookType {
 
   private val logger = LoggerFactory.getLogger(ExoAudioBook::class.java)
@@ -54,8 +53,6 @@ class ExoAudioBook private constructor(
     return ExoAudioBookPlayer.create(
       book = this,
       context = this.context,
-      engineExecutor = this.engineExecutor,
-      engineProvider = this.engineProvider,
       manifestUpdates = this.manifestUpdates
     )
   }
@@ -133,7 +130,6 @@ class ExoAudioBook private constructor(
     }
 
     fun create(
-      engineProvider: ExoEngineProvider,
       context: Context,
       engineExecutor: ScheduledExecutorService,
       manifest: ExoManifest,
@@ -213,7 +209,6 @@ class ExoAudioBook private constructor(
 
       val book =
         ExoAudioBook(
-          engineProvider = engineProvider,
           context = context,
           engineExecutor = engineExecutor,
           id = bookId,

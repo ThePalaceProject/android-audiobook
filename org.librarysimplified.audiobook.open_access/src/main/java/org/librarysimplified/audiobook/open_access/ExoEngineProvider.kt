@@ -58,7 +58,6 @@ class ExoEngineProvider(
     }
 
     return ExoAudioBookProvider(
-      engineProvider = this,
       engineExecutor = this.engineExecutor,
       downloadProvider = request.downloadProvider,
       manifest = manifest,
