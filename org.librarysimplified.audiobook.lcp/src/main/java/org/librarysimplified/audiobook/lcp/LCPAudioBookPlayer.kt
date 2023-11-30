@@ -155,7 +155,7 @@ class LCPAudioBookPlayer private constructor(
       statusEvents.onNext(
         PlayerEvent.PlayerEventError(
           spineElement = getCurrentSpineElement(),
-          exception = Exception(),
+          exception = error,
           errorCode = -1,
           offsetMilliseconds = chapterPlaybackOffset
         )

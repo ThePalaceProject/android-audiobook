@@ -53,6 +53,7 @@ class ExoAudioBook private constructor(
     return ExoAudioBookPlayer.create(
       book = this,
       context = this.context,
+      engineExecutor = this.engineExecutor,
       manifestUpdates = this.manifestUpdates
     )
   }
