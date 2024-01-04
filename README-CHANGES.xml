@@ -1,89 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <c:changelog project="org.librarysimplified.audiobook" xmlns:c="urn:com.io7m.changelog:4.0">
   <c:releases>
-    <c:release date="2019-01-23T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="1.0.0">
-      <c:changes/>
-    </c:release>
-    <c:release date="2019-04-19T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="2.0.0">
+    <c:release date="2021-01-08T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.3.1">
       <c:changes>
-        <c:change compatible="false" date="2019-04-19T00:00:00+00:00" summary="Take all color scheme information from the current Android theme"/>
-      </c:changes>
-    </c:release>
-    <c:release date="2019-05-16T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="2.0.1">
-      <c:changes>
-        <c:change date="2019-05-16T00:00:00+00:00" summary="Aggressively seek to ensure playback positions are restored">
-          <c:tickets>
-            <c:ticket id="SIMPLY-1738"/>
-          </c:tickets>
-        </c:change>
-      </c:changes>
-    </c:release>
-    <c:release date="2019-05-21T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="2.0.2">
-      <c:changes>
-        <c:change date="2019-05-21T00:00:00+00:00" summary="Add workaround so that code can run on non-AppCompat themes">
-          <c:tickets>
-            <c:ticket id="SIMPLY-1738"/>
-          </c:tickets>
-        </c:change>
-      </c:changes>
-    </c:release>
-    <c:release date="2019-10-03T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="3.0.0">
-      <c:changes>
-        <c:change compatible="false" date="2019-10-03T00:00:00+00:00" summary="All views are now AndroidX views"/>
-      </c:changes>
-    </c:release>
-    <c:release date="2020-02-07T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="4.0.0">
-      <c:changes>
-        <c:change compatible="false" date="2020-01-27T00:00:00+00:00" summary="Rename PlayerAudioEngineVersion to PlayerVersion"/>
-        <c:change compatible="false" date="2020-01-27T00:00:00+00:00" summary="Move manifest types into their own org.librarysimplified.audiobook.manifest.api module"/>
-        <c:change compatible="false" date="2020-01-27T00:00:00+00:00" summary="Reimplement manifest parsers"/>
-        <c:change date="2020-01-27T00:00:00+00:00" summary="Add support for Feedbooks audio books"/>
-        <c:change date="2020-02-07T00:00:00+00:00" summary="Add a player extension SPI"/>
-      </c:changes>
-    </c:release>
-    <c:release date="2020-07-21T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="5.0.0">
-      <c:changes>
-        <c:change compatible="false" date="2020-07-21T00:00:00+00:00" summary="Require a User-Agent everywhere"/>
-        <c:change date="2020-07-21T00:00:00+00:00" summary="Add an Overdrive Patron Auth API"/>
-        <c:change date="2020-07-21T00:00:00+00:00" summary="Stop requiring durations in manifests"/>
-        <c:change date="2020-07-21T00:00:00+00:00" summary="Provide a new http module for consistent http clients"/>
-      </c:changes>
-    </c:release>
-    <c:release date="2020-08-13T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="5.0.1">
-      <c:changes>
-        <c:change date="2020-08-13T00:00:00+00:00" summary="Bump default timeout value to 180 seconds"/>
-      </c:changes>
-    </c:release>
-    <c:release date="2020-08-14T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="5.0.2">
-      <c:changes>
-        <c:change date="2020-08-14T00:00:00+00:00" summary="Fixed broken service registration that prevented RBDigital extensions from loading">
-          <c:tickets>
-            <c:ticket id="SIMPLY-2965"/>
-          </c:tickets>
-        </c:change>
-      </c:changes>
-    </c:release>
-    <c:release date="2020-09-09T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.0.0">
-      <c:changes>
-        <c:change date="2020-09-09T00:00:00+00:00" summary="Enable Feedbooks signature checking">
-          <c:tickets>
-            <c:ticket id="SIMPLY-2507"/>
-          </c:tickets>
-        </c:change>
-      </c:changes>
-    </c:release>
-    <c:release date="2020-09-30T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.0.1">
-      <c:changes>
-        <c:change date="2020-09-30T00:00:00+00:00" summary="Update irradia packages to their latest published versions"/>
-      </c:changes>
-    </c:release>
-    <c:release date="2020-10-15T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.0.2">
-      <c:changes>
-        <c:change date="2020-10-06T00:00:00+00:00" summary="Fix word repetitions at the start of chapters.">
-          <c:tickets>
-            <c:ticket id="SIMPLY-2947"/>
-          </c:tickets>
-        </c:change>
+        <c:change date="2021-01-08T00:00:00+00:00" summary="Adjust some string resources"/>
       </c:changes>
     </c:release>
     <c:release date="2020-10-15T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.1.0">
@@ -96,22 +16,37 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2020-12-01T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.2.0">
+    <c:release date="2022-03-29T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.11.0">
       <c:changes>
-        <c:change date="2020-12-01T00:00:00+00:00" summary="Use the correct RecyclerView class">
+        <c:change date="2022-03-13T00:00:00+00:00" summary="Added support for LCP-protected audio books."/>
+        <c:change date="2022-03-22T00:00:00+00:00" summary="Changed displaying title for audiobook chapters with no or null title"/>
+      </c:changes>
+    </c:release>
+    <c:release date="2021-12-08T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.9.0">
+      <c:changes>
+        <c:change date="2021-11-19T00:00:00+00:00" summary="Enable dark mode"/>
+      </c:changes>
+    </c:release>
+    <c:release date="2023-11-15T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.5.0">
+      <c:changes>
+        <c:change date="2023-11-15T00:00:00+00:00" summary="Reduce logging volume">
           <c:tickets>
-            <c:ticket id="SIMPLY-3333"/>
+            <c:ticket id="PP-663"/>
           </c:tickets>
         </c:change>
+        <c:change date="2023-11-15T00:00:00+00:00" summary="Correct some possible lifecycle issues."/>
       </c:changes>
     </c:release>
-    <c:release date="2021-01-08T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.3.1">
+    <c:release date="2021-07-27T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.7.0">
       <c:changes>
-        <c:change date="2021-01-08T00:00:00+00:00" summary="Adjust some string resources"/>
+        <c:change date="2021-07-27T00:00:00+00:00" summary="Fix titles appearing as &quot;null&quot;"/>
       </c:changes>
     </c:release>
-    <c:release date="2021-01-08T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.4.0">
-      <c:changes/>
+    <c:release date="2023-10-31T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.3.0">
+      <c:changes>
+        <c:change date="2023-10-25T00:00:00+00:00" summary="Fixed receiver related crashes on Android 13 and Android 14 devices."/>
+        <c:change date="2023-10-26T00:00:00+00:00" summary="Show sleep timer value without pressing the Play button."/>
+      </c:changes>
     </c:release>
     <c:release date="2021-07-13T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.5.0">
       <c:changes>
@@ -122,44 +57,59 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2021-07-13T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.6.0">
+    <c:release date="2023-10-11T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.1.0">
+      <c:changes/>
+    </c:release>
+    <c:release date="2019-01-23T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="1.0.0">
+      <c:changes/>
+    </c:release>
+    <c:release date="2019-04-19T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="2.0.0">
       <c:changes>
-        <c:change date="2021-07-13T00:00:00+00:00" summary="Add explicit bookmark events"/>
+        <c:change compatible="false" date="2019-04-19T00:00:00+00:00" summary="Take all color scheme information from the current Android theme"/>
       </c:changes>
     </c:release>
-    <c:release date="2021-07-27T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.7.0">
+    <c:release date="2022-09-19T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="8.0.1">
       <c:changes>
-        <c:change date="2021-07-27T00:00:00+00:00" summary="Fix titles appearing as &quot;null&quot;"/>
+        <c:change date="2022-08-10T00:00:00+00:00" summary="Change chapter duration on audiobook player."/>
+        <c:change date="2022-08-26T00:00:00+00:00" summary="Added audiobook's remaining time label to player."/>
+        <c:change date="2022-09-07T00:00:00+00:00" summary="Fixed crash on MediaButton receiver."/>
       </c:changes>
     </c:release>
-    <c:release date="2021-11-01T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.8.0">
+    <c:release date="2023-03-14T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="9.0.0">
       <c:changes>
-        <c:change date="2021-11-01T00:00:00+00:00" summary="Add back button to audiobook player"/>
-        <c:change date="2021-11-01T00:00:00+00:00" summary="Switch to a neutral theme"/>
+        <c:change date="2023-01-11T00:00:00+00:00" summary="Added ability to open the app when clicking on the audiobook's player notification."/>
+        <c:change date="2023-01-19T00:00:00+00:00" summary="Updated audiobook sleep timer value with the remaining duration."/>
+        <c:change date="2023-02-17T00:00:00+00:00" summary="Updated behaviour for skipping and rewinding an audiobook for 15 seconds."/>
       </c:changes>
     </c:release>
-    <c:release date="2021-12-08T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.9.0">
+    <c:release date="2021-01-08T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.4.0">
+      <c:changes/>
+    </c:release>
+    <c:release date="2022-12-08T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="8.0.2">
       <c:changes>
-        <c:change date="2021-11-19T00:00:00+00:00" summary="Enable dark mode"/>
+        <c:change date="2022-09-26T00:00:00+00:00" summary="Added management of audio coming from different apps."/>
+        <c:change date="2022-09-27T00:00:00+00:00" summary="Added content description to back button on player screen."/>
+        <c:change date="2022-09-29T00:00:00+00:00" summary="Fixed audiobook chapter's time elapsed and remaining and book remaining time not being updated when dragging the player seekbar."/>
+        <c:change date="2022-10-03T00:00:00+00:00" summary="Updated TOC UI to always display the chapter's duration regardless of the its downloading status."/>
+        <c:change date="2022-10-20T00:00:00+00:00" summary="Changed target version to Android 12."/>
+        <c:change date="2022-10-27T00:00:00+00:00" summary="Changed target version to Android 13."/>
+        <c:change date="2022-11-17T00:00:00+00:00" summary="Added back button to table of contents screen."/>
+        <c:change date="2022-11-23T00:00:00+00:00" summary="Update chapter label on audiobook player."/>
+        <c:change date="2022-11-28T00:00:00+00:00" summary="Added phones unplugging handling to pause the audiobook when it happens."/>
       </c:changes>
     </c:release>
-    <c:release date="2022-01-22T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.10.0">
+    <c:release date="2020-08-14T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="5.0.2">
       <c:changes>
-        <c:change date="2021-12-14T00:00:00+00:00" summary="Added audiobook player commands to lock screen"/>
-        <c:change date="2022-01-14T00:00:00+00:00" summary="Added backward and forward actions to lock screen notification controls"/>
+        <c:change date="2020-08-14T00:00:00+00:00" summary="Fixed broken service registration that prevented RBDigital extensions from loading">
+          <c:tickets>
+            <c:ticket id="SIMPLY-2965"/>
+          </c:tickets>
+        </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2022-03-09T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.10.1">
+    <c:release date="2020-09-30T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.0.1">
       <c:changes>
-        <c:change date="2022-01-28T00:00:00+00:00" summary="Fixed audiobook playback rate incorrect behavior"/>
-        <c:change date="2022-02-02T00:00:00+00:00" summary="Fixed crash when exiting an audiobook"/>
-        <c:change date="2022-02-15T00:00:00+00:00" summary="Added dimension ratio to audiobook cover image"/>
-      </c:changes>
-    </c:release>
-    <c:release date="2022-03-29T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.11.0">
-      <c:changes>
-        <c:change date="2022-03-13T00:00:00+00:00" summary="Added support for LCP-protected audio books."/>
-        <c:change date="2022-03-22T00:00:00+00:00" summary="Changed displaying title for audiobook chapters with no or null title"/>
+        <c:change date="2020-09-30T00:00:00+00:00" summary="Update irradia packages to their latest published versions"/>
       </c:changes>
     </c:release>
     <c:release date="2022-04-27T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="7.0.0">
@@ -168,6 +118,24 @@
         <c:change date="2022-04-04T00:00:00+00:00" summary="Added support to audiobook titles based on the table of contents"/>
         <c:change date="2022-04-04T00:00:00+00:00" summary="Added logic to handle offset on LCP and ExoSpine elements"/>
         <c:change date="2022-04-13T00:00:00+00:00" summary="Removed padding from audiobook cover image"/>
+      </c:changes>
+    </c:release>
+    <c:release date="2020-10-15T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.0.2">
+      <c:changes>
+        <c:change date="2020-10-06T00:00:00+00:00" summary="Fix word repetitions at the start of chapters.">
+          <c:tickets>
+            <c:ticket id="SIMPLY-2947"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2020-12-01T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.2.0">
+      <c:changes>
+        <c:change date="2020-12-01T00:00:00+00:00" summary="Use the correct RecyclerView class">
+          <c:tickets>
+            <c:ticket id="SIMPLY-3333"/>
+          </c:tickets>
+        </c:change>
       </c:changes>
     </c:release>
     <c:release date="2022-04-29T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="7.0.1">
@@ -193,31 +161,101 @@
         <c:change date="2022-08-03T00:00:00+00:00" summary="Fixed audiobook bookmarks not being saved after exiting the player."/>
       </c:changes>
     </c:release>
-    <c:release date="2022-09-19T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="8.0.1">
+    <c:release date="2020-07-21T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="5.0.0">
       <c:changes>
-        <c:change date="2022-08-10T00:00:00+00:00" summary="Change chapter duration on audiobook player."/>
-        <c:change date="2022-08-26T00:00:00+00:00" summary="Added audiobook's remaining time label to player."/>
-        <c:change date="2022-09-07T00:00:00+00:00" summary="Fixed crash on MediaButton receiver."/>
+        <c:change compatible="false" date="2020-07-21T00:00:00+00:00" summary="Require a User-Agent everywhere"/>
+        <c:change date="2020-07-21T00:00:00+00:00" summary="Add an Overdrive Patron Auth API"/>
+        <c:change date="2020-07-21T00:00:00+00:00" summary="Stop requiring durations in manifests"/>
+        <c:change date="2020-07-21T00:00:00+00:00" summary="Provide a new http module for consistent http clients"/>
       </c:changes>
     </c:release>
-    <c:release date="2022-12-08T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="8.0.2">
+    <c:release date="2020-08-13T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="5.0.1">
       <c:changes>
-        <c:change date="2022-09-26T00:00:00+00:00" summary="Added management of audio coming from different apps."/>
-        <c:change date="2022-09-27T00:00:00+00:00" summary="Added content description to back button on player screen."/>
-        <c:change date="2022-09-29T00:00:00+00:00" summary="Fixed audiobook chapter's time elapsed and remaining and book remaining time not being updated when dragging the player seekbar."/>
-        <c:change date="2022-10-03T00:00:00+00:00" summary="Updated TOC UI to always display the chapter's duration regardless of the its downloading status."/>
-        <c:change date="2022-10-20T00:00:00+00:00" summary="Changed target version to Android 12."/>
-        <c:change date="2022-10-27T00:00:00+00:00" summary="Changed target version to Android 13."/>
-        <c:change date="2022-11-17T00:00:00+00:00" summary="Added back button to table of contents screen."/>
-        <c:change date="2022-11-23T00:00:00+00:00" summary="Update chapter label on audiobook player."/>
-        <c:change date="2022-11-28T00:00:00+00:00" summary="Added phones unplugging handling to pause the audiobook when it happens."/>
+        <c:change date="2020-08-13T00:00:00+00:00" summary="Bump default timeout value to 180 seconds"/>
       </c:changes>
     </c:release>
-    <c:release date="2023-03-14T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="9.0.0">
+    <c:release date="2020-09-09T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.0.0">
       <c:changes>
-        <c:change date="2023-01-11T00:00:00+00:00" summary="Added ability to open the app when clicking on the audiobook's player notification."/>
-        <c:change date="2023-01-19T00:00:00+00:00" summary="Updated audiobook sleep timer value with the remaining duration."/>
-        <c:change date="2023-02-17T00:00:00+00:00" summary="Updated behaviour for skipping and rewinding an audiobook for 15 seconds."/>
+        <c:change date="2020-09-09T00:00:00+00:00" summary="Enable Feedbooks signature checking">
+          <c:tickets>
+            <c:ticket id="SIMPLY-2507"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2019-05-16T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="2.0.1">
+      <c:changes>
+        <c:change date="2019-05-16T00:00:00+00:00" summary="Aggressively seek to ensure playback positions are restored">
+          <c:tickets>
+            <c:ticket id="SIMPLY-1738"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2019-10-03T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="3.0.0">
+      <c:changes>
+        <c:change compatible="false" date="2019-10-03T00:00:00+00:00" summary="All views are now AndroidX views"/>
+      </c:changes>
+    </c:release>
+    <c:release date="2019-05-21T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="2.0.2">
+      <c:changes>
+        <c:change date="2019-05-21T00:00:00+00:00" summary="Add workaround so that code can run on non-AppCompat themes">
+          <c:tickets>
+            <c:ticket id="SIMPLY-1738"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2020-02-07T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="4.0.0">
+      <c:changes>
+        <c:change compatible="false" date="2020-01-27T00:00:00+00:00" summary="Rename PlayerAudioEngineVersion to PlayerVersion"/>
+        <c:change compatible="false" date="2020-01-27T00:00:00+00:00" summary="Move manifest types into their own org.librarysimplified.audiobook.manifest.api module"/>
+        <c:change compatible="false" date="2020-01-27T00:00:00+00:00" summary="Reimplement manifest parsers"/>
+        <c:change date="2020-01-27T00:00:00+00:00" summary="Add support for Feedbooks audio books"/>
+        <c:change date="2020-02-07T00:00:00+00:00" summary="Add a player extension SPI"/>
+      </c:changes>
+    </c:release>
+    <c:release date="2022-03-09T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.10.1">
+      <c:changes>
+        <c:change date="2022-01-28T00:00:00+00:00" summary="Fixed audiobook playback rate incorrect behavior"/>
+        <c:change date="2022-02-02T00:00:00+00:00" summary="Fixed crash when exiting an audiobook"/>
+        <c:change date="2022-02-15T00:00:00+00:00" summary="Added dimension ratio to audiobook cover image"/>
+      </c:changes>
+    </c:release>
+    <c:release date="2024-01-04T12:28:13+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.6.0">
+      <c:changes>
+        <c:change date="2023-11-20T00:00:00+00:00" summary="Fix an LCP audio book crash.">
+          <c:tickets>
+            <c:ticket id="PP-737"/>
+          </c:tickets>
+        </c:change>
+        <c:change date="2023-11-28T00:00:00+00:00" summary="Upgraded Exoplayer to Media3."/>
+      </c:changes>
+    </c:release>
+    <c:release date="2023-10-31T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.4.0">
+      <c:changes>
+        <c:change date="2023-10-31T00:00:00+00:00" summary="Fix some lifecycle-related crashes.">
+          <c:tickets>
+            <c:ticket id="PP-656"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2022-01-22T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.10.0">
+      <c:changes>
+        <c:change date="2021-12-14T00:00:00+00:00" summary="Added audiobook player commands to lock screen"/>
+        <c:change date="2022-01-14T00:00:00+00:00" summary="Added backward and forward actions to lock screen notification controls"/>
+      </c:changes>
+    </c:release>
+    <c:release date="2023-10-18T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.2.0">
+      <c:changes>
+        <c:change date="2023-10-12T00:00:00+00:00" summary="Fixed player sleep timer counting down when the audiobook is paused."/>
+      </c:changes>
+    </c:release>
+    <c:release date="2021-11-01T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.8.0">
+      <c:changes>
+        <c:change date="2021-11-01T00:00:00+00:00" summary="Add back button to audiobook player"/>
+        <c:change date="2021-11-01T00:00:00+00:00" summary="Switch to a neutral theme"/>
       </c:changes>
     </c:release>
     <c:release date="2023-08-18T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.0.0">
@@ -242,6 +280,11 @@
         </c:change>
       </c:changes>
     </c:release>
+    <c:release date="2021-07-13T00:00:00+00:00" is-open="false" ticket-system="org.nypl.jira" version="6.6.0">
+      <c:changes>
+        <c:change date="2021-07-13T00:00:00+00:00" summary="Add explicit bookmark events"/>
+      </c:changes>
+    </c:release>
     <c:release date="2023-10-06T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.0.1">
       <c:changes>
         <c:change date="2023-10-06T00:00:00+00:00" summary="Use the new Palace theme.">
@@ -256,49 +299,6 @@
             <c:ticket id="PP-533"/>
           </c:tickets>
         </c:change>
-      </c:changes>
-    </c:release>
-    <c:release date="2023-10-11T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.1.0">
-      <c:changes/>
-    </c:release>
-    <c:release date="2023-10-18T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.2.0">
-      <c:changes>
-        <c:change date="2023-10-12T00:00:00+00:00" summary="Fixed player sleep timer counting down when the audiobook is paused."/>
-      </c:changes>
-    </c:release>
-    <c:release date="2023-10-31T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.3.0">
-      <c:changes>
-        <c:change date="2023-10-25T00:00:00+00:00" summary="Fixed receiver related crashes on Android 13 and Android 14 devices."/>
-        <c:change date="2023-10-26T00:00:00+00:00" summary="Show sleep timer value without pressing the Play button."/>
-      </c:changes>
-    </c:release>
-    <c:release date="2023-10-31T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.4.0">
-      <c:changes>
-        <c:change date="2023-10-31T00:00:00+00:00" summary="Fix some lifecycle-related crashes.">
-          <c:tickets>
-            <c:ticket id="PP-656"/>
-          </c:tickets>
-        </c:change>
-      </c:changes>
-    </c:release>
-    <c:release date="2023-11-15T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="11.5.0">
-      <c:changes>
-        <c:change date="2023-11-15T00:00:00+00:00" summary="Reduce logging volume">
-          <c:tickets>
-            <c:ticket id="PP-663"/>
-          </c:tickets>
-        </c:change>
-        <c:change date="2023-11-15T00:00:00+00:00" summary="Correct some possible lifecycle issues."/>
-      </c:changes>
-    </c:release>
-    <c:release date="2023-11-28T18:43:12+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="11.5.1">
-      <c:changes>
-        <c:change date="2023-11-20T00:00:00+00:00" summary="Fix an LCP audio book crash.">
-          <c:tickets>
-            <c:ticket id="PP-737"/>
-          </c:tickets>
-        </c:change>
-        <c:change date="2023-11-28T18:43:12+00:00" summary="Upgraded Exoplayer to Media3."/>
       </c:changes>
     </c:release>
   </c:releases>
