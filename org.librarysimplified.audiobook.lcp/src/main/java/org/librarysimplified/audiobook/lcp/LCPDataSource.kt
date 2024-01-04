@@ -1,9 +1,10 @@
 package org.librarysimplified.audiobook.lcp
 
 import android.net.Uri
-import com.google.android.exoplayer.C
-import com.google.android.exoplayer.upstream.DataSpec
-import com.google.android.exoplayer.upstream.UriDataSource
+import androidx.media3.common.C
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.TransferListener
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.buffered
@@ -18,17 +19,24 @@ import java.io.IOException
  * This file is based on PublicationDataSource.kt from kotlin-toolkit:
  * https://github.com/readium/kotlin-toolkit/blob/main/readium/navigator/src/main/java/org/readium/r2/navigator/audio/PublicationDataSource.kt
  *
- * It has been modified to be compatible with ExoPlayer 1.5.
+ * It has been modified to be compatible with Media3.
  */
 
-internal class LCPDataSource(private val publication: Publication) : UriDataSource {
+internal class LCPDataSource(private val publication: Publication) : DataSource {
   private val logger =
     LoggerFactory.getLogger(LCPDataSource::class.java)
+
+  class Factory(private val publication: Publication) : DataSource.Factory {
+    override fun createDataSource(): LCPDataSource {
+      return LCPDataSource(publication)
+    }
+  }
 
   sealed class Exception(message: String, cause: Throwable?) : IOException(message, cause) {
     class NotOpened(message: String) : Exception(message, null)
     class NotFound(message: String) : Exception(message, null)
-    class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : Exception("Failed to read $readLength bytes of URI $uri at offset $offset.", cause)
+    class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) :
+      Exception("Failed to read $readLength bytes of URI $uri at offset $offset.", cause)
   }
 
   private data class OpenedResource(
@@ -38,6 +46,10 @@ internal class LCPDataSource(private val publication: Publication) : UriDataSour
   )
 
   private var openedResource: OpenedResource? = null
+
+  override fun addTransferListener(transferListener: TransferListener) {
+    // do nothing
+  }
 
   override fun open(dataSpec: DataSpec): Long {
     val link = publication.linkWithHref(dataSpec.uri.toString())
@@ -53,7 +65,7 @@ internal class LCPDataSource(private val publication: Publication) : UriDataSour
     )
 
     val bytesToRead =
-      if (dataSpec.length != C.LENGTH_UNBOUNDED.toLong()) {
+      if (dataSpec.length != C.LENGTH_UNSET.toLong()) {
         dataSpec.length
       } else {
         val contentLength = contentLengthOf(dataSpec.uri, resource)
@@ -81,7 +93,8 @@ internal class LCPDataSource(private val publication: Publication) : UriDataSour
       return 0
     }
 
-    val openedResource = openedResource ?: throw Exception.NotOpened("No opened resource to read from. Did you call open()?")
+    val openedResource = openedResource
+      ?: throw Exception.NotOpened("No opened resource to read from. Did you call open()?")
 
     try {
       val data = runBlocking {
@@ -107,11 +120,18 @@ internal class LCPDataSource(private val publication: Publication) : UriDataSour
       if (e is InterruptedException) {
         return 0
       }
-      throw Exception.ReadFailed(uri = openedResource.uri, offset = offset, readLength = length, cause = e)
+      throw Exception.ReadFailed(
+        uri = openedResource.uri,
+        offset = offset,
+        readLength = length,
+        cause = e
+      )
     }
   }
 
-  override fun getUri(): String? = openedResource?.uri.toString()
+  override fun getUri(): Uri? {
+    return openedResource?.uri
+  }
 
   override fun close() {
     openedResource?.run {

@@ -1,20 +1,15 @@
 package org.librarysimplified.audiobook.lcp
 
 import android.content.Context
-import android.media.AudioManager
-import android.media.PlaybackParams
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import com.google.android.exoplayer.ExoPlaybackException
-import com.google.android.exoplayer.ExoPlayer
-import com.google.android.exoplayer.MediaCodecAudioTrackRenderer
-import com.google.android.exoplayer.MediaCodecSelector
-import com.google.android.exoplayer.audio.AudioCapabilities
-import com.google.android.exoplayer.extractor.ExtractorSampleSource
-import com.google.android.exoplayer.upstream.Allocator
-import com.google.android.exoplayer.upstream.DefaultAllocator
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import kotlinx.coroutines.runBlocking
 import net.jcip.annotations.GuardedBy
 import org.joda.time.DateTime
@@ -44,12 +39,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 
 class LCPAudioBookPlayer private constructor(
-  private val engineExecutor: ScheduledExecutorService,
-  private val context: Context,
-  private val statusEvents: BehaviorSubject<PlayerEvent>,
   private val book: LCPAudioBook,
-  private val dataSource: LCPDataSource,
+  private val dataSourceFactory: LCPDataSource.Factory,
+  private val engineExecutor: ScheduledExecutorService,
   private val exoPlayer: ExoPlayer,
+  private val statusEvents: BehaviorSubject<PlayerEvent>,
 ) : PlayerType {
 
   companion object {
@@ -94,24 +88,11 @@ class LCPAudioBookPlayer private constructor(
             throw IOException("Failed to open audio book", it)
           }
 
-          val dataSource = LCPDataSource(publication)
-
-          /*
-           * The rendererCount parameter is not well documented. It appears to be the number of
-           * renderers that are required to render a single track. To render a piece of video that
-           * had video, audio, and a subtitle track would require three renderers. Audio books should
-           * require just one.
-           */
-
-          val player =
-            ExoPlayer.Factory.newInstance(1)
-
           return@Callable LCPAudioBookPlayer(
             book = book,
-            dataSource = dataSource,
-            context = context,
+            dataSourceFactory = LCPDataSource.Factory(publication),
             engineExecutor = engineExecutor,
-            exoPlayer = player,
+            exoPlayer = ExoPlayer.Builder(context).build(),
             statusEvents = statusEvents,
           )
         }
@@ -127,15 +108,11 @@ class LCPAudioBookPlayer private constructor(
     }
   }
 
-  private val bufferSegmentSize = 64 * 1024
-  private val bufferSegmentCount = 256
   private val closed = AtomicBoolean(false)
   private val bookmarkObserver = ExoBookmarkObserver.create(
     player = this,
     onBookmarkCreate = this.statusEvents::onNext
   )
-  private val allocator: Allocator = DefaultAllocator(this.bufferSegmentSize)
-  private var exoAudioRenderer: MediaCodecAudioTrackRenderer? = null
   private val log = LoggerFactory.getLogger(LCPAudioBookPlayer::class.java)
 
   @GuardedBy("stateLock")
@@ -171,8 +148,9 @@ class LCPAudioBookPlayer private constructor(
   @Volatile
   private var currentTrackIndex: Int? = null
 
-  private val exoPlayerEventListener = object : ExoPlayer.Listener {
-    override fun onPlayerError(error: ExoPlaybackException?) {
+  private val exoPlayerEventListener = object : Player.Listener {
+
+    override fun onPlayerError(error: PlaybackException) {
       log.error("onPlayerError: ", error)
       statusEvents.onNext(
         PlayerEvent.PlayerEventError(
@@ -184,15 +162,15 @@ class LCPAudioBookPlayer private constructor(
       )
     }
 
-    override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+    override fun onPlaybackStateChanged(playbackState: Int) {
       log.debug(
-        "onPlayerStateChanged: {} {} ({})", playWhenReady, getNameFromPlaybackState(playbackState),
+        "onPlaybackStateChanged: {} ({})", getNameFromPlaybackState(playbackState),
         playbackState
       )
     }
 
-    override fun onPlayWhenReadyCommitted() {
-      log.debug("onPlayWhenReadyCommitted")
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+      log.debug("onPlayWhenReadyChanged: {} {})", playWhenReady, reason)
     }
 
     private fun getNameFromPlaybackState(playbackState: Int): String {
@@ -200,18 +178,19 @@ class LCPAudioBookPlayer private constructor(
         ExoPlayer.STATE_BUFFERING -> {
           "buffering"
         }
+
         ExoPlayer.STATE_ENDED -> {
           "ended"
         }
+
         ExoPlayer.STATE_IDLE -> {
           "idle"
         }
-        ExoPlayer.STATE_PREPARING -> {
-          "preparing"
-        }
+
         ExoPlayer.STATE_READY -> {
           "ready"
         }
+
         else -> {
           "unrecognized state"
         }
@@ -310,7 +289,6 @@ class LCPAudioBookPlayer private constructor(
     this.log.debug("play")
     this.checkNotClosed()
     this.engineExecutor.execute { this.opPlay() }
-    this.exoPlayer.playWhenReady = false
   }
 
   override fun playAtBookStart() {
@@ -371,6 +349,7 @@ class LCPAudioBookPlayer private constructor(
       is LCPPlayerState.LCPPlayerStatePlaying -> {
         // do nothing
       }
+
       is LCPPlayerState.LCPPlayerStateStopped ->
         this.statusEvents.onNext(
           PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackPaused(
@@ -389,6 +368,7 @@ class LCPAudioBookPlayer private constructor(
         LCPPlayerState.LCPPlayerStateInitial -> {
           movePlayheadToBookStart()
         }
+
         is LCPPlayerState.LCPPlayerStatePlaying -> {
           val nextElement = state.spineElement.nextElement as? LCPSpineElement
             ?: return@execute this.log.debug("there's no next chapter")
@@ -408,6 +388,7 @@ class LCPAudioBookPlayer private constructor(
             )
           }
         }
+
         is LCPPlayerState.LCPPlayerStateStopped -> {
           val nextElement = state.spineElement.nextElement as? LCPSpineElement
             ?: return@execute this.log.debug("there's no next chapter")
@@ -437,6 +418,7 @@ class LCPAudioBookPlayer private constructor(
         LCPPlayerState.LCPPlayerStateInitial -> {
           movePlayheadToBookStart()
         }
+
         is LCPPlayerState.LCPPlayerStatePlaying -> {
           val previousElement = state.spineElement.previousElement as? LCPSpineElement
             ?: return@execute this.log.debug("there's no previous chapter")
@@ -457,6 +439,7 @@ class LCPAudioBookPlayer private constructor(
             )
           }
         }
+
         is LCPPlayerState.LCPPlayerStateStopped -> {
           val previousElement = state.spineElement.previousElement as? LCPSpineElement
             ?: return@execute this.log.debug("there's no previous chapter")
@@ -539,9 +522,11 @@ class LCPAudioBookPlayer private constructor(
       is LCPPlayerState.LCPPlayerStateInitial -> {
         null
       }
+
       is LCPPlayerState.LCPPlayerStatePlaying -> {
         state.spineElement
       }
+
       is LCPPlayerState.LCPPlayerStateStopped -> {
         state.spineElement
       }
@@ -682,6 +667,7 @@ class LCPAudioBookPlayer private constructor(
       LCPPlayerState.LCPPlayerStateInitial -> {
         this.log.debug("not pausing in the initial state")
       }
+
       is LCPPlayerState.LCPPlayerStatePlaying -> {
         this.log.debug(
           "pausing with trackOffset: {} and chapterOffset: {}", trackPlaybackOffset,
@@ -698,6 +684,7 @@ class LCPAudioBookPlayer private constructor(
           )
         )
       }
+
       is LCPPlayerState.LCPPlayerStateStopped -> {
         this.log.debug("not pausing in the stopped state")
       }
@@ -715,9 +702,11 @@ class LCPAudioBookPlayer private constructor(
           playAutomatically = true
         )
       }
+
       is LCPPlayerState.LCPPlayerStatePlaying -> {
         this.log.debug("opPlay: already playing")
       }
+
       is LCPPlayerState.LCPPlayerStateStopped -> {
         this.log.debug("opPlay: play on stopped state")
 
@@ -747,18 +736,7 @@ class LCPAudioBookPlayer private constructor(
 
     this.statusEvents.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(newRate))
 
-    /*
-     * If the player has not started playing a track, then attempting to set the playback
-     * rate on the player will actually end up blocking until another track is loaded.
-     */
-
-    if (this.exoAudioRenderer != null) {
-      if (Build.VERSION.SDK_INT >= 23) {
-        val params = PlaybackParams()
-        params.speed = newRate.speed.toFloat()
-        this.exoPlayer.sendMessage(this.exoAudioRenderer, 2, params)
-      }
-    }
+    this.exoPlayer.playbackParameters = PlaybackParameters(newRate.speed.toFloat())
   }
 
   private fun preparePlayer(playAutomatically: Boolean, newTrackIndex: Int) {
@@ -772,32 +750,15 @@ class LCPAudioBookPlayer private constructor(
       }
     )
 
-    val sampleSource =
-      ExtractorSampleSource(
-        uri,
-        this.dataSource,
-        this.allocator,
-        this.bufferSegmentCount * this.bufferSegmentSize,
-        null,
-        null,
-        0
+    this.engineExecutor.execute {
+      exoPlayer.setMediaSource(
+        ProgressiveMediaSource.Factory(dataSourceFactory)
+          .createMediaSource(MediaItem.fromUri(uri))
       )
-
-    this.exoAudioRenderer =
-      MediaCodecAudioTrackRenderer(
-        sampleSource,
-        MediaCodecSelector.DEFAULT,
-        null,
-        true,
-        null,
-        null,
-        AudioCapabilities.getCapabilities(this.context),
-        AudioManager.STREAM_MUSIC
-      )
-
-    this.exoPlayer.prepare(this.exoAudioRenderer)
-    this.seekToTrackPlaybackOffset()
-    this.exoPlayer.playWhenReady = playAutomatically
+      exoPlayer.prepare()
+      this.seekToTrackPlaybackOffset()
+      this.exoPlayer.playWhenReady = playAutomatically
+    }
   }
 
   private fun schedulePlaybackObserverForSpineElement() {
@@ -808,7 +769,7 @@ class LCPAudioBookPlayer private constructor(
 
   private fun seekToTrackPlaybackOffset() {
     this.log.debug("seekTo: {}", trackPlaybackOffset)
-    this.exoPlayer.seekTo(trackPlaybackOffset)
+    this.engineExecutor.execute { this.exoPlayer.seekTo(trackPlaybackOffset) }
   }
 
   private fun startNewSchedulerAfterSomeDelay(
@@ -908,6 +869,7 @@ class LCPAudioBookPlayer private constructor(
         is LCPPlayerState.LCPPlayerStateStopped -> {
           // do nothing
         }
+
         is LCPPlayerState.LCPPlayerStatePlaying -> {
           spineElementToUpdate ?: return
 

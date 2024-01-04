@@ -16,10 +16,9 @@ import java.util.concurrent.ScheduledExecutorService
  */
 
 class ExoAudioBookProvider(
-  private val engineExecutor: ScheduledExecutorService,
   private val downloadProvider: PlayerDownloadProviderType,
+  private val engineExecutor: ScheduledExecutorService,
   private val manifest: PlayerManifest,
-  private val engineProvider: ExoEngineProvider,
   private val userAgent: PlayerUserAgent
 ) : PlayerAudioBookProviderType {
 
@@ -32,7 +31,6 @@ class ExoAudioBookProvider(
         is PlayerResult.Success ->
           PlayerResult.Success(
             ExoAudioBook.create(
-              engineProvider = this.engineProvider,
               context = context,
               engineExecutor = this.engineExecutor,
               manifest = parsed.result,
