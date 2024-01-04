@@ -301,6 +301,9 @@
         </c:change>
       </c:changes>
     </c:release>
+    <c:release date="2024-01-04T13:41:57+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="11.6.1">
+      <c:changes/>
+    </c:release>
   </c:releases>
   <c:ticket-systems>
     <c:ticket-system default="false" id="org.nypl.jira" url="https://jira.nypl.org/browse/"/>
