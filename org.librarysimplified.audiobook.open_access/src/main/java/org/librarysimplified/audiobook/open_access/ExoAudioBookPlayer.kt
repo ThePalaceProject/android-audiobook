@@ -2,8 +2,6 @@ package org.librarysimplified.audiobook.open_access
 
 import android.content.Context
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
@@ -36,6 +34,7 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.Play
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerType
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer.ExoPlayerState.ExoPlayerStateInitial
 import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer.ExoPlayerState.ExoPlayerStatePlaying
 import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer.ExoPlayerState.ExoPlayerStateStopped
@@ -259,7 +258,7 @@ class ExoAudioBookPlayer private constructor(
         return
       }
 
-      runOnMainThread {
+      PlayerUIThread.runOnUIThread {
         val bookPlayer = this@ExoAudioBookPlayer
         val duration = bookPlayer.exoPlayer.duration
         val position = bookPlayer.exoPlayer.currentPosition
@@ -291,10 +290,6 @@ class ExoAudioBookPlayer private constructor(
         }
       }
     }
-  }
-
-  private fun runOnMainThread(r: Runnable) {
-    Handler(Looper.getMainLooper()).post(r)
   }
 
   /**
@@ -582,6 +577,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opSetPlaybackRate(newRate: PlayerPlaybackRate) {
     this.log.debug("opSetPlaybackRate: {}", newRate)
+    PlayerUIThread.checkIsUIThread()
 
     this.currentPlaybackRate = newRate
     this.setPlayerPlaybackRate(newRate)
@@ -589,6 +585,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opPlay() {
     this.log.debug("opPlay")
+    PlayerUIThread.checkIsUIThread()
 
     when (val state = this.stateGet()) {
       is ExoPlayerStateInitial -> {
@@ -609,6 +606,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opPlayStopped(state: ExoPlayerStateStopped) {
     this.log.debug("opPlayStopped")
+    PlayerUIThread.checkIsUIThread()
 
     this.exoPlayer.playWhenReady = true
 
@@ -630,6 +628,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opCurrentTrackFinished() {
     this.log.debug("opCurrentTrackFinished")
+    PlayerUIThread.checkIsUIThread()
 
     return when (val state = this.stateGet()) {
       is ExoPlayerStateInitial,
@@ -680,6 +679,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opSkipToNextChapter(offset: Long): SkipChapterStatus {
     this.log.debug("opSkipToNextChapter")
+    PlayerUIThread.checkIsUIThread()
 
     return when (val state = this.stateGet()) {
       is ExoPlayerStateInitial ->
@@ -698,6 +698,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opSkipToPreviousChapter(offset: Long): SkipChapterStatus {
     this.log.debug("opSkipToPreviousChapter")
+    PlayerUIThread.checkIsUIThread()
 
     return when (val state = this.stateGet()) {
       ExoPlayerStateInitial ->
@@ -716,6 +717,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opPause() {
     this.log.debug("opPause")
+    PlayerUIThread.checkIsUIThread()
 
     return when (val state = this.stateGet()) {
       is ExoPlayerStateInitial ->
@@ -734,6 +736,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opPausePlaying(state: ExoPlayerStatePlaying) {
     this.log.debug("opPausePlaying: offset: {}", this.currentPlaybackOffset)
+    PlayerUIThread.checkIsUIThread()
 
     state.observerTask.cancel(true)
     this.exoPlayer.playWhenReady = false
@@ -748,6 +751,8 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opSkipPlayhead(milliseconds: Long) {
     this.log.debug("opSkipPlayhead")
+    PlayerUIThread.checkIsUIThread()
+
     return when {
       milliseconds == 0L -> {
       }
@@ -759,6 +764,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opSkipForward(milliseconds: Long) {
     this.log.debug("opSkipForward")
+    PlayerUIThread.checkIsUIThread()
 
     assert(milliseconds > 0, { "Milliseconds must be positive" })
 
@@ -789,6 +795,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opSkipBack(milliseconds: Long) {
     this.log.debug("opSkipBack")
+    PlayerUIThread.checkIsUIThread()
 
     assert(milliseconds < 0, { "Milliseconds must be negative" })
 
@@ -816,6 +823,7 @@ class ExoAudioBookPlayer private constructor(
 
   private fun opPlayAtLocation(location: PlayerPosition, playAutomatically: Boolean = false) {
     this.log.debug("opPlayAtLocation: {}", location)
+    PlayerUIThread.checkIsUIThread()
 
     val currentSpineElement =
       this.currentSpineElement()
@@ -856,12 +864,16 @@ class ExoAudioBookPlayer private constructor(
     playAutomatically: Boolean = false
   ) {
     this.log.debug("opMovePlayheadToLocation: {}", location)
+    PlayerUIThread.checkIsUIThread()
+
     this.opPlayAtLocation(location, playAutomatically)
     this.opPause()
   }
 
   private fun opClose() {
     this.log.debug("opClose")
+    PlayerUIThread.checkIsUIThread()
+
     this.bookmarkObserver.close()
     this.manifestSubscription.unsubscribe()
     this.downloadEventSubscription.unsubscribe()
@@ -905,60 +917,84 @@ class ExoAudioBookPlayer private constructor(
 
   override fun play() {
     this.checkNotClosed()
-    this.opPlay()
+
+    PlayerUIThread.runOnUIThread {
+      this.opPlay()
+    }
   }
 
   override fun pause() {
     this.checkNotClosed()
-    this.opPause()
+
+    PlayerUIThread.runOnUIThread {
+      this.opPause()
+    }
   }
 
   override fun skipToNextChapter(offset: Long) {
     this.checkNotClosed()
-    val status = this.opSkipToNextChapter(offset = offset)
 
-    // if there's no next chapter, the player will go to the end of the chapter
-    if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
-      this.seek(this.exoPlayer.duration)
+    PlayerUIThread.runOnUIThread {
+      val status = this.opSkipToNextChapter(offset = offset)
+
+      // if there's no next chapter, the player will go to the end of the chapter
+      if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
+        this.seek(this.exoPlayer.duration)
+      }
     }
   }
 
   override fun skipToPreviousChapter(offset: Long) {
     this.checkNotClosed()
-    val status = this.opSkipToPreviousChapter(offset = offset)
 
-    // if there's no previous chapter, the player will go to the start of the chapter
-    if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
-      this.seek(0L)
+    PlayerUIThread.runOnUIThread {
+      val status = this.opSkipToPreviousChapter(offset = offset)
+
+      // if there's no previous chapter, the player will go to the start of the chapter
+      if (status == SKIP_TO_CHAPTER_NONEXISTENT) {
+        this.seek(0L)
+      }
     }
   }
 
   override fun skipPlayhead(milliseconds: Long) {
     this.checkNotClosed()
-    this.opSkipPlayhead(milliseconds)
+
+    PlayerUIThread.runOnUIThread {
+      this.opSkipPlayhead(milliseconds)
+    }
   }
 
   override fun playAtLocation(location: PlayerPosition) {
     this.checkNotClosed()
-    this.opPlayAtLocation(location, playAutomatically = true)
+
+    PlayerUIThread.runOnUIThread {
+      this.opPlayAtLocation(location, playAutomatically = true)
+    }
   }
 
   override fun movePlayheadToLocation(location: PlayerPosition, playAutomatically: Boolean) {
     this.checkNotClosed()
 
-    runOnMainThread {
+    PlayerUIThread.runOnUIThread {
       opMovePlayheadToLocation(location, playAutomatically)
     }
   }
 
   override fun playAtBookStart() {
     this.checkNotClosed()
-    this.opPlayAtLocation(this.book.spine.first().position)
+
+    PlayerUIThread.runOnUIThread {
+      this.opPlayAtLocation(this.book.spine.first().position)
+    }
   }
 
   override fun movePlayheadToBookStart() {
     this.checkNotClosed()
-    this.opMovePlayheadToLocation(this.book.spine.first().position)
+
+    PlayerUIThread.runOnUIThread {
+      this.opMovePlayheadToLocation(this.book.spine.first().position)
+    }
   }
 
   override fun getCurrentPositionAsPlayerBookmark(): PlayerBookmark? {
@@ -979,7 +1015,9 @@ class ExoAudioBookPlayer private constructor(
 
   override fun close() {
     if (this.closed.compareAndSet(false, true)) {
-      this.opClose()
+      PlayerUIThread.runOnUIThread {
+        this.opClose()
+      }
     }
   }
 }

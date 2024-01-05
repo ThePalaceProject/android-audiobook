@@ -13,9 +13,9 @@ import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerPosition
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.views.PlayerTimeStrings
 import org.librarysimplified.audiobook.views.R
-import org.librarysimplified.audiobook.views.UIThread
 import java.util.Locale
 
 /**
@@ -46,7 +46,7 @@ class PlayerTOCBookmarkAdapter(
   override fun getItemCount(): Int = this.bookmarks.size
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     val view =
       LayoutInflater.from(parent.context)
@@ -56,7 +56,7 @@ class PlayerTOCBookmarkAdapter(
   }
 
   override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     (holder as? BookmarkViewHolder)?.bind(bookmarks[position])
   }

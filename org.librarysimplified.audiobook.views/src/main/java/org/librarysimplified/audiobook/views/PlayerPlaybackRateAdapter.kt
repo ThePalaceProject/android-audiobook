@@ -12,6 +12,7 @@ import org.librarysimplified.audiobook.api.PlayerPlaybackRate.NORMAL_TIME
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.ONE_AND_A_HALF_TIME
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.ONE_AND_A_QUARTER_TIME
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.THREE_QUARTERS_TIME
+import org.librarysimplified.audiobook.api.PlayerUIThread
 
 /**
  * A Recycler view adapter used to display and control a playback rate configuration menu.
@@ -98,7 +99,7 @@ class PlayerPlaybackRateAdapter(
     parent: ViewGroup,
     viewType: Int
   ): ViewHolder {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     val view =
       LayoutInflater.from(parent.context)
@@ -111,7 +112,7 @@ class PlayerPlaybackRateAdapter(
     holder: ViewHolder,
     position: Int
   ) {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     val item = this.rates[position]
     holder.text.text = textOfRate(item)

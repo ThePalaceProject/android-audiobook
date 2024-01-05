@@ -10,9 +10,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
-import org.librarysimplified.audiobook.api.PlayerSleepTimerType
-import org.librarysimplified.audiobook.api.PlayerType
-import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilitySleepTimerSettingChanged
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.END_OF_CHAPTER
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_15
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_30
@@ -21,6 +18,9 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.NOW
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.OFF
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.values
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType
+import org.librarysimplified.audiobook.api.PlayerType
+import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilitySleepTimerSettingChanged
 import org.slf4j.LoggerFactory
 
 /**

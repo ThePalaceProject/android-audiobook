@@ -55,6 +55,7 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTime
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerType
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityErrorOccurred
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityIsBuffering
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityIsWaitingForChapter
@@ -232,78 +233,70 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   private fun onPlayerSleepTimerEventFinished() {
     this.onPressedPause(abandonAudioFocus = false)
 
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
 
-          this.menuSleepText?.text = ""
-          this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-          this.menuSleepText?.visibility = INVISIBLE
-          this.menuSleepEndOfChapter.visibility = INVISIBLE
-        }
+        this.menuSleepText?.text = ""
+        this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+        this.menuSleepText?.visibility = INVISIBLE
+        this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
-    )
+    }
   }
 
   private fun onPlayerSleepTimerEventCancelled() {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
 
-          this.menuSleepText?.text = ""
-          this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-          this.menuSleepText?.visibility = INVISIBLE
-          this.menuSleepEndOfChapter.visibility = INVISIBLE
-        }
+        this.menuSleepText?.text = ""
+        this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+        this.menuSleepText?.visibility = INVISIBLE
+        this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
-    )
+    }
   }
 
   private fun onPlayerSleepTimerEventRunning(event: PlayerSleepTimerRunning) {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          val remaining = event.remaining
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        val remaining = event.remaining
 
-          this.listener.onPlayerSleepTimerUpdated(remaining?.millis)
+        this.listener.onPlayerSleepTimerUpdated(remaining?.millis)
 
-          if (remaining != null) {
-            this.menuSleep.actionView?.contentDescription =
-              this.sleepTimerContentDescriptionForTime(event.paused, remaining)
-            this.menuSleepText?.text =
-              PlayerTimeStrings.hourMinuteSecondTextFromDuration(remaining)
-            this.menuSleepEndOfChapter.visibility = INVISIBLE
-          } else {
-            this.menuSleep.actionView?.contentDescription =
-              this.sleepTimerContentDescriptionEndOfChapter()
-            this.menuSleepText?.text = ""
-            this.menuSleepEndOfChapter.visibility = VISIBLE
-          }
-
-          this.menuSleepText?.visibility = VISIBLE
+        if (remaining != null) {
+          this.menuSleep.actionView?.contentDescription =
+            this.sleepTimerContentDescriptionForTime(event.paused, remaining)
+          this.menuSleepText?.text =
+            PlayerTimeStrings.hourMinuteSecondTextFromDuration(remaining)
+          this.menuSleepEndOfChapter.visibility = INVISIBLE
+        } else {
+          this.menuSleep.actionView?.contentDescription =
+            this.sleepTimerContentDescriptionEndOfChapter()
+          this.menuSleepText?.text = ""
+          this.menuSleepEndOfChapter.visibility = VISIBLE
         }
+
+        this.menuSleepText?.visibility = VISIBLE
       }
-    )
+    }
   }
 
   private fun onPlayerSleepTimerDurationUpdated(event: PlayerSleepTimerDurationUpdated) {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          val duration = event.remaining
-          if (duration != null) {
-            this.menuSleepText?.text =
-              PlayerTimeStrings.hourMinuteSecondTextFromDuration(duration)
-            this.menuSleepText?.visibility = VISIBLE
-          } else {
-            this.menuSleepText?.text = ""
-            this.menuSleepText?.visibility = INVISIBLE
-          }
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        val duration = event.remaining
+        if (duration != null) {
+          this.menuSleepText?.text =
+            PlayerTimeStrings.hourMinuteSecondTextFromDuration(duration)
+          this.menuSleepText?.visibility = VISIBLE
+        } else {
+          this.menuSleepText?.text = ""
+          this.menuSleepText?.visibility = INVISIBLE
         }
       }
-    )
+    }
   }
 
   private fun sleepTimerContentDescriptionEndOfChapter(): String {
@@ -359,18 +352,16 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   }
 
   private fun onPlayerSleepTimerEventStopped() {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
 
-          this.menuSleepText?.text = ""
-          this.menuSleepText?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-          this.menuSleepText?.visibility = INVISIBLE
-          this.menuSleepEndOfChapter.visibility = INVISIBLE
-        }
+        this.menuSleepText?.text = ""
+        this.menuSleepText?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+        this.menuSleepText?.visibility = INVISIBLE
+        this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
-    )
+    }
   }
 
   private fun onMenuTOCSelected(): Boolean {
@@ -685,7 +676,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       return
     }
 
-    UIThread.runOnUIThread {
+    PlayerUIThread.runOnUIThread {
       safelyPerformOperations {
         this.playerBookmark.alpha = 0.5f
         this.playerBookmark.animation =
@@ -695,55 +686,49 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   }
 
   private fun onPlayerEventError(event: PlayerEventError) {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          val text = this.getString(R.string.audiobook_player_error, event.errorCode)
-          this.playerDownloadingChapter.visibility = GONE
-          this.playerCommands.visibility = VISIBLE
-          this.playerWaiting.text = text
-          this.playerWaiting.contentDescription = null
-          this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityErrorOccurred(text))
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        val text = this.getString(R.string.audiobook_player_error, event.errorCode)
+        this.playerDownloadingChapter.visibility = GONE
+        this.playerCommands.visibility = VISIBLE
+        this.playerWaiting.text = text
+        this.playerWaiting.contentDescription = null
+        this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityErrorOccurred(text))
 
-          val element = event.spineElement
-          if (element != null) {
-            this.configureSpineElementText(element, isPlaying = false)
-            this.onEventUpdateTimeRelatedUI(element, event.offsetMilliseconds)
-          }
+        val element = event.spineElement
+        if (element != null) {
+          this.configureSpineElementText(element, isPlaying = false)
+          this.onEventUpdateTimeRelatedUI(element, event.offsetMilliseconds)
         }
       }
-    )
+    }
   }
 
   private fun onPlayerEventChapterWaiting(event: PlayerEventChapterWaiting) {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.playerDownloadingChapter.visibility = VISIBLE
-          this.playerCommands.visibility = GONE
-          val text =
-            this.getString(R.string.audiobook_player_waiting, event.spineElement.index + 1)
-          this.playerWaiting.text = text
-          this.playerWaiting.contentDescription = null
-          this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityIsWaitingForChapter(text))
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.playerDownloadingChapter.visibility = VISIBLE
+        this.playerCommands.visibility = GONE
+        val text =
+          this.getString(R.string.audiobook_player_waiting, event.spineElement.index + 1)
+        this.playerWaiting.text = text
+        this.playerWaiting.contentDescription = null
+        this.listener.onPlayerAccessibilityEvent(PlayerAccessibilityIsWaitingForChapter(text))
 
-          this.configureSpineElementText(event.spineElement, isPlaying = false)
-          this.onEventUpdateTimeRelatedUI(event.spineElement, 0)
-        }
+        this.configureSpineElementText(event.spineElement, isPlaying = false)
+        this.onEventUpdateTimeRelatedUI(event.spineElement, 0)
       }
-    )
+    }
   }
 
   private fun onPlayerEventPlaybackBuffering(event: PlayerEventPlaybackBuffering) {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.onPlayerBufferingStarted()
-          this.configureSpineElementText(event.spineElement, isPlaying = false)
-          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
-        }
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.onPlayerBufferingStarted()
+        this.configureSpineElementText(event.spineElement, isPlaying = false)
+        this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
       }
-    )
+    }
   }
 
   private fun onPlayerEventChapterCompleted() {
@@ -763,23 +748,36 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   }
 
   private fun onPlayerEventPlaybackRateChanged(event: PlayerEventPlaybackRateChanged) {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.currentPlaybackRate = event.rate
-          this.menuPlaybackRateText?.text = PlayerPlaybackRateAdapter.textOfRate(event.rate)
-          this.menuPlaybackRate.actionView?.contentDescription =
-            this.playbackRateContentDescription()
-        }
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.currentPlaybackRate = event.rate
+        this.menuPlaybackRateText?.text = PlayerPlaybackRateAdapter.textOfRate(event.rate)
+        this.menuPlaybackRate.actionView?.contentDescription =
+          this.playbackRateContentDescription()
       }
-    )
+    }
   }
 
   private fun onPlayerEventPlaybackStopped(event: PlayerEventPlaybackStopped) {
     this.onPlayerBufferingStopped()
 
-    UIThread.runOnUIThread(
-      Runnable {
+    PlayerUIThread.runOnUIThread {
+      this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
+      this.playPauseButton.setOnClickListener { this.onPressedPlay() }
+      this.playPauseButton.contentDescription =
+        this.getString(R.string.audiobook_accessibility_play)
+      this.configureSpineElementText(event.spineElement, isPlaying = false)
+      this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
+    }
+  }
+
+  private fun onPlayerEventPlaybackWaitingForAction(event: PlayerEventPlaybackWaitingForAction) {
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.playerDownloadingChapter.visibility = GONE
+        this.playerCommands.visibility = VISIBLE
+        this.playerWaiting.text = ""
+        this.currentPlaybackRate = this.player.playbackRate
         this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
         this.playPauseButton.setOnClickListener { this.onPressedPlay() }
         this.playPauseButton.contentDescription =
@@ -787,44 +785,23 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
         this.configureSpineElementText(event.spineElement, isPlaying = false)
         this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
       }
-    )
-  }
-
-  private fun onPlayerEventPlaybackWaitingForAction(event: PlayerEventPlaybackWaitingForAction) {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.playerDownloadingChapter.visibility = GONE
-          this.playerCommands.visibility = VISIBLE
-          this.playerWaiting.text = ""
-          this.currentPlaybackRate = this.player.playbackRate
-          this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
-          this.playPauseButton.setOnClickListener { this.onPressedPlay() }
-          this.playPauseButton.contentDescription =
-            this.getString(R.string.audiobook_accessibility_play)
-          this.configureSpineElementText(event.spineElement, isPlaying = false)
-          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
-        }
-      }
-    )
+    }
   }
 
   private fun onPlayerEventPlaybackPaused(event: PlayerEventPlaybackPaused) {
     this.onPlayerBufferingStopped()
 
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.currentPlaybackRate = this.player.playbackRate
-          this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
-          this.playPauseButton.setOnClickListener { this.onPressedPlay() }
-          this.playPauseButton.contentDescription =
-            this.getString(R.string.audiobook_accessibility_play)
-          this.configureSpineElementText(event.spineElement, isPlaying = false)
-          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
-        }
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.currentPlaybackRate = this.player.playbackRate
+        this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
+        this.playPauseButton.setOnClickListener { this.onPressedPlay() }
+        this.playPauseButton.contentDescription =
+          this.getString(R.string.audiobook_accessibility_play)
+        this.configureSpineElementText(event.spineElement, isPlaying = false)
+        this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
       }
-    )
+    }
   }
 
   override fun onAudioFocusChange(focusChange: Int) {
@@ -945,43 +922,39 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
   private fun onPlayerEventPlaybackProgressUpdate(event: PlayerEventPlaybackProgressUpdate) {
     this.onPlayerBufferingStopped()
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.playerDownloadingChapter.visibility = GONE
-          this.playerCommands.visibility = VISIBLE
-          this.playPauseButton.setImageResource(R.drawable.round_pause_24)
-          this.playPauseButton.setOnClickListener { this.onPressedPause(abandonAudioFocus = true) }
-          this.playPauseButton.contentDescription =
-            this.getString(R.string.audiobook_accessibility_pause)
-          this.playerWaiting.text = ""
-          this.playerWaiting.contentDescription = null
-          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
-        }
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.playerDownloadingChapter.visibility = GONE
+        this.playerCommands.visibility = VISIBLE
+        this.playPauseButton.setImageResource(R.drawable.round_pause_24)
+        this.playPauseButton.setOnClickListener { this.onPressedPause(abandonAudioFocus = true) }
+        this.playPauseButton.contentDescription =
+          this.getString(R.string.audiobook_accessibility_pause)
+        this.playerWaiting.text = ""
+        this.playerWaiting.contentDescription = null
+        this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
       }
-    )
+    }
   }
 
   private fun onPlayerEventPlaybackStarted(event: PlayerEventPlaybackStarted) {
     this.onPlayerBufferingStopped()
 
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.playerDownloadingChapter.visibility = GONE
-          this.playerCommands.visibility = VISIBLE
-          this.player.playbackRate = this.currentPlaybackRate
-          this.playPauseButton.setImageResource(R.drawable.round_pause_24)
-          this.playPauseButton.setOnClickListener { this.onPressedPause(abandonAudioFocus = true) }
-          this.playPauseButton.contentDescription =
-            this.getString(R.string.audiobook_accessibility_pause)
-          this.configureSpineElementText(event.spineElement, isPlaying = true)
-          this.playerPosition.isEnabled = true
-          this.playerWaiting.text = ""
-          this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
-        }
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.playerDownloadingChapter.visibility = GONE
+        this.playerCommands.visibility = VISIBLE
+        this.player.playbackRate = this.currentPlaybackRate
+        this.playPauseButton.setImageResource(R.drawable.round_pause_24)
+        this.playPauseButton.setOnClickListener { this.onPressedPause(abandonAudioFocus = true) }
+        this.playPauseButton.contentDescription =
+          this.getString(R.string.audiobook_accessibility_pause)
+        this.configureSpineElementText(event.spineElement, isPlaying = true)
+        this.playerPosition.isEnabled = true
+        this.playerWaiting.text = ""
+        this.onEventUpdateTimeRelatedUI(event.spineElement, event.offsetMilliseconds)
       }
-    )
+    }
   }
 
   private fun onPlayerEventManifestUpdated() {
@@ -1126,48 +1099,42 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
    */
 
   private fun onPlayerBufferingStarted() {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.onPlayerBufferingStopTaskNow()
-          this.playerBufferingStillOngoing = true
-          this.playerBufferingTask =
-            this.executor.schedule({ this.onPlayerBufferingCheckNow() }, 2L, TimeUnit.SECONDS)
-        }
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.onPlayerBufferingStopTaskNow()
+        this.playerBufferingStillOngoing = true
+        this.playerBufferingTask =
+          this.executor.schedule({ this.onPlayerBufferingCheckNow() }, 2L, TimeUnit.SECONDS)
       }
-    )
+    }
   }
 
   private fun onPlayerBufferingCheckNow() {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          if (this.playerBufferingStillOngoing) {
-            val accessibleMessage =
-              this.getString(R.string.audiobook_accessibility_player_buffering)
-            this.playerWaiting.contentDescription = accessibleMessage
-            this.playerWaiting.setText(R.string.audiobook_player_buffering)
-            this.playerWaiting.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
-            this.listener.onPlayerAccessibilityEvent(
-              PlayerAccessibilityIsBuffering(
-                accessibleMessage
-              )
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        if (this.playerBufferingStillOngoing) {
+          val accessibleMessage =
+            this.getString(R.string.audiobook_accessibility_player_buffering)
+          this.playerWaiting.contentDescription = accessibleMessage
+          this.playerWaiting.setText(R.string.audiobook_player_buffering)
+          this.playerWaiting.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
+          this.listener.onPlayerAccessibilityEvent(
+            PlayerAccessibilityIsBuffering(
+              accessibleMessage
             )
-          }
+          )
         }
       }
-    )
+    }
   }
 
   private fun onPlayerBufferingStopped() {
-    UIThread.runOnUIThread(
-      Runnable {
-        safelyPerformOperations {
-          this.onPlayerBufferingStopTaskNow()
-          this.playerBufferingStillOngoing = false
-        }
+    PlayerUIThread.runOnUIThread {
+      safelyPerformOperations {
+        this.onPlayerBufferingStopTaskNow()
+        this.playerBufferingStillOngoing = false
       }
-    )
+    }
   }
 
   private fun onPlayerBufferingStopTaskNow() {

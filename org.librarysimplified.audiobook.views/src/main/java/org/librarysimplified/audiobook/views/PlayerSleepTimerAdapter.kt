@@ -15,6 +15,7 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_60
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.NOW
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.OFF
+import org.librarysimplified.audiobook.api.PlayerUIThread
 
 /**
  * A Recycler view adapter used to display and control a sleep timer configuration menu.
@@ -93,7 +94,7 @@ class PlayerSleepTimerAdapter(
     parent: ViewGroup,
     viewType: Int
   ): ViewHolder {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     val view =
       LayoutInflater.from(parent.context)
@@ -106,7 +107,7 @@ class PlayerSleepTimerAdapter(
     holder: ViewHolder,
     position: Int
   ) {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     val item = this.rates[position]
     holder.text.text =

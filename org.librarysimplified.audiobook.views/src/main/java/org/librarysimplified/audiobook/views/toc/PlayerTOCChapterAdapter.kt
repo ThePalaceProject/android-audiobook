@@ -23,10 +23,10 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.Play
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.views.PlayerCircularProgressView
 import org.librarysimplified.audiobook.views.PlayerTimeStrings
 import org.librarysimplified.audiobook.views.R
-import org.librarysimplified.audiobook.views.UIThread
 
 /**
  * A Recycler view adapter used to display and control the chapters of the table of contents.
@@ -66,7 +66,7 @@ class PlayerTOCChapterAdapter(
     parent: ViewGroup,
     viewType: Int
   ): ViewHolder {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     val view =
       LayoutInflater.from(parent.context)
@@ -79,7 +79,7 @@ class PlayerTOCChapterAdapter(
     holder: ViewHolder,
     position: Int
   ) {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     val item = this.spineElements[position]
     val normalIndex = item.index + 1
@@ -305,7 +305,7 @@ class PlayerTOCChapterAdapter(
   override fun getItemCount(): Int = this.spineElements.size
 
   fun setCurrentSpineElement(index: Int) {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     val previous = this.currentSpineElement
     this.currentSpineElement = index

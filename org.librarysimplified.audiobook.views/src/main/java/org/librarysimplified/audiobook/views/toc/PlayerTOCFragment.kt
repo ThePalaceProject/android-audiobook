@@ -17,9 +17,9 @@ import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerType
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.views.PlayerFragmentListenerType
 import org.librarysimplified.audiobook.views.R
-import org.librarysimplified.audiobook.views.UIThread
 import org.slf4j.LoggerFactory
 
 /**
@@ -179,7 +179,7 @@ class PlayerTOCFragment : Fragment(), PlayerTOCMainFragment {
   }
 
   override fun menusConfigureVisibility() {
-    UIThread.checkIsUIThread()
+    PlayerUIThread.checkIsUIThread()
 
     if (this.menuInitialized) {
       val refreshVisibleThen = this.menuRefreshAll.isVisible

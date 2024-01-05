@@ -21,10 +21,10 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.Play
 import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerType
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityChapterSelected
 import org.librarysimplified.audiobook.views.PlayerFragmentListenerType
 import org.librarysimplified.audiobook.views.R
-import org.librarysimplified.audiobook.views.UIThread
 import org.slf4j.LoggerFactory
 import rx.Subscription
 
@@ -147,13 +147,11 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
         .setCancelable(true)
         .setMessage(R.string.audiobook_player_toc_menu_stop_all_confirm)
         .setPositiveButton(
-          R.string.audiobook_part_download_stop,
-          { _: DialogInterface, _: Int -> onMenuStopAllSelectedConfirmed() }
-        )
+          R.string.audiobook_part_download_stop
+        ) { _: DialogInterface, _: Int -> onMenuStopAllSelectedConfirmed() }
         .setNegativeButton(
-          R.string.audiobook_part_download_continue,
-          { _: DialogInterface, _: Int -> }
-        )
+          R.string.audiobook_part_download_continue
+        ) { _: DialogInterface, _: Int -> }
         .create()
     dialog.show()
   }
@@ -235,11 +233,9 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
   }
 
   private fun onPlayerSpineElement(index: Int) {
-    UIThread.runOnUIThread(
-      Runnable {
-        this.adapter.setCurrentSpineElement(index)
-      }
-    )
+    PlayerUIThread.runOnUIThread {
+      this.adapter.setCurrentSpineElement(index)
+    }
   }
 
   private fun onSpineElementStatusError(error: Throwable?) {
@@ -247,12 +243,10 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
   }
 
   private fun onSpineElementStatusChanged(status: PlayerSpineElementDownloadStatus) {
-    UIThread.runOnUIThread(
-      Runnable {
-        val spineElement = status.spineElement
-        this.adapter.notifyItemChanged(spineElement.index)
-        (parentFragment as? PlayerTOCMainFragment)?.menusConfigureVisibility()
-      }
-    )
+    PlayerUIThread.runOnUIThread {
+      val spineElement = status.spineElement
+      this.adapter.notifyItemChanged(spineElement.index)
+      (parentFragment as? PlayerTOCMainFragment)?.menusConfigureVisibility()
+    }
   }
 }
