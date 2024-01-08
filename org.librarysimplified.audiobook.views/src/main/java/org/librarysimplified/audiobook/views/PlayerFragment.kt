@@ -507,51 +507,67 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     this.log.debug("onViewCreated")
     super.onViewCreated(view, state)
 
-    val intentFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+    /*
+     * Inject all view references before doing anything else.
+     */
 
+    this.toolbar =
+      view.findViewById(R.id.audioBookToolbar)
+    this.coverView =
+      view.findViewById(R.id.player_cover)!!
+    this.playerBookmark =
+      view.findViewById(R.id.player_bookmark)
+    this.playerDownloadingChapter =
+      view.findViewById(R.id.player_downloading_chapter)
+    this.playerCommands =
+      view.findViewById(R.id.player_commands)
+    this.playerTitleView =
+      view.findViewById(R.id.player_title)
+    this.playerAuthorView =
+      view.findViewById(R.id.player_author)
+    this.playPauseButton =
+      view.findViewById(R.id.player_play_button)!!
+    this.playerSkipForwardButton =
+      view.findViewById(R.id.player_jump_forwards)
+    this.playerSkipBackwardButton =
+      view.findViewById(R.id.player_jump_backwards)
+    this.playerWaiting =
+      view.findViewById(R.id.player_waiting_buffering)
+    this.playerTimeCurrent =
+      view.findViewById(R.id.player_time)!!
+    this.playerTimeMaximum =
+      view.findViewById(R.id.player_time_maximum)!!
+    this.playerRemainingBookTime =
+      view.findViewById(R.id.player_remaining_book_time)!!
+    this.playerSpineElement =
+      view.findViewById(R.id.player_spine_element)!!
+    this.playerPosition =
+      view.findViewById(R.id.player_progress)!!
+
+    val intentFilter =
+      IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       requireActivity().registerReceiver(playerMediaReceiver, intentFilter, RECEIVER_EXPORTED)
     } else {
       requireActivity().registerReceiver(playerMediaReceiver, intentFilter)
     }
 
-    this.toolbar = view.findViewById(R.id.audioBookToolbar)
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
     configureToolbarActions()
 
-    this.coverView = view.findViewById(R.id.player_cover)!!
-
-    this.playerBookmark = view.findViewById(R.id.player_bookmark)
     this.playerBookmark.alpha = 0.0f
-
-    this.playerDownloadingChapter = view.findViewById(R.id.player_downloading_chapter)
-    this.playerCommands = view.findViewById(R.id.player_commands)
-
-    this.playerTitleView = view.findViewById(R.id.player_title)
-    this.playerAuthorView = view.findViewById(R.id.player_author)
-
-    this.playPauseButton = view.findViewById(R.id.player_play_button)!!
     this.playPauseButton.setOnClickListener { this.onPressedPlay() }
 
-    this.playerSkipForwardButton = view.findViewById(R.id.player_jump_forwards)
     this.playerSkipForwardButton.setOnClickListener { this.player.skipForward() }
-    this.playerSkipBackwardButton = view.findViewById(R.id.player_jump_backwards)
     this.playerSkipBackwardButton.setOnClickListener { this.player.skipBack() }
 
-    this.playerWaiting = view.findViewById(R.id.player_waiting_buffering)
     this.playerWaiting.text = ""
     this.playerWaiting.contentDescription = null
 
-    this.playerPosition = view.findViewById(R.id.player_progress)!!
     this.playerPosition.isEnabled = false
     this.playerPositionDragging = false
 
     this.playerPosition.setOnTouchListener { _, event -> this.handleTouchOnSeekbar(event) }
-
-    this.playerTimeCurrent = view.findViewById(R.id.player_time)!!
-    this.playerTimeMaximum = view.findViewById(R.id.player_time_maximum)!!
-    this.playerRemainingBookTime = view.findViewById(R.id.player_remaining_book_time)!!
-    this.playerSpineElement = view.findViewById(R.id.player_spine_element)!!
     this.playerSpineElement.text = this.spineElementText(this.book.spine.first())
 
     this.listener.onPlayerWantsCoverImage(this.coverView)
