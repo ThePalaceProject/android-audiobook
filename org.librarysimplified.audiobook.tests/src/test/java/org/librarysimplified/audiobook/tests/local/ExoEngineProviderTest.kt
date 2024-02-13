@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.tests.local
 
-import android.content.Context
+import android.app.Application
 import org.librarysimplified.audiobook.tests.open_access.ExoEngineProviderContract
 import org.mockito.Mockito
 import org.slf4j.Logger
@@ -12,9 +12,8 @@ class ExoEngineProviderTest : ExoEngineProviderContract() {
     return LoggerFactory.getLogger(ExoEngineProviderTest::class.java)
   }
 
-  override fun context(): Context {
-    val context = Mockito.mock(Context::class.java)
-    return context
+  override fun context(): Application {
+    return Mockito.mock(Application::class.java)
   }
 
   override fun onRealDevice(): Boolean {

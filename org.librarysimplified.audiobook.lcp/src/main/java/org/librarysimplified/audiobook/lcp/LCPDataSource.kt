@@ -6,9 +6,11 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.buffered
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.resource.BufferingResource
+import org.readium.r2.shared.util.resource.Resource
 import org.slf4j.LoggerFactory
 import java.io.IOException
 
@@ -22,13 +24,16 @@ import java.io.IOException
  * It has been modified to be compatible with Media3.
  */
 
-internal class LCPDataSource(private val publication: Publication) : DataSource {
+internal class LCPDataSource(
+  private val publication: Publication
+) : DataSource {
+
   private val logger =
     LoggerFactory.getLogger(LCPDataSource::class.java)
 
   class Factory(private val publication: Publication) : DataSource.Factory {
     override fun createDataSource(): LCPDataSource {
-      return LCPDataSource(publication)
+      return LCPDataSource(this.publication)
     }
   }
 
@@ -52,14 +57,24 @@ internal class LCPDataSource(private val publication: Publication) : DataSource 
   }
 
   override fun open(dataSpec: DataSpec): Long {
-    val link = publication.linkWithHref(dataSpec.uri.toString())
-      ?: throw Exception.NotFound("Resource not found in manifest: ${dataSpec.uri}")
+    val url =
+      org.readium.r2.shared.util.Url(dataSpec.uri.toString())!!
+    val link =
+      this.publication.linkWithHref(url)
+        ?: throw Exception.NotFound("Resource not found in manifest: ${dataSpec.uri}")
 
-    val resource = publication.get(link)
-      .buffered(resourceLength = cachedLengths[dataSpec.uri.toString()])
+    val resource =
+      this.publication.get(link)
+        ?: throw Exception.NotFound("Resource not found in manifest: ${dataSpec.uri}")
 
-    openedResource = OpenedResource(
-      resource = resource,
+    val buffered =
+      BufferingResource(
+        resource = resource,
+        resourceLength = this.cachedLengths[dataSpec.uri.toString()]
+      )
+
+    this.openedResource = OpenedResource(
+      resource = buffered,
       uri = dataSpec.uri,
       position = dataSpec.position,
     )
@@ -68,7 +83,7 @@ internal class LCPDataSource(private val publication: Publication) : DataSource 
       if (dataSpec.length != C.LENGTH_UNSET.toLong()) {
         dataSpec.length
       } else {
-        val contentLength = contentLengthOf(dataSpec.uri, resource)
+        val contentLength = this.contentLengthOf(dataSpec.uri, resource)
           ?: return dataSpec.length
         contentLength - dataSpec.position
       }
@@ -79,12 +94,12 @@ internal class LCPDataSource(private val publication: Publication) : DataSource 
   private var cachedLengths: MutableMap<String, Long> = mutableMapOf()
 
   private fun contentLengthOf(uri: Uri, resource: Resource): Long? {
-    cachedLengths[uri.toString()]?.let { return it }
+    this.cachedLengths[uri.toString()]?.let { return it }
 
     val length = runBlocking { resource.length() }.getOrNull()
       ?: return null
 
-    cachedLengths[uri.toString()] = length
+    this.cachedLengths[uri.toString()] = length
     return length
   }
 
@@ -93,14 +108,18 @@ internal class LCPDataSource(private val publication: Publication) : DataSource 
       return 0
     }
 
-    val openedResource = openedResource
+    val openedResource = this.openedResource
       ?: throw Exception.NotOpened("No opened resource to read from. Did you call open()?")
 
     try {
       val data = runBlocking {
-        openedResource.resource
-          .read(range = openedResource.position until (openedResource.position + length))
-          .getOrThrow()
+        when (val r =
+          openedResource.resource
+            .read(range = openedResource.position until (openedResource.position + length))
+        ) {
+          is Try.Failure -> throw ErrorException(r.value)
+          is Try.Success -> r.value
+        }
       }
 
       if (data.isEmpty()) {
@@ -130,19 +149,19 @@ internal class LCPDataSource(private val publication: Publication) : DataSource 
   }
 
   override fun getUri(): Uri? {
-    return openedResource?.uri
+    return this.openedResource?.uri
   }
 
   override fun close() {
-    openedResource?.run {
+    this.openedResource?.run {
       try {
-        runBlocking { resource.close() }
+        runBlocking { this@run.resource.close() }
       } catch (e: Exception) {
         if (e !is InterruptedException) {
           throw e
         }
       }
     }
-    openedResource = null
+    this.openedResource = null
   }
 }

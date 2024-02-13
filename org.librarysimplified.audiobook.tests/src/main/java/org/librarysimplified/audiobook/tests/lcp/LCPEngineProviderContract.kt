@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.tests.lcp
 
-import android.content.Context
+import android.app.Application
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
@@ -14,7 +14,7 @@ import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.librarysimplified.audiobook.tests.DishonestDownloadProvider
 import org.mockito.Mockito
-import org.readium.r2.shared.publication.ContentProtection
+import org.readium.r2.shared.publication.protection.ContentProtection
 import org.slf4j.Logger
 import java.io.File
 import java.net.URI
@@ -23,7 +23,7 @@ abstract class LCPEngineProviderContract {
 
   abstract fun log(): Logger
 
-  abstract fun context(): Context
+  abstract fun context(): Application
 
   /**
    * Check to see if the current test is executing as an instrumented test on a hardware or

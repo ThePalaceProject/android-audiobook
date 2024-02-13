@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.lcp
 
-import android.content.Context
+import android.app.Application
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerResult
@@ -8,7 +8,7 @@ import org.librarysimplified.audiobook.api.PlayerResult.Failure
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.open_access.ExoManifest
-import org.readium.r2.shared.publication.ContentProtection
+import org.readium.r2.shared.publication.protection.ContentProtection
 import java.io.File
 import java.util.concurrent.ScheduledExecutorService
 
@@ -25,7 +25,7 @@ class LCPAudioBookProvider(
 ) : PlayerAudioBookProviderType {
 
   override fun create(
-    context: Context,
+    context: Application,
     extensions: List<PlayerExtensionType>
   ): PlayerResult<PlayerAudioBookType, Exception> {
     try {

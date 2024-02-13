@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.open_access
 
-import android.content.Context
+import android.app.Application
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
@@ -23,7 +23,7 @@ class ExoAudioBookProvider(
 ) : PlayerAudioBookProviderType {
 
   override fun create(
-    context: Context,
+    context: Application,
     extensions: List<PlayerExtensionType>
   ): PlayerResult<PlayerAudioBookType, Exception> {
     try {

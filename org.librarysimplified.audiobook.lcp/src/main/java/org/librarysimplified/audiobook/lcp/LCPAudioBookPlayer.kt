@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.lcp
 
-import android.content.Context
+import android.app.Application
 import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -19,17 +19,16 @@ import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.open_access.ExoBookmarkObserver
-import org.readium.r2.shared.publication.asset.FileAsset
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.ErrorException
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.http.DefaultHttpClient
-import org.readium.r2.shared.util.logging.ConsoleWarningLogger
-import org.readium.r2.streamer.Streamer
-import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
+import org.readium.r2.streamer.PublicationOpener
+import org.readium.r2.streamer.parser.DefaultPublicationParser
 import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.subjects.BehaviorSubject
-import java.io.IOException
-import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
@@ -51,7 +50,7 @@ class LCPAudioBookPlayer private constructor(
 
     fun create(
       book: LCPAudioBook,
-      context: Context,
+      context: Application,
       engineExecutor: ScheduledExecutorService,
       manualPassphrase: Boolean
     ): LCPAudioBookPlayer {
@@ -66,50 +65,59 @@ class LCPAudioBookPlayer private constructor(
       PlayerUIThread.runOnUIThread {
         exoFuture.complete(ExoPlayer.Builder(context).build())
       }
-      val exoPlayer = exoFuture.get(TIMEOUT_PLAYER_CREATION, TimeUnit.SECONDS)
+      val exoPlayer =
+        exoFuture.get(TIMEOUT_PLAYER_CREATION, TimeUnit.SECONDS)
+      val publication =
+        openPublication(context, book)
 
-      return engineExecutor.submit(
-        Callable {
-          val streamer =
-            Streamer(
-              context = context,
-              parsers = listOf(
-                ReadiumWebPubParser(
-                  httpClient = DefaultHttpClient(),
-                  pdfFactory = null
-                )
-              ),
-              contentProtections = book.contentProtections,
-              ignoreDefaultParsers = true
-            )
-
-          val publication = runBlocking {
-            streamer.open(
-              asset = FileAsset(book.file),
-              allowUserInteraction = false,
-              warnings = ConsoleWarningLogger()
-            )
-          }.getOrElse {
-            throw IOException("Failed to open audio book", it)
-          }
-
-          return@Callable LCPAudioBookPlayer(
-            book = book,
-            dataSourceFactory = LCPDataSource.Factory(publication),
-            engineExecutor = engineExecutor,
-            exoPlayer = exoPlayer,
-            statusEvents = statusEvents,
-          )
-        }
-      ).get(
-        // if the manual passphrase is enabled, we need to have an infinite timeout, otherwise the
-        // creation could be interrupted before the user wrote the passphrase
-        if (manualPassphrase) {
-          Long.MAX_VALUE
-        } else {
-          this.TIMEOUT_PLAYER_CREATION
-        }, TimeUnit.SECONDS
+      return LCPAudioBookPlayer(
+        book = book,
+        dataSourceFactory = LCPDataSource.Factory(publication),
+        engineExecutor = engineExecutor,
+        exoPlayer = exoPlayer,
+        statusEvents = statusEvents,
       )
+    }
+
+    private fun openPublication(
+      context: Application,
+      book: LCPAudioBook
+    ): Publication {
+      return runBlocking {
+        val httpClient =
+          DefaultHttpClient()
+        val assetRetriever =
+          AssetRetriever(context.contentResolver, httpClient)
+
+        when (val assetR = assetRetriever.retrieve(book.file)) {
+          is Try.Failure -> throw ErrorException(assetR.value)
+          is Try.Success -> {
+            val publicationParser =
+              DefaultPublicationParser(
+                context = context,
+                httpClient = httpClient,
+                assetRetriever = assetRetriever,
+                pdfFactory = LCPNoPDFFactory,
+              )
+            val publicationOpener =
+              PublicationOpener(
+                publicationParser = publicationParser,
+                contentProtections = book.contentProtections,
+                onCreatePublication = {
+                },
+              )
+
+            when (val pubR = publicationOpener.open(
+              asset = assetR.value,
+              credentials = null,
+              allowUserInteraction = false,
+            )) {
+              is Try.Failure -> throw ErrorException(pubR.value)
+              is Try.Success -> pubR.value
+            }
+          }
+        }
+      }
     }
   }
 

@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.api
 
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
-import org.readium.r2.shared.publication.ContentProtection
+import org.readium.r2.shared.publication.protection.ContentProtection
 import java.io.File
 
 /**
@@ -50,7 +50,7 @@ data class PlayerAudioEngineRequest(
    * Content protections available to unlock the audio book, if it is protected.
    */
 
-  val contentProtections: List<ContentProtection>? = null,
+  val contentProtections: List<ContentProtection> = listOf(),
 
   /**
    * A passphrase, if needed, will be manually inserted.
