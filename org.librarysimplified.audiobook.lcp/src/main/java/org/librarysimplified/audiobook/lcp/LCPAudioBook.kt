@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.lcp
 
-import android.content.Context
+import android.app.Application
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import org.joda.time.Duration
@@ -13,7 +13,7 @@ import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.open_access.ExoManifest
-import org.readium.r2.shared.publication.ContentProtection
+import org.readium.r2.shared.publication.protection.ContentProtection
 import org.slf4j.LoggerFactory
 import rx.subjects.PublishSubject
 import java.io.File
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 
 class LCPAudioBook private constructor(
-  private val context: Context,
+  private val context: Application,
   private val engineExecutor: ScheduledExecutorService,
   override val spine: List<LCPSpineElement>,
   override val spineByID: Map<String, LCPSpineElement>,
@@ -80,7 +80,7 @@ class LCPAudioBook private constructor(
 
   companion object {
     fun create(
-      context: Context,
+      context: Application,
       engineExecutor: ScheduledExecutorService,
       manifest: ExoManifest,
       file: File,

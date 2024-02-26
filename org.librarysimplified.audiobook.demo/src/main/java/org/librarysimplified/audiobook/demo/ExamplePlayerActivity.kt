@@ -529,7 +529,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
 
     val bookResult =
       engine.bookProvider.create(
-        context = this,
+        context = this.application,
         extensions = extensions
       )
 

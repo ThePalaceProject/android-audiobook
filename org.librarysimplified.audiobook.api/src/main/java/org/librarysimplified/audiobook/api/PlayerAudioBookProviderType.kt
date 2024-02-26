@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.api
 
-import android.content.Context
+import android.app.Application
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 
 /**
@@ -17,7 +17,7 @@ interface PlayerAudioBookProviderType {
    */
 
   fun create(
-    context: Context,
+    context: Application,
     extensions: List<PlayerExtensionType> = listOf()
   ): PlayerResult<PlayerAudioBookType, Exception>
 }

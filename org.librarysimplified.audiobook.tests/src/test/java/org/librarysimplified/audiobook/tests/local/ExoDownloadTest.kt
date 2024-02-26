@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.tests.local
 
+import android.app.Application
 import android.content.Context
 import org.librarysimplified.audiobook.tests.open_access.ExoDownloadContract
 import org.mockito.Mockito
@@ -11,7 +12,7 @@ class ExoDownloadTest : ExoDownloadContract() {
     return LoggerFactory.getLogger(ExoDownloadTest::class.java)
   }
 
-  override fun context(): Context {
-    return Mockito.mock(Context::class.java)
+  override fun context(): Application {
+    return Mockito.mock(Application::class.java)
   }
 }

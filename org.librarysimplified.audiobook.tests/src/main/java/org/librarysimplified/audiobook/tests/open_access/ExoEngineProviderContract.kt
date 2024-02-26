@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.tests.open_access
 
-import android.content.Context
+import android.app.Application
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import org.joda.time.Duration
@@ -61,7 +61,7 @@ abstract class ExoEngineProviderContract {
 
   abstract fun log(): Logger
 
-  abstract fun context(): Context
+  abstract fun context(): Application
 
   /**
    * Check to see if the current test is executing as an instrumented test on a hardware or

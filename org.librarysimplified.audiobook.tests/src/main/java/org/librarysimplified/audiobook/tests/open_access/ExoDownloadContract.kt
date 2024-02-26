@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.tests.open_access
 
-import android.content.Context
+import android.app.Application
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
@@ -21,7 +21,7 @@ abstract class ExoDownloadContract {
 
   abstract fun log(): Logger
 
-  abstract fun context(): Context
+  abstract fun context(): Application
 
   @Test
   fun testDownloadFlatlandURIsJustOnce() {
