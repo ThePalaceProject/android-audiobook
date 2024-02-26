@@ -319,9 +319,9 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2024-02-26T11:40:02+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="12.0.0">
+    <c:release date="2024-02-26T13:07:22+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="12.0.0">
       <c:changes>
-        <c:change date="2024-02-26T11:40:02+00:00" summary="Upgrade to Readium 2 3.0.0 (alpha)."/>
+        <c:change date="2024-02-26T00:00:00+00:00" summary="Upgrade to Readium 2 3.0.0 (alpha)."/>
       </c:changes>
     </c:release>
   </c:releases>
