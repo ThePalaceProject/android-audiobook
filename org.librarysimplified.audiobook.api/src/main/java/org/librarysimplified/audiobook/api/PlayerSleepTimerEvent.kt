@@ -1,7 +1,5 @@
 package org.librarysimplified.audiobook.api
 
-import org.joda.time.Duration
-
 /**
  * The type of sleep timer events.
  */
@@ -9,42 +7,19 @@ import org.joda.time.Duration
 sealed class PlayerSleepTimerEvent {
 
   /**
-   * The sleep timer is stopped. This is the initial state.
-   */
-
-  object PlayerSleepTimerStopped : PlayerSleepTimerEvent()
-
-  /**
-   * This state will be published to update the timer's duration.
-   */
-
-  data class PlayerSleepTimerDurationUpdated(
-    val remaining: Duration?
-  ) : PlayerSleepTimerEvent()
-
-  /**
    * The sleep timer is currently running. This state will be published frequently while the sleep
    * timer is counting down. If a duration was specified when the timer was started, the given
    * duration indicates the amount of time remaining.
    */
 
-  data class PlayerSleepTimerRunning(
-    val paused: Boolean,
-    val remaining: Duration?
-  ) : PlayerSleepTimerEvent()
-
-  /**
-   * The user cancelled the sleep timer countdown. If a duration was specified when the timer was
-   * started, the given duration indicates the amount of time remaining.
-   */
-
-  data class PlayerSleepTimerCancelled(
-    val remaining: Duration?
+  data class PlayerSleepTimerStatusChanged(
+    val oldStatus: PlayerSleepTimerType.Status,
+    val newStatus: PlayerSleepTimerType.Status
   ) : PlayerSleepTimerEvent()
 
   /**
    * The sleep timer ran to completion.
    */
 
-  object PlayerSleepTimerFinished : PlayerSleepTimerEvent()
+  data object PlayerSleepTimerFinished : PlayerSleepTimerEvent()
 }

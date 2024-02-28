@@ -20,7 +20,6 @@ import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.mocking.MockingAudioBook
 import org.librarysimplified.audiobook.mocking.MockingDownloadProvider
 import org.librarysimplified.audiobook.mocking.MockingPlayer
-import org.librarysimplified.audiobook.mocking.MockingSleepTimer
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent
 import org.librarysimplified.audiobook.views.PlayerFragment
 import org.librarysimplified.audiobook.views.PlayerFragmentListenerType

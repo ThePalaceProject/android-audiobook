@@ -28,8 +28,10 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.annotation.UiThread
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import io.reactivex.disposables.Disposable
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerEvent
@@ -46,13 +48,15 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
+import org.librarysimplified.audiobook.api.PlayerSleepTimer
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.EndOfChapter
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.Off
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.WithDuration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent
-import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerCancelled
-import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerDurationUpdated
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerFinished
-import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerRunning
-import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerStopped
-import org.librarysimplified.audiobook.api.PlayerSleepTimerType
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Paused
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Running
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Stopped
 import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
@@ -118,7 +122,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   private lateinit var playerTimeMaximum: TextView
   private lateinit var playerTitleView: TextView
   private lateinit var playerWaiting: TextView
-  private lateinit var sleepTimer: PlayerSleepTimerType
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
   private lateinit var toolbar: Toolbar
 
@@ -136,7 +139,7 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   private var playerPositionCurrentSpine: PlayerSpineElementType? = null
   private var playerPositionCurrentOffset: Long = 0L
   private var playerEventSubscription: Subscription? = null
-  private var playerSleepTimerEventSubscription: Subscription? = null
+  private var playerSleepTimerEventSubscription: Disposable? = null
 
   private val log = LoggerFactory.getLogger(PlayerFragment::class.java)
 
@@ -187,7 +190,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
       this.listener = context
       this.player = this.listener.onPlayerWantsPlayer()
       this.book = this.listener.onPlayerTOCWantsBook()
-      this.sleepTimer = this.listener.onPlayerWantsSleepTimer()
       this.executor = this.listener.onPlayerWantsScheduledExecutor()
     } else {
       throw ClassCastException(
@@ -204,97 +206,110 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     }
   }
 
-  private fun onPlayerSleepTimerEventsCompleted() {
-    this.log.debug("onPlayerSleepTimerEventsCompleted")
+  override fun onStart() {
+    super.onStart()
+
+    this.playerEventSubscription =
+      this.player.events.subscribe(
+        { event -> this.onPlayerEvent(event) },
+        { error -> this.onPlayerError(error) },
+        { this.onPlayerEventsCompleted() }
+      )
+
+    this.playerSleepTimerEventSubscription =
+      PlayerSleepTimer.events.subscribe(this::onPlayerSleepTimerEvent)
   }
 
-  private fun onPlayerSleepTimerError(error: Throwable) {
-    this.log.error("onPlayerSleepTimerError: ", error)
-  }
-
+  @UiThread
   private fun onPlayerSleepTimerEvent(event: PlayerSleepTimerEvent) {
     this.log.debug("onPlayerSleepTimerEvent: {}", event)
+    PlayerUIThread.checkIsUIThread()
 
     return when (event) {
-      PlayerSleepTimerStopped ->
-        this.onPlayerSleepTimerEventStopped()
-      is PlayerSleepTimerRunning ->
-        this.onPlayerSleepTimerEventRunning(event)
-      is PlayerSleepTimerCancelled ->
-        this.onPlayerSleepTimerEventCancelled()
-      PlayerSleepTimerFinished ->
+      PlayerSleepTimerFinished -> {
         this.onPlayerSleepTimerEventFinished()
-      is PlayerSleepTimerDurationUpdated -> {
-        this.onPlayerSleepTimerDurationUpdated(event)
+      }
+      is PlayerSleepTimerEvent.PlayerSleepTimerStatusChanged -> {
+        this.onPlayerSleepTimerStatusChanged(event)
       }
     }
   }
 
+  @UiThread
   private fun onPlayerSleepTimerEventFinished() {
+    PlayerUIThread.checkIsUIThread()
+
     this.onPressedPause(abandonAudioFocus = false)
 
-    PlayerUIThread.runOnUIThread {
-      safelyPerformOperations {
-        this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
+    this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+    this.menuSleepText?.text = ""
+    this.menuSleepEndOfChapter.visibility = INVISIBLE
+  }
 
+  @UiThread
+  private fun onPlayerSleepTimerStatusChanged(
+    event: PlayerSleepTimerEvent.PlayerSleepTimerStatusChanged
+  ) {
+    this.log.debug("onPlayerSleepTimerStatusChanged: {}", event)
+    return when (val s = event.newStatus) {
+      is Paused -> this.onPlayerSleepTimerStatusPaused(s)
+      is Running -> this.onPlayerSleepTimerStatusRunning(s)
+      is Stopped -> this.onPlayerSleepTimerStatusStopped()
+    }
+  }
+
+  private fun onPlayerSleepTimerStatusStopped() {
+    this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+    this.menuSleepText?.text = ""
+    this.menuSleepEndOfChapter.visibility = INVISIBLE
+  }
+
+  private fun onPlayerSleepTimerStatusPaused(status: Paused) {
+    return when (val c = status.configuration) {
+      EndOfChapter -> {
+        this.menuSleep.actionView?.contentDescription =
+          this.sleepTimerContentDescriptionEndOfChapter()
         this.menuSleepText?.text = ""
+        this.menuSleepEndOfChapter.visibility = VISIBLE
+      }
+
+      Off -> {
         this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-        this.menuSleepText?.visibility = INVISIBLE
+        this.menuSleepText?.text = ""
+        this.menuSleepEndOfChapter.visibility = INVISIBLE
+      }
+
+      is WithDuration -> {
+        this.menuSleep.actionView?.contentDescription =
+          this.sleepTimerContentDescriptionForTime(paused = false, c.duration)
+        this.menuSleepText?.text =
+          PlayerTimeStrings.hourMinuteSecondTextFromDuration(c.duration)
         this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
     }
   }
 
-  private fun onPlayerSleepTimerEventCancelled() {
-    PlayerUIThread.runOnUIThread {
-      safelyPerformOperations {
-        this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
-
+  private fun onPlayerSleepTimerStatusRunning(status: Running) {
+    return when (val c = status.configuration) {
+      EndOfChapter -> {
+        this.menuSleep.actionView?.contentDescription =
+          this.sleepTimerContentDescriptionEndOfChapter()
         this.menuSleepText?.text = ""
+        this.menuSleepEndOfChapter.visibility = VISIBLE
+      }
+
+      Off -> {
         this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-        this.menuSleepText?.visibility = INVISIBLE
+        this.menuSleepText?.text = ""
         this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
-    }
-  }
 
-  private fun onPlayerSleepTimerEventRunning(event: PlayerSleepTimerRunning) {
-    PlayerUIThread.runOnUIThread {
-      safelyPerformOperations {
-        val remaining = event.remaining
-
-        this.listener.onPlayerSleepTimerUpdated(remaining?.millis)
-
-        if (remaining != null) {
-          this.menuSleep.actionView?.contentDescription =
-            this.sleepTimerContentDescriptionForTime(event.paused, remaining)
-          this.menuSleepText?.text =
-            PlayerTimeStrings.hourMinuteSecondTextFromDuration(remaining)
-          this.menuSleepEndOfChapter.visibility = INVISIBLE
-        } else {
-          this.menuSleep.actionView?.contentDescription =
-            this.sleepTimerContentDescriptionEndOfChapter()
-          this.menuSleepText?.text = ""
-          this.menuSleepEndOfChapter.visibility = VISIBLE
-        }
-
-        this.menuSleepText?.visibility = VISIBLE
-      }
-    }
-  }
-
-  private fun onPlayerSleepTimerDurationUpdated(event: PlayerSleepTimerDurationUpdated) {
-    PlayerUIThread.runOnUIThread {
-      safelyPerformOperations {
-        val duration = event.remaining
-        if (duration != null) {
-          this.menuSleepText?.text =
-            PlayerTimeStrings.hourMinuteSecondTextFromDuration(duration)
-          this.menuSleepText?.visibility = VISIBLE
-        } else {
-          this.menuSleepText?.text = ""
-          this.menuSleepText?.visibility = INVISIBLE
-        }
+      is WithDuration -> {
+        this.menuSleep.actionView?.contentDescription =
+          this.sleepTimerContentDescriptionForTime(paused = true, c.duration)
+        this.menuSleepText?.text =
+          PlayerTimeStrings.hourMinuteSecondTextFromDuration(c.duration)
+        this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
     }
   }
@@ -351,19 +366,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     return builder.toString()
   }
 
-  private fun onPlayerSleepTimerEventStopped() {
-    PlayerUIThread.runOnUIThread {
-      safelyPerformOperations {
-        this.listener.onPlayerSleepTimerUpdated(remainingDuration = 0L)
-
-        this.menuSleepText?.text = ""
-        this.menuSleepText?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-        this.menuSleepText?.visibility = INVISIBLE
-        this.menuSleepEndOfChapter.visibility = INVISIBLE
-      }
-    }
-  }
-
   private fun onMenuTOCSelected(): Boolean {
     this.listener.onPlayerTOCShouldOpen()
     return true
@@ -403,7 +405,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     abandonAudioFocus()
     requireActivity().unregisterReceiver(playerMediaReceiver)
     this.playerEventSubscription?.unsubscribe()
-    this.playerSleepTimerEventSubscription?.unsubscribe()
     this.onPlayerBufferingStopped()
     requireContext().unbindService(serviceConnection)
   }
@@ -470,7 +471,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
     this.menuSleepText = this.menuSleep.actionView?.findViewById(R.id.player_menu_sleep_text)
     this.menuSleepText?.text = ""
-//    this.menuSleepText?.visibility = INVISIBLE
 
     this.menuSleepEndOfChapter =
       this.menuSleep.actionView!!.findViewById(R.id.player_menu_sleep_end_of_chapter)
@@ -481,26 +481,6 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
     this.menuAddBookmark = this.toolbar.menu.findItem(R.id.player_menu_add_bookmark)
     this.menuAddBookmark.setOnMenuItemClickListener { this.onMenuAddBookmarkSelected() }
-
-    /*
-     * Subscribe to player and timer events. We do the subscription here (as late as possible)
-     * so that all of the views (including the options menu) have been created before the first
-     * event is received.
-     */
-
-    this.playerEventSubscription =
-      this.player.events.subscribe(
-        { event -> this.onPlayerEvent(event) },
-        { error -> this.onPlayerError(error) },
-        { this.onPlayerEventsCompleted() }
-      )
-
-    this.playerSleepTimerEventSubscription =
-      this.sleepTimer.status.subscribe(
-        { event -> this.onPlayerSleepTimerEvent(event) },
-        { error -> this.onPlayerSleepTimerError(error) },
-        { this.onPlayerSleepTimerEventsCompleted() }
-      )
   }
 
   override fun onViewCreated(view: View, state: Bundle?) {
@@ -576,21 +556,13 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
 
     this.player.playbackRate = this.parameters.currentRate ?: PlayerPlaybackRate.NORMAL_TIME
 
-    if (this.parameters.currentSleepTimerDuration != null) {
-      val durationMillis = this.parameters.currentSleepTimerDuration!!
-      if (durationMillis > 0L) {
-        val duration = Duration.millis(durationMillis)
-        this.sleepTimer.setDuration(duration)
-        this.menuSleepText?.text =
-          PlayerTimeStrings.hourMinuteSecondTextFromDuration(duration)
-        this.menuSleepText?.visibility = VISIBLE
-      }
-    } else {
-      // if the current duration is null it means the "end of chapter" option was selected
-      this.sleepTimer.setDuration(null)
-    }
-
     initializeService()
+  }
+
+  override fun onStop() {
+    super.onStop()
+
+    this.playerSleepTimerEventSubscription?.dispose()
   }
 
   override fun onResume() {
@@ -755,10 +727,12 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
      * tell the sleep timer to complete.
      */
 
-    val running = this.sleepTimer.isRunning
-    if (running != null) {
-      if (running.duration == null) {
-        this.sleepTimer.finish()
+    when (PlayerSleepTimer.configuration) {
+      EndOfChapter -> {
+        PlayerSleepTimer.finish()
+      }
+      is WithDuration, Off -> {
+        // Nothing to do
       }
     }
   }
@@ -899,17 +873,23 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
   private fun startPlaying() {
     this.player.play()
 
-    if (sleepTimer.hasCurrentTime) {
-      if (sleepTimer.isRunning != null) {
-        this.sleepTimer.unpause()
-      } else {
-        this.sleepTimer.start()
+    when (PlayerSleepTimer.status) {
+      is Paused -> PlayerSleepTimer.unpause()
+      is Running -> {
+        // Nothing to do
+      }
+      is Stopped -> {
+        when (PlayerSleepTimer.configuration) {
+          EndOfChapter -> PlayerSleepTimer.start()
+          Off -> {
+            // Nothing to do
+          }
+          is WithDuration -> PlayerSleepTimer.start()
+        }
       }
     }
 
-    this.playerInfoModel = this.playerInfoModel.copy(
-      isPlaying = true
-    )
+    this.playerInfoModel = this.playerInfoModel.copy(isPlaying = true)
     this.playerService.updatePlayerInfo(this.playerInfoModel)
   }
 
@@ -919,10 +899,8 @@ class PlayerFragment : Fragment(), AudioManager.OnAudioFocusChangeListener {
     }
 
     this.player.pause()
-    this.sleepTimer.pause()
-    this.playerInfoModel = this.playerInfoModel.copy(
-      isPlaying = false
-    )
+    PlayerSleepTimer.pause()
+    this.playerInfoModel = this.playerInfoModel.copy(isPlaying = false)
     this.playerService.updatePlayerInfo(this.playerInfoModel)
   }
 

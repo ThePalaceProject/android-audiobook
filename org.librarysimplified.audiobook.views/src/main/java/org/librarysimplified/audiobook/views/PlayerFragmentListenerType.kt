@@ -6,7 +6,6 @@ import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookmark
-import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import java.util.concurrent.ScheduledExecutorService
 
@@ -65,14 +64,6 @@ interface PlayerFragmentListenerType {
    */
 
   fun onPlayerWantsAuthor(): String
-
-  /**
-   * Called when the player wants access to a sleep timer instance. The sleep timer should be
-   * created once by the hosting activity and the same instance should be returned here each time
-   * this method is called.
-   */
-
-  fun onPlayerWantsSleepTimer(): PlayerSleepTimerType
 
   /**
    * The user wants to save a bookmark on the audiobook. The caller should return a player bookmark
@@ -139,13 +130,6 @@ interface PlayerFragmentListenerType {
    */
 
   fun onPlayerSleepTimerShouldOpen()
-
-  /**
-   * The user has a sleep timer defined for a given audiobook, and every time the timer's value is
-   * updated, either when setting or when the time goes by, this method is called.
-   */
-
-  fun onPlayerSleepTimerUpdated(remainingDuration: Long?)
 
   /**
    * The player wants access to a scheduled executor on which it can submit short time-related

@@ -1,392 +1,244 @@
 package org.librarysimplified.audiobook.api
 
-import net.jcip.annotations.ThreadSafe
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.subjects.BehaviorSubject
 import org.joda.time.Duration
-import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestClose
-import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestFinish
-import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestPause
-import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestStart
-import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestStop
-import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestUnpause
-import org.librarysimplified.audiobook.api.PlayerSleepTimer.PlayerTimerRequest.PlayerTimerRequestUpdateDuration
-import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerCancelled
-import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerDurationUpdated
+import org.librarysimplified.audiobook.api.PlayerSleepTimer.TimerCommand.Cancel
+import org.librarysimplified.audiobook.api.PlayerSleepTimer.TimerCommand.Finish
+import org.librarysimplified.audiobook.api.PlayerSleepTimer.TimerCommand.Pause
+import org.librarysimplified.audiobook.api.PlayerSleepTimer.TimerCommand.Reconfigure
+import org.librarysimplified.audiobook.api.PlayerSleepTimer.TimerCommand.Start
+import org.librarysimplified.audiobook.api.PlayerSleepTimer.TimerCommand.Unpause
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.EndOfChapter
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.Off
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.WithDuration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerFinished
-import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerRunning
-import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerStopped
-import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Running
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import rx.Observable
-import rx.subjects.BehaviorSubject
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.ExecutorService
+import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerStatusChanged
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Paused
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Running
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Stopped
 import java.util.concurrent.Executors
-import java.util.concurrent.Future
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 
-/**
- * The primary implementation of the {@link PlayerSleepTimerType} interface.
- *
- * The implementation is thread-safe, and a given instance may be used from any thread.
- */
+object PlayerSleepTimer : PlayerSleepTimerType {
 
-@ThreadSafe
-class PlayerSleepTimer private constructor(
-  private val statusEvents: BehaviorSubject<PlayerSleepTimerEvent>,
-  private val executor: ExecutorService
-) : PlayerSleepTimerType {
+  private val oneSecond =
+    Duration.standardSeconds(1L)
+
+  private val timerExecutor =
+    Executors.newSingleThreadExecutor { runnable ->
+      val thread = Thread(runnable)
+      thread.priority = Thread.MIN_PRIORITY
+      thread.name = "org.librarysimplified.audiobook.api.SleepTimer"
+      return@newSingleThreadExecutor thread
+    }
+
+  @Volatile
+  private var statusNow: Status =
+    Stopped(configuration = Off)
+
+  private val eventsSubject =
+    BehaviorSubject.create<PlayerSleepTimerEvent>()
+      .toSerialized()
+
+  private val eventsOnUI: Observable<PlayerSleepTimerEvent> =
+    this.eventsSubject.observeOn(AndroidSchedulers.mainThread())
+
+  private val commandQueue =
+    LinkedBlockingQueue<TimerCommand>()
 
   /**
-   * The type of requests that can be made to the timer.
+   * The type of timer commands. Commands are submitted onto a command queue to be executed
+   * on the timer thread.
    */
 
-  private sealed class PlayerTimerRequest {
+  private sealed class TimerCommand {
 
-    /**
-     * Request that the timer be closed.
-     */
+    data object Start : TimerCommand()
 
-    object PlayerTimerRequestClose : PlayerTimerRequest()
+    data object Cancel : TimerCommand()
 
-    /**
-     * Request that the timer be paused.
-     */
+    data object Pause : TimerCommand()
 
-    object PlayerTimerRequestPause : PlayerTimerRequest()
+    data object Unpause : TimerCommand()
 
-    /**
-     * Request that the timer be unpaused.
-     */
+    data object Finish : TimerCommand()
 
-    object PlayerTimerRequestUnpause : PlayerTimerRequest()
-
-    /**
-     * Request that the timer finish (as if the duration had elapsed).
-     */
-
-    object PlayerTimerRequestFinish : PlayerTimerRequest()
-
-    /**
-     * Request that the timer updates its duration.
-     */
-
-    class PlayerTimerRequestUpdateDuration(
-      val duration: Duration?
-    ) : PlayerTimerRequest()
-
-    /**
-     * Request that the timer start now and count down over the given duration. If the timer
-     * is already running, the timer is restarted.
-     */
-
-    class PlayerTimerRequestStart(
-      val duration: Duration?
-    ) : PlayerTimerRequest()
-
-    /**
-     * Request that the timer stop.
-     */
-
-    object PlayerTimerRequestStop : PlayerTimerRequest()
+    data class Reconfigure(val configuration: PlayerSleepTimerConfiguration) : TimerCommand()
   }
-
-  private val log: Logger = LoggerFactory.getLogger(PlayerSleepTimer::class.java)
-  private val closed: AtomicBoolean = AtomicBoolean(false)
-  private var currentTime: Duration? = null
-  private val taskFuture: Future<*>
-  private val task: PlayerSleepTimerTask
-  private val requests: ArrayBlockingQueue<PlayerTimerRequest> = ArrayBlockingQueue(16)
 
   init {
-    this.log.debug("starting initial task")
-    this.task = PlayerSleepTimerTask(this)
-    this.taskFuture = this.executor.submit(this.task)
-    this.log.debug("waiting for task to start")
-    this.task.latch.await()
+    this.timerExecutor.execute {
+      this.execute()
+    }
   }
 
-  /**
-   * A sleep timer task that runs for as long as the sleep timer exists. The task is
-   * terminated when the sleep timer is closed.
-   */
-
-  private class PlayerSleepTimerTask(
-    private val timer: PlayerSleepTimer
-  ) : Runnable {
-
-    internal val latch: CountDownLatch = CountDownLatch(1)
-
-    private val log: Logger = LoggerFactory.getLogger(PlayerSleepTimerTask::class.java)
-    private var paused: Boolean = false
-
-    @Volatile
-    internal var running: Running? = null
-    private val oneSecond = Duration.standardSeconds(1L)
-
-    init {
-      this.log.debug("created timer task")
-    }
-
-    override fun run() {
-      this.log.debug("starting main task")
-      this.latch.countDown()
-
+  private fun execute() {
+    while (true) {
       try {
-        this.timer.statusEvents.onNext(PlayerSleepTimerStopped)
+        when (val command = this.commandQueue.poll(1L, TimeUnit.SECONDS)) {
+          null -> {
+            // No commands received.
+          }
 
-        initialRequestWaiting@ while (true) {
-          try {
-            this.running = null
-            this.log.debug("waiting for timer requests")
+          Start -> this.opStart()
+          Cancel -> this.opCancel()
+          is Reconfigure -> this.opReconfigure(command.configuration)
+          Pause -> this.opPause()
+          Unpause -> this.opUnpause()
+          Finish -> this.onFinish()
+        }
 
-            /*
-             * Wait indefinitely (or at least until the thread is interrupted) for an initial
-             * request.
-             */
+        this.opTick()
+      } catch (e: Exception) {
+        try {
+          Thread.sleep(1_000L)
+        } catch (e: Exception) {
+          // Don't care
+        }
+      }
+    }
+  }
 
-            val initialRequest: PlayerTimerRequest? = try {
-              this.timer.requests.take()
-            } catch (e: InterruptedException) {
-              null
+  private fun opTick() {
+    this.statusNow = when (val oldStatus = this.statusNow) {
+      is Paused, is Stopped -> oldStatus
+
+      is Running -> {
+        when (val c = oldStatus.configuration) {
+          EndOfChapter, Off -> oldStatus
+
+          is WithDuration -> {
+            val completed =
+              (c.duration <= oneSecond)
+
+            val newStatus: Status =
+              if (completed) {
+                Stopped(configuration = Off)
+              } else {
+                val newDuration =
+                  c.duration.minus(oneSecond)
+                val newConfiguration =
+                  WithDuration(newDuration)
+                oldStatus.copy(configuration = newConfiguration)
+              }
+
+            this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+            if (completed) {
+              this.eventsSubject.onNext(PlayerSleepTimerFinished)
             }
-
-            if (this.timer.isClosed) {
-              return
-            }
-
-            when (initialRequest) {
-              null, PlayerTimerRequestClose -> {
-                return
-              }
-
-              is PlayerTimerRequestUpdateDuration -> {
-                this.log.debug("received update duration request: {}", initialRequest.duration)
-                this.timer.statusEvents.onNext(
-                  PlayerSleepTimerDurationUpdated(initialRequest.duration)
-                )
-              }
-
-              is PlayerTimerRequestStart -> {
-                this.log.debug("received start request: {}", initialRequest.duration)
-                this.running = Running(this.paused, initialRequest.duration)
-                this.timer.statusEvents.onNext(
-                  PlayerSleepTimerRunning(this.paused, initialRequest.duration)
-                )
-              }
-
-              PlayerTimerRequestPause -> {
-                this.log.debug("received pause request")
-                this.timer.statusEvents.onNext(PlayerSleepTimerStopped)
-                continue@initialRequestWaiting
-              }
-
-              PlayerTimerRequestUnpause -> {
-                this.log.debug("received unpause request")
-                this.timer.statusEvents.onNext(PlayerSleepTimerStopped)
-                continue@initialRequestWaiting
-              }
-
-              PlayerTimerRequestStop -> {
-                this.log.debug("received (redundant) stop request")
-                this.timer.statusEvents.onNext(PlayerSleepTimerStopped)
-                continue@initialRequestWaiting
-              }
-
-              PlayerTimerRequestFinish -> {
-                this.log.debug("received finish request")
-                this.timer.statusEvents.onNext(PlayerSleepTimerFinished)
-                continue@initialRequestWaiting
-              }
-            }
-
-            /*
-             * The timer is now running. Wait in a loop for requests. Time out waiting after a second
-             * each time in order to decrement the remaining time.
-             */
-
-            processingTimerRequests@ while (true) {
-              val request: PlayerTimerRequest? = try {
-                this.timer.requests.poll(1L, TimeUnit.SECONDS)
-              } catch (e: InterruptedException) {
-                null
-              }
-
-              when (request) {
-                null -> {
-                  val currentRemaining = this.running?.duration
-                  if (this.paused) {
-                    this.running = Running(paused = true, duration = currentRemaining)
-                    this.timer.statusEvents.onNext(
-                      PlayerSleepTimerRunning(this.paused, currentRemaining)
-                    )
-                    continue@processingTimerRequests
-                  }
-
-                  if (currentRemaining != null) {
-                    val newRemaining = currentRemaining.minus(this.oneSecond)
-                    this.running = Running(this.paused, newRemaining)
-                    this.timer.statusEvents.onNext(
-                      PlayerSleepTimerRunning(this.paused, newRemaining)
-                    )
-
-                    if (newRemaining.isShorterThan(this.oneSecond)) {
-                      this.log.debug("timer finished")
-                      this.timer.statusEvents.onNext(PlayerSleepTimerFinished)
-                      continue@initialRequestWaiting
-                    }
-                  }
-                }
-
-                PlayerTimerRequestClose -> {
-                  return
-                }
-
-                is PlayerTimerRequestStart -> {
-                  this.log.debug("restarting timer")
-                  this.paused = false
-                  this.running = Running(this.paused, request.duration)
-                  this.timer.statusEvents.onNext(
-                    PlayerSleepTimerRunning(this.paused, request.duration)
-                  )
-                  continue@processingTimerRequests
-                }
-
-                is PlayerTimerRequestUpdateDuration -> {
-                  this.log.debug("updating duration")
-                  this.timer.statusEvents.onNext(
-                    PlayerSleepTimerDurationUpdated(request.duration)
-                  )
-                }
-
-                PlayerTimerRequestStop -> {
-                  this.log.debug("stopping timer")
-                  this.paused = false
-                  this.timer.statusEvents.onNext(PlayerSleepTimerCancelled(this.running?.duration))
-                  this.timer.statusEvents.onNext(PlayerSleepTimerStopped)
-                  continue@initialRequestWaiting
-                }
-
-                PlayerTimerRequestFinish -> {
-                  this.log.debug("received finish request")
-                  this.paused = false
-                  this.timer.statusEvents.onNext(PlayerSleepTimerFinished)
-                  continue@initialRequestWaiting
-                }
-
-                PlayerTimerRequestPause -> {
-                  this.log.debug("received pause request")
-                  this.paused = true
-                  this.running = this.running ?.copy(paused = this.paused)
-                  continue@processingTimerRequests
-                }
-
-                PlayerTimerRequestUnpause -> {
-                  this.log.debug("received unpause request")
-                  this.paused = false
-                  this.running = this.running ?.copy(paused = this.paused)
-                  continue@processingTimerRequests
-                }
-              }
-            }
-          } catch (e: Exception) {
-            this.log.error("error processing request: ", e)
+            newStatus
           }
         }
-      } finally {
-        this.log.debug("stopping main task")
-        this.log.debug("completing status events")
-        this.timer.statusEvents.onNext(PlayerSleepTimerStopped)
-        this.timer.statusEvents.onCompleted()
       }
     }
   }
 
-  companion object {
-
-    private val log: Logger = LoggerFactory.getLogger(PlayerSleepTimer::class.java)
-
-    /**
-     * Create a new sleep timer.
-     */
-
-    fun create(): PlayerSleepTimerType {
-      return PlayerSleepTimer(
-        executor = Executors.newFixedThreadPool(1) { run -> createTimerThread(run) },
-        statusEvents = BehaviorSubject.create()
-      )
-    }
-
-    /**
-     * Create a thread suitable for use with the ExoPlayer audio engine.
-     */
-
-    private fun createTimerThread(r: Runnable?): Thread {
-      val thread = PlayerSleepTimerThread(r ?: Runnable { })
-      log.debug("created timer thread: {}", thread.name)
-      thread.setUncaughtExceptionHandler { t, e ->
-        log.error("uncaught exception on engine thread {}: ", t, e)
+  private fun opStart() {
+    this.statusNow = when (val oldStatus = this.statusNow) {
+      is Running -> oldStatus
+      is Paused, is Stopped -> {
+        val newStatus = Running(configuration = oldStatus.configuration)
+        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+        newStatus
       }
-      return thread
     }
   }
 
-  private fun checkIsNotClosed() {
-    if (this.isClosed) {
-      throw IllegalStateException("Timer has been closed")
+  private fun opCancel() {
+    this.statusNow = when (val oldStatus = this.statusNow) {
+      is Paused, is Stopped -> oldStatus
+
+      is Running -> {
+        val newStatus = Stopped(configuration = Off)
+        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+        newStatus
+      }
     }
   }
 
-  override fun setDuration(time: Duration?) {
-    this.checkIsNotClosed()
-    this.requests.offer(PlayerTimerRequestUpdateDuration(time))
-    currentTime = time
+  private fun opReconfigure(newConfiguration: PlayerSleepTimerConfiguration) {
+    this.statusNow = when (val oldStatus = this.statusNow) {
+      is Paused -> {
+        val newStatus = oldStatus.copy(configuration = newConfiguration)
+        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+        newStatus
+      }
+
+      is Running -> {
+        val newStatus = oldStatus.copy(configuration = newConfiguration)
+        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+        newStatus
+      }
+
+      is Stopped -> {
+        val newStatus = oldStatus.copy(configuration = newConfiguration)
+        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+        newStatus
+      }
+    }
+  }
+
+  private fun onFinish() {
+    val oldStatus = this.statusNow
+    val newStatus = Stopped(configuration = Off)
+    this.statusNow = newStatus
+    this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+    this.eventsSubject.onNext(PlayerSleepTimerFinished)
+  }
+
+  private fun opUnpause() {
+    this.statusNow = when (val oldStatus = this.statusNow) {
+      is Paused -> {
+        val newStatus = Running(configuration = oldStatus.configuration)
+        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+        newStatus
+      }
+
+      is Stopped, is Running -> oldStatus
+    }
+  }
+
+  private fun opPause() {
+    val oldStatus = this.statusNow
+    val newStatus = Paused(configuration = oldStatus.configuration)
+    this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+    this.statusNow = newStatus
   }
 
   override fun start() {
-    this.checkIsNotClosed()
-    this.requests.offer(PlayerTimerRequestStart(currentTime), 10L, TimeUnit.MILLISECONDS)
+    this.commandQueue.add(Start)
+  }
+
+  override fun configure(configuration: PlayerSleepTimerConfiguration) {
+    this.commandQueue.add(Reconfigure(configuration))
   }
 
   override fun cancel() {
-    this.checkIsNotClosed()
-    this.requests.offer(PlayerTimerRequestStop, 10L, TimeUnit.MILLISECONDS)
-  }
-
-  override fun finish() {
-    this.checkIsNotClosed()
-    this.requests.offer(PlayerTimerRequestFinish, 10L, TimeUnit.MILLISECONDS)
-  }
-
-  override fun close() {
-    if (this.closed.compareAndSet(false, true)) {
-      this.taskFuture.cancel(true)
-      this.executor.shutdown()
-      this.requests.offer(PlayerTimerRequestClose, 10L, TimeUnit.MILLISECONDS)
-    }
+    this.commandQueue.add(Cancel)
   }
 
   override fun pause() {
-    this.checkIsNotClosed()
-    this.requests.offer(PlayerTimerRequestPause, 10L, TimeUnit.MILLISECONDS)
+    this.commandQueue.add(Pause)
   }
 
   override fun unpause() {
-    this.checkIsNotClosed()
-    this.requests.offer(PlayerTimerRequestUnpause, 10L, TimeUnit.MILLISECONDS)
+    this.commandQueue.add(Unpause)
   }
 
-  override val isClosed: Boolean
-    get() = this.closed.get()
+  override fun finish() {
+    this.commandQueue.add(Finish)
+  }
 
-  override val status: Observable<PlayerSleepTimerEvent> =
-    this.statusEvents.distinctUntilChanged()
+  override val events: Observable<PlayerSleepTimerEvent>
+    get() = this.eventsOnUI
 
-  override val isRunning: Running?
-    get() = this.task.running
+  override val configuration: PlayerSleepTimerConfiguration
+    get() = this.statusNow.configuration
 
-  override val hasCurrentTime: Boolean
-    get() = this.currentTime != null
+  override val status: Status
+    get() = this.statusNow
 }

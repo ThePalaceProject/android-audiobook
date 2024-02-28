@@ -30,7 +30,6 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
-import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
@@ -107,7 +106,6 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   private lateinit var book: PlayerAudioBookType
   private lateinit var bookTitle: String
   private lateinit var bookAuthor: String
-  private lateinit var sleepTimer: PlayerSleepTimerType
   private lateinit var playerEvents: Subscription
 
   override fun onCreate(state: Bundle?) {
@@ -138,8 +136,6 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
         thread.name = "org.librarysimplified.audiobook.demo.ui-schedule-${thread.id}"
         thread
       }
-
-    this.sleepTimer = PlayerSleepTimer.create()
 
     /*
      * Create a fragment that shows an indefinite progress bar whilst we do the work
@@ -196,15 +192,15 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     super.onDestroy()
 
     try {
-      this.downloadExecutor.shutdown()
+      PlayerSleepTimer.cancel()
     } catch (e: Exception) {
-      this.log.error("error shutting down download executor: ", e)
+      this.log.error("error shutting down sleep timer: ", e)
     }
 
     try {
-      this.sleepTimer.close()
+      this.downloadExecutor.shutdown()
     } catch (e: Exception) {
-      this.log.error("error shutting down sleep timer: ", e)
+      this.log.error("error shutting down download executor: ", e)
     }
 
     try {
@@ -727,10 +723,6 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     )
   }
 
-  override fun onPlayerSleepTimerUpdated(remainingDuration: Long?) {
-    // do nothing
-  }
-
   override fun onPlayerPlaybackRateShouldOpen() {
     this.log.debug("onPlayerPlaybackRateShouldOpen")
 
@@ -764,11 +756,6 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   override fun onPlayerWantsAuthor(): String {
     this.log.debug("onPlayerWantsAuthor")
     return this.bookAuthor
-  }
-
-  override fun onPlayerWantsSleepTimer(): PlayerSleepTimerType {
-    this.log.debug("onPlayerWantsSleepTimer")
-    return this.sleepTimer
   }
 
   override fun onPlayerShouldAddBookmark(playerBookmark: PlayerBookmark?) {

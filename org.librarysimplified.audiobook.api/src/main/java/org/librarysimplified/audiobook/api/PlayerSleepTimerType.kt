@@ -1,8 +1,7 @@
 package org.librarysimplified.audiobook.api
 
+import io.reactivex.Observable
 import net.jcip.annotations.ThreadSafe
-import org.joda.time.Duration
-import rx.Observable
 
 /**
  * The interface exposed by sleep timer implementations.
@@ -12,108 +11,88 @@ import rx.Observable
  */
 
 @ThreadSafe
-interface PlayerSleepTimerType : AutoCloseable {
+interface PlayerSleepTimerType {
 
   /**
    * Start the timer. If a duration has been given, the timer will count down over the given duration
    * and will periodically publish events giving the remaining time. If no duration is given, the
    * timer will wait indefinitely for a call to {@link #finish()}. If the timer is paused, the
    * timer will be unpaused.
-   *
-   * @param time The total duration for which the timer will run
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  @Throws(java.lang.IllegalStateException::class)
   fun start()
 
   /**
-   * Sets the duration of the timer.
+   * Sets the configuration of the timer.
    *
-   * @param time The total duration for which the timer will run
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
+   * @param configuration The configuration
    */
 
-  @Throws(java.lang.IllegalStateException::class)
-  fun setDuration(time: Duration?)
+  fun configure(configuration: PlayerSleepTimerConfiguration)
 
   /**
    * Cancel the timer. The timer will stop and will publish an event indicating the current
    * state.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  @Throws(java.lang.IllegalStateException::class)
   fun cancel()
 
   /**
    * Pause the timer. The timer will pause and will publish an event indicating the current
    * state.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  @Throws(java.lang.IllegalStateException::class)
   fun pause()
 
   /**
    * Unpause the timer. The timer will unpause and will publish an event indicating the current
    * state.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  @Throws(java.lang.IllegalStateException::class)
   fun unpause()
 
   /**
    * Finish the timer. This makes the timer behave exactly as if a duration had been given to
    * start and the duration has elapsed. If the timer is paused, the timer will be unpaused.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  @Throws(java.lang.IllegalStateException::class)
   fun finish()
 
   /**
    * An observable indicating the current state of the timer. The observable is buffered such
    * that each new subscription will receive the most recently published status event, and will
    * then receive new status events as they are published.
+   *
+   * Events are guaranteed to be published on the Android UI thread.
    */
 
-  val status: Observable<PlayerSleepTimerEvent>
+  val events: Observable<PlayerSleepTimerEvent>
 
   /**
-   * Close the timer. After this method is called, it is an error to call any of the other methods
-   * in the interface.
+   * The current configuration.
    */
 
-  override fun close()
+  val configuration: PlayerSleepTimerConfiguration
 
-  /**
-   * @return `true` if the timer has been closed.
+  /*
+   * The current timer status.
    */
 
-  val isClosed: Boolean
+  sealed class Status {
+    abstract val configuration: PlayerSleepTimerConfiguration
 
-  /**
-   * A type indicating that the timer is currently running.
-   */
+    data class Running(
+      override val configuration: PlayerSleepTimerConfiguration
+    ) : Status()
 
-  data class Running(
-    val paused: Boolean,
-    val duration: Duration?
-  )
+    data class Paused(
+      override val configuration: PlayerSleepTimerConfiguration
+    ) : Status()
 
-  /**
-   * A non-null value of type {@link Running} if the timer is running, and null if it is not.
-   */
+    data class Stopped(
+      override val configuration: PlayerSleepTimerConfiguration
+    ) : Status()
+  }
 
-  val isRunning: Running?
-
-  val hasCurrentTime: Boolean
+  val status: Status
 }

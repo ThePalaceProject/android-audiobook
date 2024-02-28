@@ -7,14 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.END_OF_CHAPTER
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_15
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_30
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_45
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.MINUTES_60
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.NOW
-import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.OFF
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfigurationPreset
 import org.librarysimplified.audiobook.api.PlayerUIThread
 
 /**
@@ -23,64 +16,64 @@ import org.librarysimplified.audiobook.api.PlayerUIThread
 
 class PlayerSleepTimerAdapter(
   private val context: Context,
-  private val rates: List<PlayerSleepTimerConfiguration>,
-  private val onSelect: (PlayerSleepTimerConfiguration) -> Unit
+  private val rates: List<PlayerSleepTimerConfigurationPreset>,
+  private val onSelect: (PlayerSleepTimerConfigurationPreset) -> Unit
 ) :
   RecyclerView.Adapter<PlayerSleepTimerAdapter.ViewHolder>() {
 
   private val listener: View.OnClickListener = View.OnClickListener { v ->
-    this.onSelect(v.tag as PlayerSleepTimerConfiguration)
+    this.onSelect(v.tag as PlayerSleepTimerConfigurationPreset)
   }
 
   companion object {
 
     fun textOfConfiguration(
       resources: Resources,
-      item: PlayerSleepTimerConfiguration
+      item: PlayerSleepTimerConfigurationPreset
     ): String {
       return when (item) {
-        END_OF_CHAPTER ->
+        PlayerSleepTimerConfigurationPreset.END_OF_CHAPTER ->
           resources.getString(R.string.audiobook_player_sleep_end_of_chapter)
-        MINUTES_60 ->
+        PlayerSleepTimerConfigurationPreset.MINUTES_60 ->
           resources.getString(R.string.audiobook_player_sleep_60)
-        MINUTES_45 ->
+        PlayerSleepTimerConfigurationPreset.MINUTES_45 ->
           resources.getString(R.string.audiobook_player_sleep_45)
-        MINUTES_30 ->
+        PlayerSleepTimerConfigurationPreset.MINUTES_30 ->
           resources.getString(R.string.audiobook_player_sleep_30)
-        MINUTES_15 ->
+        PlayerSleepTimerConfigurationPreset.MINUTES_15 ->
           resources.getString(R.string.audiobook_player_sleep_15)
-        NOW ->
+        PlayerSleepTimerConfigurationPreset.NOW ->
           resources.getString(R.string.audiobook_player_sleep_now)
-        OFF ->
+        PlayerSleepTimerConfigurationPreset.OFF ->
           resources.getString(R.string.audiobook_player_sleep_off)
       }
     }
 
     private fun menuItemContentDescription(
       resources: Resources,
-      item: PlayerSleepTimerConfiguration
+      item: PlayerSleepTimerConfigurationPreset
     ): String {
       return when (item) {
-        OFF ->
+        PlayerSleepTimerConfigurationPreset.OFF ->
           resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_item_off)
-        END_OF_CHAPTER ->
+        PlayerSleepTimerConfigurationPreset.END_OF_CHAPTER ->
           resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_item_at_end_of_chapter)
-        MINUTES_60 ->
+        PlayerSleepTimerConfigurationPreset.MINUTES_60 ->
           resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_item_in_60_minutes)
-        MINUTES_45 ->
+        PlayerSleepTimerConfigurationPreset.MINUTES_45 ->
           resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_item_in_45_minutes)
-        MINUTES_30 ->
+        PlayerSleepTimerConfigurationPreset.MINUTES_30 ->
           resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_item_in_30_minutes)
-        MINUTES_15 ->
+        PlayerSleepTimerConfigurationPreset.MINUTES_15 ->
           resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_item_in_15_minutes)
-        NOW ->
+        PlayerSleepTimerConfigurationPreset.NOW ->
           resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_item_now)
       }
     }
 
     fun hasBeenSetToContentDescriptionOf(
       resources: Resources,
-      item: PlayerSleepTimerConfiguration
+      item: PlayerSleepTimerConfigurationPreset
     ): String {
       return StringBuilder(64)
         .append(resources.getString(R.string.audiobook_accessibility_sleep_timer_has_been_set))

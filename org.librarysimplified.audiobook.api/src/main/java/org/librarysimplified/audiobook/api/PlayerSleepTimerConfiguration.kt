@@ -3,50 +3,28 @@ package org.librarysimplified.audiobook.api
 import org.joda.time.Duration
 
 /**
- * Configuration values for the sleep timer.
+ * The possible sleep timer configurations.
  */
 
-enum class PlayerSleepTimerConfiguration(val duration: Duration?) {
+sealed class PlayerSleepTimerConfiguration {
 
   /**
-   * The sleep timer will finish now. This option is primarily useful for debugging.
+   * The sleep timer will be completed when the given duration has elapsed.
    */
 
-  NOW(Duration.standardSeconds(1L)),
+  data class WithDuration(
+    val duration: Duration
+  ) : PlayerSleepTimerConfiguration()
 
   /**
-   * The sleep timer will never finish. This is essentially used to switch off the sleep timer.
+   * The sleep timer will be completed at the end of the chapter.
    */
 
-  OFF(Duration.standardSeconds(0L)),
+  data object EndOfChapter : PlayerSleepTimerConfiguration()
 
   /**
-   * The sleep timer will finish in 15 minutes.
+   * The sleep timer is off.
    */
 
-  MINUTES_15(Duration.standardMinutes(15L)),
-
-  /**
-   * The sleep timer will finish in 30 minutes.
-   */
-
-  MINUTES_30(Duration.standardMinutes(30L)),
-
-  /**
-   * The sleep timer will finish in 45 minutes.
-   */
-
-  MINUTES_45(Duration.standardMinutes(45L)),
-
-  /**
-   * The sleep timer will finish in 60 minutes.
-   */
-
-  MINUTES_60(Duration.standardMinutes(60L)),
-
-  /**
-   * The sleep timer will finish at the end of the current chapter.
-   */
-
-  END_OF_CHAPTER(null)
+  data object Off : PlayerSleepTimerConfiguration()
 }

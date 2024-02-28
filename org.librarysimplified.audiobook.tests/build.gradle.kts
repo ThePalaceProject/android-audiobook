@@ -72,7 +72,10 @@ val dependencyObjects = listOf(
     libs.quicktheories,
     libs.r2.shared,
     libs.r2.streamer,
+    libs.reactive.streams,
+    libs.rxandroid2,
     libs.rxjava,
+    libs.rxjava2,
     libs.slf4j,
 
     project(":org.librarysimplified.audiobook.api"),

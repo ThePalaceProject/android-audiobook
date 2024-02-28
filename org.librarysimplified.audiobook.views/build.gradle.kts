@@ -45,5 +45,6 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.palace.theme)
     implementation(libs.rxjava)
+    implementation(libs.rxjava2)
     implementation(libs.slf4j)
 }
