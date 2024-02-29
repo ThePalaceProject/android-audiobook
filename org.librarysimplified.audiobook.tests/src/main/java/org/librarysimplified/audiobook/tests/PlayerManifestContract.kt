@@ -1,6 +1,8 @@
 package org.librarysimplified.audiobook.tests
 
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.feedbooks.FeedbooksRights
@@ -689,6 +691,28 @@ abstract class PlayerManifestContract {
 
     val manifest = success.result
     this.checkFeedbooks1Values(manifest)
+  }
+
+  @Test
+  fun testOkIGen() {
+    val result =
+      ManifestParsers.parse(
+        uri = URI.create("igen"),
+        streams = this.resource("igen.json"),
+        extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
+      )
+    this.log().debug("result: {}", result)
+    assertTrue(result is ParseResult.Success, "Result is success")
+
+    val success: ParseResult.Success<PlayerManifest> =
+      result as ParseResult.Success<PlayerManifest>
+
+    val manifest = success.result
+    assertEquals("urn:isbn:9781508245063", manifest.metadata.identifier)
+
+    for (item in manifest.readingOrder) {
+      assertFalse(item.hrefURI!!.toString().startsWith("/"))
+    }
   }
 
   private fun checkFeedbooks1Values(manifest: PlayerManifest) {

@@ -21,7 +21,6 @@ data class PlayerFragmentParameters(
   )
   @ColorInt val primaryColor: Int? = null,
 
-  val currentRate: PlayerPlaybackRate? = NORMAL_TIME,
-  val currentSleepTimerDuration: Long? = 0L
+  val currentRate: PlayerPlaybackRate? = NORMAL_TIME
 
 ) : Serializable

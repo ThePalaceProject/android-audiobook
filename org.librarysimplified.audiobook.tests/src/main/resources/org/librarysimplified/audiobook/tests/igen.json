@@ -1,0 +1,287 @@
+{
+  "@context": "https://readium.org/webpub-manifest/context.jsonld",
+  "metadata": {
+    "@type": "http://schema.org/Audiobook",
+    "identifier": "urn:isbn:9781508245063",
+    "title": "iGen",
+    "subtitle": "Why Today's Super-Connected Kids Are Growing Up Less Rebellious, More Tolerant, Less Happy--and Completely Unprepared for Adulthood--and What That Means for the Rest of Us",
+    "language": "en",
+    "modified": "2021-04-06T02:02:23Z",
+    "published": "2017-08-22T00:00:00Z",
+    "publisher": "Simon \u0026 Schuster audio",
+    "author": "Jean M. Twenge",
+    "duration": 35570
+  },
+  "links": [
+    {
+      "href": "manifest.json",
+      "type": "application/audiobook+json",
+      "rel": "self"
+    }
+  ],
+  "readingOrder": [
+    {
+      "href": "iGen_01_Open.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_01_Open.mp3",
+      "duration": 42,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_02_Introduction.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_02_Introduction.mp3",
+      "duration": 2133,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_03_Ch1.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_03_Ch1.mp3",
+      "duration": 3345,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_04_Ch2.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_04_Ch2.mp3",
+      "duration": 2342,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_05_Ch3.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_05_Ch3.mp3",
+      "duration": 2457,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_06_Ch4.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_06_Ch4.mp3",
+      "duration": 2750,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_07_Ch5.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_07_Ch5.mp3",
+      "duration": 2699,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_08_Ch6.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_08_Ch6.mp3",
+      "duration": 4098,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_09_Ch7.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_09_Ch7.mp3",
+      "duration": 2408,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_10_Ch8.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_10_Ch8.mp3",
+      "duration": 2911,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_11_Ch9.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_11_Ch9.mp3",
+      "duration": 3633,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_12_Ch10.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_12_Ch10.mp3",
+      "duration": 3154,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_13_Conclusion.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_13_Conclusion.mp3",
+      "duration": 3531,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "iGen_14_Close.mp3",
+      "type": "audio/mpeg",
+      "title": "iGen_14_Close.mp3",
+      "duration": 61,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "href": "2473ca982bb7bcd1573549bb435e7ec7dec5fe.jpg",
+      "type": "image/jpeg",
+      "rel": "cover",
+      "height": 2400,
+      "width": 2400
+    }
+  ],
+  "toc": [
+    {
+      "href": "iGen_01_Open.mp3#t=0",
+      "title": "Chapter 1"
+    },
+    {
+      "href": "iGen_02_Introduction.mp3#t=0",
+      "title": "Chapter 2"
+    },
+    {
+      "href": "iGen_03_Ch1.mp3#t=0",
+      "title": "Chapter 3"
+    },
+    {
+      "href": "iGen_04_Ch2.mp3#t=0",
+      "title": "Chapter 4"
+    },
+    {
+      "href": "iGen_05_Ch3.mp3#t=0",
+      "title": "Chapter 5"
+    },
+    {
+      "href": "iGen_06_Ch4.mp3#t=0",
+      "title": "Chapter 6"
+    },
+    {
+      "href": "iGen_07_Ch5.mp3#t=0",
+      "title": "Chapter 7"
+    },
+    {
+      "href": "iGen_08_Ch6.mp3#t=0",
+      "title": "Chapter 8"
+    },
+    {
+      "href": "iGen_09_Ch7.mp3#t=0",
+      "title": "Chapter 9"
+    },
+    {
+      "href": "iGen_10_Ch8.mp3#t=0",
+      "title": "Chapter 10"
+    },
+    {
+      "href": "iGen_11_Ch9.mp3#t=0",
+      "title": "Chapter 11"
+    },
+    {
+      "href": "iGen_12_Ch10.mp3#t=0",
+      "title": "Chapter 12"
+    },
+    {
+      "href": "iGen_13_Conclusion.mp3#t=0",
+      "title": "Chapter 13"
+    },
+    {
+      "href": "iGen_14_Close.mp3#t=0",
+      "title": "Chapter 14"
+    }
+  ]
+}

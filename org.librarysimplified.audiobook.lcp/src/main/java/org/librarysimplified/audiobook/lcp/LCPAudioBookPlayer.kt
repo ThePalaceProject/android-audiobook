@@ -763,11 +763,7 @@ class LCPAudioBookPlayer private constructor(
 
     this.log.debug("preparePlayer: {} (offset {})", trackToPlay.title, this.trackPlaybackOffset)
 
-    val uri = Uri.parse(
-      trackToPlay.hrefURI.toString().let {
-        if (it.startsWith("/")) it else "/$it"
-      }
-    )
+    val uri = Uri.parse(trackToPlay.hrefURI.toString())
 
     PlayerUIThread.runOnUIThread {
       this.exoPlayer.setMediaSource(
