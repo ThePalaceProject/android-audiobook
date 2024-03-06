@@ -1,0 +1,3 @@
+package org.librarysimplified.audiobook.tests
+
+class ManifestFulfillmentStrategiesTest : ManifestFulfillmentStrategiesContract()

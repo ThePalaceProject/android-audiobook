@@ -1,0 +1,459 @@
+{
+  "@context": "https://readium.org/webpub-manifest/context.jsonld",
+  "metadata": {
+    "@type": "http://schema.org/Audiobook",
+    "identifier": "urn:isbn:9781603934824",
+    "title": "Quicksilver",
+    "subtitle": "Book One of The Baroque Cycle",
+    "language": "en",
+    "modified": "2022-08-22T16:53:17Z",
+    "published": "2010-08-10T00:00:00Z",
+    "publisher": "Audible",
+    "author": "Neal Stephenson",
+    "duration": 53026
+  },
+  "links": [
+    {
+      "href": "manifest.json",
+      "type": "application/audiobook+json",
+      "rel": "self"
+    }
+  ],
+  "readingOrder": [
+    {
+      "href": "6220feb5-6fb0-4c16-9207-bf6f85e71df0.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_001.mp3",
+      "duration": 123,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "c92bf16c-8f83-46d6-abda-1d5a2ebb4ef5.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_002.mp3",
+      "duration": 3439,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "d40c525f-3e21-4166-b8f7-06b9e5976367.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_003.mp3",
+      "duration": 1681,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "87e0a120-87cd-4a8f-bf59-eadc284f9618.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_004.mp3",
+      "duration": 2739,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "b06dcc67-da63-43bc-a7d8-c4e55b5bb6b6.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_005.mp3",
+      "duration": 2001,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "3a1d08ed-ad0c-411b-b7ca-0d14d82df64a.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_006.mp3",
+      "duration": 3162,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "535dd815-dc03-40d8-a6c9-c0e606b422d2.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_007.mp3",
+      "duration": 1649,
+      "bitrate": 191,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "cbeaf692-7fae-4670-a113-666e72dc2a44.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_008.mp3",
+      "duration": 3249,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "4c8f0899-52bc-4820-8934-26198b2100aa.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_009.mp3",
+      "duration": 3924,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "8ce647b3-932c-472d-9cb9-24a1dad8dd7b.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_010.mp3",
+      "duration": 1491,
+      "bitrate": 191,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "e7a87d53-c85e-46c3-bad2-35fca8108a3c.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_011.mp3",
+      "duration": 2489,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "a6fecaf6-783c-4db2-9af5-0dfb443729da.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_012.mp3",
+      "duration": 3193,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "b8f63626-11fa-44b2-8a51-6831ca246231.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_013.mp3",
+      "duration": 1423,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "1842c876-0037-44a1-8ae5-d14068e78331.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_014.mp3",
+      "duration": 3451,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "283ccad6-d69e-423a-92f3-f4e36be1821e.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_015.mp3",
+      "duration": 1361,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "6b204256-93d4-4210-b14b-487deeb28849.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_016.mp3",
+      "duration": 2280,
+      "bitrate": 191,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9208195c-93f3-4cd8-b598-992bb1430f99.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_017.mp3",
+      "duration": 3557,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "63c84a27-c84f-4dee-94cf-d9e94a693c05.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_018.mp3",
+      "duration": 2942,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "979c7c5e-134b-4f9f-854d-d914d712f22e.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_019.mp3",
+      "duration": 3397,
+      "bitrate": 191,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "d8c1e516-64d6-411c-a6f1-7f63fd83d2f2.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_020.mp3",
+      "duration": 2564,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "64437745-a36c-422f-870e-d765531f8d71.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_021.mp3",
+      "duration": 2161,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "70d39153-820a-4d18-ba66-ad7a6e527a3e.MP3.mp3",
+      "type": "audio/mpeg",
+      "title": "9781603934824_022.mp3",
+      "duration": 750,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "href": "2535c55b3e449bc9da900db809a5a3953c6545.jpg",
+      "type": "image/jpeg",
+      "rel": "cover",
+      "height": 2400,
+      "width": 2400
+    }
+  ],
+  "toc": [
+    {
+      "href": "6220feb5-6fb0-4c16-9207-bf6f85e71df0.MP3.mp3#t=0",
+      "title": "Invocation"
+    },
+    {
+      "href": "c92bf16c-8f83-46d6-abda-1d5a2ebb4ef5.MP3.mp3#t=2",
+      "title": "Book One - Quicksilver"
+    },
+    {
+      "href": "c92bf16c-8f83-46d6-abda-1d5a2ebb4ef5.MP3.mp3#t=5",
+      "title": "Boston Common"
+    },
+    {
+      "href": "d40c525f-3e21-4166-b8f7-06b9e5976367.MP3.mp3#t=1",
+      "title": "1655"
+    },
+    {
+      "href": "87e0a120-87cd-4a8f-bf59-eadc284f9618.MP3.mp3#t=0",
+      "title": "\"Newtowne, Massachusetts Bay Colony\""
+    },
+    {
+      "href": "87e0a120-87cd-4a8f-bf59-eadc284f9618.MP3.mp3#t=2738",
+      "title": "\"College of the Holy and Undivided Trinity, Cambridge\""
+    },
+    {
+      "href": "b06dcc67-da63-43bc-a7d8-c4e55b5bb6b6.MP3.mp3#t=1999",
+      "title": "\"Boston, Massachusetts Bay Colony\""
+    },
+    {
+      "href": "3a1d08ed-ad0c-411b-b7ca-0d14d82df64a.MP3.mp3#t=1139",
+      "title": "\"College of the Holy and Undivided Trinity, Cambridge\""
+    },
+    {
+      "href": "3a1d08ed-ad0c-411b-b7ca-0d14d82df64a.MP3.mp3#t=1691",
+      "title": "\"Aboard Minerva, Massachusetts Bay\""
+    },
+    {
+      "href": "3a1d08ed-ad0c-411b-b7ca-0d14d82df64a.MP3.mp3#t=1848",
+      "title": "\"College of the Holy and Undivided Trinity, Cambridge\""
+    },
+    {
+      "href": "3a1d08ed-ad0c-411b-b7ca-0d14d82df64a.MP3.mp3#t=2157",
+      "title": "\"Aboard Minerva, Massachusetts Bay\""
+    },
+    {
+      "href": "3a1d08ed-ad0c-411b-b7ca-0d14d82df64a.MP3.mp3#t=3159",
+      "title": "Banks of the River Cam"
+    },
+    {
+      "href": "535dd815-dc03-40d8-a6c9-c0e606b422d2.MP3.mp3#t=1267",
+      "title": "\"Aboard Minerva, off the Coast of New England\""
+    },
+    {
+      "href": "535dd815-dc03-40d8-a6c9-c0e606b422d2.MP3.mp3#t=1645",
+      "title": "The Plague Year"
+    },
+    {
+      "href": "cbeaf692-7fae-4670-a113-666e72dc2a44.MP3.mp3#t=3244",
+      "title": "Epsom"
+    },
+    {
+      "href": "8ce647b3-932c-472d-9cb9-24a1dad8dd7b.MP3.mp3#t=1484",
+      "title": "\"Aboard Minerva, Plymouth Bay, Massachusetts\""
+    },
+    {
+      "href": "e7a87d53-c85e-46c3-bad2-35fca8108a3c.MP3.mp3#t=453",
+      "title": "\"Woolsthorpe, Lincolnshire\""
+    },
+    {
+      "href": "e7a87d53-c85e-46c3-bad2-35fca8108a3c.MP3.mp3#t=2481",
+      "title": "\"Aboard Minerva, Plymouth Bay, Massachusetts\""
+    },
+    {
+      "href": "a6fecaf6-783c-4db2-9af5-0dfb443729da.MP3.mp3#t=773",
+      "title": "Charing Cross"
+    },
+    {
+      "href": "a6fecaf6-783c-4db2-9af5-0dfb443729da.MP3.mp3#t=3186",
+      "title": "\"Royal Society Meeting, Gresham’s College\""
+    },
+    {
+      "href": "283ccad6-d69e-423a-92f3-f4e36be1821e.MP3.mp3#t=637",
+      "title": "\"Aboard Minerva, Cape Cod Bay, Massachusetts\""
+    },
+    {
+      "href": "283ccad6-d69e-423a-92f3-f4e36be1821e.MP3.mp3#t=1360",
+      "title": "\"Gresham’s College, Bishopsgate, London\""
+    },
+    {
+      "href": "9208195c-93f3-4cd8-b598-992bb1430f99.MP3.mp3#t=0",
+      "title": "\"College of the Holy and Undivided Trinity, Cambridge\""
+    },
+    {
+      "href": "9208195c-93f3-4cd8-b598-992bb1430f99.MP3.mp3#t=3556",
+      "title": "London Bridge"
+    },
+    {
+      "href": "979c7c5e-134b-4f9f-854d-d914d712f22e.MP3.mp3#t=1",
+      "title": "\"Aboard Minerva, Cape Cod Bay, Massachusetts\""
+    },
+    {
+      "href": "979c7c5e-134b-4f9f-854d-d914d712f22e.MP3.mp3#t=512",
+      "title": "\"Royal Society Meeting, Gunfleet House\""
+    },
+    {
+      "href": "d8c1e516-64d6-411c-a6f1-7f63fd83d2f2.MP3.mp3#t=0",
+      "title": "\"Aboard Minerva, Cape Cod Bay, Massachusetts\""
+    },
+    {
+      "href": "d8c1e516-64d6-411c-a6f1-7f63fd83d2f2.MP3.mp3#t=806",
+      "title": "The City of London"
+    },
+    {
+      "href": "64437745-a36c-422f-870e-d765531f8d71.MP3.mp3#t=2160",
+      "title": "\"Aboard Minerva, Cape Cod Bay, Massachusetts\""
+    }
+  ]
+}

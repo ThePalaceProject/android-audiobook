@@ -99,7 +99,6 @@ val dependencyObjects = listOf(
     project(":org.librarysimplified.audiobook.mocking"),
     project(":org.librarysimplified.audiobook.open_access"),
     project(":org.librarysimplified.audiobook.parser.api"),
-    project(":org.librarysimplified.audiobook.rbdigital"),
     project(":org.librarysimplified.audiobook.views"),
 )
 

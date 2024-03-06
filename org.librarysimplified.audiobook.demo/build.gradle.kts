@@ -18,7 +18,6 @@ dependencies {
     implementation(project(":org.librarysimplified.audiobook.manifest_parser.webpub"))
     implementation(project(":org.librarysimplified.audiobook.open_access"))
     implementation(project(":org.librarysimplified.audiobook.parser.api"))
-    implementation(project(":org.librarysimplified.audiobook.rbdigital"))
     implementation(project(":org.librarysimplified.audiobook.views"))
 
     implementation(libs.androidx.activity)
