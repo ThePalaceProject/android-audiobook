@@ -9,6 +9,7 @@ import org.librarysimplified.audiobook.feedbooks.FeedbooksRights
 import org.librarysimplified.audiobook.feedbooks.FeedbooksSignature
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestScalar
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCs
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseResult
@@ -800,6 +801,9 @@ class PlayerManifestTest {
       result as ParseResult.Success<PlayerManifest>
 
     val manifest = success.result
+    val toc = PlayerManifestTOCs.createTOC(manifest) { i -> "GENERATED TRACK TITLE $i" }
+
+    toc.items
   }
 
   /**
