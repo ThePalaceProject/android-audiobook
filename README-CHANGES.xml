@@ -51,7 +51,7 @@
         <c:change date="2021-07-27T00:00:00+00:00" summary="Fix titles appearing as &quot;null&quot;"/>
       </c:changes>
     </c:release>
-    <c:release date="2024-03-12T12:19:05+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="12.1.0">
+    <c:release date="2024-03-12T12:42:16+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="12.1.0">
       <c:changes>
         <c:change date="2024-03-12T00:00:00+00:00" summary="Replace sleep timer with a simpler singleton.">
           <c:tickets>
