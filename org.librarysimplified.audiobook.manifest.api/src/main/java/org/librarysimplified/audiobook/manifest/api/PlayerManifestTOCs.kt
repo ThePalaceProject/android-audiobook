@@ -45,74 +45,7 @@ object PlayerManifestTOCs {
       outputItems = tocItemsFlattened
     )
 
-    /*
-     * Now, for each TOC item, we must find the reading order item associated with it, and
-     * use the surrounding TOC items to calculate durations.
-     */
-
-    val outputItems = arrayListOf<PlayerManifestTOCItem>()
-    tocItemsFlattened.forEachIndexed { index, tocItemCurrent ->
-      val currentWithoutOffset =
-        extractURIOffset(tocItemCurrent.item.hrefURI!!)
-      val offset : Double =
-        (currentWithoutOffset.offset ?: 0.0).toDouble()
-
-      val tocReadingOrderItemCurrent =
-        manifest.readingOrder.firstOrNull { item -> item.hrefURI == currentWithoutOffset.uriWithoutOffset }
-          ?: throw IllegalArgumentException(
-            "TOC item specifies a nonexistent reading order item with URI ${currentWithoutOffset.uriWithoutOffset}"
-          )
-
-      /*
-       * If there is NO next TOC entry, then the track segments involved are:
-       *   1. The current track from the specified offset
-       *   2. The entirety of all remaining tracks
-       */
-
-      if (this.nextTOCEntryNonexistent(tocItemsFlattened, index)) {
-        val tail =
-          manifest.readingOrder.dropWhile { item -> item != tocReadingOrderItemCurrent }
-        val duration =
-          tail.sumOf { item -> item.duration ?: 0.0 }
-
-        outputItems.add(
-          this.buildTOCItem(
-            index = index,
-            item = tocReadingOrderItemCurrent,
-            defaultTrackTitle = defaultTrackTitle,
-            offset = offset,
-            duration = duration
-          )
-        )
-        return@forEachIndexed
-      }
-
-      val tocItemNext =
-        tocItemsFlattened[index + 1]
-      val nextWithoutOffset =
-        extractURIOffset(tocItemNext.item.hrefURI!!)
-
-      val tocReadingOrderItemNext =
-        manifest.readingOrder.firstOrNull { item -> item.hrefURI == nextWithoutOffset.uriWithoutOffset }
-          ?: throw IllegalArgumentException(
-            "TOC item specifies a nonexistent reading order item with URI ${nextWithoutOffset.uriWithoutOffset}"
-          )
-
-      /*
-       * Given that there is a "next" TOC entry, there are three cases to consider:
-       *
-       * 1. The next TOC entry continues with the same audio track.
-       * 2. The next TOC entry continues with a different audio track.
-       */
-
-      if (currentWithoutOffset.uriWithoutOffset == nextWithoutOffset.uriWithoutOffset) {
-
-      } else {
-
-      }
-    }
-
-    return PlayerManifestTOC(outputItems.toList())
+    return PlayerManifestTOC(listOf())
   }
 
   private fun nextTOCEntryNonexistent(
