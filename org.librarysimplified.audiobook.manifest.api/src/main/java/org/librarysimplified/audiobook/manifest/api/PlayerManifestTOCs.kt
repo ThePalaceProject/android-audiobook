@@ -13,9 +13,6 @@ import java.util.regex.Pattern
 
 object PlayerManifestTOCs {
 
-  private val OCTET_STREAM =
-    MIMEType("application", "octet-stream", mapOf())
-
   fun createTOC(
     manifest: PlayerManifest,
     defaultTrackTitle: (Int) -> String
