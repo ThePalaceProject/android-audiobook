@@ -3,12 +3,14 @@ package org.librarysimplified.audiobook.tests
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.feedbooks.FeedbooksRights
 import org.librarysimplified.audiobook.feedbooks.FeedbooksSignature
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestScalar
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCs
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
@@ -771,7 +773,61 @@ class PlayerManifestTest {
     val success: ParseResult.Success<PlayerManifest> =
       result as ParseResult.Success<PlayerManifest>
 
-    val manifest = success.result
+    val manifest =
+      success.result
+    val tocItems =
+      PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+
+    checkTOCInvariants(tocItems, manifest)
+  }
+
+  private fun checkTOCInvariants(
+    tocItems: PlayerManifestTOC,
+    manifest: PlayerManifest
+  ) {
+    println("# Reading Order Items")
+    manifest.readingOrder.forEach { link ->
+      println(tocItems.readingOrderIntervals[link.hrefURI!!])
+    }
+
+    println("# TOC Items")
+    var tocTotal = 0L
+    tocItems.tocItemsInOrder.forEach {
+      val size = it.intervalAbsoluteSeconds.size()
+      tocTotal += size
+      println("$size $tocTotal $it")
+    }
+
+    val durationSum =
+      manifest.readingOrder.sumOf { link -> (link.duration ?: 0L).toLong() }
+
+    val readingOrderIntervalsSum =
+      tocItems.readingOrderIntervals.values.sumOf {
+        i -> (i.upper - i.lower) + 1
+      }
+    val tocItemIntervalsSum =
+      tocItems.tocItemsInOrder.sumOf {
+          i -> (i.intervalAbsoluteSeconds.upper - i.intervalAbsoluteSeconds.lower) + 1
+      }
+
+    assertEquals(
+      durationSum,
+      readingOrderIntervalsSum,
+      "Sum of reading order intervals must equal reading order duration sum"
+    )
+    assertEquals(
+      durationSum,
+      tocItemIntervalsSum,
+      "Sum of TOC item intervals must equal reading order duration sum"
+    )
+
+    for (item in manifest.readingOrder) {
+      val duration = (item.duration ?: 1).toLong() + 10
+      for (time in 0..duration) {
+        val tocItem = tocItems.lookupTOCItem(item.hrefURI!!, time)
+        assertNotNull(tocItem, "TOC item for ${item.hrefURI} time $time must not be null")
+      }
+    }
   }
 
   /**
@@ -800,10 +856,12 @@ class PlayerManifestTest {
     val success: ParseResult.Success<PlayerManifest> =
       result as ParseResult.Success<PlayerManifest>
 
-    val manifest = success.result
-    val toc = PlayerManifestTOCs.createTOC(manifest) { i -> "GENERATED TRACK TITLE $i" }
+    val manifest =
+      success.result
+    val tocItems =
+      PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
 
-    toc.items
+    checkTOCInvariants(tocItems, manifest)
   }
 
   /**
@@ -826,7 +884,12 @@ class PlayerManifestTest {
     val success: ParseResult.Success<PlayerManifest> =
       result as ParseResult.Success<PlayerManifest>
 
-    val manifest = success.result
+    val manifest =
+      success.result
+    val tocItems =
+      PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+
+    checkTOCInvariants(tocItems, manifest)
   }
 
   /**
@@ -847,6 +910,11 @@ class PlayerManifestTest {
     val success: ParseResult.Success<PlayerManifest> =
       result as ParseResult.Success<PlayerManifest>
 
-    val manifest = success.result
+    val manifest =
+      success.result
+    val tocItems =
+      PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+
+    checkTOCInvariants(tocItems, manifest)
   }
 }

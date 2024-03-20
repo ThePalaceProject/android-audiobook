@@ -11,7 +11,7 @@
     <target>System.out</target>
   </appender>
 
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="STDOUT"/>
   </root>
 

@@ -48,6 +48,7 @@ val dependencyObjects = listOf(
     libs.junit.jupiter.vintage,
     libs.junit.platform.commons,
     libs.junit.platform.engine,
+    libs.kabstand,
     libs.kotlin.reflect,
     libs.kotlin.stdlib,
     libs.logback.classic,

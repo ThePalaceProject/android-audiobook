@@ -1,17 +1,12 @@
 package org.librarysimplified.audiobook.manifest.api
 
-import one.irradia.mime.api.MIMEType
-import java.net.URI
+import com.io7m.kabstand.core.IntervalL
 
 data class PlayerManifestTOCItem(
   val title: String,
   val part: Int,
   val chapter: Int,
-  val type: MIMEType,
-  val duration: Double?,
-  val offset: Double,
-  val uri: URI,
-  val originalLink: PlayerManifestLink
+  val intervalAbsoluteSeconds: IntervalL
 ) : Comparable<PlayerManifestTOCItem> {
 
   override fun compareTo(other: PlayerManifestTOCItem): Int {
