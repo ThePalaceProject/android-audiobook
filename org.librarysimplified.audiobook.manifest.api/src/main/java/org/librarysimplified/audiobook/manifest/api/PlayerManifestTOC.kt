@@ -23,11 +23,11 @@ data class PlayerManifestTOC(
       readingOrderInterval.lower + offset
 
     if (absoluteOffset < 0) {
-      return tocItemsInOrder.firstOrNull()
+      return this.tocItemsInOrder.firstOrNull()
     }
 
-    if (absoluteOffset >= highestAbsoluteOffset) {
-      return tocItemsInOrder.lastOrNull()
+    if (absoluteOffset >= this.highestAbsoluteOffset) {
+      return this.tocItemsInOrder.lastOrNull()
     }
 
     val tocsIntersecting = this.tocItemTree.overlapping(IntervalL(absoluteOffset, absoluteOffset))
@@ -38,6 +38,6 @@ data class PlayerManifestTOC(
     // We assume that there are no overlapping TOC items; it should be impossible for TOC items
     // to overlap given the way manifests are constructed.
     val tocInterval = tocsIntersecting.first()
-    return tocItemsByInterval[tocInterval]
+    return this.tocItemsByInterval[tocInterval]
   }
 }
