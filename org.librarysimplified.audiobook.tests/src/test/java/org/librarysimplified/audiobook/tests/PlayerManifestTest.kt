@@ -786,16 +786,16 @@ class PlayerManifestTest {
     manifest: PlayerManifest
   ) {
     println("# Reading Order Items")
-    manifest.readingOrder.forEach { link ->
-      println(tocItems.readingOrderIntervals[link.hrefURI!!])
+    manifest.readingOrder.forEachIndexed { index, link ->
+      println("[$index] ${tocItems.readingOrderIntervals[link.hrefURI!!]}")
     }
 
     println("# TOC Items")
     var tocTotal = 0L
-    tocItems.tocItemsInOrder.forEach {
-      val size = it.intervalAbsoluteSeconds.size()
+    tocItems.tocItemsInOrder.forEachIndexed { index, toc ->
+      val size = toc.intervalAbsoluteSeconds.size()
       tocTotal += size
-      println("$size $tocTotal $it")
+      println("[$index] Size $size | Total $tocTotal | Item $toc")
     }
 
     val durationSum =
