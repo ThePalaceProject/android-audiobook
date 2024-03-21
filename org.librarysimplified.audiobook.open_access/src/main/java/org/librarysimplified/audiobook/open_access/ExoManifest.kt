@@ -4,9 +4,8 @@ import android.content.Context
 import one.irradia.mime.api.MIMEType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
-import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderItem
 import org.librarysimplified.audiobook.manifest.api.R
-import java.net.URI
 
 /**
  * A manifest transformed such that it contains information relevant to the Exo audio engine.
@@ -54,18 +53,18 @@ data class ExoManifest(
     private fun processSpineItem(
       context: Context,
       index: Int,
-      item: PlayerManifestLink
+      item: PlayerManifestReadingOrderItem
     ): ExoManifestSpineItem {
-      val title = if (!item.title.isNullOrBlank()) {
-        item.title
+      val link = item.link
+
+      val title = if (!link.title.isNullOrBlank()) {
+        link.title
       } else {
         context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1)
       }
 
       val type =
-        item.type ?: OCTET_STREAM
-      val uri =
-        this.parseURI(item, index)
+        link.type ?: OCTET_STREAM
 
       return ExoManifestSpineItem(
         title = title,
@@ -73,22 +72,10 @@ data class ExoManifest(
         offset = 0.0,
         chapter = index,
         type = type,
-        uri = uri,
+        uri = link.hrefURI!!,
         originalLink = item,
-        duration = item.duration
+        duration = link.duration
       )
-    }
-
-    private fun parseURI(
-      link: PlayerManifestLink,
-      index: Int
-    ): URI {
-      return when (link) {
-        is PlayerManifestLink.LinkBasic ->
-          link.href ?: throw IllegalArgumentException("Spine item $index has a null 'href' field")
-        is PlayerManifestLink.LinkTemplated ->
-          throw IllegalArgumentException("Spine item $index has a templated 'href' field")
-      }
     }
   }
 }

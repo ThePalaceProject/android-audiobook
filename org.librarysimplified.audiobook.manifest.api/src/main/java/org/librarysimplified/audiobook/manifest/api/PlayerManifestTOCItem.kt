@@ -6,7 +6,8 @@ data class PlayerManifestTOCItem(
   val title: String,
   val part: Int,
   val chapter: Int,
-  val intervalAbsoluteSeconds: IntervalL
+  val intervalAbsoluteSeconds: IntervalL,
+  val readingOrderLink: PlayerManifestReadingOrderItem
 ) : Comparable<PlayerManifestTOCItem> {
 
   override fun compareTo(other: PlayerManifestTOCItem): Int {

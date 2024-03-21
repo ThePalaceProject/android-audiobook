@@ -3,7 +3,6 @@ package org.librarysimplified.audiobook.manifest.api
 import com.io7m.kabstand.core.IntervalL
 import com.io7m.kabstand.core.IntervalTree
 import com.io7m.kabstand.core.IntervalTreeDebuggableType
-import one.irradia.mime.api.MIMEType
 import java.net.URI
 import java.util.regex.Pattern
 
@@ -72,9 +71,9 @@ object PlayerManifestTOCs {
     )
 
     val readingOrderIntervals =
-      mutableMapOf<URI, IntervalL>()
-    val readingOrderByURI =
-      mutableMapOf<URI, PlayerManifestLink>()
+      mutableMapOf<PlayerManifestReadingOrderID, IntervalL>()
+    val readingOrderByID =
+      mutableMapOf<PlayerManifestReadingOrderID, PlayerManifestReadingOrderItem>()
 
     /*
      * Place all of the reading order elements on an absolute timeline. The result is a mapping
@@ -83,14 +82,15 @@ object PlayerManifestTOCs {
      */
 
     var readingOrderAbsoluteTime = 0L
-    manifest.readingOrder.forEach { link ->
+    manifest.readingOrder.forEach { item ->
+      val link = item.link
       val duration = (link.duration ?: 0L).toLong()
       val lower = readingOrderAbsoluteTime
       val upper = readingOrderAbsoluteTime + Math.max(0L, duration - 1)
       val interval = IntervalL(lower, upper)
       readingOrderAbsoluteTime = upper + 1
-      readingOrderIntervals[link.hrefURI!!] = interval
-      readingOrderByURI[link.hrefURI!!] = link
+      readingOrderIntervals[item.id] = interval
+      readingOrderByID[item.id] = item
     }
 
     /*
@@ -113,7 +113,7 @@ object PlayerManifestTOCs {
       val readingOrderInterval =
         readingOrderIntervals[withOffset.uriWithoutOffset]!!
       val readingOrderItem =
-        readingOrderByURI[withOffset.uriWithoutOffset]!!
+        readingOrderByID[withOffset.uriWithoutOffset]!!
 
       /*
        * The lower bound for this TOC item's interval is the absolute time of the start of the
@@ -159,10 +159,11 @@ object PlayerManifestTOCs {
 
       val tocItem =
         PlayerManifestTOCItem(
-          title = readingOrderItem.title ?: defaultTrackTitle.invoke(index + 1),
+          title = readingOrderItem.link.title ?: defaultTrackTitle.invoke(index + 1),
           part = 1,
           chapter = index + 1,
-          intervalAbsoluteSeconds = tocInterval
+          intervalAbsoluteSeconds = tocInterval,
+          readingOrderLink = readingOrderItem
         )
 
       tocItemsByInterval[tocInterval] = tocItem
@@ -183,6 +184,7 @@ object PlayerManifestTOCs {
               part = 1,
               chapter = 0,
               intervalAbsoluteSeconds = IntervalL(0L, lower - 1L),
+              readingOrderLink = manifest.readingOrder[0]
             )
 
           tocItemsByInterval[tocItemFake.intervalAbsoluteSeconds] = tocItemFake
@@ -251,11 +253,11 @@ object PlayerManifestTOCs {
         0L
       }
 
-    return URIWithOffset(withoutOffset, offset)
+    return URIWithOffset(PlayerManifestReadingOrderID(withoutOffset.toString()), offset)
   }
 
   private data class URIWithOffset(
-    val uriWithoutOffset: URI,
+    val uriWithoutOffset: PlayerManifestReadingOrderID,
     val offset: Long
   )
 
@@ -274,9 +276,10 @@ object PlayerManifestTOCs {
     val tocItemsInOrder =
       mutableListOf<PlayerManifestTOCItem>()
     val readingOrderIntervals =
-      mutableMapOf<URI, IntervalL>()
+      mutableMapOf<PlayerManifestReadingOrderID, IntervalL>()
 
     manifest.readingOrder.forEachIndexed { index, item ->
+      val link = item.link
       val tocItem =
         this.buildTOCItem(
           index = index,
@@ -284,11 +287,11 @@ object PlayerManifestTOCs {
           offset = offset,
           defaultTrackTitle = defaultTrackTitle
         )
-      offset += (item.duration ?: 1L).toLong()
+      offset += (link.duration ?: 0L).toLong()
       tocItemsInOrder.add(tocItem)
       tocItemsByInterval[tocItem.intervalAbsoluteSeconds] = tocItem
-      tocItemTree.add(tocItem.intervalAbsoluteSeconds)
-      readingOrderIntervals[item.hrefURI!!] = tocItem.intervalAbsoluteSeconds
+      insertIntervalChecked(tocItemTree, tocItem.intervalAbsoluteSeconds)
+      readingOrderIntervals[item.id] = tocItem.intervalAbsoluteSeconds
     }
 
     return PlayerManifestTOC(
@@ -301,43 +304,38 @@ object PlayerManifestTOCs {
 
   private fun buildTOCItem(
     index: Int,
-    item: PlayerManifestLink,
+    item: PlayerManifestReadingOrderItem,
     offset: Long,
     defaultTrackTitle: (Int) -> String
   ): PlayerManifestTOCItem {
     val title =
       titleOrDefault(item, defaultTrackTitle, index)
 
+    val duration =
+      (item.link.duration ?: 1L).toLong()
+    val lower =
+      offset
+    val upper =
+      offset + (Math.max(0, duration - 1))
+
     return PlayerManifestTOCItem(
       title = title,
       part = 1,
       chapter = index,
-      intervalAbsoluteSeconds = IntervalL(offset, offset + (item.duration ?: 1).toLong())
+      intervalAbsoluteSeconds = IntervalL(lower, upper),
+      readingOrderLink = item
     )
   }
 
   private fun titleOrDefault(
-    item: PlayerManifestLink,
+    item: PlayerManifestReadingOrderItem,
     defaultTrackTitle: (Int) -> String,
     index: Int
   ): String {
-    return if (!item.title.isNullOrBlank()) {
-      item.title!!
+    return if (!item.link.title.isNullOrBlank()) {
+      item.link.title
     } else {
       defaultTrackTitle.invoke(index + 1)
-    }
-  }
-
-  private fun parseURI(
-    link: PlayerManifestLink,
-    index: Int
-  ): URI {
-    return when (link) {
-      is PlayerManifestLink.LinkBasic ->
-        link.href ?: throw IllegalArgumentException("Spine item $index has a null 'href' field")
-
-      is PlayerManifestLink.LinkTemplated ->
-        throw IllegalArgumentException("Spine item $index has a templated 'href' field")
     }
   }
 }

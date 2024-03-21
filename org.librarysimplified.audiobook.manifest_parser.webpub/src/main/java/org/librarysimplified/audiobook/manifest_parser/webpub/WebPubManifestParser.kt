@@ -11,6 +11,8 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestExtensionValueType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestMetadata
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderItem
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 
 /**
@@ -24,7 +26,7 @@ class WebPubManifestParser(
 ) : FRAbstractParserObject<PlayerManifest>(onReceive) {
 
   private lateinit var metadata: PlayerManifestMetadata
-  private val spineItems = mutableListOf<PlayerManifestLink>()
+  private val spineItems = mutableListOf<PlayerManifestReadingOrderItem>()
   private val tocElements = mutableListOf<PlayerManifestLink>()
   private val links = mutableListOf<PlayerManifestLink>()
   private val extensionValues = mutableListOf<PlayerManifestExtensionValueType>()
@@ -71,7 +73,9 @@ class WebPubManifestParser(
               WebPubLinkParser()
             },
             receiver = { spineItems ->
-              this.spineItems.addAll(spineItems)
+              this.spineItems.addAll(spineItems.mapIndexed { index, link ->
+                this.toReadingOrderItem(index, link)
+              })
             }
           )
         },
@@ -103,7 +107,9 @@ class WebPubManifestParser(
               WebPubLinkParser()
             },
             receiver = { spineItems ->
-              this.spineItems.addAll(spineItems)
+              this.spineItems.addAll(spineItems.mapIndexed { index, link ->
+                this.toReadingOrderItem(index, link)
+              })
             }
           )
         },
@@ -126,13 +132,23 @@ class WebPubManifestParser(
         isOptional = true
       )
 
-    return finishSchema(
+    return this.finishSchema(
       context = context,
       linksSchema = linksSchema,
       metadataSchema = metadataSchema,
       readingOrderSchema = readingOrderSchema,
       spineSchema = spineSchema,
       tocSchema = tocSchema
+    )
+  }
+
+  private fun toReadingOrderItem(
+    index: Int,
+    link: PlayerManifestLink
+  ): PlayerManifestReadingOrderItem {
+    return PlayerManifestReadingOrderItem(
+      PlayerManifestReadingOrderID.create(index, link.hrefURI),
+      link as PlayerManifestLink.LinkBasic
     )
   }
 

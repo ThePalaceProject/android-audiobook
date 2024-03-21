@@ -41,10 +41,8 @@ abstract class ExoDownloadContract {
 
     // create a hashmap with the list of URIs to download and the number of times they were downloaded
     val urisDownloadMap = hashMapOf<URI, Int>()
-    manifest.readingOrder.forEach {
-      if (it.hrefURI != null) {
-        urisDownloadMap[it.hrefURI!!] = 0
-      }
+    manifest.readingOrder.forEach { item ->
+      urisDownloadMap[item.link.hrefURI!!] = 0
     }
 
     var audiobook: PlayerAudioBookType? = null

@@ -494,7 +494,7 @@ class LCPAudioBookPlayer private constructor(
     }
 
     val chapterTrack = this.tracksToPlay[chapterTrackIndex]
-    val trackDuration = chapterTrack.duration
+    val trackDuration = chapterTrack.link.duration
 
     if (trackDuration == null) {
       this.log.debug("track {} duration is null", chapterTrack)
@@ -514,7 +514,7 @@ class LCPAudioBookPlayer private constructor(
         -1
       } else {
         val previousTrack = this.tracksToPlay[chapterTrackIndex - 1]
-        val previousTrackDuration = previousTrack.duration?.toLong() ?: 0L
+        val previousTrackDuration = previousTrack.link.duration?.toLong() ?: 0L
 
         // the offset is fewer than 0, so we need to get the previous track
         this.getTrackIndexToPlay(
@@ -761,9 +761,9 @@ class LCPAudioBookPlayer private constructor(
   private fun preparePlayer(playAutomatically: Boolean, newTrackIndex: Int) {
     val trackToPlay = this.tracksToPlay[newTrackIndex]
 
-    this.log.debug("preparePlayer: {} (offset {})", trackToPlay.title, this.trackPlaybackOffset)
+    this.log.debug("preparePlayer: {} (offset {})", trackToPlay.link.title, this.trackPlaybackOffset)
 
-    val uri = Uri.parse(trackToPlay.hrefURI.toString())
+    val uri = Uri.parse(trackToPlay.link.hrefURI.toString())
 
     PlayerUIThread.runOnUIThread {
       this.exoPlayer.setMediaSource(
@@ -848,7 +848,7 @@ class LCPAudioBookPlayer private constructor(
     updateSeek: Boolean
   ) {
     val chapterTrackIndex = this.tracksToPlay.indexOfFirst { file ->
-      spineElement.itemManifest.originalLink.hrefURI == file.hrefURI
+      spineElement.itemManifest.originalLink.link.hrefURI == file.link.hrefURI
     }
 
     if (chapterTrackIndex == -1) {

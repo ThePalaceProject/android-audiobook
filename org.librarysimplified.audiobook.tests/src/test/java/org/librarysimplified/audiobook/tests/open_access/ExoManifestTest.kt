@@ -386,7 +386,7 @@ class ExoManifestTest {
 
       assertEquals(
         "http://readium.org/2014/01/lcp",
-        spineItem.originalLink.properties.encrypted?.scheme
+        spineItem.originalLink.link.properties.encrypted?.scheme
       )
     }
 

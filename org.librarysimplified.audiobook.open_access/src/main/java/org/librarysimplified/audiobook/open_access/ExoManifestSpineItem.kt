@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.open_access
 
 import one.irradia.mime.api.MIMEType
-import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderItem
 import java.net.URI
 
 /**
@@ -16,7 +16,7 @@ data class ExoManifestSpineItem(
   val duration: Double?,
   val offset: Double?,
   var uri: URI,
-  var originalLink: PlayerManifestLink
+  var originalLink: PlayerManifestReadingOrderItem
 ) {
 
   /**
@@ -24,7 +24,7 @@ data class ExoManifestSpineItem(
    */
 
   fun updateLink(
-    originalLink: PlayerManifestLink,
+    originalLink: PlayerManifestReadingOrderItem,
     uri: URI
   ) {
     this.originalLink = originalLink

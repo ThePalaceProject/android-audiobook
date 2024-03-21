@@ -68,6 +68,9 @@ class PlayerManifestTest {
 
     val manifest = success.result
     this.checkMinimalValues(manifest)
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -90,32 +93,35 @@ class PlayerManifestTest {
 
   private fun checkMinimalValues(manifest: PlayerManifest) {
     assertEquals(3, manifest.readingOrder.size)
-    assertEquals("Track 0", manifest.readingOrder[0].title.toString())
-    assertEquals("100.0", manifest.readingOrder[0].duration.toString())
-    assertEquals("audio/mpeg", manifest.readingOrder[0].type.toString())
+    assertEquals("Track 0", manifest.readingOrder[0].link.title.toString())
+    assertEquals("100.0", manifest.readingOrder[0].link.duration.toString())
+    assertEquals("audio/mpeg", manifest.readingOrder[0].link.type.toString())
     assertEquals(
       "http://www.example.com/0.mp3",
-      manifest.readingOrder[0].hrefURI.toString()
+      manifest.readingOrder[0].link.hrefURI.toString()
     )
 
-    assertEquals("Track 1", manifest.readingOrder[1].title.toString())
-    assertEquals("200.0", manifest.readingOrder[1].duration.toString())
-    assertEquals("audio/mpeg", manifest.readingOrder[1].type.toString())
+    assertEquals("Track 1", manifest.readingOrder[1].link.title.toString())
+    assertEquals("200.0", manifest.readingOrder[1].link.duration.toString())
+    assertEquals("audio/mpeg", manifest.readingOrder[1].link.type.toString())
     assertEquals(
       "http://www.example.com/1.mp3",
-      manifest.readingOrder[1].hrefURI.toString()
+      manifest.readingOrder[1].link.hrefURI.toString()
     )
 
-    assertEquals("Track 2", manifest.readingOrder[2].title.toString())
-    assertEquals("300.0", manifest.readingOrder[2].duration.toString())
-    assertEquals("audio/mpeg", manifest.readingOrder[2].type.toString())
+    assertEquals("Track 2", manifest.readingOrder[2].link.title.toString())
+    assertEquals("300.0", manifest.readingOrder[2].link.duration.toString())
+    assertEquals("audio/mpeg", manifest.readingOrder[2].link.type.toString())
     assertEquals(
       "http://www.example.com/2.mp3",
-      manifest.readingOrder[2].hrefURI.toString()
+      manifest.readingOrder[2].link.hrefURI.toString()
     )
 
     assertEquals("title", manifest.metadata.title)
     assertEquals("urn:id", manifest.metadata.identifier)
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -134,16 +140,19 @@ class PlayerManifestTest {
 
     val manifest = success.result
     this.checkNullTitleValues(manifest)
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   private fun checkNullTitleValues(manifest: PlayerManifest) {
     assertEquals(2, manifest.readingOrder.size)
 
     // null title should be null
-    Assertions.assertNull(manifest.readingOrder[0].title)
+    Assertions.assertNull(manifest.readingOrder[0].link.title)
 
     // no title should be null
-    Assertions.assertNull(manifest.readingOrder[1].title)
+    Assertions.assertNull(manifest.readingOrder[1].link.title)
   }
 
   @Test
@@ -162,6 +171,9 @@ class PlayerManifestTest {
 
     val manifest = success.result
     this.checkNullLinkTypeValues(manifest)
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   private fun checkNullLinkTypeValues(manifest: PlayerManifest) {
@@ -190,6 +202,9 @@ class PlayerManifestTest {
 
     val manifest = success.result
     this.checkFlatlandValues(manifest)
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -227,151 +242,154 @@ class PlayerManifestTest {
 
     assertEquals(
       "Part 1, Sections 1 - 3",
-      manifest.readingOrder[0].title.toString()
+      manifest.readingOrder[0].link.title.toString()
     )
     assertEquals(
       "Part 1, Sections 4 - 5",
-      manifest.readingOrder[1].title.toString()
+      manifest.readingOrder[1].link.title.toString()
     )
     assertEquals(
       "Part 1, Sections 6 - 7",
-      manifest.readingOrder[2].title.toString()
+      manifest.readingOrder[2].link.title.toString()
     )
     assertEquals(
       "Part 1, Sections 8 - 10",
-      manifest.readingOrder[3].title.toString()
+      manifest.readingOrder[3].link.title.toString()
     )
     assertEquals(
       "Part 1, Sections 11 - 12",
-      manifest.readingOrder[4].title.toString()
+      manifest.readingOrder[4].link.title.toString()
     )
     assertEquals(
       "Part 2, Sections 13 - 14",
-      manifest.readingOrder[5].title.toString()
+      manifest.readingOrder[5].link.title.toString()
     )
     assertEquals(
       "Part 2, Sections 15 - 17",
-      manifest.readingOrder[6].title.toString()
+      manifest.readingOrder[6].link.title.toString()
     )
     assertEquals(
       "Part 2, Sections 18 - 20",
-      manifest.readingOrder[7].title.toString()
+      manifest.readingOrder[7].link.title.toString()
     )
     assertEquals(
       "Part 2, Sections 21 - 22",
-      manifest.readingOrder[8].title.toString()
+      manifest.readingOrder[8].link.title.toString()
     )
 
     assertEquals(
       "audio/mpeg",
-      manifest.readingOrder[0].type.toString()
+      manifest.readingOrder[0].link.type.toString()
     )
     assertEquals(
       "audio/mpeg",
-      manifest.readingOrder[1].type.toString()
+      manifest.readingOrder[1].link.type.toString()
     )
     assertEquals(
       "audio/mpeg",
-      manifest.readingOrder[2].type.toString()
+      manifest.readingOrder[2].link.type.toString()
     )
     assertEquals(
       "audio/mpeg",
-      manifest.readingOrder[3].type.toString()
+      manifest.readingOrder[3].link.type.toString()
     )
     assertEquals(
       "audio/mpeg",
-      manifest.readingOrder[4].type.toString()
+      manifest.readingOrder[4].link.type.toString()
     )
     assertEquals(
       "audio/mpeg",
-      manifest.readingOrder[5].type.toString()
+      manifest.readingOrder[5].link.type.toString()
     )
     assertEquals(
       "audio/mpeg",
-      manifest.readingOrder[6].type.toString()
+      manifest.readingOrder[6].link.type.toString()
     )
     assertEquals(
       "audio/mpeg",
-      manifest.readingOrder[7].type.toString()
+      manifest.readingOrder[7].link.type.toString()
     )
     assertEquals(
       "audio/mpeg",
-      manifest.readingOrder[8].type.toString()
+      manifest.readingOrder[8].link.type.toString()
     )
 
     assertEquals(
       "1371.0",
-      manifest.readingOrder[0].duration.toString()
+      manifest.readingOrder[0].link.duration.toString()
     )
     assertEquals(
       "1669.0",
-      manifest.readingOrder[1].duration.toString()
+      manifest.readingOrder[1].link.duration.toString()
     )
     assertEquals(
       "1506.0",
-      manifest.readingOrder[2].duration.toString()
+      manifest.readingOrder[2].link.duration.toString()
     )
     assertEquals(
       "1798.0",
-      manifest.readingOrder[3].duration.toString()
+      manifest.readingOrder[3].link.duration.toString()
     )
     assertEquals(
       "1225.0",
-      manifest.readingOrder[4].duration.toString()
+      manifest.readingOrder[4].link.duration.toString()
     )
     assertEquals(
       "1659.0",
-      manifest.readingOrder[5].duration.toString()
+      manifest.readingOrder[5].link.duration.toString()
     )
     assertEquals(
       "2086.0",
-      manifest.readingOrder[6].duration.toString()
+      manifest.readingOrder[6].link.duration.toString()
     )
     assertEquals(
       "2662.0",
-      manifest.readingOrder[7].duration.toString()
+      manifest.readingOrder[7].link.duration.toString()
     )
     assertEquals(
       "1177.0",
-      manifest.readingOrder[8].duration.toString()
+      manifest.readingOrder[8].link.duration.toString()
     )
 
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_1_abbott.mp3",
-      manifest.readingOrder[0].hrefURI.toString()
+      manifest.readingOrder[0].link.hrefURI.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_2_abbott.mp3",
-      manifest.readingOrder[1].hrefURI.toString()
+      manifest.readingOrder[1].link.hrefURI.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_3_abbott.mp3",
-      manifest.readingOrder[2].hrefURI.toString()
+      manifest.readingOrder[2].link.hrefURI.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_4_abbott.mp3",
-      manifest.readingOrder[3].hrefURI.toString()
+      manifest.readingOrder[3].link.hrefURI.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_5_abbott.mp3",
-      manifest.readingOrder[4].hrefURI.toString()
+      manifest.readingOrder[4].link.hrefURI.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_6_abbott.mp3",
-      manifest.readingOrder[5].hrefURI.toString()
+      manifest.readingOrder[5].link.hrefURI.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_7_abbott.mp3",
-      manifest.readingOrder[6].hrefURI.toString()
+      manifest.readingOrder[6].link.hrefURI.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_8_abbott.mp3",
-      manifest.readingOrder[7].hrefURI.toString()
+      manifest.readingOrder[7].link.hrefURI.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_9_abbott.mp3",
-      manifest.readingOrder[8].hrefURI.toString()
+      manifest.readingOrder[8].link.hrefURI.toString()
     )
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -390,6 +408,9 @@ class PlayerManifestTest {
 
     val manifest = success.result
     this.checkFeedbooks0Values(manifest)
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -426,6 +447,9 @@ class PlayerManifestTest {
       assertEquals("2020-02-01T17:15:52.000", rights.validStart.toString())
       assertEquals("2020-03-29T17:15:52.000", rights.validEnd.toString())
     }
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   private fun checkFeedbooks0Values(manifest: PlayerManifest) {
@@ -443,26 +467,26 @@ class PlayerManifestTest {
     this.run {
       assertEquals(
         128.0,
-        manifest.readingOrder[0].duration
+        manifest.readingOrder[0].link.duration
       )
       assertEquals(
         "01 - Invocation",
-        manifest.readingOrder[0].title
+        manifest.readingOrder[0].link.title
       )
       assertEquals(
         120.0,
-        manifest.readingOrder[0].bitrate
+        manifest.readingOrder[0].link.bitrate
       )
       assertEquals(
         "audio/mpeg",
-        manifest.readingOrder[0].type?.fullType
+        manifest.readingOrder[0].link.type?.fullType
       )
       assertEquals(
         "http://archive.org/download/gleams_of_sunshine_1607_librivox/gleamsofsunshine_01_chant.mp3",
-        manifest.readingOrder[0].hrefURI.toString()
+        manifest.readingOrder[0].link.hrefURI.toString()
       )
 
-      val encrypted0 = manifest.readingOrder[0].properties.encrypted!!
+      val encrypted0 = manifest.readingOrder[0].link.properties.encrypted!!
       assertEquals(
         "http://www.feedbooks.com/audiobooks/access-restriction",
         encrypted0.scheme
@@ -520,6 +544,9 @@ class PlayerManifestTest {
       "http://example.com/license/status",
       manifest.links[2].hrefURI.toString()
     )
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -576,12 +603,15 @@ class PlayerManifestTest {
 
     assertEquals(
       "1",
-      manifest.readingOrder[0].properties.extras["findaway:sequence"].toString()
+      manifest.readingOrder[0].link.properties.extras["findaway:sequence"].toString()
     )
     assertEquals(
       "0",
-      manifest.readingOrder[0].properties.extras["findaway:part"].toString()
+      manifest.readingOrder[0].link.properties.extras["findaway:part"].toString()
     )
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -638,12 +668,15 @@ class PlayerManifestTest {
 
     assertEquals(
       "1",
-      manifest.readingOrder[0].properties.extras["findaway:sequence"].toString()
+      manifest.readingOrder[0].link.properties.extras["findaway:sequence"].toString()
     )
     assertEquals(
       "0",
-      manifest.readingOrder[0].properties.extras["findaway:part"].toString()
+      manifest.readingOrder[0].link.properties.extras["findaway:part"].toString()
     )
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -668,6 +701,9 @@ class PlayerManifestTest {
       "012345",
       encrypted.values["findaway:fulfillmentId"].toString()
     )
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -686,6 +722,9 @@ class PlayerManifestTest {
 
     val manifest = success.result
     this.checkFeedbooks1Values(manifest)
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -704,6 +743,9 @@ class PlayerManifestTest {
 
     val manifest = success.result
     this.checkFeedbooks1Values(manifest)
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   @Test
@@ -724,8 +766,11 @@ class PlayerManifestTest {
     assertEquals("urn:isbn:9781508245063", manifest.metadata.identifier)
 
     for (item in manifest.readingOrder) {
-      assertFalse(item.hrefURI!!.toString().startsWith("/"))
+      assertFalse(item.link.hrefURI.toString().startsWith("/"))
     }
+
+    val tocItems = PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   private fun checkFeedbooks1Values(manifest: PlayerManifest) {
@@ -778,7 +823,7 @@ class PlayerManifestTest {
     val tocItems =
       PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
 
-    checkTOCInvariants(tocItems, manifest)
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   private fun checkTOCInvariants(
@@ -787,7 +832,7 @@ class PlayerManifestTest {
   ) {
     println("# Reading Order Items")
     manifest.readingOrder.forEachIndexed { index, link ->
-      println("[$index] ${tocItems.readingOrderIntervals[link.hrefURI!!]}")
+      println("[$index] ${tocItems.readingOrderIntervals[link.id]}")
     }
 
     println("# TOC Items")
@@ -799,7 +844,7 @@ class PlayerManifestTest {
     }
 
     val durationSum =
-      manifest.readingOrder.sumOf { link -> (link.duration ?: 0L).toLong() }
+      manifest.readingOrder.sumOf { item -> (item.link.duration ?: 0L).toLong() }
 
     val readingOrderIntervalsSum =
       tocItems.readingOrderIntervals.values.sumOf {
@@ -822,10 +867,10 @@ class PlayerManifestTest {
     )
 
     for (item in manifest.readingOrder) {
-      val duration = (item.duration ?: 1).toLong() + 10
+      val duration = (item.link.duration ?: 1).toLong() + 10
       for (time in 0..duration) {
-        val tocItem = tocItems.lookupTOCItem(item.hrefURI!!, time)
-        assertNotNull(tocItem, "TOC item for ${item.hrefURI} time $time must not be null")
+        val tocItem = tocItems.lookupTOCItem(item.id, time)
+        assertNotNull(tocItem, "TOC item for ${item.id} time $time must not be null")
       }
     }
   }
@@ -861,7 +906,7 @@ class PlayerManifestTest {
     val tocItems =
       PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
 
-    checkTOCInvariants(tocItems, manifest)
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   /**
@@ -889,7 +934,7 @@ class PlayerManifestTest {
     val tocItems =
       PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
 
-    checkTOCInvariants(tocItems, manifest)
+    this.checkTOCInvariants(tocItems, manifest)
   }
 
   /**
@@ -915,6 +960,6 @@ class PlayerManifestTest {
     val tocItems =
       PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
 
-    checkTOCInvariants(tocItems, manifest)
+    this.checkTOCInvariants(tocItems, manifest)
   }
 }

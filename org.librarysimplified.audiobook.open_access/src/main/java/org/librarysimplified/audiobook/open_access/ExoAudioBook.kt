@@ -200,7 +200,7 @@ class ExoAudioBook private constructor(
         ExoDownloadTask(
           downloadStatusExecutor = engineExecutor,
           downloadProvider = downloadProvider,
-          originalLink = originalLink,
+          originalLink = originalLink.link,
           partFile = partFile,
           spineElements = spineItems,
           userAgent = userAgent,

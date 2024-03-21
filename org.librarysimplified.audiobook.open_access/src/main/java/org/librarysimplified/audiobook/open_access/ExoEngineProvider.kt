@@ -49,9 +49,10 @@ class ExoEngineProvider(
       "https://www.feedbooks.com/audiobooks/access-restriction"
     )
 
-    if (manifest.readingOrder.any {
-        it.properties.encrypted != null &&
-          !acceptedEncryptionSchemes.contains(it.properties.encrypted!!.scheme)
+    if (manifest.readingOrder.any { item ->
+        val link = item.link
+        link.properties.encrypted != null &&
+          !acceptedEncryptionSchemes.contains(link.properties.encrypted!!.scheme)
       }) {
       this.log.debug("cannot support a book in which any item in the reading order has encryption scheme not in [{}]", acceptedEncryptionSchemes.joinToString())
       return null

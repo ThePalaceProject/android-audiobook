@@ -37,6 +37,8 @@ import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestMetadata
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderItem
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.open_access.ExoEngineProvider
 import org.librarysimplified.audiobook.open_access.ExoEngineThread
@@ -1023,15 +1025,21 @@ abstract class ExoEngineProviderContract {
       PlayerManifest(
         originalBytes = ByteArray(0),
         readingOrder = listOf(
-          PlayerManifestLink.LinkBasic(
-            href = URI.create("http://www.example.com"),
-            duration = 100.0,
-            expires = true
+          PlayerManifestReadingOrderItem(
+            PlayerManifestReadingOrderID("0"),
+            PlayerManifestLink.LinkBasic(
+              href = URI.create("http://www.example.com"),
+              duration = 100.0,
+              expires = true
+            )
           ),
-          PlayerManifestLink.LinkBasic(
-            href = URI.create("http://www.example.com"),
-            duration = 100.0,
-            expires = false
+          PlayerManifestReadingOrderItem(
+            PlayerManifestReadingOrderID("0"),
+            PlayerManifestLink.LinkBasic(
+              href = URI.create("http://www.example.com"),
+              duration = 100.0,
+              expires = false
+            )
           )
         ),
         metadata = PlayerManifestMetadata(
@@ -1087,10 +1095,13 @@ abstract class ExoEngineProviderContract {
       PlayerManifest(
         originalBytes = ByteArray(0),
         readingOrder = listOf(
-          PlayerManifestLink.LinkBasic(
-            href = URI.create("http://www.example.com"),
-            duration = 100.0,
-            expires = true
+          PlayerManifestReadingOrderItem(
+            PlayerManifestReadingOrderID("a"),
+            PlayerManifestLink.LinkBasic(
+              href = URI.create("http://www.example.com"),
+              duration = 100.0,
+              expires = true
+            )
           )
         ),
         metadata = PlayerManifestMetadata(

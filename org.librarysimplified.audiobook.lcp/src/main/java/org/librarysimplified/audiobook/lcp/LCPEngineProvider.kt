@@ -41,8 +41,8 @@ class LCPEngineProvider(
     val manifest = request.manifest
     val expectedEncryptionScheme = "http://readium.org/2014/01/lcp"
 
-    if (manifest.readingOrder.any {
-        it.properties.encrypted?.scheme != expectedEncryptionScheme
+    if (manifest.readingOrder.any { item ->
+        item.link.properties.encrypted?.scheme != expectedEncryptionScheme
       }) {
       this.log.debug(
         "cannot support a book in which any item in the reading order does not have encryption scheme {}",

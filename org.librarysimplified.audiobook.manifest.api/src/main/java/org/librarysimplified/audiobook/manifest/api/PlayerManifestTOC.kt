@@ -2,23 +2,22 @@ package org.librarysimplified.audiobook.manifest.api
 
 import com.io7m.kabstand.core.IntervalL
 import com.io7m.kabstand.core.IntervalTreeType
-import java.net.URI
 
 data class PlayerManifestTOC(
   val tocItemsInOrder: List<PlayerManifestTOCItem>,
   val tocItemsByInterval: Map<IntervalL, PlayerManifestTOCItem>,
   val tocItemTree: IntervalTreeType<Long>,
-  val readingOrderIntervals: Map<URI, IntervalL>
+  val readingOrderIntervals: Map<PlayerManifestReadingOrderID, IntervalL>
 ) {
   private val highestAbsoluteOffset =
     this.tocItemTree.maximum()?.upper() ?: 0L
 
   fun lookupTOCItem(
-    uri: URI,
+    id: PlayerManifestReadingOrderID,
     offset: Long
   ): PlayerManifestTOCItem? {
     val readingOrderInterval =
-      this.readingOrderIntervals[uri] ?: return null
+      this.readingOrderIntervals[id] ?: return null
     val absoluteOffset =
       readingOrderInterval.lower + offset
 
