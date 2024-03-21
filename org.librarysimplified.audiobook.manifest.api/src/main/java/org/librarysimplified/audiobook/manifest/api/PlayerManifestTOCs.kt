@@ -94,8 +94,8 @@ object PlayerManifestTOCs {
     }
 
     /*
-     * Now place all of the TOC items on the same absolute timeline. As with reading order
-     * items, we build an interval tree so that we can look up TOC items by absolute time.
+     * Now place all of the TOC items on the same absolute timeline. We build an interval tree so
+     * that we can look up TOC items by absolute time.
      */
 
     val tocItemTree =
