@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ExoAudioBook private constructor(
   private val manifest: ExoManifest,
   override val downloadTasks: List<ExoDownloadTask>,
-  override val downloadTasksByID : Map<PlayerManifestReadingOrderID, ExoDownloadTask>,
+  override val downloadTasksByID: Map<PlayerManifestReadingOrderID, ExoDownloadTask>,
   private val context: Application,
   private val engineExecutor: ScheduledExecutorService,
   override val readingOrder: List<ExoReadingOrderItemHandle>,

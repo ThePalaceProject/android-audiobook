@@ -10,8 +10,9 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.joda.time.Duration
-import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
-import org.librarysimplified.audiobook.api.PlayerPlaybackStatus.*
+import org.librarysimplified.audiobook.api.PlayerPlaybackStatus.BUFFERING
+import org.librarysimplified.audiobook.api.PlayerPlaybackStatus.PAUSED
+import org.librarysimplified.audiobook.api.PlayerPlaybackStatus.PLAYING
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.WithDuration

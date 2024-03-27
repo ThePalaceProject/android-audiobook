@@ -131,7 +131,7 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
 
   override fun movePlayheadToLocation(location: PlayerPosition) {
     this.log.debug("movePlayheadToLocation {}", location)
-    this.callEvents.onNext("movePlayheadToLocation ${location}")
+    this.callEvents.onNext("movePlayheadToLocation $location")
     this.goToChapter(location.readingOrderID, location.offsetMilliseconds)
   }
 }

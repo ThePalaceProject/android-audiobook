@@ -38,7 +38,7 @@ class PlayerTOCChapterAdapter(
   private val spineElements: List<PlayerReadingOrderItemType>,
   private val downloadTasksById: Map<PlayerManifestReadingOrderID, PlayerDownloadTaskType>,
   private val onSelect: (PlayerReadingOrderItemType) -> Unit,
-): RecyclerView.Adapter<PlayerTOCChapterAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<PlayerTOCChapterAdapter.ViewHolder>() {
 
   private val listener: View.OnClickListener
   private var currentSpineElement: Int = -1
@@ -85,10 +85,10 @@ class PlayerTOCChapterAdapter(
     val item = this.spineElements[position]
     val normalIndex = item.index + 1
 
-/*    val title = item.title ?: this.context.getString(
-      R.string.audiobook_player_toc_track_n,
-      normalIndex
-    )*/
+    /*    val title = item.title ?: this.context.getString(
+          R.string.audiobook_player_toc_track_n,
+          normalIndex
+        )*/
     val title = "PlayerTOCChapterAdapter: TITLE MISSING!!!"
 
     holder.titleText.text = title

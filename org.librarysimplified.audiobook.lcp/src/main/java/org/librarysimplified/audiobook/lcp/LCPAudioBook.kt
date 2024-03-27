@@ -4,7 +4,6 @@ import android.app.Application
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import io.reactivex.subjects.PublishSubject
-import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
@@ -18,8 +17,6 @@ import org.librarysimplified.audiobook.open_access.ExoManifest
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.util.SortedMap
-import java.util.TreeMap
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -89,7 +86,6 @@ class LCPAudioBook private constructor(
       contentProtections: List<ContentProtection>,
       manualPassphrase: Boolean
     ): PlayerAudioBookType {
-
       val statusEvents: PublishSubject<PlayerReadingOrderItemDownloadStatus> =
         PublishSubject.create()
 

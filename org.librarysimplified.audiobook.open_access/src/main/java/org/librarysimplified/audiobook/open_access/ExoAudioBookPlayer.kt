@@ -24,6 +24,8 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
+import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_PLAYING
+import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_STOPPED
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.NORMAL_TIME
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
@@ -37,8 +39,6 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUIThread.runOnUIThread
-import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_PLAYING
-import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_STOPPED
 import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_NONEXISTENT
 import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_NOT_DOWNLOADED
 import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_READY
@@ -258,7 +258,6 @@ class ExoAudioBookPlayer private constructor(
     PlayerUIThread.checkIsUIThread()
 
     when (this.intention) {
-
       /*
        * If the we're supposed to be playing the current reading order item, and the status is
        * anything other than "downloaded", stop everything. Otherwise, try to play the item.
@@ -450,13 +449,13 @@ class ExoAudioBookPlayer private constructor(
         this.exoPlayer.play()
       }
       ExoPlayerPlaybackStatus.PLAYING -> {
-
+        // Nothing to do
       }
       ExoPlayerPlaybackStatus.PAUSED -> {
         this.exoPlayer.play()
       }
       ExoPlayerPlaybackStatus.CHAPTER_ENDED -> {
-
+        // Nothing to do
       }
     }
   }

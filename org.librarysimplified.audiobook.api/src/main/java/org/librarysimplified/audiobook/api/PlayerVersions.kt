@@ -3,7 +3,6 @@ package org.librarysimplified.audiobook.api
 import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
 import java.io.InputStream
-import java.lang.Exception
 import java.util.Properties
 
 /**

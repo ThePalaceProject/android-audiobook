@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 
 class ExoAdapter(
-  private val logger : Logger,
+  private val logger: Logger,
   private val events: Subject<PlayerEvent>,
   private val exoPlayer: ExoPlayer,
   private val currentSpineElement: () -> PlayerReadingOrderItemType
@@ -32,10 +32,10 @@ class ExoAdapter(
       .toSerialized()
 
   @Volatile
-  private var stateLatest : ExoPlayerPlaybackStatus =
+  private var stateLatest: ExoPlayerPlaybackStatus =
     ExoPlayerPlaybackStatus.INITIAL
 
-  val state : ExoPlayerPlaybackStatus
+  val state: ExoPlayerPlaybackStatus
     get() = this.stateLatest
 
   val stateObservable: Observable<ExoPlayerPlaybackStatusTransition> =
@@ -125,15 +125,19 @@ class ExoAdapter(
       ExoPlayer.STATE_BUFFERING -> {
         "Buffering"
       }
+
       ExoPlayer.STATE_ENDED -> {
         "Ended"
       }
+
       ExoPlayer.STATE_IDLE -> {
         "Idle"
       }
+
       ExoPlayer.STATE_READY -> {
         "Ready"
       }
+
       else -> {
         "Unrecognized state"
       }
@@ -162,4 +166,3 @@ class ExoAdapter(
     this.exoPlayer.play()
   }
 }
-

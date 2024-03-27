@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.open_access
 
 import android.app.Application
-import one.irradia.mime.api.MIMEType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest

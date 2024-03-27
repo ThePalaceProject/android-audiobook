@@ -12,7 +12,6 @@ import org.librarysimplified.audiobook.lcp.LCPEngineProvider
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.parser.api.ParseResult
-import org.librarysimplified.audiobook.tests.DishonestDownloadProvider
 import org.mockito.Mockito
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.slf4j.Logger
