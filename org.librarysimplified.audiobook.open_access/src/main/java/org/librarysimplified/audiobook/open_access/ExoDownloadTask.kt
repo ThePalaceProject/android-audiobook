@@ -1,8 +1,5 @@
 package org.librarysimplified.audiobook.open_access
 
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import net.jcip.annotations.GuardedBy
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
@@ -22,6 +19,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 
 /**
@@ -54,16 +52,16 @@ class ExoDownloadTask(
   }
 
   private sealed class State {
-    object Initial : State()
-    object Downloaded : State()
-    data class Downloading(val future: ListenableFuture<Unit>) : State()
+    data object Initial : State()
+    data object Downloaded : State()
+    data class Downloading(val future: CompletableFuture<Unit>) : State()
   }
 
   private fun stateGetCurrent() =
     synchronized(this.stateLock) { this.state }
 
-  private fun stateSetCurrent(new_state: State) =
-    synchronized(this.stateLock) { this.state = new_state }
+  private fun stateSetCurrent(newState: State) =
+    synchronized(this.stateLock) { this.state = newState }
 
   private fun onBroadcastState() {
     when (this.stateGetCurrent()) {
@@ -95,7 +93,7 @@ class ExoDownloadTask(
   }
 
   private fun createDownloadingRequest(
-    future: ListenableFuture<Unit>,
+    future: CompletableFuture<Unit>,
     targetLink: PlayerManifestLink
   ) {
     this.stateSetCurrent(Downloading(future))
@@ -105,32 +103,25 @@ class ExoDownloadTask(
      * Add a callback to the future that will report download success and failure.
      */
 
-    Futures.addCallback(
-      future,
-      object : FutureCallback<Unit> {
-        override fun onSuccess(result: Unit?) {
+    future.whenComplete { unit, exception ->
+      when (exception) {
+        null -> {
           this@ExoDownloadTask.onDownloadCompleted()
         }
-
-        override fun onFailure(exception: Throwable) {
-          when (exception) {
-            is CancellationException ->
-              this@ExoDownloadTask.onDownloadCancelled()
-            else -> {
-              if (targetLink.expires) {
-                this@ExoDownloadTask.onDownloadExpired(Exception(exception))
-              } else {
-                this@ExoDownloadTask.onDownloadFailed(Exception(exception))
-              }
-            }
+        is CancellationException ->
+          this@ExoDownloadTask.onDownloadCancelled()
+        else -> {
+          if (targetLink.expires) {
+            this@ExoDownloadTask.onDownloadExpired(Exception(exception))
+          } else {
+            this@ExoDownloadTask.onDownloadFailed(Exception(exception))
           }
         }
-      },
-      this.downloadStatusExecutor
-    )
+      }
+    }
   }
 
-  private fun onStartDownload(): ListenableFuture<Unit> {
+  private fun onStartDownload(): CompletableFuture<Unit> {
     this.log.debug("download: {}", this.originalLink.hrefURI)
 
     val request =
@@ -146,14 +137,13 @@ class ExoDownloadTask(
       this.onStartDownloadForRequest(request, this.originalLink)
 
     this.createDownloadingRequest(future, this.originalLink)
-
     return future
   }
 
   private fun onStartDownloadForRequest(
     request: PlayerDownloadRequest,
     targetLink: PlayerManifestLink
-  ): ListenableFuture<Unit> {
+  ): CompletableFuture<Unit> {
     for (extension in this.extensions) {
       val future =
         extension.onDownloadLink(

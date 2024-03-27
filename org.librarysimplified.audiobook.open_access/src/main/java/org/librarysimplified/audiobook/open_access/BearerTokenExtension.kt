@@ -1,6 +1,5 @@
 package org.librarysimplified.audiobook.open_access
 
-import com.google.common.util.concurrent.ListenableFuture
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadRequestCredentials
@@ -8,6 +7,7 @@ import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 
 class BearerTokenExtension : PlayerExtensionType {
@@ -25,7 +25,7 @@ class BearerTokenExtension : PlayerExtensionType {
     downloadProvider: PlayerDownloadProviderType,
     originalRequest: PlayerDownloadRequest,
     link: PlayerManifestLink
-  ): ListenableFuture<Unit>? {
+  ): CompletableFuture<Unit>? {
     val authHeader = authorization?.toHeaderValue()
 
     return if (
@@ -48,7 +48,7 @@ class BearerTokenExtension : PlayerExtensionType {
     downloadProvider: PlayerDownloadProviderType,
     originalRequest: PlayerDownloadRequest,
     token: String
-  ): ListenableFuture<Unit> {
+  ): CompletableFuture<Unit> {
     this.logger.debug("running bearer token authentication for {}", originalRequest.uri)
 
     val newRequest =

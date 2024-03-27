@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.demo
 
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -9,15 +9,24 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import org.librarysimplified.audiobook.json_web_token.JSONBase64String
+import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
+import org.librarysimplified.audiobook.manifest_fulfill.api.ManifestFulfillmentStrategies
+import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicCredentials
+import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
+import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicType
+import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAManifestFulfillmentStrategyProviderType
+import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAManifestURI
+import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAParameters
 import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAPassword
-import org.slf4j.LoggerFactory
+import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
+import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
+import org.librarysimplified.audiobook.views.PlayerModel
+import java.net.URI
+import java.util.ServiceLoader
 
-class ExampleConfigurationActivity : AppCompatActivity() {
-
-  private val logger =
-    LoggerFactory.getLogger(ExampleConfigurationActivity::class.java)
+class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
   private lateinit var authBasic: String
   private lateinit var authentication: Spinner
@@ -43,11 +52,13 @@ class ExampleConfigurationActivity : AppCompatActivity() {
   private lateinit var play: Button
   private lateinit var presets: Spinner
 
-  override fun onCreate(state: Bundle?) {
-    super.onCreate(state)
-    this.logger.debug("onCreate")
-
-    this.setContentView(R.layout.example_config_screen)
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View? {
+    val layout =
+      inflater.inflate(R.layout.example_config_screen, container, false)
 
     this.authNone =
       this.getString(R.string.exAuthNone)
@@ -61,14 +72,14 @@ class ExampleConfigurationActivity : AppCompatActivity() {
       this.resources.getStringArray(R.array.exAuthenticationTypes)
 
     this.authenticationBasic =
-      this.findViewById(R.id.exAuthenticationBasicParameters)
+      layout.findViewById(R.id.exAuthenticationBasicParameters)
     this.authenticationBasicUser =
       this.authenticationBasic.findViewById(R.id.exAuthenticationBasicUser)
     this.authenticationBasicPassword =
       this.authenticationBasic.findViewById(R.id.exAuthenticationBasicPassword)
 
     this.authenticationFeedbooks =
-      this.findViewById(R.id.exAuthenticationFeedbooksParameters)
+      layout.findViewById(R.id.exAuthenticationFeedbooksParameters)
     this.authenticationFeedbooksUser =
       this.authenticationFeedbooks.findViewById(R.id.exAuthenticationFeedbooksUser)
     this.authenticationFeedbooksPassword =
@@ -79,7 +90,7 @@ class ExampleConfigurationActivity : AppCompatActivity() {
       this.authenticationFeedbooks.findViewById(R.id.exAuthenticationFeedbooksSecret)
 
     this.authenticationOverdrive =
-      this.findViewById(R.id.exAuthenticationOverdriveParameters)
+      layout.findViewById(R.id.exAuthenticationOverdriveParameters)
     this.authenticationOverdriveUser =
       this.authenticationOverdrive.findViewById(R.id.exAuthenticationOverdriveUser)
     this.authenticationOverdrivePassword =
@@ -90,20 +101,21 @@ class ExampleConfigurationActivity : AppCompatActivity() {
       this.authenticationOverdrive.findViewById(R.id.exAuthenticationOverdriveClientSecret)
 
     this.authentication =
-      this.findViewById(R.id.exAuthenticationSelection)
+      layout.findViewById(R.id.exAuthenticationSelection)
     this.authentication.adapter =
       ArrayAdapter.createFromResource(
-        this, R.array.exAuthenticationTypes, android.R.layout.simple_list_item_1
+        ExampleApplication.application, R.array.exAuthenticationTypes, android.R.layout.simple_list_item_1
       )
     this.play =
-      this.findViewById(R.id.exPlay)
+      layout.findViewById(R.id.exPlay)
 
     this.location =
-      this.findViewById(R.id.exLocation)
+      layout.findViewById(R.id.exLocation)
     this.presets =
-      this.findViewById(R.id.exPresets)
+      layout.findViewById(R.id.exPresets)
 
     this.onSelectedAuthentication(this.authNone)
+    return layout
   }
 
   override fun onStart() {
@@ -112,6 +124,7 @@ class ExampleConfigurationActivity : AppCompatActivity() {
     this.authentication.onItemSelectedListener =
       object : AdapterView.OnItemSelectedListener {
         override fun onNothingSelected(parent: AdapterView<*>?) {
+          // Nothing to do
         }
 
         override fun onItemSelected(
@@ -120,17 +133,15 @@ class ExampleConfigurationActivity : AppCompatActivity() {
           position: Int,
           id: Long
         ) {
-          this@ExampleConfigurationActivity.onSelectedAuthentication(
-            this@ExampleConfigurationActivity.authentication.getItemAtPosition(position) as String
-          )
+          onSelectedAuthentication(authentication.getItemAtPosition(position) as String)
         }
       }
 
     val presetList =
-      ExamplePreset.fromXMLResources(this)
+      ExamplePreset.fromXMLResources(this.requireContext())
     val presetAdapter =
       ArrayAdapter(
-        this,
+        this.requireContext(),
         android.R.layout.simple_list_item_1,
         presetList.map { p -> p.name }.toTypedArray()
       )
@@ -146,7 +157,7 @@ class ExampleConfigurationActivity : AppCompatActivity() {
         position: Int,
         id: Long
       ) {
-        this@ExampleConfigurationActivity.onSelectedPreset(presetList[position])
+        onSelectedPreset(presetList[position])
       }
     }
 
@@ -195,17 +206,15 @@ class ExampleConfigurationActivity : AppCompatActivity() {
         }
       }
 
-    val parameters =
-      ExamplePlayerParameters(
-        credentials = credentials,
-        fetchURI = this.location.text.toString()
-      )
-
-    val args = Bundle()
-    args.putSerializable(ExamplePlayerActivity.FETCH_PARAMETERS_ID, parameters)
-    val intent = Intent(this, ExamplePlayerActivity::class.java)
-    intent.putExtras(args)
-    this.startActivity(intent)
+    val sourceURI = URI.create(this.location.text.toString())
+    PlayerModel.downloadParseAndCheckManifest(
+      sourceURI = sourceURI,
+      cacheDir = ExampleApplication.application.cacheDir,
+      userAgent = ExampleApplication.userAgent,
+      licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
+      strategy = downloadStrategyForCredentials(sourceURI, credentials),
+      parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
+    )
   }
 
   private fun onSelectedAuthentication(authentication: String) {
@@ -273,6 +282,88 @@ class ExampleConfigurationActivity : AppCompatActivity() {
           }
         this.authenticationOverdriveClientSecret.text = credentials.clientPass
         this.authenticationOverdriveClientKey.text = credentials.clientKey
+      }
+    }
+  }
+
+  private fun downloadStrategyForCredentials(
+    source: URI,
+    credentials: ExamplePlayerCredentials
+  ): ManifestFulfillmentStrategyType {
+    return when (credentials) {
+      is ExamplePlayerCredentials.None -> {
+        val strategies =
+          ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
+            ?: throw UnsupportedOperationException()
+
+        strategies.create(
+          ManifestFulfillmentBasicParameters(
+            uri = source,
+            credentials = null,
+            httpClient = ExampleApplication.httpClient,
+            userAgent = ExampleApplication.userAgent
+          )
+        )
+      }
+
+      is ExamplePlayerCredentials.Basic -> {
+        val strategies =
+          ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
+            ?: throw UnsupportedOperationException()
+
+        val credentials =
+          ManifestFulfillmentBasicCredentials(
+            userName = credentials.userName,
+            password = credentials.password
+          )
+
+        strategies.create(
+          ManifestFulfillmentBasicParameters(
+            uri = source,
+            credentials = credentials,
+            httpClient = ExampleApplication.httpClient,
+            userAgent = ExampleApplication.userAgent
+          )
+        )
+      }
+
+      is ExamplePlayerCredentials.Feedbooks -> {
+        val strategies =
+          ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
+            ?: throw UnsupportedOperationException()
+
+        val credentials =
+          ManifestFulfillmentBasicCredentials(
+            userName = credentials.userName,
+            password = credentials.password
+          )
+
+        strategies.create(
+          ManifestFulfillmentBasicParameters(
+            uri = source,
+            credentials = credentials,
+            httpClient = ExampleApplication.httpClient,
+            userAgent = ExampleApplication.userAgent
+          )
+        )
+      }
+
+      is ExamplePlayerCredentials.Overdrive -> {
+        val strategies =
+          ManifestFulfillmentStrategies.findStrategy(
+            OPAManifestFulfillmentStrategyProviderType::class.java
+          ) ?: throw UnsupportedOperationException()
+
+        strategies.create(
+          OPAParameters(
+            userName = credentials.userName,
+            password = credentials.password,
+            clientKey = credentials.clientKey,
+            clientPass = credentials.clientPass,
+            targetURI = OPAManifestURI.Indirect(source),
+            userAgent = ExampleApplication.userAgent
+          )
+        )
       }
     }
   }

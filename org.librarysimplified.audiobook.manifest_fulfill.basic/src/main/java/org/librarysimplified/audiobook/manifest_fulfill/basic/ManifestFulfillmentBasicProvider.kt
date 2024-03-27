@@ -20,7 +20,6 @@ class ManifestFulfillmentBasicProvider(
     configuration: ManifestFulfillmentBasicParameters
   ): ManifestFulfillmentStrategyType {
     return ManifestFulfillmentBasic(
-      client = this.client,
       configuration = configuration
     )
   }

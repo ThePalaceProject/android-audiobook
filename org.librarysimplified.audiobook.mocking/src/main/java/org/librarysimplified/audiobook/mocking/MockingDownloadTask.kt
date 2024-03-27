@@ -1,8 +1,5 @@
 package org.librarysimplified.audiobook.mocking
 
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
@@ -16,6 +13,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import kotlin.random.Random
 
@@ -40,9 +38,9 @@ class MockingDownloadTask(
   }
 
   private sealed class State {
-    object Initial : State()
-    object Downloaded : State()
-    data class Downloading(val future: ListenableFuture<Unit>) : State()
+    data object Initial : State()
+    data object Downloaded : State()
+    data class Downloading(val future: CompletableFuture<Unit>) : State()
   }
 
   private fun stateGetCurrent() =
@@ -80,7 +78,7 @@ class MockingDownloadTask(
     }
   }
 
-  private fun onStartDownload(): ListenableFuture<Unit> {
+  private fun onStartDownload(): CompletableFuture<Unit> {
     this.log.debug("starting download")
 
     val future =
@@ -101,24 +99,18 @@ class MockingDownloadTask(
      * Add a callback to the future that will report download success and failure.
      */
 
-    Futures.addCallback(
-      future,
-      object : FutureCallback<Unit> {
-        override fun onSuccess(result: Unit?) {
-          this@MockingDownloadTask.onDownloadCompleted()
+    future.whenComplete { unit, exception ->
+      when (exception) {
+        null -> {
+          onDownloadCompleted()
         }
-
-        override fun onFailure(exception: Throwable?) {
-          when (exception) {
-            is CancellationException ->
-              this@MockingDownloadTask.onDownloadCancelled()
-            else ->
-              this@MockingDownloadTask.onDownloadFailed(kotlin.Exception(exception))
-          }
+        is CancellationException ->
+          onDownloadCancelled()
+        else -> {
+          onDownloadFailed(Exception(exception))
         }
-      },
-      this.downloadStatusExecutor
-    )
+      }
+    }
 
     return future
   }

@@ -1,8 +1,5 @@
 package org.librarysimplified.audiobook.downloads
 
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.ListeningExecutorService
-import com.google.common.util.concurrent.SettableFuture
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -16,6 +13,8 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 
 /*
@@ -23,7 +22,7 @@ import java.util.concurrent.TimeUnit
  */
 
 class DownloadProvider private constructor(
-  private val executor: ListeningExecutorService
+  private val executor: ExecutorService
 ) : PlayerDownloadProviderType {
 
   private val log =
@@ -37,24 +36,24 @@ class DownloadProvider private constructor(
      * @param executor A listening executor that will be used for download tasks
      */
 
-    fun create(executor: ListeningExecutorService): PlayerDownloadProviderType {
+    fun create(executor: ExecutorService): PlayerDownloadProviderType {
       return DownloadProvider(executor)
     }
   }
 
-  override fun download(request: PlayerDownloadRequest): ListenableFuture<Unit> {
-    val result = SettableFuture.create<Unit>()
+  override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
+    val result = CompletableFuture<Unit>()
 
     this.reportProgress(request, 0)
 
     this.executor.submit {
       try {
-        doDownload(request, result)
-        result.set(Unit)
+        result.complete(doDownload(request, result))
       } catch (e: CancellationException) {
         doCleanUp(request)
+        result.cancel(true)
       } catch (e: Throwable) {
-        result.setException(e)
+        result.completeExceptionally(e)
         doCleanUp(request)
       }
     }
@@ -79,7 +78,7 @@ class DownloadProvider private constructor(
 
   private fun doDownload(
     request: PlayerDownloadRequest,
-    result: SettableFuture<Unit>
+    result: CompletableFuture<Unit>
   ) {
     this.log.debug("downloading {} to {}", request.uri, request.outputFile)
 
@@ -149,7 +148,7 @@ class DownloadProvider private constructor(
   private fun handleSuccessfulResponse(
     response: Response,
     request: PlayerDownloadRequest,
-    result: SettableFuture<Unit>
+    result: CompletableFuture<Unit>
   ) {
     /*
      * Check if the future has been cancelled. If it has, don't start copying.
@@ -206,7 +205,7 @@ class DownloadProvider private constructor(
     inputStream: InputStream,
     outputStream: FileOutputStream,
     expectedLength: Long,
-    result: SettableFuture<Unit>
+    result: CompletableFuture<Unit>
   ) {
     var progressCurrent: Double
     var received = 0L

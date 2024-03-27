@@ -11,6 +11,7 @@
   <uses-permission android:name="android.permission.BROADCAST_STICKY" />
 
   <application
+    android:name="org.librarysimplified.audiobook.demo.ExampleApplication"
     android:allowBackup="false"
     android:icon="@mipmap/ic_launcher"
     android:theme="@style/PalaceTheme.Splash"
@@ -18,8 +19,7 @@
     android:label="@string/exAppName">
 
     <activity
-      android:name="org.librarysimplified.audiobook.demo.ExampleConfigurationActivity"
-      android:configChanges="orientation|keyboardHidden|screenSize"
+      android:name="org.librarysimplified.audiobook.demo.ExamplePlayerActivity"
       android:exported="true">
 
       <intent-filter>
@@ -27,11 +27,6 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-
-    <activity
-      android:name="org.librarysimplified.audiobook.demo.ExamplePlayerActivity"
-      android:configChanges="orientation|keyboardHidden|screenSize" />
-
   </application>
 
 </manifest>

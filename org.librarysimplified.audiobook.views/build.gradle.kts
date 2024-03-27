@@ -1,6 +1,13 @@
 dependencies {
     implementation(project(":org.librarysimplified.audiobook.api"))
+    implementation(project(":org.librarysimplified.audiobook.downloads"))
+    implementation(project(":org.librarysimplified.audiobook.license_check.api"))
+    implementation(project(":org.librarysimplified.audiobook.license_check.spi"))
     implementation(project(":org.librarysimplified.audiobook.manifest.api"))
+    implementation(project(":org.librarysimplified.audiobook.manifest_fulfill.spi"))
+    implementation(project(":org.librarysimplified.audiobook.manifest_parser.api"))
+    implementation(project(":org.librarysimplified.audiobook.manifest_parser.extension_spi"))
+    implementation(project(":org.librarysimplified.audiobook.parser.api"))
 
     implementation(libs.androidx.activity)
     implementation(libs.androidx.activity.ktx)
@@ -41,10 +48,14 @@ dependencies {
     implementation(libs.androidx.viewpager)
     implementation(libs.androidx.viewpager2)
     implementation(libs.google.material)
+    implementation(libs.irradia.mime.api)
+    implementation(libs.irradia.mime.vanilla)
     implementation(libs.joda.time)
+    implementation(libs.palace.http.api)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
     implementation(libs.palace.theme)
+    implementation(libs.rxandroid2)
     implementation(libs.rxjava2)
     implementation(libs.slf4j)
 }

@@ -2,7 +2,6 @@ package org.librarysimplified.audiobook.manifest_fulfill.basic
 
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
-import okhttp3.OkHttpClient
 import one.irradia.mime.vanilla.MIMEParser
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory
  */
 
 class ManifestFulfillmentBasic(
-  private val client: OkHttpClient,
   private val configuration: ManifestFulfillmentBasicParameters
 ) : ManifestFulfillmentStrategyType {
 
@@ -35,12 +33,7 @@ class ManifestFulfillmentBasic(
   override fun execute(): PlayerResult<ManifestFulfilled, ManifestFulfillmentErrorType> {
     this.logger.debug("fulfilling manifest: {}", this.configuration.uri)
 
-    this.eventSubject.onNext(
-      ManifestFulfillmentEvent(
-        "Fulfilling ${this.configuration.uri}"
-      )
-    )
-
+    this.eventSubject.onNext(ManifestFulfillmentEvent("Fulfilling ${this.configuration.uri}…"))
     val credentials = this.configuration.credentials
     val httpClient = this.configuration.httpClient
 
@@ -59,6 +52,7 @@ class ManifestFulfillmentBasic(
       .allowRedirects(ALLOW_UNSAFE_REDIRECTS)
       .build()
 
+    this.eventSubject.onNext(ManifestFulfillmentEvent("Connecting…"))
     val response = request.execute()
 
     val responseCode = response.properties?.status ?: 0

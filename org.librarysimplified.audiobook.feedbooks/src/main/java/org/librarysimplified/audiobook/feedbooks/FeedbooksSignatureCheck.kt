@@ -35,43 +35,50 @@ class FeedbooksSignatureCheck(
   )
 
   override fun execute(): SingleLicenseCheckResult {
-    this.event("Started check")
+    this.event("Started signature check…")
 
     val signature =
       this.parameters.manifest.extensions.find { extension ->
         extension is FeedbooksSignature
       } as FeedbooksSignature?
-        ?: return SingleLicenseCheckResult.NotApplicable("No signature information supplied.")
 
-    this.event("Deserializing manifest bytes")
+    if (signature == null) {
+      this.event("Check is not applicable: No signature information supplied.")
+      return SingleLicenseCheckResult.NotApplicable("No signature information supplied.")
+    }
 
+    this.event("Deserializing manifest bytes…")
     val objectMapper = ObjectMapper()
     val objectNode = objectMapper.readTree(this.parameters.manifest.originalBytes) as ObjectNode
 
-    this.event("Extracting signature from manifest")
-
+    this.event("Extracting signature from manifest…")
     val metadataNode = objectNode["metadata"]
-
     if (metadataNode is ObjectNode) {
       metadataNode.remove("http://www.feedbooks.com/audiobooks/signature")
     }
 
-    this.event("Canonicalizing manifest")
-
+    this.event("Canonicalizing manifest…")
     val canonicalManifestBytes = JSONCanonicalization.canonicalize(objectNode)
 
-    this.event("Checking signature")
-
+    this.event("Checking signature…")
     return try {
       checkSignature(canonicalManifestBytes, signature)
     } catch (e: UnsupportedAlgorithmException) {
-      SingleLicenseCheckResult.Failed(e.message ?: "Unsupported signature algorithm.")
+      val message = e.message ?: "Unsupported signature algorithm."
+      this.event("Signature check failed: $message")
+      SingleLicenseCheckResult.Failed(message)
     } catch (e: UnknownIssuerException) {
-      SingleLicenseCheckResult.Failed(e.message ?: "Unknown signature issuer.")
+      val message = e.message ?: "Unknown signature issuer."
+      this.event("Signature check failed: $message")
+      SingleLicenseCheckResult.Failed(message)
     } catch (e: CertificateRetrievalException) {
-      SingleLicenseCheckResult.Failed("Certificate could not be retrieved.")
+      val message = "Certificate could not be retrieved."
+      this.event("Signature check failed: $message")
+      SingleLicenseCheckResult.Failed(message)
     } catch (e: ParseException) {
-      SingleLicenseCheckResult.Failed("Certificate could not be parsed.")
+      val message = "Certificate could not be parsed."
+      this.event("Signature check failed: $message")
+      SingleLicenseCheckResult.Failed(message)
     }
   }
 
