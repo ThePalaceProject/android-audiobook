@@ -17,13 +17,14 @@ import org.joda.time.Duration
 import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUIThread
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.views.PlayerCircularProgressView
 import org.librarysimplified.audiobook.views.PlayerTimeStrings
 import org.librarysimplified.audiobook.views.R
@@ -34,11 +35,10 @@ import org.librarysimplified.audiobook.views.R
 
 class PlayerTOCChapterAdapter(
   private val context: Context,
-  private val spineElements: List<PlayerSpineElementType>,
-  private val downloadTasks: List<PlayerDownloadTaskType>,
-  private val onSelect: (PlayerSpineElementType) -> Unit,
-) :
-  RecyclerView.Adapter<PlayerTOCChapterAdapter.ViewHolder>() {
+  private val spineElements: List<PlayerReadingOrderItemType>,
+  private val downloadTasksById: Map<PlayerManifestReadingOrderID, PlayerDownloadTaskType>,
+  private val onSelect: (PlayerReadingOrderItemType) -> Unit,
+): RecyclerView.Adapter<PlayerTOCChapterAdapter.ViewHolder>() {
 
   private val listener: View.OnClickListener
   private var currentSpineElement: Int = -1
@@ -59,7 +59,8 @@ class PlayerTOCChapterAdapter(
   init {
     this.timeStrings =
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.context.resources)
-    this.listener = View.OnClickListener { v -> this.onSelect(v.tag as PlayerSpineElementType) }
+    this.listener =
+      View.OnClickListener { v -> this.onSelect(v.tag as PlayerReadingOrderItemType) }
   }
 
   override fun onCreateViewHolder(
@@ -84,10 +85,11 @@ class PlayerTOCChapterAdapter(
     val item = this.spineElements[position]
     val normalIndex = item.index + 1
 
-    val title = item.title ?: this.context.getString(
+/*    val title = item.title ?: this.context.getString(
       R.string.audiobook_player_toc_track_n,
       normalIndex
-    )
+    )*/
+    val title = "PlayerTOCChapterAdapter: TITLE MISSING!!!"
 
     holder.titleText.text = title
     holder.titleText.isEnabled = false
@@ -101,14 +103,14 @@ class PlayerTOCChapterAdapter(
     var failedDownload = false
     var downloading = false
     val status = item.downloadStatus
-    holder.buttons.visibility = if (status !is PlayerSpineElementDownloaded) {
+    holder.buttons.visibility = if (status !is PlayerReadingOrderItemDownloaded) {
       VISIBLE
     } else {
       GONE
     }
 
     when (status) {
-      is PlayerSpineElementNotDownloaded -> {
+      is PlayerReadingOrderItemNotDownloaded -> {
         holder.buttonsDownloading.visibility = INVISIBLE
         holder.buttonsDownloadFailed.visibility = INVISIBLE
 
@@ -118,9 +120,7 @@ class PlayerTOCChapterAdapter(
 
           if (item.downloadTasksSupported) {
             holder.notDownloadedStreamableRefresh.setOnClickListener {
-              downloadTasks.firstOrNull { task ->
-                task.fulfillsSpineElement(item)
-              }?.fetch()
+              this.downloadTasksById[item.id]?.fetch()
             }
             holder.notDownloadedStreamableRefresh.contentDescription =
               this.context.getString(
@@ -138,9 +138,7 @@ class PlayerTOCChapterAdapter(
 
           if (item.downloadTasksSupported) {
             holder.notDownloadedStreamableRefresh.setOnClickListener {
-              downloadTasks.firstOrNull { task ->
-                task.fulfillsSpineElement(item)
-              }?.fetch()
+              this.downloadTasksById[item.id]?.fetch()
             }
             holder.notDownloadedStreamableRefresh.contentDescription =
               this.context.getString(
@@ -157,7 +155,7 @@ class PlayerTOCChapterAdapter(
         }
       }
 
-      is PlayerSpineElementDownloading -> {
+      is PlayerReadingOrderItemDownloading -> {
         holder.buttonsDownloading.visibility = VISIBLE
         holder.buttonsDownloadFailed.visibility = INVISIBLE
         holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
@@ -171,7 +169,11 @@ class PlayerTOCChapterAdapter(
         }
 
         holder.downloadingProgress.contentDescription =
-          this.context.getString(R.string.audiobook_accessibility_toc_progress, normalIndex, status.percent)
+          this.context.getString(
+            R.string.audiobook_accessibility_toc_progress,
+            normalIndex,
+            status.percent
+          )
         holder.downloadingProgress.visibility = VISIBLE
         holder.downloadingProgress.progress = status.percent.toFloat() * 0.01f
 
@@ -179,11 +181,11 @@ class PlayerTOCChapterAdapter(
         requiresDownload = item.book.supportsStreaming == false
       }
 
-      is PlayerSpineElementDownloaded -> {
+      is PlayerReadingOrderItemDownloaded -> {
         holder.view.isEnabled = true
       }
 
-      is PlayerSpineElementDownloadFailed -> {
+      is PlayerReadingOrderItemDownloadFailed -> {
         holder.buttonsDownloading.visibility = INVISIBLE
         holder.buttonsDownloadFailed.visibility = VISIBLE
         holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
@@ -191,9 +193,7 @@ class PlayerTOCChapterAdapter(
 
         if (item.downloadTasksSupported) {
           holder.downloadFailedRefresh.setOnClickListener {
-            val task = downloadTasks.firstOrNull { task ->
-              task.fulfillsSpineElement(item)
-            }
+            val task = this.downloadTasksById[item.id]
             task?.cancel()
             task?.fetch()
           }
@@ -209,7 +209,7 @@ class PlayerTOCChapterAdapter(
         requiresDownload = item.book.supportsStreaming == false
       }
 
-      is PlayerSpineElementDownloadExpired -> {
+      is PlayerReadingOrderItemDownloadExpired -> {
         // Nothing to do.
       }
     }
@@ -281,19 +281,16 @@ class PlayerTOCChapterAdapter(
     return builder.toString()
   }
 
-  private fun onConfirmCancelDownloading(item: PlayerSpineElementType) {
+  private fun onConfirmCancelDownloading(item: PlayerReadingOrderItemType) {
     val dialog =
       MaterialAlertDialogBuilder(this.context)
         .setCancelable(true)
         .setMessage(R.string.audiobook_part_download_stop_confirm)
         .setPositiveButton(
-          R.string.audiobook_part_download_stop,
-          { _: DialogInterface, _: Int ->
-            downloadTasks.firstOrNull { task ->
-              task.fulfillsSpineElement(item)
-            }?.cancel()
-          }
-        )
+          R.string.audiobook_part_download_stop
+        ) { _: DialogInterface, _: Int ->
+          this.downloadTasksById[item.id]?.cancel()
+        }
         .setNegativeButton(
           R.string.audiobook_part_download_continue,
           { _: DialogInterface, _: Int -> }
@@ -361,7 +358,6 @@ class PlayerTOCChapterAdapter(
 
     init {
       this.downloadingProgress.thickness = 8.0f
-
       this.notDownloadedStreamableProgress.thickness = 8.0f
     }
   }

@@ -1,5 +1,7 @@
 package org.librarysimplified.audiobook.manifest_fulfill.basic
 
+import io.reactivex.Observable
+import io.reactivex.subjects.PublishSubject
 import okhttp3.OkHttpClient
 import one.irradia.mime.vanilla.MIMEParser
 import org.librarysimplified.audiobook.api.PlayerResult
@@ -11,8 +13,6 @@ import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
 import org.librarysimplified.http.api.LSHTTPRequestBuilderType.AllowRedirects.ALLOW_UNSAFE_REDIRECTS
 import org.librarysimplified.http.api.LSHTTPResponseStatus
 import org.slf4j.LoggerFactory
-import rx.Observable
-import rx.subjects.PublishSubject
 
 /**
  * A fulfillment strategy that expects to receive a manifest directly, via HTTP basic authentication.
@@ -119,6 +119,6 @@ class ManifestFulfillmentBasic(
   }
 
   override fun close() {
-    this.eventSubject.onCompleted()
+    this.eventSubject.onComplete()
   }
 }

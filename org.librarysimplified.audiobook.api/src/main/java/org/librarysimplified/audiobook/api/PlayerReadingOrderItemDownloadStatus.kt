@@ -4,13 +4,13 @@ package org.librarysimplified.audiobook.api
  * The download status of a particular part of a book.
  */
 
-sealed class PlayerSpineElementDownloadStatus {
+sealed class PlayerReadingOrderItemDownloadStatus {
 
   /**
    * The spine element to which this download status refers.
    */
 
-  abstract val spineElement: PlayerSpineElementType
+  abstract val readingOrderItem: PlayerReadingOrderItemType
 
   /**
    * The part of the book has not been downloaded. If the underlying audio engine supports
@@ -18,45 +18,45 @@ sealed class PlayerSpineElementDownloadStatus {
    * server.
    */
 
-  data class PlayerSpineElementNotDownloaded(
-    override val spineElement: PlayerSpineElementType
-  ) : PlayerSpineElementDownloadStatus()
+  data class PlayerReadingOrderItemNotDownloaded(
+    override val readingOrderItem: PlayerReadingOrderItemType
+  ) : PlayerReadingOrderItemDownloadStatus()
 
   /**
    * The part of the book is currently downloading.
    */
 
-  data class PlayerSpineElementDownloading(
-    override val spineElement: PlayerSpineElementType,
+  data class PlayerReadingOrderItemDownloading(
+    override val readingOrderItem: PlayerReadingOrderItemType,
     val percent: Int
-  ) : PlayerSpineElementDownloadStatus()
+  ) : PlayerReadingOrderItemDownloadStatus()
 
   /**
    * The part of the book is completely downloaded.
    */
 
-  data class PlayerSpineElementDownloaded(
-    override val spineElement: PlayerSpineElementType
-  ) : PlayerSpineElementDownloadStatus()
+  data class PlayerReadingOrderItemDownloaded(
+    override val readingOrderItem: PlayerReadingOrderItemType
+  ) : PlayerReadingOrderItemDownloadStatus()
 
   /**
    * Downloading this part of the book failed.
    */
 
-  data class PlayerSpineElementDownloadFailed(
-    override val spineElement: PlayerSpineElementType,
+  data class PlayerReadingOrderItemDownloadFailed(
+    override val readingOrderItem: PlayerReadingOrderItemType,
     val exception: Exception?,
     val message: String
-  ) : PlayerSpineElementDownloadStatus()
+  ) : PlayerReadingOrderItemDownloadStatus()
 
   /**
    * Downloading this part of the book failed due to an (apparently) expired link. The download
    * will likely succeed if the manifest is reloaded containing a fresh set of links.
    */
 
-  data class PlayerSpineElementDownloadExpired(
-    override val spineElement: PlayerSpineElementType,
+  data class PlayerReadingOrderItemDownloadExpired(
+    override val readingOrderItem: PlayerReadingOrderItemType,
     val exception: Exception?,
     val message: String
-  ) : PlayerSpineElementDownloadStatus()
+  ) : PlayerReadingOrderItemDownloadStatus()
 }

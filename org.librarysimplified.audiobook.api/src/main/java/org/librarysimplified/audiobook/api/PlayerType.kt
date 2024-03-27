@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.api
 
-import rx.Observable
+import io.reactivex.Observable
 
 /**
  * A player for a book.
@@ -17,12 +17,16 @@ interface PlayerType : AutoCloseable {
   override fun close()
 
   /**
-   * True if the player is currently playing.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
+   * The current player playback status
    */
 
-  val isPlaying: Boolean
+  val playbackStatus: PlayerPlaybackStatus
+
+  /**
+   * The current playback intention.
+   */
+
+  val playbackIntention: PlayerPlaybackIntention
 
   /**
    * The playback rate for the player.
@@ -47,7 +51,9 @@ interface PlayerType : AutoCloseable {
   val events: Observable<PlayerEvent>
 
   /**
-   * Play at current playhead location
+   * Play at current playhead location.
+   *
+   * Sets the playback intention to [PlayerPlaybackIntention.SHOULD_BE_PLAYING].
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed
    */
@@ -56,6 +62,8 @@ interface PlayerType : AutoCloseable {
 
   /**
    * Pause playback
+   *
+   * Sets the playback intention to [PlayerPlaybackIntention.SHOULD_BE_STOPPED].
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed
    */
@@ -84,7 +92,7 @@ interface PlayerType : AutoCloseable {
    * parameter is `0`, do nothing.
    *
    * Note: Implementations are not required to support skipping over multiple chapters in a
-   * single skip. Please use the explicit `playAtLocation` API if you want to perform large
+   * single skip. Please use the explicit `movePlayheadToLocation` API if you want to perform large
    * jumps.
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed
@@ -113,35 +121,14 @@ interface PlayerType : AutoCloseable {
   }
 
   /**
-   * Move playhead and immediately start playing. This method is useful for scenarios like a table
-   * of contents where you select a new chapter and wish to immediately start playback.
+   * Move playhead but do not change whether the player is playing or not. This is useful for state
+   * restoration where we want to prepare for playback at a specific point, but playback has not yet
+   * been requested.
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  fun playAtLocation(
-    location: PlayerPosition
-  )
-
-  /**
-   * Move playhead but do not start playback. This is useful for state restoration where we want
-   * to prepare for playback at a specific point, but playback has not yet been requested.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
-   */
-
-  fun movePlayheadToLocation(
-    location: PlayerPosition,
-    playAutomatically: Boolean
-  )
-
-  /**
-   * Move playhead to the start of the book and immediately start playing.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
-   */
-
-  fun playAtBookStart()
+  fun movePlayheadToLocation(location: PlayerPosition)
 
   /**
    * Move playhead to the start of the book but do not start playback.

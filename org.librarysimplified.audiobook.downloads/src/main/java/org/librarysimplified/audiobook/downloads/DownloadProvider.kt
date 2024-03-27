@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.time.OffsetDateTime
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
 
@@ -26,7 +27,8 @@ class DownloadProvider private constructor(
   private val executor: ListeningExecutorService
 ) : PlayerDownloadProviderType {
 
-  private val log = LoggerFactory.getLogger(DownloadProvider::class.java)
+  private val log =
+    LoggerFactory.getLogger(DownloadProvider::class.java)
 
   companion object {
 
@@ -207,10 +209,12 @@ class DownloadProvider private constructor(
     expectedLength: Long,
     result: SettableFuture<Unit>
   ) {
-    var progressPrevious = 0.0
-    var progressCurrent = 0.0
+    var progressCurrent: Double
     var received = 0L
     val buffer = ByteArray(1024)
+    var timeLast = System.currentTimeMillis()
+
+    this.reportProgress(request, 0)
 
     while (true) {
       /*
@@ -230,19 +234,19 @@ class DownloadProvider private constructor(
       outputStream.write(buffer, 0, r)
 
       /*
-       * Only report progress when the progress has changed by 5% or more. This essentially
-       * throttles event delivery to avoid updating progress indicators hundreds of times per
-       * second.
+       * Throttle progress updates to one every ~500ms.
        */
 
       progressCurrent = (received.toDouble() / expectedLength.toDouble()) * 100.0
-      if (progressCurrent - progressPrevious > 5.0 || progressCurrent >= 100.0) {
-        progressPrevious = progressCurrent
+      val enoughTimeElapsed = (System.currentTimeMillis() - timeLast) >= 500L
+      if (progressCurrent >= 100.0 || enoughTimeElapsed) {
+        timeLast = System.currentTimeMillis()
         this.log.debug("download progress: {}", progressCurrent)
+        this.reportProgress(request, progressCurrent.toInt())
       }
-
-      this.reportProgress(request, progressCurrent.toInt())
     }
+
+    this.reportProgress(request, 100)
     outputStream.flush()
   }
 }

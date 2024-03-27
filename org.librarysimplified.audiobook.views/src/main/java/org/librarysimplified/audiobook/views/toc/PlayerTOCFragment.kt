@@ -14,8 +14,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.views.PlayerFragmentListenerType
@@ -186,9 +186,9 @@ class PlayerTOCFragment : Fragment(), PlayerTOCMainFragment {
       val cancelVisibleThen = this.menuCancelAll.isVisible
 
       val refreshVisibleNow =
-        this.book.spine.any { item -> isRefreshable(item) }
+        this.book.readingOrder.any { item -> isRefreshable(item) }
       val cancelVisibleNow =
-        this.book.spine.any { item -> isCancellable(item) }
+        this.book.readingOrder.any { item -> isCancellable(item) }
 
       if (refreshVisibleNow != refreshVisibleThen || cancelVisibleNow != cancelVisibleThen) {
         this.menuRefreshAll.isVisible = refreshVisibleNow
@@ -198,23 +198,23 @@ class PlayerTOCFragment : Fragment(), PlayerTOCMainFragment {
     }
   }
 
-  private fun isCancellable(item: PlayerSpineElementType): Boolean {
+  private fun isCancellable(item: PlayerReadingOrderItemType): Boolean {
     return when (item.downloadStatus) {
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired -> false
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed -> false
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded -> false
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading -> true
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded -> false
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired -> false
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed -> false
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded -> false
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading -> true
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded -> false
     }
   }
 
-  private fun isRefreshable(item: PlayerSpineElementType): Boolean {
+  private fun isRefreshable(item: PlayerReadingOrderItemType): Boolean {
     return when (item.downloadStatus) {
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired -> false
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed -> true
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded -> true
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading -> false
-      is PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded -> false
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired -> false
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed -> true
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded -> true
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading -> false
+      is PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded -> false
     }
   }
 }

@@ -3,6 +3,7 @@ package org.librarysimplified.audiobook.open_access
 import android.app.Application
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
+import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerResult.Failure
@@ -27,7 +28,14 @@ class ExoAudioBookProvider(
     extensions: List<PlayerExtensionType>
   ): PlayerResult<PlayerAudioBookType, Exception> {
     try {
-      return when (val parsed = ExoManifest.transform(context, this.manifest)) {
+      val id =
+        PlayerBookID.transform(this.manifest.metadata.identifier)
+
+      return when (val parsed = ExoManifest.transform(
+        context = context,
+        bookID = id,
+        manifest = this.manifest
+      )) {
         is PlayerResult.Success ->
           PlayerResult.Success(
             ExoAudioBook.create(
@@ -39,6 +47,7 @@ class ExoAudioBookProvider(
               userAgent = this.userAgent
             )
           )
+
         is Failure ->
           Failure(parsed.failure)
       }

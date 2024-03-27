@@ -2,6 +2,7 @@ package org.librarysimplified.audiobook.demo
 
 import android.content.Context
 import org.librarysimplified.audiobook.api.PlayerPosition
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.ObjectInputStream
@@ -46,17 +47,12 @@ class ExampleBookmarkDatabase(private val context: Context) : AutoCloseable {
   fun bookmarkFindLastReadLocation(
     bookId: String
   ): PlayerPosition {
-    return this.bookmarks[bookId]?.let { fromSerializable(it) } ?: PlayerPosition(null, 0, 0, 0L, 0L)
+    return this.bookmarks[bookId]?.let { fromSerializable(it) }
+      ?: PlayerPosition(PlayerManifestReadingOrderID("x"), 0L)
   }
 
   private fun fromSerializable(bookmark: SerializableBookmark): PlayerPosition {
-    return PlayerPosition(
-      title = bookmark.title,
-      part = bookmark.part,
-      chapter = bookmark.chapter,
-      startOffset = bookmark.startOffset,
-      currentOffset = bookmark.currentOffset
-    )
+    return PlayerPosition(PlayerManifestReadingOrderID("x"), 0L)
   }
 
   fun bookmarkDelete(
@@ -81,14 +77,7 @@ class ExampleBookmarkDatabase(private val context: Context) : AutoCloseable {
     bookId: String,
     bookmark: PlayerPosition
   ): SerializableBookmark {
-    return SerializableBookmark(
-      bookId = bookId,
-      title = bookmark.title,
-      part = bookmark.part,
-      chapter = bookmark.chapter,
-      startOffset = bookmark.startOffset,
-      currentOffset = bookmark.currentOffset
-    )
+    TODO()
   }
 
   private fun loadMap(): ConcurrentHashMap<String, SerializableBookmark> {

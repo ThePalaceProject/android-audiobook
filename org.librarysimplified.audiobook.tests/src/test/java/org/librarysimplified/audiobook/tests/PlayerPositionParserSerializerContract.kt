@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerPosition
-import org.librarysimplified.audiobook.api.PlayerPositionParserType
-import org.librarysimplified.audiobook.api.PlayerPositionSerializerType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerResult.Success
 import org.slf4j.Logger

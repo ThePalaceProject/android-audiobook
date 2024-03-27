@@ -84,20 +84,13 @@ class PlayerTOCBookmarksFragment : Fragment() {
             .setMessage(R.string.audiobook_player_toc_bookmarks_dialog_message_delete)
             .setPositiveButton(R.string.audiobook_player_toc_bookmarks_dialog_title_delete) { dialog, _ ->
               dialog.dismiss()
-              adapter.setItemBeingDeleted(
-                beingDeleted = true,
-                position = index
-              )
+
               this.listener.onPlayerShouldDeleteBookmark(
                 playerBookmark = bookmark,
                 onDeleteOperationCompleted = { wasDeleted ->
                   if (wasDeleted) {
                     updateBookmarks(index)
                   } else {
-                    adapter.setItemBeingDeleted(
-                      beingDeleted = false,
-                      position = index
-                    )
                     Toast.makeText(
                       requireContext(), R.string.audiobook_player_toc_bookmarks_error_deleting,
                       Toast.LENGTH_SHORT
@@ -136,7 +129,8 @@ class PlayerTOCBookmarksFragment : Fragment() {
   }
 
   private fun openBookmarkAndClose(position: PlayerPosition) {
-    this.player.playAtLocation(position)
+    this.player.movePlayheadToLocation(position)
+    this.player.play()
     this.closeTOC()
   }
 

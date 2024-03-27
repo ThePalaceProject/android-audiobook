@@ -106,6 +106,7 @@ dependencies {
     implementation(libs.jackson.core)
     implementation(libs.jackson.databind)
     implementation(libs.joda.time)
+    implementation(libs.kabstand)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
@@ -126,7 +127,6 @@ dependencies {
     implementation(libs.palace.theme)
     implementation(libs.reactive.streams)
     implementation(libs.rxandroid2)
-    implementation(libs.rxjava)
     implementation(libs.rxjava2)
     implementation(libs.slf4j)
 

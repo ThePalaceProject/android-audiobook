@@ -75,7 +75,6 @@ val dependencyObjects = listOf(
     libs.r2.streamer,
     libs.reactive.streams,
     libs.rxandroid2,
-    libs.rxjava,
     libs.rxjava2,
     libs.slf4j,
 

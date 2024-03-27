@@ -11,22 +11,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.reactivex.disposables.Disposable
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerEvent
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityChapterSelected
 import org.librarysimplified.audiobook.views.PlayerFragmentListenerType
 import org.librarysimplified.audiobook.views.R
 import org.slf4j.LoggerFactory
-import rx.Subscription
 
 /**
  * A table of content chapters fragment.
@@ -55,8 +55,8 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
   private lateinit var listener: PlayerFragmentListenerType
   private lateinit var player: PlayerType
 
-  private var bookSubscription: Subscription? = null
-  private var playerSubscription: Subscription? = null
+  private var bookSubscription: Disposable? = null
+  private var playerSubscription: Disposable? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -90,8 +90,8 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
   override fun onDestroy() {
     super.onDestroy()
 
-    this.bookSubscription?.unsubscribe()
-    this.playerSubscription?.unsubscribe()
+    this.bookSubscription?.dispose()
+    this.playerSubscription?.dispose()
   }
 
   override fun onAttach(context: Context) {
@@ -106,13 +106,12 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
       this.adapter =
         PlayerTOCChapterAdapter(
           context = context,
-          spineElements = this.book.spine,
-          downloadTasks = this.book.downloadTasks,
-          onSelect = { item -> this.onTOCItemSelected(item) }
-        )
+          spineElements = this.book.readingOrder,
+          downloadTasksById = this.book.downloadTasksByID
+        ) { item -> this.onTOCItemSelected(item) }
 
       this.bookSubscription =
-        this.book.spineElementDownloadStatus.subscribe(
+        this.book.readingOrderElementDownloadStatus.subscribe(
           { status -> this.onSpineElementStatusChanged(status) },
           { error -> this.onSpineElementStatusError(error) },
           { }
@@ -166,7 +165,7 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
     this.book.wholeBookDownloadTask.cancel()
   }
 
-  private fun onTOCItemSelected(item: PlayerSpineElementType) {
+  private fun onTOCItemSelected(item: PlayerReadingOrderItemType) {
     this.log.debug("onTOCItemSelected: ", item.index)
 
     try {
@@ -180,28 +179,28 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
     }
 
     return when (item.downloadStatus) {
-      is PlayerSpineElementNotDownloaded ->
+      is PlayerReadingOrderItemNotDownloaded ->
         if (this.book.supportsStreaming) {
           this.playItemAndClose(item)
         } else {
         }
 
-      is PlayerSpineElementDownloading ->
+      is PlayerReadingOrderItemDownloading ->
         if (this.book.supportsStreaming) {
           this.playItemAndClose(item)
         } else {
         }
 
-      is PlayerSpineElementDownloaded ->
+      is PlayerReadingOrderItemDownloaded ->
         this.playItemAndClose(item)
 
-      is PlayerSpineElementDownloadFailed ->
+      is PlayerReadingOrderItemDownloadFailed ->
         if (this.book.supportsStreaming) {
           this.playItemAndClose(item)
         } else {
         }
 
-      is PlayerSpineElementDownloadExpired ->
+      is PlayerReadingOrderItemDownloadExpired ->
         if (this.book.supportsStreaming) {
           this.playItemAndClose(item)
         } else {
@@ -209,8 +208,9 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
     }
   }
 
-  private fun playItemAndClose(item: PlayerSpineElementType) {
-    this.player.playAtLocation(item.position)
+  private fun playItemAndClose(item: PlayerReadingOrderItemType) {
+    this.player.movePlayheadToLocation(item.startingPosition)
+    this.player.play()
     this.closeTOC()
   }
 
@@ -242,9 +242,9 @@ class PlayerTOCChaptersFragment : Fragment(), PlayerTOCInnerFragment {
     this.log.error("onSpineElementStatusError: ", error)
   }
 
-  private fun onSpineElementStatusChanged(status: PlayerSpineElementDownloadStatus) {
+  private fun onSpineElementStatusChanged(status: PlayerReadingOrderItemDownloadStatus) {
     PlayerUIThread.runOnUIThread {
-      val spineElement = status.spineElement
+      val spineElement = status.readingOrderItem
       this.adapter.notifyItemChanged(spineElement.index)
       (parentFragment as? PlayerTOCMainFragment)?.menusConfigureVisibility()
     }

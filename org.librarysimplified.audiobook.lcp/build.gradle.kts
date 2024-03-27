@@ -20,7 +20,7 @@ dependencies {
     implementation(libs.media3.session)
     implementation(libs.r2.shared)
     implementation(libs.r2.streamer)
-    implementation(libs.rxjava)
+    implementation(libs.rxjava2)
     implementation(libs.slf4j)
 
     compileOnly(libs.jcip)

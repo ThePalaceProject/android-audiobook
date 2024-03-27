@@ -7,12 +7,12 @@ import net.jcip.annotations.GuardedBy
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
@@ -33,14 +33,13 @@ class ExoDownloadTask(
   private val downloadStatusExecutor: ExecutorService,
   private val downloadProvider: PlayerDownloadProviderType,
   private val originalLink: PlayerManifestLink,
-  private val spineElements: List<ExoSpineElement>,
+  override val readingOrderItems: List<ExoReadingOrderItemHandle>,
   private val userAgent: PlayerUserAgent,
   private val extensions: List<PlayerExtensionType>,
   val partFile: File
 ) : PlayerDownloadTaskType {
 
   private val log = LoggerFactory.getLogger(ExoDownloadTask::class.java)
-
   private var percent: Int = 0
   private val stateLock: Any = Object()
 
@@ -77,22 +76,22 @@ class ExoDownloadTask(
 
   private fun onNotDownloaded() {
     this.log.debug("not downloaded")
-    this.spineElements.forEach { spineElement ->
-      spineElement.setDownloadStatus(PlayerSpineElementNotDownloaded(spineElement))
+    this.readingOrderItems.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerReadingOrderItemNotDownloaded(spineElement))
     }
   }
 
   private fun onDownloading(percent: Int) {
     this.percent = percent
-    this.spineElements.forEach { spineElement ->
-      spineElement.setDownloadStatus(PlayerSpineElementDownloading(spineElement, percent))
+    this.readingOrderItems.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerReadingOrderItemDownloading(spineElement, percent))
     }
   }
 
   private fun onDownloaded() {
     this.log.debug("downloaded")
-    this.spineElements.forEach { spineElement ->
-      spineElement.setDownloadStatus(PlayerSpineElementDownloaded(spineElement))
+    this.readingOrderItems.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerReadingOrderItemDownloaded(spineElement))
     }
   }
 
@@ -182,10 +181,10 @@ class ExoDownloadTask(
   private fun onDownloadExpired(exception: Exception) {
     this.log.error("onDownloadExpired: ", exception)
     this.stateSetCurrent(Initial)
-    this.spineElements.forEach { spineElement ->
-      spineElement.setDownloadStatus(
-        PlayerSpineElementDownloadExpired(
-          spineElement, exception, exception.message ?: "Missing exception message"
+    this.readingOrderItems.forEach { item ->
+      item.setDownloadStatus(
+        PlayerReadingOrderItemDownloadExpired(
+          item, exception, exception.message ?: "Missing exception message"
         )
       )
     }
@@ -194,10 +193,10 @@ class ExoDownloadTask(
   private fun onDownloadFailed(exception: Exception) {
     this.log.error("onDownloadFailed: ", exception)
     this.stateSetCurrent(Initial)
-    this.spineElements.forEach { spineElement ->
-      spineElement.setDownloadStatus(
-        PlayerSpineElementDownloadFailed(
-          spineElement, exception, exception.message ?: "Missing exception message"
+    this.readingOrderItems.forEach { item ->
+      item.setDownloadStatus(
+        PlayerReadingOrderItemDownloadFailed(
+          item, exception, exception.message ?: "Missing exception message"
         )
       )
     }
@@ -240,10 +239,6 @@ class ExoDownloadTask(
     }
   }
 
-  override fun fulfillsSpineElement(spineElement: PlayerSpineElementType): Boolean {
-    return spineElements.contains(spineElement)
-  }
-
   override fun fetch() {
     this.log.debug("fetch")
 
@@ -263,8 +258,7 @@ class ExoDownloadTask(
   override fun cancel() {
     this.log.debug("cancel")
 
-    val current = this.stateGetCurrent()
-    return when (current) {
+    return when (val current = this.stateGetCurrent()) {
       Initial -> this.onBroadcastState()
       Downloaded -> this.onBroadcastState()
       is Downloading -> this.onDeleteDownloading(current)
@@ -273,7 +267,4 @@ class ExoDownloadTask(
 
   override val progress: Double
     get() = this.percent.toDouble()
-
-  override val spineItems: List<PlayerSpineElementType>
-    get() = this.spineElements
 }

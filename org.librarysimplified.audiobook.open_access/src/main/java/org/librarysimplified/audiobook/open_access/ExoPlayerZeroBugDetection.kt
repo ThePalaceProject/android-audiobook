@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
  */
 
 class ExoPlayerZeroBugDetection(
-  private val tracks: List<ExoSpineElement>
+  private val tracks: List<ExoReadingOrderItemHandle>
 ) {
   private val logger = LoggerFactory.getLogger(ExoPlayerZeroBugDetection::class.java)
   private val trackDurations: MutableMap<Int, Long> = mutableMapOf()

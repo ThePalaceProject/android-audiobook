@@ -1,5 +1,6 @@
 dependencies {
     implementation(project(":org.librarysimplified.audiobook.api"))
+    implementation(project(":org.librarysimplified.audiobook.manifest.api"))
 
     implementation(libs.androidx.activity)
     implementation(libs.androidx.activity.ktx)
@@ -44,7 +45,6 @@ dependencies {
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
     implementation(libs.palace.theme)
-    implementation(libs.rxjava)
     implementation(libs.rxjava2)
     implementation(libs.slf4j)
 }

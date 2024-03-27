@@ -3,6 +3,7 @@ package org.librarysimplified.audiobook.lcp
 import android.app.Application
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
+import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerResult.Failure
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
@@ -29,7 +30,14 @@ class LCPAudioBookProvider(
     extensions: List<PlayerExtensionType>
   ): PlayerResult<PlayerAudioBookType, Exception> {
     try {
-      return when (val parsed = ExoManifest.transform(context, this.manifest)) {
+      val id =
+        PlayerBookID.transform(manifest.metadata.identifier)
+
+      return when (val parsed = ExoManifest.transform(
+        context = context,
+        bookID = id,
+        manifest = this.manifest
+      )) {
         is PlayerResult.Success ->
           PlayerResult.Success(
             LCPAudioBook.create(
@@ -41,6 +49,7 @@ class LCPAudioBookProvider(
               manualPassphrase = manualPassphrase
             )
           )
+
         is Failure ->
           Failure(parsed.failure)
       }

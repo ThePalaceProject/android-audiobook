@@ -3,19 +3,20 @@ package org.librarysimplified.audiobook.lcp
 import android.app.Application
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import io.reactivex.subjects.PublishSubject
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.open_access.ExoManifest
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.slf4j.LoggerFactory
-import rx.subjects.PublishSubject
 import java.io.File
 import java.util.SortedMap
 import java.util.TreeMap
@@ -27,20 +28,22 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 
 class LCPAudioBook private constructor(
+  private val manifest: ExoManifest,
   private val context: Application,
   private val engineExecutor: ScheduledExecutorService,
-  override val spine: List<LCPSpineElement>,
-  override val spineByID: Map<String, LCPSpineElement>,
-  override val spineByPartAndChapter: SortedMap<Int, SortedMap<Int, PlayerSpineElementType>>,
-  override val spineElementDownloadStatus: PublishSubject<PlayerSpineElementDownloadStatus>,
-  override val id: PlayerBookID,
+  override val readingOrder: List<LCPReadingOrderItem>,
+  override val readingOrderByID: Map<PlayerManifestReadingOrderID, LCPReadingOrderItem>,
+  override val readingOrderElementDownloadStatus: PublishSubject<PlayerReadingOrderItemDownloadStatus>,
   val file: File,
   val contentProtections: List<ContentProtection>,
   val manualPassphrase: Boolean
 ) : PlayerAudioBookType {
 
-  private val logger = LoggerFactory.getLogger(LCPAudioBook::class.java)
-  private val isClosedNow = AtomicBoolean(false)
+  private val logger =
+    LoggerFactory.getLogger(LCPAudioBook::class.java)
+
+  private val isClosedNow =
+    AtomicBoolean(false)
 
   override fun createPlayer(): PlayerType {
     check(!this.isClosed) { "Audio book has been closed" }
@@ -68,8 +71,7 @@ class LCPAudioBook private constructor(
     override fun cancel() {}
     override fun delete() {}
     override val progress = 1.0
-    override val spineItems = listOf<PlayerSpineElementType>()
-    override fun fulfillsSpineElement(spineElement: PlayerSpineElementType) = false
+    override val readingOrderItems: List<PlayerReadingOrderItemType> = listOf()
   }
 
   override fun replaceManifest(
@@ -87,105 +89,80 @@ class LCPAudioBook private constructor(
       contentProtections: List<ContentProtection>,
       manualPassphrase: Boolean
     ): PlayerAudioBookType {
-      val bookId = PlayerBookID.transform(manifest.id)
+
+      val statusEvents: PublishSubject<PlayerReadingOrderItemDownloadStatus> =
+        PublishSubject.create()
 
       /*
        * Set up all the various bits of state required.
        */
 
-      val statusEvents: PublishSubject<PlayerSpineElementDownloadStatus> = PublishSubject.create()
-      val elements = ArrayList<LCPSpineElement>()
-      val elementsById = HashMap<String, LCPSpineElement>()
-      val elementsByPart = TreeMap<Int, TreeMap<Int, PlayerSpineElementType>>()
+      val handles =
+        ArrayList<LCPReadingOrderItem>()
+      val handlesById =
+        HashMap<PlayerManifestReadingOrderID, LCPReadingOrderItem>()
 
-      var index = 0
-      var spineItemPrevious: LCPSpineElement? = null
+      var handlePrevious: LCPReadingOrderItem? = null
 
-      manifest.spineItems.forEach { spineItem ->
-        val duration =
-          spineItem.duration?.let { time ->
-            Duration.standardSeconds(Math.floor(time).toLong())
-          }
+      /*
+       * Build a doubly-linked list of manifest item handles.
+       */
 
-        val element =
-          LCPSpineElement(
-            bookID = bookId,
-            itemManifest = spineItem,
-            index = index,
+      for (manifestItem in manifest.readingOrderItems) {
+        val handle =
+          LCPReadingOrderItem(
+            itemManifest = manifestItem,
             nextElement = null,
-            previousElement = spineItemPrevious,
-            duration = duration,
+            previousElement = handlePrevious,
+            duration = null,
           )
 
-        elements.add(element)
-        elementsById.put(element.id, element)
-        this.addElementByPartAndChapter(elementsByPart, element)
-        ++index
+        handles.add(handle)
+        handlesById.put(handle.id, handle)
 
-        /*
-         * Make the "next" field of the previous element point to the current element.
-         */
-
-        val previous = spineItemPrevious
-
-        if (previous != null) {
-          previous.nextElement = element
+        if (handlePrevious != null) {
+          handlePrevious.nextElement = handle
         }
-
-        spineItemPrevious = element
+        handlePrevious = handle
       }
 
       val book =
         LCPAudioBook(
+          contentProtections = contentProtections,
           context = context,
           engineExecutor = engineExecutor,
-          id = bookId,
-          spine = elements,
-          spineByID = elementsById,
-          spineByPartAndChapter = elementsByPart as SortedMap<Int, SortedMap<Int, PlayerSpineElementType>>,
-          spineElementDownloadStatus = statusEvents,
           file = file,
-          contentProtections = contentProtections,
-          manualPassphrase = manualPassphrase
+          manifest = manifest,
+          manualPassphrase = manualPassphrase,
+          readingOrder = handles,
+          readingOrderByID = handlesById,
+          readingOrderElementDownloadStatus = statusEvents,
         )
 
-      for (e in elements) {
+      for (e in handles) {
         e.setBook(book)
       }
 
       return book
-    }
-
-    /**
-     * Organize an element by part number and chapter number.
-     */
-
-    private fun addElementByPartAndChapter(
-      elementsByPart: TreeMap<Int, TreeMap<Int, PlayerSpineElementType>>,
-      element: LCPSpineElement
-    ) {
-      val partChapters: TreeMap<Int, PlayerSpineElementType> =
-        if (elementsByPart.containsKey(element.itemManifest.part)) {
-          elementsByPart[element.itemManifest.part]!!
-        } else {
-          TreeMap()
-        }
-
-      partChapters.put(element.itemManifest.chapter, element)
-      elementsByPart.put(element.itemManifest.part, partChapters)
     }
   }
 
   override fun close() {
     if (this.isClosedNow.compareAndSet(false, true)) {
       this.logger.debug("closed audio book")
-      this.spineElementDownloadStatus.onCompleted()
+      this.readingOrderElementDownloadStatus.onComplete()
     }
   }
 
   override val downloadTasks: List<PlayerDownloadTaskType>
     get() = emptyList()
 
+  override val downloadTasksByID: Map<PlayerManifestReadingOrderID, PlayerDownloadTaskType>
+    get() = emptyMap()
+
   override val isClosed: Boolean
     get() = this.isClosedNow.get()
+
+  override val id: PlayerBookID =
+    this.manifest.bookID
 }

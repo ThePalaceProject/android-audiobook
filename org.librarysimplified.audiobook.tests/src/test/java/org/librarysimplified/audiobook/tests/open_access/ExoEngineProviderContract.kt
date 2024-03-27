@@ -27,11 +27,11 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerResult
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadExpired
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
@@ -42,11 +42,8 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderIt
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.open_access.ExoEngineProvider
 import org.librarysimplified.audiobook.open_access.ExoEngineThread
-import org.librarysimplified.audiobook.open_access.ExoSpineElement
+import org.librarysimplified.audiobook.open_access.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
-import org.librarysimplified.audiobook.tests.DishonestDownloadProvider
-import org.librarysimplified.audiobook.tests.FailingDownloadProvider
-import org.librarysimplified.audiobook.tests.ResourceDownloadProvider
 import org.slf4j.Logger
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -635,7 +632,7 @@ abstract class ExoEngineProviderContract {
     this.downloadSpineItemAndWait(book.downloadTasks[1])
     Thread.sleep(1000L)
 
-    player.playAtLocation(book.spine[1].position)
+    player.playAtLocation(book.readingOrder[1].position)
     player.skipToPreviousChapter(5000L)
     Thread.sleep(12_000L)
 
@@ -708,7 +705,7 @@ abstract class ExoEngineProviderContract {
     this.downloadSpineItemAndWait(book.downloadTasks[1])
     Thread.sleep(1000L)
 
-    player.playAtLocation(book.spine[1].position)
+    player.playAtLocation(book.readingOrder[1].position)
     Thread.sleep(10_000L)
 
     player.close()
@@ -803,11 +800,11 @@ abstract class ExoEngineProviderContract {
       this.log().debug("spine element status: {}", status)
 
       when (status) {
-        is PlayerSpineElementDownloadExpired -> Unit
-        is PlayerSpineElementNotDownloaded -> Unit
-        is PlayerSpineElementDownloading -> Unit
-        is PlayerSpineElementDownloaded -> downloaded = true
-        is PlayerSpineElementDownloadFailed -> {
+        is PlayerReadingOrderItemDownloadExpired -> Unit
+        is PlayerReadingOrderItemNotDownloaded -> Unit
+        is PlayerReadingOrderItemDownloading -> Unit
+        is PlayerReadingOrderItemDownloaded -> downloaded = true
+        is PlayerReadingOrderItemDownloadFailed -> {
           this.log().error("error: ", status.exception)
           Assertions.fail("Failed: " + status.message)
         }
@@ -910,30 +907,30 @@ abstract class ExoEngineProviderContract {
 
     Assertions.assertEquals(
       URI.create("http://www.example.com/0.mp3"),
-      (audioBook.spine[0] as ExoSpineElement).itemManifest.uri
+      (audioBook.readingOrder[0] as ExoReadingOrderItemHandle).itemManifest.uri
     )
     Assertions.assertEquals(
       URI.create("http://www.example.com/1.mp3"),
-      (audioBook.spine[1] as ExoSpineElement).itemManifest.uri
+      (audioBook.readingOrder[1] as ExoReadingOrderItemHandle).itemManifest.uri
     )
     Assertions.assertEquals(
       URI.create("http://www.example.com/2.mp3"),
-      (audioBook.spine[2] as ExoSpineElement).itemManifest.uri
+      (audioBook.readingOrder[2] as ExoReadingOrderItemHandle).itemManifest.uri
     )
 
     audioBook.replaceManifest(manifest1).get()
 
     Assertions.assertEquals(
       URI.create("http://www.example.com/0r.mp3"),
-      (audioBook.spine[0] as ExoSpineElement).itemManifest.uri
+      (audioBook.readingOrder[0] as ExoReadingOrderItemHandle).itemManifest.uri
     )
     Assertions.assertEquals(
       URI.create("http://www.example.com/1r.mp3"),
-      (audioBook.spine[1] as ExoSpineElement).itemManifest.uri
+      (audioBook.readingOrder[1] as ExoReadingOrderItemHandle).itemManifest.uri
     )
     Assertions.assertEquals(
       URI.create("http://www.example.com/2r.mp3"),
-      (audioBook.spine[2] as ExoSpineElement).itemManifest.uri
+      (audioBook.readingOrder[2] as ExoReadingOrderItemHandle).itemManifest.uri
     )
   }
 
@@ -1075,10 +1072,10 @@ abstract class ExoEngineProviderContract {
     Thread.sleep(1_000L)
 
     Assertions.assertTrue(
-      audioBook.spine[0].downloadStatus is PlayerSpineElementDownloadExpired
+      audioBook.readingOrder[0].downloadStatus is PlayerReadingOrderItemDownloadExpired
     )
     Assertions.assertTrue(
-      audioBook.spine[1].downloadStatus is PlayerSpineElementDownloadFailed
+      audioBook.readingOrder[1].downloadStatus is PlayerReadingOrderItemDownloadFailed
     )
   }
 

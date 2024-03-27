@@ -11,7 +11,6 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.r2.shared)
     implementation(libs.rxandroid2)
-    implementation(libs.rxjava)
     implementation(libs.rxjava2)
     implementation(libs.slf4j)
 }

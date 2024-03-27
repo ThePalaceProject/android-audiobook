@@ -61,25 +61,6 @@ class PlayerTOCBookmarkAdapter(
     (holder as? BookmarkViewHolder)?.bind(bookmarks[position])
   }
 
-  fun setItemBeingDeleted(beingDeleted: Boolean, position: Int) {
-    setBookmarks(
-      bookmarks.mapIndexed { index, bookmark ->
-        PlayerBookmark(
-          date = bookmark.date,
-          duration = bookmark.duration,
-          isBeingDeleted = if (position == index) {
-            beingDeleted
-          } else {
-            bookmark.isBeingDeleted
-          },
-          position = bookmark.position,
-          uri = bookmark.uri
-        )
-      }
-    )
-    notifyItemChanged(position)
-  }
-
   fun setBookmarks(bookmarksList: List<PlayerBookmark>) {
     bookmarks = bookmarksList
   }
@@ -132,23 +113,19 @@ class PlayerTOCBookmarkAdapter(
     }
 
     fun bind(bookmark: PlayerBookmark) {
-      val offset = Duration(bookmark.position.currentOffset)
+      val offset = Duration(bookmark.offsetMilliseconds)
       val bookmarkDateStr = bookmark.date.toString("MMMM dd, yyyy", Locale.ROOT)
 
-      bookmarkTitle.text = bookmark.position.title.orEmpty()
+      // bookmarkTitle.text = bookmark.position.title.orEmpty()
+      bookmarkTitle.text = "TITLE MISSING!!!"
       bookmarkOffset.text = periodFormatter.print(offset.toPeriod())
       bookmarkDate.text = bookmarkDateStr
 
-      if (bookmark.isBeingDeleted) {
-        bookmarkDelete.visibility = View.GONE
-        bookmarkLoading.visibility = View.VISIBLE
-      } else {
-        bookmarkDelete.visibility = View.VISIBLE
-        bookmarkLoading.visibility = View.GONE
-      }
+      bookmarkDelete.visibility = View.VISIBLE
+      bookmarkLoading.visibility = View.GONE
 
       itemView.contentDescription = contentDescriptionOf(
-        title = bookmark.position.title.orEmpty(),
+        title = bookmarkTitle.text.toString(),
         offset = offset,
         date = bookmarkDateStr
       )

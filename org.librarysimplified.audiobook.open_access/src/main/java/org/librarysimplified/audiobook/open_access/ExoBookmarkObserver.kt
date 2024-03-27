@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.open_access
 
+import io.reactivex.disposables.Disposable
 import org.joda.time.Duration
 import org.joda.time.Instant
 import org.librarysimplified.audiobook.api.PlayerEvent
@@ -17,7 +18,6 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineEleme
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerType
 import org.slf4j.LoggerFactory
-import rx.Subscription
 
 class ExoBookmarkObserver private constructor(
   private val player: PlayerType,
@@ -29,7 +29,7 @@ class ExoBookmarkObserver private constructor(
   private val bookmarkWaitPeriod =
     Duration.standardSeconds(15L)
 
-  private var subscription: Subscription
+  private var subscription: Disposable
   private var timeAtLast: Instant? = null
 
   init {
@@ -69,7 +69,7 @@ class ExoBookmarkObserver private constructor(
      * at least a few seconds of the chapter.
      */
 
-    if (event.offsetMilliseconds < 100L) {
+    if (event.offsetMilliseconds < 3_000L) {
       return
     }
 
@@ -119,6 +119,6 @@ class ExoBookmarkObserver private constructor(
 
   override fun close() {
     this.logger.debug("closing")
-    this.subscription.unsubscribe()
+    this.subscription.dispose()
   }
 }

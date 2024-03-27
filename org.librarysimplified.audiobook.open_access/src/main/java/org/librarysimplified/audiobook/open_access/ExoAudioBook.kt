@@ -1,25 +1,23 @@
 package org.librarysimplified.audiobook.open_access
 
+import android.app.Application
 import android.content.Context
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
-import org.joda.time.Duration
+import io.reactivex.subjects.PublishSubject
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerResult
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.slf4j.LoggerFactory
-import rx.subjects.PublishSubject
 import java.io.File
-import java.util.SortedMap
-import java.util.TreeMap
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -30,13 +28,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ExoAudioBook private constructor(
   private val manifest: ExoManifest,
   override val downloadTasks: List<ExoDownloadTask>,
-  private val context: Context,
+  override val downloadTasksByID : Map<PlayerManifestReadingOrderID, ExoDownloadTask>,
+  private val context: Application,
   private val engineExecutor: ScheduledExecutorService,
-  override val spine: List<ExoSpineElement>,
-  override val spineByID: Map<String, ExoSpineElement>,
-  override val spineByPartAndChapter: SortedMap<Int, SortedMap<Int, PlayerSpineElementType>>,
-  override val spineElementDownloadStatus: PublishSubject<PlayerSpineElementDownloadStatus>,
-  override val id: PlayerBookID,
+  override val readingOrder: List<ExoReadingOrderItemHandle>,
+  override val readingOrderByID: Map<PlayerManifestReadingOrderID, ExoReadingOrderItemHandle>,
+  override val readingOrderElementDownloadStatus: PublishSubject<PlayerReadingOrderItemDownloadStatus>
 ) : PlayerAudioBookType {
 
   private val logger = LoggerFactory.getLogger(ExoAudioBook::class.java)
@@ -53,7 +50,6 @@ class ExoAudioBook private constructor(
     return ExoAudioBookPlayer.create(
       book = this,
       context = this.context,
-      engineExecutor = this.engineExecutor,
       manifestUpdates = this.manifestUpdates
     )
   }
@@ -85,10 +81,15 @@ class ExoAudioBook private constructor(
   private fun replaceManifestTransform(
     manifest: PlayerManifest
   ) {
-    this.logger.debug("replacing manifest")
-    return when (val result = ExoManifest.transform(context, manifest)) {
+    this.logger.debug("Replacing manifest")
+    return when (val result = ExoManifest.transform(
+      context = context,
+      bookID = this.id,
+      manifest = manifest
+    )) {
       is PlayerResult.Success ->
         this.replaceManifestWith(result.result)
+
       is PlayerResult.Failure ->
         throw result.failure
     }
@@ -97,23 +98,23 @@ class ExoAudioBook private constructor(
   private fun replaceManifestWith(
     exoManifest: ExoManifest
   ) {
-    if (exoManifest.id != this.manifest.id) {
+    if (exoManifest.bookID != this.manifest.bookID) {
       throw IllegalArgumentException(
-        "Manifest ID ${exoManifest.id} does not match existing id ${this.manifest.id}"
+        "Manifest ID ${exoManifest.bookID} does not match existing id ${this.manifest.bookID}"
       )
     }
 
-    if (exoManifest.spineItems.size != this.manifest.spineItems.size) {
+    if (exoManifest.readingOrderItems.size != this.manifest.readingOrderItems.size) {
       throw IllegalArgumentException(
-        "Manifest spine item count ${exoManifest.spineItems.size} does not match existing count ${this.manifest.spineItems.size}"
+        "Manifest spine item count ${exoManifest.readingOrderItems.size} does not match existing count ${this.manifest.readingOrderItems.size}"
       )
     }
 
-    for (index in exoManifest.spineItems.indices) {
-      this.logger.debug("[{}] updated URI", index)
-      val oldSpine = this.manifest.spineItems[index]
-      val newSpine = exoManifest.spineItems[index]
-      oldSpine.updateLink(newSpine.originalLink, newSpine.uri)
+    for (index in exoManifest.readingOrderItems.indices) {
+      this.logger.debug("[{}] Updated URI", index)
+      val oldSpine = this.manifest.readingOrderItems[index]
+      val newSpine = exoManifest.readingOrderItems[index]
+      oldSpine.item = newSpine.item
     }
 
     this.logger.debug("sending manifest update event")
@@ -131,131 +132,108 @@ class ExoAudioBook private constructor(
     }
 
     fun create(
-      context: Context,
+      context: Application,
       engineExecutor: ScheduledExecutorService,
       manifest: ExoManifest,
       downloadProvider: PlayerDownloadProviderType,
       extensions: List<PlayerExtensionType>,
       userAgent: PlayerUserAgent
     ): PlayerAudioBookType {
-      val bookId = PlayerBookID.transform(manifest.id)
-      val directory = this.findDirectoryFor(context, bookId)
-      this.log.debug("book directory: {}", directory)
+      val directory = this.findDirectoryFor(context, manifest.bookID)
+      this.log.debug("Book directory: {}", directory)
 
       /*
        * Set up all the various bits of state required.
        */
 
-      val statusEvents: PublishSubject<PlayerSpineElementDownloadStatus> = PublishSubject.create()
-      val elements = ArrayList<ExoSpineElement>()
-      val elementsById = HashMap<String, ExoSpineElement>()
-      val elementsByPart = TreeMap<Int, TreeMap<Int, PlayerSpineElementType>>()
+      val statusEvents: PublishSubject<PlayerReadingOrderItemDownloadStatus> =
+        PublishSubject.create()
+      val handles =
+        ArrayList<ExoReadingOrderItemHandle>()
+      val handlesById =
+        HashMap<PlayerManifestReadingOrderID, ExoReadingOrderItemHandle>()
 
-      var manifestIndex = 0
-      var spineItemPrevious: ExoSpineElement? = null
+      var handlePrevious: ExoReadingOrderItemHandle? = null
 
-      val downloadTasks = manifest.spineItems.groupBy { manifestSpineItem ->
-        manifestSpineItem.originalLink
-      }.map { entry ->
+      /*
+       * Build a doubly-linked list of manifest item handles.
+       */
 
-        val originalLink = entry.key
-        val spineItems = entry.value.map { manifestSpineItem ->
-
-          val duration =
-            manifestSpineItem.duration?.let { time ->
-              Duration.standardSeconds(Math.floor(time).toLong())
-            }
-
-          val spineItem = ExoSpineElement(
+      for (manifestItem in manifest.readingOrderItems) {
+        val handle =
+          ExoReadingOrderItemHandle(
             downloadStatusEvents = statusEvents,
-            bookID = bookId,
-            itemManifest = manifestSpineItem,
-            index = manifestIndex,
+            itemManifest = manifestItem,
+            previousElement = handlePrevious,
             nextElement = null,
-            previousElement = spineItemPrevious,
-            duration = duration
+            duration = null
           )
 
-          elements.add(spineItem)
-          elementsById[spineItem.id] = spineItem
-          this.addElementByPartAndChapter(elementsByPart, spineItem)
+        handles.add(handle)
+        handlesById.put(handle.id, handle)
 
-          /*
-           * Make the "next" field of the previous element point to the current element.
-           */
-          val previous = spineItemPrevious
-          if (previous != null) {
-            previous.nextElement = spineItem
-          }
-          spineItemPrevious = spineItem
-
-          spineItem
+        if (handlePrevious != null) {
+          handlePrevious.nextElement = handle
         }
-
-        manifestIndex++
-
-        val partFile =
-          File(directory, "$manifestIndex.part")
-
-        ExoDownloadTask(
-          downloadStatusExecutor = engineExecutor,
-          downloadProvider = downloadProvider,
-          originalLink = originalLink.link,
-          partFile = partFile,
-          spineElements = spineItems,
-          userAgent = userAgent,
-          extensions = extensions
-        )
+        handlePrevious = handle
       }
+
+      /*
+       * Create download tasks for each reading order item.
+       */
+
+      val downloadTasksById =
+        HashMap<PlayerManifestReadingOrderID, ExoDownloadTask>()
+      val downloadTasks =
+        manifest.readingOrderItems.map { item ->
+          val partFile =
+            File(directory, "${item.index}.part")
+          val task =
+            ExoDownloadTask(
+              downloadProvider = downloadProvider,
+              downloadStatusExecutor = engineExecutor,
+              extensions = extensions,
+              originalLink = item.item.link,
+              partFile = partFile,
+              readingOrderItems = handles,
+              userAgent = userAgent,
+            )
+
+          downloadTasksById.put(item.item.id, task)
+          task
+        }
 
       val book =
         ExoAudioBook(
           context = context,
+          downloadTasks = downloadTasks.toList(),
+          downloadTasksByID = downloadTasksById.toMap(),
           engineExecutor = engineExecutor,
-          id = bookId,
           manifest = manifest,
-          spine = elements,
-          spineByID = elementsById,
-          spineByPartAndChapter = elementsByPart as SortedMap<Int, SortedMap<Int, PlayerSpineElementType>>,
-          spineElementDownloadStatus = statusEvents,
-          downloadTasks = downloadTasks
+          readingOrder = handles.toList(),
+          readingOrderByID = handlesById.toMap(),
+          readingOrderElementDownloadStatus = statusEvents,
         )
 
-      for (e in elements) {
+      for (e in handles) {
         e.setBook(book)
       }
 
       return book
     }
-
-    /**
-     * Organize an element by part number and chapter number.
-     */
-
-    private fun addElementByPartAndChapter(
-      elementsByPart: TreeMap<Int, TreeMap<Int, PlayerSpineElementType>>,
-      element: ExoSpineElement
-    ) {
-      val partChapters: TreeMap<Int, PlayerSpineElementType> =
-        if (elementsByPart.containsKey(element.itemManifest.part)) {
-          elementsByPart[element.itemManifest.part]!!
-        } else {
-          TreeMap()
-        }
-
-      partChapters.put(element.itemManifest.chapter, element)
-      elementsByPart.put(element.itemManifest.part, partChapters)
-    }
   }
 
   override fun close() {
     if (this.isClosedNow.compareAndSet(false, true)) {
-      this.logger.debug("closed audio book")
-      this.manifestUpdates.onCompleted()
-      this.spineElementDownloadStatus.onCompleted()
+      this.logger.debug("Closed audio book")
+      this.manifestUpdates.onComplete()
+      this.readingOrderElementDownloadStatus.onComplete()
     }
   }
 
   override val isClosed: Boolean
     get() = this.isClosedNow.get()
+
+  override val id: PlayerBookID =
+    this.manifest.bookID
 }

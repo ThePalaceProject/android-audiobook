@@ -26,7 +26,7 @@ sealed class PlayerEvent {
    */
 
   data class PlayerEventError(
-    val spineElement: PlayerSpineElementType?,
+    val spineElement: PlayerReadingOrderItemType?,
     val offsetMilliseconds: Long,
     val exception: java.lang.Exception?,
     val errorCode: Int
@@ -38,14 +38,14 @@ sealed class PlayerEvent {
      * The spine element to which this event refers.
      */
 
-    abstract val spineElement: PlayerSpineElementType
+    abstract val spineElement: PlayerReadingOrderItemType
 
     /**
      * Playback of the given spine element has started.
      */
 
     data class PlayerEventPlaybackStarted(
-      override val spineElement: PlayerSpineElementType,
+      override val spineElement: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long
     ) : PlayerEventWithSpineElement()
 
@@ -55,7 +55,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackBuffering(
-      override val spineElement: PlayerSpineElementType,
+      override val spineElement: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long
     ) : PlayerEventWithSpineElement()
 
@@ -65,7 +65,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackWaitingForAction(
-      override val spineElement: PlayerSpineElementType,
+      override val spineElement: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long
     ) : PlayerEventWithSpineElement()
 
@@ -75,7 +75,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackProgressUpdate(
-      override val spineElement: PlayerSpineElementType,
+      override val spineElement: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long
     ) : PlayerEventWithSpineElement()
 
@@ -85,7 +85,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventChapterCompleted(
-      override val spineElement: PlayerSpineElementType
+      override val spineElement: PlayerReadingOrderItemType
     ) : PlayerEventWithSpineElement()
 
     /**
@@ -94,7 +94,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventChapterWaiting(
-      override val spineElement: PlayerSpineElementType
+      override val spineElement: PlayerReadingOrderItemType
     ) : PlayerEventWithSpineElement()
 
     /**
@@ -102,7 +102,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackPaused(
-      override val spineElement: PlayerSpineElementType,
+      override val spineElement: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long
     ) : PlayerEventWithSpineElement()
 
@@ -111,7 +111,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackStopped(
-      override val spineElement: PlayerSpineElementType,
+      override val spineElement: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long
     ) : PlayerEventWithSpineElement()
 
@@ -122,7 +122,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventCreateBookmark(
-      override val spineElement: PlayerSpineElementType,
+      override val spineElement: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long,
       val isLocalBookmark: Boolean
     ) : PlayerEventWithSpineElement()

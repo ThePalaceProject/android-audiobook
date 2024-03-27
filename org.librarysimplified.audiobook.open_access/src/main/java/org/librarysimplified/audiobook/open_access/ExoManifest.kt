@@ -1,10 +1,12 @@
 package org.librarysimplified.audiobook.open_access
 
-import android.content.Context
+import android.app.Application
 import one.irradia.mime.api.MIMEType
+import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
-import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderItem
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCs
 import org.librarysimplified.audiobook.manifest.api.R
 
 /**
@@ -12,70 +14,45 @@ import org.librarysimplified.audiobook.manifest.api.R
  */
 
 data class ExoManifest(
-  val context: Context,
-  val title: String,
-  val id: String,
-  val spineItems: List<ExoManifestSpineItem>
+  val bookID: PlayerBookID,
+  val originalManifest: PlayerManifest,
+  val toc: PlayerManifestTOC,
+  val readingOrderItems: List<ExoManifestMutableReadingOrderItem>
 ) {
 
   companion object {
-
-    private val OCTET_STREAM =
-      MIMEType("application", "octet-stream", mapOf())
 
     /**
      * Parse an ExoPlayer manifest from the given raw manifest.
      */
 
     fun transform(
-      context: Context,
+      context: Application,
+      bookID: PlayerBookID,
       manifest: PlayerManifest
     ): PlayerResult<ExoManifest, Exception> {
       try {
-        val spineItems =
+        val readingOrderItems =
           manifest.readingOrder.mapIndexed { index, item ->
-            this.processSpineItem(context, index, item)
+            ExoManifestMutableReadingOrderItem(index, item)
           }
 
         return PlayerResult.Success(
           ExoManifest(
-            context,
-            manifest.metadata.title,
-            manifest.metadata.identifier,
-            spineItems
+            bookID = bookID,
+            originalManifest = manifest,
+            toc = PlayerManifestTOCs.createTOC(
+              manifest,
+              defaultTrackTitle = { index ->
+                context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1)
+              }
+            ),
+            readingOrderItems = readingOrderItems
           )
         )
       } catch (e: Exception) {
         return PlayerResult.Failure(e)
       }
-    }
-
-    private fun processSpineItem(
-      context: Context,
-      index: Int,
-      item: PlayerManifestReadingOrderItem
-    ): ExoManifestSpineItem {
-      val link = item.link
-
-      val title = if (!link.title.isNullOrBlank()) {
-        link.title
-      } else {
-        context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1)
-      }
-
-      val type =
-        link.type ?: OCTET_STREAM
-
-      return ExoManifestSpineItem(
-        title = title,
-        part = 0,
-        offset = 0.0,
-        chapter = index,
-        type = type,
-        uri = link.hrefURI!!,
-        originalLink = item,
-        duration = link.duration
-      )
     }
   }
 }

@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
+import io.reactivex.disposables.Disposable
 import org.joda.time.DateTime
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
@@ -41,6 +42,7 @@ import org.librarysimplified.audiobook.license_check.api.LicenseChecks
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckStatus
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest_fulfill.api.ManifestFulfillmentStrategies
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicCredentials
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
@@ -65,7 +67,6 @@ import org.librarysimplified.audiobook.views.toc.PlayerTOCFragment
 import org.librarysimplified.http.api.LSHTTPClientConfiguration
 import org.librarysimplified.http.vanilla.LSHTTPClients
 import org.slf4j.LoggerFactory
-import rx.Subscription
 import java.io.File
 import java.io.IOException
 import java.net.URI
@@ -106,7 +107,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
   private lateinit var book: PlayerAudioBookType
   private lateinit var bookTitle: String
   private lateinit var bookAuthor: String
-  private lateinit var playerEvents: Subscription
+  private lateinit var playerEvents: Disposable
 
   override fun onCreate(state: Bundle?) {
     super.onCreate(null)
@@ -123,9 +124,10 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
 
     this.downloadExecutor =
       MoreExecutors.listeningDecorator(
-        Executors.newFixedThreadPool(4) { r: Runnable? ->
+        Executors.newFixedThreadPool(1) { r: Runnable? ->
           val thread = Thread(r)
           thread.name = "org.librarysimplified.audiobook.demo.downloader-${thread.id}"
+          thread.priority = Thread.MIN_PRIORITY
           thread
         }
       )
@@ -217,7 +219,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
       }
 
       try {
-        this.playerEvents.unsubscribe()
+        this.playerEvents.dispose()
       } catch (e: Exception) {
         this.log.error("error closing subscription: ", e)
       }
@@ -271,7 +273,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     try {
       return strategy.execute()
     } finally {
-      fulfillSubscription.unsubscribe()
+      fulfillSubscription.dispose()
     }
   }
 
@@ -394,7 +396,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
       val checkResult = check.execute()
       return checkResult.checkSucceeded()
     } finally {
-      checkSubscription.unsubscribe()
+      checkSubscription.dispose()
     }
   }
 
@@ -549,7 +551,7 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     this.playerInitialized = true
 
     val lastPlayed = this.bookmarks.bookmarkFindLastReadLocation(book.id.value)
-    this.player.movePlayheadToLocation(lastPlayed, playAutomatically = false)
+    this.player.movePlayheadToLocation(lastPlayed)
     this.playerEvents = this.player.events.subscribe(this::onPlayerEvent)
 
     this.startAllPartsDownloading()
@@ -635,21 +637,18 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
     return listOf(
       PlayerBookmark(
         DateTime.now(),
-        PlayerPosition("Example 1", 1, 1, 0L, 0L),
-        100L,
-        null
+        PlayerManifestReadingOrderID("Example 1"),
+        100L
       ),
       PlayerBookmark(
         DateTime.now(),
-        PlayerPosition("Example 2", 2, 1, 0L, 0L),
-        100L,
-        null
+        PlayerManifestReadingOrderID("Example 2"),
+        100L
       ),
       PlayerBookmark(
         DateTime.now(),
-        PlayerPosition("Example 3", 3, 1, 0L, 0L),
-        100L,
-        null
+        PlayerManifestReadingOrderID("Example 3"),
+        100L
       )
     )
   }
@@ -782,11 +781,8 @@ class ExamplePlayerActivity : AppCompatActivity(), PlayerFragmentListenerType {
         this.bookmarks.bookmarkSave(
           this.book.id.value,
           PlayerPosition(
-            title = event.spineElement.title,
-            part = event.spineElement.position.part,
-            chapter = event.spineElement.position.chapter,
-            startOffset = event.spineElement.position.startOffset,
-            currentOffset = event.spineElement.position.startOffset + event.offsetMilliseconds
+            readingOrderID = event.spineElement.id,
+            offsetMilliseconds = event.offsetMilliseconds
           )
         )
       }

@@ -7,11 +7,11 @@ import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
 import org.librarysimplified.audiobook.api.PlayerResult
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
-import org.librarysimplified.audiobook.open_access.ExoSpineElement
+import org.librarysimplified.audiobook.open_access.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.slf4j.Logger
 import java.net.URI
@@ -91,11 +91,11 @@ abstract class ExoDownloadContract {
     uri: URI
   ) {
     audioBook?.downloadTasks?.find { task ->
-      task.spineItems.filterIsInstance<ExoSpineElement>().any { item ->
+      task.spineItems.filterIsInstance<ExoReadingOrderItemHandle>().any { item ->
         item.itemManifest.uri == uri
       }
-    }?.spineItems?.filterIsInstance<ExoSpineElement>()?.forEach { spineItem ->
-      spineItem.setDownloadStatus(PlayerSpineElementDownloaded(spineItem))
+    }?.spineItems?.filterIsInstance<ExoReadingOrderItemHandle>()?.forEach { spineItem ->
+      spineItem.setDownloadStatus(PlayerReadingOrderItemDownloaded(spineItem))
     }
   }
 

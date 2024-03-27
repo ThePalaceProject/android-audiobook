@@ -2,18 +2,18 @@ package org.librarysimplified.audiobook.mocking
 
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
+import io.reactivex.Observable
+import io.reactivex.subjects.BehaviorSubject
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
-import rx.Observable
-import rx.subjects.BehaviorSubject
-import java.util.SortedMap
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -28,30 +28,29 @@ class MockingAudioBook(
   val players: (MockingAudioBook) -> MockingPlayer
 ) : PlayerAudioBookType {
 
-  val statusEvents: BehaviorSubject<PlayerSpineElementDownloadStatus> = BehaviorSubject.create()
-  val spineItems: MutableList<MockingSpineElement> = mutableListOf()
+  val statusEvents: BehaviorSubject<PlayerReadingOrderItemDownloadStatus> = BehaviorSubject.create()
+  val spineItems: MutableList<MockingReadingOrderItem> = mutableListOf()
 
   private val isClosedNow = AtomicBoolean(false)
   private val wholeTask = MockingDownloadWholeBookTask(this)
 
-  fun createSpineElement(id: String, title: String, duration: Duration): MockingSpineElement {
-    val element = MockingSpineElement(
+  fun createSpineElement(id: PlayerManifestReadingOrderID, duration: Duration): MockingReadingOrderItem {
+    val element = MockingReadingOrderItem(
       bookMocking = this,
       downloadStatusEvents = this.statusEvents,
       index = spineItems.size,
       duration = duration,
-      id = id,
-      title = title
+      id = id
     )
     this.spineItems.add(element)
     return element
   }
 
-  fun createDownloadTask(elements: List<MockingSpineElement>): MockingDownloadTask {
+  fun createDownloadTask(elements: List<MockingReadingOrderItem>): MockingDownloadTask {
     return MockingDownloadTask(
       downloadStatusExecutor = this.downloadStatusExecutor,
       downloadProvider = this.downloadProvider,
-      spineElements = elements
+      readingOrderItemList = elements
     )
   }
 
@@ -60,20 +59,20 @@ class MockingAudioBook(
   override val supportsIndividualChapterDeletion: Boolean
     get() = true
 
-  override val spine: List<PlayerSpineElementType>
+  override val readingOrder: List<PlayerReadingOrderItemType>
     get() = this.spineItems
 
-  override val spineByID: Map<String, PlayerSpineElementType>
+  override val readingOrderByID: Map<PlayerManifestReadingOrderID, PlayerReadingOrderItemType>
     get() = this.spineItems.associateBy(keySelector = { e -> e.id }, valueTransform = { e -> e })
 
-  override val spineByPartAndChapter: SortedMap<Int, SortedMap<Int, PlayerSpineElementType>>
-    get() = sortedMapOf()
-
-  override val spineElementDownloadStatus: Observable<PlayerSpineElementDownloadStatus>
+  override val readingOrderElementDownloadStatus: Observable<PlayerReadingOrderItemDownloadStatus>
     get() = this.statusEvents
 
   override val downloadTasks: List<PlayerDownloadTaskType>
     get() = listOf(this.wholeTask)
+
+  override val downloadTasksByID: Map<PlayerManifestReadingOrderID, PlayerDownloadTaskType>
+    get() = TODO()
 
   override val wholeBookDownloadTask: PlayerDownloadWholeBookTaskType
     get() = this.wholeTask

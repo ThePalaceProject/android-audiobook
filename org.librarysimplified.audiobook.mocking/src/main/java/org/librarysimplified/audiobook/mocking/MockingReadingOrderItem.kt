@@ -1,34 +1,37 @@
 package org.librarysimplified.audiobook.mocking
 
+import io.reactivex.subjects.BehaviorSubject
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerPosition
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
-import rx.subjects.BehaviorSubject
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 
 /**
  * A fake spine element in a fake audio book.
  */
 
-class MockingSpineElement(
+class MockingReadingOrderItem(
   val bookMocking: MockingAudioBook,
-  val downloadStatusEvents: BehaviorSubject<PlayerSpineElementDownloadStatus>,
+  val downloadStatusEvents: BehaviorSubject<PlayerReadingOrderItemDownloadStatus>,
   override val index: Int,
   override val duration: Duration,
-  override val id: String,
-  override val title: String
-) : PlayerSpineElementType {
+  override val id: PlayerManifestReadingOrderID
+) : PlayerReadingOrderItemType {
 
   var downloadTasksAreSupported = true
 
   override val downloadTasksSupported: Boolean
     get() = this.downloadTasksAreSupported
 
+  override val startingPosition: PlayerPosition
+    get() = PlayerPosition(this.id, 0L)
+
   override val book: PlayerAudioBookType
     get() = this.bookMocking
 
-  override val next: PlayerSpineElementType?
+  override val next: PlayerReadingOrderItemType?
     get() =
       if (this.index + 1 < this.bookMocking.spineItems.size) {
         this.bookMocking.spineItems[this.index + 1]
@@ -36,7 +39,7 @@ class MockingSpineElement(
         null
       }
 
-  override val previous: PlayerSpineElementType?
+  override val previous: PlayerReadingOrderItemType?
     get() =
       if (this.index > 0) {
         this.bookMocking.spineItems[this.index - 1]
@@ -44,17 +47,14 @@ class MockingSpineElement(
         null
       }
 
-  override val position: PlayerPosition
-    get() = PlayerPosition(title = this.title, part = 0, chapter = this.index + 1, startOffset = 0L, currentOffset = 0L)
+  private var downloadStatusValue: PlayerReadingOrderItemDownloadStatus =
+    PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded(this)
 
-  private var downloadStatusValue: PlayerSpineElementDownloadStatus =
-    PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded(this)
-
-  fun setDownloadStatus(status: PlayerSpineElementDownloadStatus) {
+  fun setDownloadStatus(status: PlayerReadingOrderItemDownloadStatus) {
     this.downloadStatusValue = status
     this.downloadStatusEvents.onNext(status)
   }
 
-  override val downloadStatus: PlayerSpineElementDownloadStatus
+  override val downloadStatus: PlayerReadingOrderItemDownloadStatus
     get() = this.downloadStatusValue
 }
