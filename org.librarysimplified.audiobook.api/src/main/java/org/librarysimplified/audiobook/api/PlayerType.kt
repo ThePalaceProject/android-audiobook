@@ -139,8 +139,20 @@ interface PlayerType : AutoCloseable {
   fun movePlayheadToBookStart()
 
   /**
-   * Get the player's current position as player bookmark.
+   * Seek to the given millisecond offset in the current chapter.
+   *
+   * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  fun getCurrentPositionAsPlayerBookmark(): PlayerBookmark?
+  fun seekTo(milliseconds: Long)
+
+  /**
+   * Instruct the player to create a bookmark. This has the effect of generating a
+   * [PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark] event with the
+   * current player position.
+   *
+   * @throws java.lang.IllegalStateException If and only if the player is closed
+   */
+
+  fun bookmark()
 }

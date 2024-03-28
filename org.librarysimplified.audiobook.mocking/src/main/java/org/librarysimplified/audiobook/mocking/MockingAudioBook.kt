@@ -1,7 +1,5 @@
 package org.librarysimplified.audiobook.mocking
 
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.SettableFuture
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import org.joda.time.Duration
@@ -14,6 +12,8 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -79,11 +79,17 @@ class MockingAudioBook(
 
   override fun replaceManifest(
     manifest: PlayerManifest
-  ): ListenableFuture<Unit> {
-    val future = SettableFuture.create<Unit>()
-    future.set(Unit)
+  ): CompletableFuture<Unit> {
+    val future = CompletableFuture<Unit>()
+    future.complete(Unit)
     return future
   }
+
+  override val tableOfContents: PlayerManifestTOC
+    get() = TODO("Not yet implemented")
+
+  override val manifest: PlayerManifest
+    get() = TODO("Not yet implemented")
 
   override fun createPlayer(): MockingPlayer {
     check(!this.isClosed) { "Audio book has been closed" }

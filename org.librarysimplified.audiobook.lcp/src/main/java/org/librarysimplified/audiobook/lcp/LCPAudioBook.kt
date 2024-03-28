@@ -1,8 +1,6 @@
 package org.librarysimplified.audiobook.lcp
 
 import android.app.Application
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import io.reactivex.subjects.PublishSubject
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
@@ -13,10 +11,12 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.open_access.ExoManifest
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 
 class LCPAudioBook private constructor(
-  private val manifest: ExoManifest,
+  private val exoManifest: ExoManifest,
   private val context: Application,
   private val engineExecutor: ScheduledExecutorService,
   override val readingOrder: List<LCPReadingOrderItem>,
@@ -73,9 +73,17 @@ class LCPAudioBook private constructor(
 
   override fun replaceManifest(
     manifest: PlayerManifest
-  ): ListenableFuture<Unit> {
-    return Futures.immediateFuture(null)
+  ): CompletableFuture<Unit> {
+    val future = CompletableFuture<Unit>()
+    future.complete(Unit)
+    return future
   }
+
+  override val tableOfContents: PlayerManifestTOC
+    get() = this.exoManifest.toc
+
+  override val manifest: PlayerManifest
+    get() = this.exoManifest.originalManifest
 
   companion object {
     fun create(
@@ -128,7 +136,7 @@ class LCPAudioBook private constructor(
           context = context,
           engineExecutor = engineExecutor,
           file = file,
-          manifest = manifest,
+          exoManifest = manifest,
           manualPassphrase = manualPassphrase,
           readingOrder = handles,
           readingOrderByID = handlesById,
@@ -159,6 +167,6 @@ class LCPAudioBook private constructor(
   override val isClosed: Boolean
     get() = this.isClosedNow.get()
 
-  override val id: PlayerBookID =
-    this.manifest.bookID
+  override val id: PlayerBookID
+    get() = PlayerBookID.transform(this.manifest.metadata.identifier)
 }

@@ -13,16 +13,16 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
-import org.librarysimplified.audiobook.api.PlayerBookmark
+import org.librarysimplified.audiobook.api.PlayerBookmarkKind
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterCompleted
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterWaiting
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackBuffering
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackPaused
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterWaiting
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackBuffering
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_PLAYING
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_STOPPED
@@ -39,6 +39,8 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUIThread.runOnUIThread
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_NONEXISTENT
 import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_NOT_DOWNLOADED
 import org.librarysimplified.audiobook.open_access.ExoAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_READY
@@ -93,9 +95,13 @@ class ExoAudioBookPlayer private constructor(
       logger = this.log,
       events = this.statusEvents,
       exoPlayer = this.exoPlayer,
-      currentSpineElement = {
+      currentReadingOrderItem = {
         this.currentReadingOrderElement
-      }
+      },
+      tocItemFor = { item, time ->
+        this.tocItemFor(item.id, time)
+      },
+      toc = this.book.tableOfContents
     )
 
   init {
@@ -167,55 +173,120 @@ class ExoAudioBookPlayer private constructor(
   ) {
     PlayerUIThread.checkIsUIThread()
 
+    val toc = this.book.tableOfContents
+
     when (state.newState) {
       ExoPlayerPlaybackStatus.INITIAL -> {
         if (state.oldState == ExoPlayerPlaybackStatus.PLAYING) {
+          val tocItem =
+            this.tocItemFor(this.currentReadingOrderElement.id, 0L)
+
           this.statusEvents.onNext(
-            PlayerEventPlaybackStopped(this.currentReadingOrderElement, 0)
+            PlayerEventPlaybackStopped(
+              readingOrderItem = this.currentReadingOrderElement,
+              offsetMilliseconds = 0,
+              tocItem = tocItem,
+              totalRemainingBookTime = toc.totalDurationRemaining(tocItem, 0L)
+            )
           )
         }
       }
 
       ExoPlayerPlaybackStatus.BUFFERING -> {
+        val offsetMilliseconds =
+          this.exoAdapter.currentTrackOffsetMilliseconds()
+        val tocItem =
+          this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+
         this.statusEvents.onNext(
           PlayerEventPlaybackBuffering(
-            this.currentReadingOrderElement,
-            this.exoAdapter.currentTrackOffsetMilliseconds()
+            readingOrderItem = this.currentReadingOrderElement,
+            offsetMilliseconds = offsetMilliseconds,
+            tocItem = tocItem,
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
           )
         )
       }
 
       ExoPlayerPlaybackStatus.PLAYING -> {
+        val offsetMilliseconds =
+          this.exoAdapter.currentTrackOffsetMilliseconds()
+        val tocItem =
+          this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+
         if (state.oldState != ExoPlayerPlaybackStatus.PLAYING) {
           this.statusEvents.onNext(
             PlayerEventPlaybackStarted(
-              spineElement = this.currentReadingOrderElement,
-              offsetMilliseconds = this.exoAdapter.currentTrackOffsetMilliseconds()
+              readingOrderItem = this.currentReadingOrderElement,
+              offsetMilliseconds = offsetMilliseconds,
+              tocItem = tocItem,
+              totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
             )
           )
         }
 
         this.statusEvents.onNext(
           PlayerEventPlaybackProgressUpdate(
-            this.currentReadingOrderElement,
-            this.exoAdapter.currentTrackOffsetMilliseconds()
+            readingOrderItem = this.currentReadingOrderElement,
+            offsetMilliseconds = offsetMilliseconds,
+            tocItem = tocItem,
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
           )
         )
       }
 
       ExoPlayerPlaybackStatus.PAUSED -> {
+        val offsetMilliseconds =
+          this.exoAdapter.currentTrackOffsetMilliseconds()
+        val tocItem =
+          this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+
         this.statusEvents.onNext(
           PlayerEventPlaybackPaused(
-            this.currentReadingOrderElement,
-            this.exoAdapter.currentTrackOffsetMilliseconds()
+            readingOrderItem = this.currentReadingOrderElement,
+            offsetMilliseconds = offsetMilliseconds,
+            tocItem = tocItem,
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
           )
         )
       }
 
       ExoPlayerPlaybackStatus.CHAPTER_ENDED -> {
-        this.statusEvents.onNext(PlayerEventChapterCompleted(this.currentReadingOrderElement))
+        val offsetMilliseconds =
+          this.exoAdapter.currentTrackOffsetMilliseconds()
+        val tocItem =
+          this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+
+        this.statusEvents.onNext(
+          PlayerEventChapterCompleted(
+            readingOrderItem = this.currentReadingOrderElement,
+            tocItem = tocItem,
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+          )
+        )
         this.playNextSpineElementIfAvailable(this.currentReadingOrderElement, 0L)
       }
+    }
+  }
+
+  private fun tocItemFor(
+    readingOrderID: PlayerManifestReadingOrderID,
+    offsetMilliseconds: Long
+  ): PlayerManifestTOCItem {
+    val toc =
+      this.book.tableOfContents
+    val item =
+      toc.lookupTOCItem(readingOrderID, offsetMilliseconds)
+    val element =
+      this.book.readingOrderByID[readingOrderID]!!
+
+    return if (item == null) {
+      if (element.nextElement == null) {
+        return toc.tocItemsInOrder.last()
+      }
+      toc.tocItemsInOrder.first()
+    } else {
+      item
     }
   }
 
@@ -280,6 +351,7 @@ class ExoAudioBookPlayer private constructor(
                 element = this.currentReadingOrderElement,
                 offsetMilliseconds = this.exoAdapter.currentTrackOffsetMilliseconds()
               )
+              this.exoAdapter.playIfNotAlreadyPlaying()
             }
           }
         }
@@ -300,6 +372,7 @@ class ExoAudioBookPlayer private constructor(
               this.log.debug("Reading order item status changed, stopping playback")
               this.opStop()
             }
+
             is PlayerReadingOrderItemDownloaded -> Unit
           }
         }
@@ -387,7 +460,19 @@ class ExoAudioBookPlayer private constructor(
         )
 
         this.currentReadingOrderElement = element
-        this.statusEvents.onNext(PlayerEventChapterWaiting(element))
+
+        val tocItem =
+          tocItemFor(element.id, 0L)
+        val toc =
+          this.book.tableOfContents
+
+        this.statusEvents.onNext(
+          PlayerEventChapterWaiting(
+            readingOrderItem = element,
+            tocItem = tocItem,
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, 0L)
+          )
+        )
         SKIP_TO_CHAPTER_NOT_DOWNLOADED
       }
 
@@ -445,15 +530,19 @@ class ExoAudioBookPlayer private constructor(
         this.preparePlayer(this.currentReadingOrderElement, 0L)
         this.exoPlayer.play()
       }
+
       ExoPlayerPlaybackStatus.BUFFERING -> {
         this.exoPlayer.play()
       }
+
       ExoPlayerPlaybackStatus.PLAYING -> {
         // Nothing to do
       }
+
       ExoPlayerPlaybackStatus.PAUSED -> {
         this.exoPlayer.play()
       }
+
       ExoPlayerPlaybackStatus.CHAPTER_ENDED -> {
         // Nothing to do
       }
@@ -600,6 +689,30 @@ class ExoAudioBookPlayer private constructor(
     this.resources.dispose()
   }
 
+  private fun opBookmark() {
+    this.log.debug("opBookmark")
+    PlayerUIThread.checkIsUIThread()
+
+    val readingOrderItem =
+      this.currentReadingOrderElement
+    val offsetMilliseconds =
+      this.exoAdapter.currentTrackOffsetMilliseconds()
+    val tocItem =
+      this.tocItemFor(readingOrderItem.id, offsetMilliseconds)
+    val durationRemaining =
+      this.book.tableOfContents.totalDurationRemaining(tocItem, offsetMilliseconds)
+
+    this.statusEvents.onNext(
+      PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark(
+        readingOrderItem,
+        offsetMilliseconds = offsetMilliseconds,
+        tocItem = tocItem,
+        totalRemainingBookTime = durationRemaining,
+        kind = PlayerBookmarkKind.EXPLICIT
+      )
+    )
+  }
+
   private fun checkNotClosed() {
     if (this.closed.get()) {
       throw IllegalStateException("Player has been closed")
@@ -687,8 +800,20 @@ class ExoAudioBookPlayer private constructor(
     }
   }
 
-  override fun getCurrentPositionAsPlayerBookmark(): PlayerBookmark? {
-    throw Unimplemented()
+  override fun seekTo(milliseconds: Long) {
+    this.checkNotClosed()
+
+    runOnUIThread {
+      this.seek(milliseconds)
+    }
+  }
+
+  override fun bookmark() {
+    this.checkNotClosed()
+
+    runOnUIThread {
+      this.opBookmark()
+    }
   }
 
   override val isClosed: Boolean

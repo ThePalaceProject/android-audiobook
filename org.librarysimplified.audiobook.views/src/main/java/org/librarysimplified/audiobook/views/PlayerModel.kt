@@ -1,13 +1,25 @@
 package org.librarysimplified.audiobook.views
 
 import android.app.Application
+import android.media.AudioManager
+import androidx.annotation.UiThread
+import androidx.core.content.getSystemService
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
+import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
+import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate
+import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerResult
+import org.librarysimplified.audiobook.api.PlayerSleepTimer
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.downloads.DownloadProvider
@@ -37,6 +49,10 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
 object PlayerModel {
+
+  private var audioManagerService: AudioManager? = null
+  val playbackRate: PlayerPlaybackRate
+    get() = this.playerAndBookField?.player?.playbackRate ?: PlayerPlaybackRate.NORMAL_TIME
 
   private val logger =
     LoggerFactory.getLogger(PlayerModel::class.java)
@@ -77,7 +93,7 @@ object PlayerModel {
   private class OperationFailedException : Exception()
 
   @Volatile
-  private var bookField: PlayerBookAndPlayer? = null
+  private var playerAndBookField: PlayerBookAndPlayer? = null
 
   @Volatile
   private var stateField: PlayerModelState =
@@ -151,6 +167,38 @@ object PlayerModel {
 
   val stateEvents: Observable<PlayerModelState> =
     this.stateSubject.observeOn(AndroidSchedulers.mainThread())
+
+  private val playerEventSubject =
+    BehaviorSubject.create<PlayerEvent>()
+      .toSerialized()
+
+  /**
+   * A source of player events.
+   */
+
+  val playerEvents: Observable<PlayerEvent> =
+    this.playerEventSubject.observeOn(AndroidSchedulers.mainThread())
+
+  private val viewCommandSource =
+    PublishSubject.create<PlayerViewCommand>()
+      .toSerialized()
+
+  /**
+   * A source of player view commands.
+   */
+
+  val viewCommands: Observable<PlayerViewCommand> =
+    this.viewCommandSource.observeOn(AndroidSchedulers.mainThread())
+
+  init {
+    this.stateSubject.onNext(this.state)
+  }
+
+  @UiThread
+  fun submitViewCommand(command: PlayerViewCommand) {
+    PlayerUIThread.checkIsUIThread()
+    this.viewCommandSource.onNext(command)
+  }
 
   private fun downloadManifest(
     strategy: ManifestFulfillmentStrategyType
@@ -307,8 +355,17 @@ object PlayerModel {
     manifest: PlayerManifest
   ): CompletableFuture<Unit> {
     this.logger.debug("openPlayerForManifest")
-    return executeTaskCancellingExisting {
-      this.opOpenPlayerForManifest(manifest, userAgent, context, extensions)
+
+    this.audioManagerService =
+      context.getSystemService<AudioManager>()
+
+    return this.executeTaskCancellingExisting {
+      this.opOpenPlayerForManifest(
+        manifest = manifest,
+        userAgent = userAgent,
+        context = context,
+        extensions = extensions
+      )
     }
   }
 
@@ -367,8 +424,13 @@ object PlayerModel {
     val newPair =
       PlayerBookAndPlayer(newBook, newPlayer)
 
-    this.bookField?.close()
-    this.bookField = newPair
+    this.playerAndBookField?.close()
+    this.playerAndBookField = newPair
+
+    newPlayer.events.subscribe(
+      { event -> this.playerEventSubject.onNext(event) },
+      { exception -> this.logger.error("Player exception: ", exception) }
+    )
 
     this.setNewState(PlayerModelState.PlayerOpen(newPair))
   }
@@ -403,6 +465,7 @@ object PlayerModel {
 
       is PlayerModelState.PlayerOpen -> {
         current.player.close()
+        PlayerBookmarkModel.clearBookmarks()
         this.setNewState(PlayerModelState.PlayerClosed)
       }
 
@@ -415,5 +478,73 @@ object PlayerModel {
   private fun setNewState(newState: PlayerModelState) {
     this.stateField = newState
     this.stateSubject.onNext(newState)
+  }
+
+  fun seekTo(milliseconds: Long) {
+    this.playerAndBookField?.player?.seekTo(milliseconds)
+  }
+
+  fun play() {
+    this.playerAndBookField?.player?.play()
+
+    when (PlayerSleepTimer.status) {
+      is PlayerSleepTimerType.Status.Paused -> PlayerSleepTimer.unpause()
+      is PlayerSleepTimerType.Status.Running -> {
+        // Nothing to do
+      }
+
+      is PlayerSleepTimerType.Status.Stopped -> {
+        when (PlayerSleepTimer.configuration) {
+          PlayerSleepTimerConfiguration.EndOfChapter -> PlayerSleepTimer.start()
+          PlayerSleepTimerConfiguration.Off -> {
+            // Nothing to do
+          }
+
+          is PlayerSleepTimerConfiguration.WithDuration -> PlayerSleepTimer.start()
+        }
+      }
+    }
+  }
+
+  fun pause() {
+    this.playerAndBookField?.player?.pause()
+    PlayerSleepTimer.pause()
+  }
+
+  fun playOrPauseAsAppropriate() {
+    val playerCurrent = this.playerAndBookField?.player
+    when (playerCurrent?.playbackIntention) {
+      PlayerPlaybackIntention.SHOULD_BE_PLAYING -> this.pause()
+      PlayerPlaybackIntention.SHOULD_BE_STOPPED -> this.play()
+      null -> {
+        // Nothing to do.
+      }
+    }
+  }
+
+  fun skipForward() {
+    this.playerAndBookField?.player?.skipPlayhead(30_000L)
+  }
+
+  fun skipBack() {
+    this.playerAndBookField?.player?.skipPlayhead(-30_000L)
+  }
+
+  fun book(): PlayerAudioBookType {
+    return this.playerAndBookField?.audioBook
+      ?: throw IllegalStateException("Player and book are not open!")
+  }
+
+  fun movePlayheadTo(playerPosition: PlayerPosition) {
+    this.playerAndBookField?.player?.movePlayheadToLocation(playerPosition)
+  }
+
+  fun manifest(): PlayerManifest {
+    return this.playerAndBookField?.audioBook?.manifest
+      ?: throw IllegalStateException("Player and book are not open!")
+  }
+
+  fun bookmarkCreate() {
+    this.playerAndBookField?.player?.bookmark()
   }
 }

@@ -4,9 +4,23 @@ import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
+import org.joda.time.DateTime
+import org.librarysimplified.audiobook.api.PlayerBookmark
+import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterWaiting
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackBuffering
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
+import org.librarysimplified.audiobook.views.PlayerBaseFragment
+import org.librarysimplified.audiobook.views.PlayerBookmarkModel
 import org.librarysimplified.audiobook.views.PlayerFragment2
 import org.librarysimplified.audiobook.views.PlayerModel
 import org.librarysimplified.audiobook.views.PlayerModelState
@@ -18,6 +32,12 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLice
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerOpen
+import org.librarysimplified.audiobook.views.PlayerTOCFragment2
+import org.librarysimplified.audiobook.views.PlayerViewCommand
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
 
 class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity) {
 
@@ -30,7 +50,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
     this.subscriptions = CompositeDisposable()
     this.subscriptions.add(PlayerModel.stateEvents.subscribe(this::onModelStateEvent))
-    this.switchFragment(ExampleFragmentSelectBook())
+    this.subscriptions.add(PlayerModel.viewCommands.subscribe(this::onPlayerViewCommand))
+    this.subscriptions.add(PlayerModel.playerEvents.subscribe(this::onPlayerEvent))
   }
 
   override fun onStop() {
@@ -47,19 +68,79 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
   @Deprecated("Deprecated in Java")
   override fun onBackPressed() {
-    when (PlayerModel.state) {
-      PlayerClosed -> {
+    return when (val f = this.fragmentNow) {
+      is ExampleFragmentError -> {
+        PlayerModel.closeBookOrDismissError()
+        Unit
+      }
+
+      is ExampleFragmentProgress -> {
+        PlayerModel.closeBookOrDismissError()
+        Unit
+      }
+
+      is ExampleFragmentSelectBook -> {
         super.onBackPressed()
       }
 
-      is PlayerBookOpenFailed,
-      is PlayerManifestDownloadFailed,
-      PlayerManifestInProgress,
-      PlayerManifestLicenseChecksFailed,
-      is PlayerManifestOK,
-      is PlayerManifestParseFailed,
-      is PlayerOpen -> {
-        PlayerModel.closeBookOrDismissError()
+      is PlayerBaseFragment -> {
+        when (f) {
+          is PlayerFragment2 -> {
+            PlayerModel.closeBookOrDismissError()
+            Unit
+          }
+
+          is PlayerTOCFragment2 -> {
+            this.switchFragment(PlayerFragment2())
+          }
+        }
+      }
+
+      null -> {
+        super.onBackPressed()
+      }
+
+      else -> {
+        throw IllegalStateException("Unrecognized fragment: $f")
+      }
+    }
+  }
+
+  @UiThread
+  private fun onPlayerEvent(event: PlayerEvent) {
+    when (event) {
+      is PlayerEventCreateBookmark -> {
+        val bookId =
+          PlayerModel.manifest().metadata.identifier
+        val bookmarkDatabase =
+          ExampleApplication.application.bookmarkDatabase
+
+        bookmarkDatabase.bookmarkSave(
+          bookId,
+          PlayerBookmark(
+            kind = event.kind,
+            title = event.tocItem.title,
+            date = DateTime.now(),
+            readingOrderID = event.readingOrderItem.id,
+            offsetMilliseconds = event.offsetMilliseconds
+          )
+        )
+
+        PlayerBookmarkModel.setBookmarks(bookmarkDatabase.bookmarkList(bookId))
+      }
+
+      is PlayerEvent.PlayerEventError,
+      PlayerEvent.PlayerEventManifestUpdated,
+      is PlayerEvent.PlayerEventPlaybackRateChanged,
+      is PlayerEventChapterCompleted,
+      is PlayerEventChapterWaiting,
+      is PlayerEventPlaybackBuffering,
+      is PlayerEventPlaybackPaused,
+      is PlayerEventPlaybackProgressUpdate,
+      is PlayerEventPlaybackStarted,
+      is PlayerEventPlaybackStopped,
+      is PlayerEventPlaybackWaitingForAction -> {
+        // Nothing to do
       }
     }
   }
@@ -100,10 +181,39 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
       is PlayerOpen -> {
         this.switchFragment(PlayerFragment2())
+
+        val bookmarkDatabase =
+          ExampleApplication.application.bookmarkDatabase
+        val bookmark =
+          bookmarkDatabase.bookmarkFindLastRead(PlayerModel.manifest().metadata.identifier)
+
+        if (bookmark != null) {
+          PlayerModel.movePlayheadTo(bookmark.position)
+        }
       }
 
       PlayerManifestInProgress -> {
         this.switchFragment(ExampleFragmentProgress())
+      }
+    }
+  }
+
+  private fun onPlayerViewCommand(command: PlayerViewCommand) {
+    return when (command) {
+      PlayerViewNavigationTOCClose -> {
+        this.switchFragment(PlayerFragment2())
+      }
+
+      PlayerViewNavigationTOCOpen -> {
+        this.switchFragment(PlayerTOCFragment2())
+      }
+
+      PlayerViewNavigationPlaybackRateMenuOpen -> {
+        // Nothing to do.
+      }
+
+      PlayerViewNavigationSleepMenuOpen -> {
+        // Nothing to do.
       }
     }
   }

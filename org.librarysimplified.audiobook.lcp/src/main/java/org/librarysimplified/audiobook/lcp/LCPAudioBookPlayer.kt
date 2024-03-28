@@ -5,7 +5,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.coroutines.runBlocking
-import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
@@ -164,7 +163,11 @@ class LCPAudioBookPlayer private constructor(
     TODO("Not yet implemented")
   }
 
-  override fun getCurrentPositionAsPlayerBookmark(): PlayerBookmark? {
+  override fun seekTo(milliseconds: Long) {
+    TODO("Not yet implemented")
+  }
+
+  override fun bookmark() {
     TODO("Not yet implemented")
   }
 }

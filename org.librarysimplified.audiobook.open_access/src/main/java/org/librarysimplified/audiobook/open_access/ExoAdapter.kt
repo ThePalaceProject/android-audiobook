@@ -7,8 +7,10 @@ import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import org.librarysimplified.audiobook.api.PlayerEvent
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 import org.slf4j.Logger
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -21,7 +23,9 @@ class ExoAdapter(
   private val logger: Logger,
   private val events: Subject<PlayerEvent>,
   private val exoPlayer: ExoPlayer,
-  private val currentSpineElement: () -> PlayerReadingOrderItemType
+  private val currentReadingOrderItem: () -> PlayerReadingOrderItemType,
+  private val toc: PlayerManifestTOC,
+  private val tocItemFor: (PlayerReadingOrderItemType, Long) -> PlayerManifestTOCItem
 ) : Player.Listener, AutoCloseable {
 
   private val closed =
@@ -53,7 +57,7 @@ class ExoAdapter(
 
     this.events.onNext(
       PlayerEvent.PlayerEventError(
-        spineElement = this.currentSpineElement.invoke(),
+        readingOrderItem = this.currentReadingOrderItem.invoke(),
         exception = error,
         errorCode = -1,
         offsetMilliseconds = this.currentTrackOffsetMilliseconds()
@@ -145,10 +149,21 @@ class ExoAdapter(
   }
 
   fun broadcastPlaybackPosition() {
+    val readingOrderItem =
+      this.currentReadingOrderItem.invoke()
+    val offsetMilliseconds =
+      this.currentTrackOffsetMilliseconds()
+    val tocItem =
+      this.tocItemFor.invoke(readingOrderItem, offsetMilliseconds)
+    val durationRemaining =
+      this.toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+
     this.events.onNext(
       PlayerEventPlaybackProgressUpdate(
-        this.currentSpineElement.invoke(),
-        this.currentTrackOffsetMilliseconds()
+        readingOrderItem = readingOrderItem,
+        offsetMilliseconds = offsetMilliseconds,
+        tocItem = tocItem,
+        totalRemainingBookTime = durationRemaining
       )
     )
   }

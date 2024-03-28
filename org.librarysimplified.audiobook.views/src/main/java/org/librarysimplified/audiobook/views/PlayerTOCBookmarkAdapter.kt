@@ -1,4 +1,4 @@
-package org.librarysimplified.audiobook.views.toc
+package org.librarysimplified.audiobook.views
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -14,8 +14,6 @@ import org.joda.time.format.PeriodFormatterBuilder
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerUIThread
-import org.librarysimplified.audiobook.views.PlayerTimeStrings
-import org.librarysimplified.audiobook.views.R
 import java.util.Locale
 
 /**
@@ -52,30 +50,30 @@ class PlayerTOCBookmarkAdapter(
       LayoutInflater.from(parent.context)
         .inflate(R.layout.player_toc_bookmark_item_view, parent, false)
 
-    return BookmarkViewHolder(view)
+    return this.BookmarkViewHolder(view)
   }
 
   override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
     PlayerUIThread.checkIsUIThread()
 
-    (holder as? BookmarkViewHolder)?.bind(bookmarks[position])
+    (holder as? BookmarkViewHolder)?.bind(this.bookmarks[position])
   }
 
   fun setBookmarks(bookmarksList: List<PlayerBookmark>) {
-    bookmarks = bookmarksList
+    this.bookmarks = bookmarksList
   }
 
   inner class BookmarkViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
     private val bookmarkDate: TextView =
-      itemView.findViewById(R.id.player_toc_bookmark_item_view_date)
+      this.itemView.findViewById(R.id.player_toc_bookmark_item_view_date)
     private val bookmarkOffset: TextView =
-      itemView.findViewById(R.id.player_toc_bookmark_item_view_offset)
+      this.itemView.findViewById(R.id.player_toc_bookmark_item_view_offset)
     private val bookmarkTitle: TextView =
-      itemView.findViewById(R.id.player_toc_bookmark_item_view_title)
+      this.itemView.findViewById(R.id.player_toc_bookmark_item_view_title)
     private val bookmarkDelete: ImageView =
-      itemView.findViewById(R.id.player_toc_bookmark_item_view_delete)
+      this.itemView.findViewById(R.id.player_toc_bookmark_item_view_delete)
     private val bookmarkLoading: ProgressBar =
-      itemView.findViewById(R.id.player_toc_bookmark_item_view_loading)
+      this.itemView.findViewById(R.id.player_toc_bookmark_item_view_loading)
 
     private fun contentDescriptionOf(
       title: String,
@@ -89,19 +87,22 @@ class PlayerTOCBookmarkAdapter(
 
       if (offset != null) {
         builder.append(
-          itemView.context.getString(
+          this.itemView.context.getString(
             R.string.audiobook_accessibility_toc_bookmark_offset_is
           )
         )
         builder.append(" ")
         builder.append(
-          PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(timeStrings, offset)
+          PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(
+            this@PlayerTOCBookmarkAdapter.timeStrings,
+            offset
+          )
         )
         builder.append(". ")
       }
 
       builder.append(
-        itemView.context.getString(
+        this.itemView.context.getString(
           R.string.audiobook_accessibility_toc_bookmark_date_is
         )
       )
@@ -113,29 +114,32 @@ class PlayerTOCBookmarkAdapter(
     }
 
     fun bind(bookmark: PlayerBookmark) {
-      val offset = Duration(bookmark.offsetMilliseconds)
-      val bookmarkDateStr = bookmark.date.toString("MMMM dd, yyyy", Locale.ROOT)
+      val offset =
+        Duration(bookmark.offsetMilliseconds)
+      val bookmarkDateStr =
+        bookmark.date.toString("MMMM dd, yyyy", Locale.ROOT)
 
-      // bookmarkTitle.text = bookmark.position.title.orEmpty()
-      bookmarkTitle.text = "TITLE MISSING!!!"
-      bookmarkOffset.text = periodFormatter.print(offset.toPeriod())
-      bookmarkDate.text = bookmarkDateStr
+      this.bookmarkTitle.text = bookmark.title
+      this.bookmarkOffset.text =
+        this@PlayerTOCBookmarkAdapter.periodFormatter.print(offset.toPeriod())
+      this.bookmarkDate.text = bookmarkDateStr
 
-      bookmarkDelete.visibility = View.VISIBLE
-      bookmarkLoading.visibility = View.GONE
+      this.bookmarkDelete.visibility = View.VISIBLE
+      this.bookmarkLoading.visibility = View.GONE
 
-      itemView.contentDescription = contentDescriptionOf(
-        title = bookmarkTitle.text.toString(),
-        offset = offset,
-        date = bookmarkDateStr
-      )
+      this.itemView.contentDescription =
+        this.contentDescriptionOf(
+          title = this.bookmarkTitle.text.toString(),
+          offset = offset,
+          date = bookmarkDateStr
+        )
 
-      bookmarkDelete.setOnClickListener {
-        onDelete(adapterPosition, bookmark)
+      this.bookmarkDelete.setOnClickListener {
+        this@PlayerTOCBookmarkAdapter.onDelete(this.adapterPosition, bookmark)
       }
 
-      itemView.setOnClickListener {
-        onSelect(bookmark.position)
+      this.itemView.setOnClickListener {
+        this@PlayerTOCBookmarkAdapter.onSelect(bookmark.position)
       }
     }
   }

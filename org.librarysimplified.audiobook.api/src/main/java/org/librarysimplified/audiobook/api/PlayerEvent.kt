@@ -1,5 +1,8 @@
 package org.librarysimplified.audiobook.api
 
+import org.joda.time.Duration
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
+
 /**
  * The type of events signalled by the player.
  */
@@ -18,7 +21,7 @@ sealed class PlayerEvent {
    * The player's manifest was successfully updated.
    */
 
-  object PlayerEventManifestUpdated : PlayerEvent()
+  data object PlayerEventManifestUpdated : PlayerEvent()
 
   /**
    * An error occurred during playback. The error is expected to reflect an error in the
@@ -26,38 +29,50 @@ sealed class PlayerEvent {
    */
 
   data class PlayerEventError(
-    val spineElement: PlayerReadingOrderItemType?,
+    val readingOrderItem: PlayerReadingOrderItemType?,
     val offsetMilliseconds: Long,
     val exception: java.lang.Exception?,
     val errorCode: Int
   ) : PlayerEvent()
 
-  sealed class PlayerEventWithSpineElement : PlayerEvent() {
+  sealed class PlayerEventWithPosition : PlayerEvent() {
 
     /**
-     * The spine element to which this event refers.
+     * The reading order item to which this event refers.
      */
 
-    abstract val spineElement: PlayerReadingOrderItemType
+    abstract val readingOrderItem: PlayerReadingOrderItemType
 
     /**
-     * Playback of the given spine element has started.
+     * The table of contents item within which the current position falls
+     */
+
+    abstract val tocItem: PlayerManifestTOCItem
+
+    abstract val totalRemainingBookTime: Duration
+
+    /**
+     * Playback of the given reading order item has started.
      */
 
     data class PlayerEventPlaybackStarted(
-      override val spineElement: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long
-    ) : PlayerEventWithSpineElement()
+      override val readingOrderItem: PlayerReadingOrderItemType,
+      val offsetMilliseconds: Long,
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration
+    ) : PlayerEventWithPosition()
 
     /**
-     * Playback is currently buffering for the given spine element. This can happen at any time
+     * Playback is currently buffering for the given reading order item. This can happen at any time
      * during playback if the given spine item has not been downloaded.
      */
 
     data class PlayerEventPlaybackBuffering(
-      override val spineElement: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long
-    ) : PlayerEventWithSpineElement()
+      override val readingOrderItem: PlayerReadingOrderItemType,
+      val offsetMilliseconds: Long,
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration
+    ) : PlayerEventWithPosition()
 
     /**
      * The given spine item is ready to be played, but waiting for the user's action since it
@@ -65,9 +80,11 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackWaitingForAction(
-      override val spineElement: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long
-    ) : PlayerEventWithSpineElement()
+      override val readingOrderItem: PlayerReadingOrderItemType,
+      val offsetMilliseconds: Long,
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration
+    ) : PlayerEventWithPosition()
 
     /**
      * The given spine item is playing, and this event is a progress update indicating how far
@@ -75,45 +92,55 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackProgressUpdate(
-      override val spineElement: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long
-    ) : PlayerEventWithSpineElement()
+      override val readingOrderItem: PlayerReadingOrderItemType,
+      val offsetMilliseconds: Long,
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration
+    ) : PlayerEventWithPosition()
 
     /**
-     * Playback of the given spine element has just completed, and playback will continue to the
+     * Playback of the given reading order item has just completed, and playback will continue to the
      * next spine item if it is available (downloaded).
      */
 
     data class PlayerEventChapterCompleted(
-      override val spineElement: PlayerReadingOrderItemType
-    ) : PlayerEventWithSpineElement()
+      override val readingOrderItem: PlayerReadingOrderItemType,
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration
+    ) : PlayerEventWithPosition()
 
     /**
-     * The player is currently waiting for the given spine element to become available before
+     * The player is currently waiting for the given reading order item to become available before
      * playback can continue.
      */
 
     data class PlayerEventChapterWaiting(
-      override val spineElement: PlayerReadingOrderItemType
-    ) : PlayerEventWithSpineElement()
+      override val readingOrderItem: PlayerReadingOrderItemType,
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration
+    ) : PlayerEventWithPosition()
 
     /**
-     * Playback of the given spine element has paused.
+     * Playback of the given reading order item has paused.
      */
 
     data class PlayerEventPlaybackPaused(
-      override val spineElement: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long
-    ) : PlayerEventWithSpineElement()
+      override val readingOrderItem: PlayerReadingOrderItemType,
+      val offsetMilliseconds: Long,
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration
+    ) : PlayerEventWithPosition()
 
     /**
-     * Playback of the given spine element has stopped.
+     * Playback of the given reading order item has stopped.
      */
 
     data class PlayerEventPlaybackStopped(
-      override val spineElement: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long
-    ) : PlayerEventWithSpineElement()
+      override val readingOrderItem: PlayerReadingOrderItemType,
+      val offsetMilliseconds: Long,
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration
+    ) : PlayerEventWithPosition()
 
     /**
      * Playback has progressed in a manner that's significant enough to justify a new
@@ -122,9 +149,11 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventCreateBookmark(
-      override val spineElement: PlayerReadingOrderItemType,
+      override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long,
-      val isLocalBookmark: Boolean
-    ) : PlayerEventWithSpineElement()
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration,
+      val kind: PlayerBookmarkKind
+    ) : PlayerEventWithPosition()
   }
 }

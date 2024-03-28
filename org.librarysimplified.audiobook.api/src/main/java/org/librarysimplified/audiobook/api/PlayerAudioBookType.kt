@@ -1,10 +1,11 @@
 package org.librarysimplified.audiobook.api
 
-import com.google.common.util.concurrent.ListenableFuture
 import io.reactivex.Observable
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import java.io.Closeable
+import java.util.concurrent.CompletableFuture
 
 /**
  * An instance of an audio book. The audio book must be closed when it is no longer needed.
@@ -99,7 +100,17 @@ interface PlayerAudioBookType : Closeable {
    * @see [id]
    */
 
-  fun replaceManifest(
-    manifest: PlayerManifest
-  ): ListenableFuture<Unit>
+  fun replaceManifest(manifest: PlayerManifest): CompletableFuture<Unit>
+
+  /**
+   * @return The table of contents generated from the manifest
+   */
+
+  val tableOfContents: PlayerManifestTOC
+
+  /**
+   * The most recent manifest
+   */
+
+  val manifest: PlayerManifest
 }

@@ -3,9 +3,10 @@ package org.librarysimplified.audiobook.mocking
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
-import org.librarysimplified.audiobook.api.PlayerBookmark
+import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerEvent
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
@@ -59,7 +60,7 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
   ) {
     this.statusEvents.onNext(
       PlayerEvent.PlayerEventError(
-        spineElement = null,
+        readingOrderItem = null,
         offsetMilliseconds = 0,
         exception = exception,
         errorCode = errorCode
@@ -69,9 +70,11 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
 
   fun buffering() {
     this.statusEvents.onNext(
-      PlayerEventWithSpineElement.PlayerEventPlaybackBuffering(
-        spineElement = this.book.readingOrder.first(),
-        offsetMilliseconds = 0L
+      PlayerEventWithPosition.PlayerEventPlaybackBuffering(
+        readingOrderItem = this.book.readingOrder.first(),
+        offsetMilliseconds = 0L,
+        tocItem = this.book.tableOfContents.tocItemsInOrder.first(),
+        totalRemainingBookTime = Duration.millis(0L)
       )
     )
   }
@@ -117,15 +120,25 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
       PlayerPosition(this.book.spineItems.first().id, 0L))
   }
 
-  override fun getCurrentPositionAsPlayerBookmark(): PlayerBookmark? {
-    this.log.debug("getCurrentPositionAsPlayerBookmark")
-    return null
+  override fun seekTo(milliseconds: Long) {
+    this.log.debug("seekTo")
+  }
+
+  override fun bookmark() {
+    this.log.debug("bookmark")
   }
 
   private fun goToChapter(id: PlayerManifestReadingOrderID, offset: Long) {
     val element = this.book.spineItems.find { element -> element.id == id }
     if (element != null) {
-      this.statusEvents.onNext(PlayerEventWithSpineElement.PlayerEventPlaybackStarted(element, offset))
+      this.statusEvents.onNext(
+        PlayerEventPlaybackStarted(
+          readingOrderItem = element,
+          offsetMilliseconds = offset,
+          tocItem = this.book.tableOfContents.tocItemsInOrder.first(),
+          totalRemainingBookTime = Duration.millis(0L)
+        )
+      )
     }
   }
 

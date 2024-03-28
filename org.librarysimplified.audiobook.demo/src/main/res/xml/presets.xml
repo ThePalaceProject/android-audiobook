@@ -27,7 +27,13 @@
 
   <Preset
     name="io7m Demo"
-    location="http://ataxia.io7m.com/2018/08/02/open_access_0.json">
+    location="https://ataxia.io7m.com/2018/08/02/open_access_0.json">
+    <AuthenticationNone />
+  </Preset>
+
+  <Preset
+      name="Arc7 Demo"
+      location="https://outland.iw.int.arc7.info/2020/11/30/engineer/open_access_0.json">
     <AuthenticationNone />
   </Preset>
 </Presets>

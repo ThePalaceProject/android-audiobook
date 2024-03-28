@@ -2,8 +2,6 @@ package org.librarysimplified.audiobook.open_access
 
 import android.app.Application
 import android.content.Context
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.SettableFuture
 import io.reactivex.subjects.PublishSubject
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
@@ -16,8 +14,10 @@ import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 
 class ExoAudioBook private constructor(
-  private val manifest: ExoManifest,
+  private val exoManifest: ExoManifest,
   override val downloadTasks: List<ExoDownloadTask>,
   override val downloadTasksByID: Map<PlayerManifestReadingOrderID, ExoDownloadTask>,
   private val context: Application,
@@ -65,18 +65,23 @@ class ExoAudioBook private constructor(
 
   override fun replaceManifest(
     manifest: PlayerManifest
-  ): ListenableFuture<Unit> {
-    val future = SettableFuture.create<Unit>()
+  ): CompletableFuture<Unit> {
+    val future = CompletableFuture<Unit>()
     this.engineExecutor.execute {
       try {
-        this.replaceManifestTransform(manifest)
-        future.set(Unit)
-      } catch (e: Exception) {
-        future.setException(e)
+        future.complete(this.replaceManifestTransform(manifest))
+      } catch (e: Throwable) {
+        future.completeExceptionally(e)
       }
     }
     return future
   }
+
+  override val tableOfContents: PlayerManifestTOC
+    get() = this.exoManifest.toc
+
+  override val manifest: PlayerManifest
+    get() = this.exoManifest.originalManifest
 
   private fun replaceManifestTransform(
     manifest: PlayerManifest
@@ -98,21 +103,21 @@ class ExoAudioBook private constructor(
   private fun replaceManifestWith(
     exoManifest: ExoManifest
   ) {
-    if (exoManifest.bookID != this.manifest.bookID) {
+    if (exoManifest.bookID != this.exoManifest.bookID) {
       throw IllegalArgumentException(
-        "Manifest ID ${exoManifest.bookID} does not match existing id ${this.manifest.bookID}"
+        "Manifest ID ${exoManifest.bookID} does not match existing id ${this.exoManifest.bookID}"
       )
     }
 
-    if (exoManifest.readingOrderItems.size != this.manifest.readingOrderItems.size) {
+    if (exoManifest.readingOrderItems.size != this.exoManifest.readingOrderItems.size) {
       throw IllegalArgumentException(
-        "Manifest spine item count ${exoManifest.readingOrderItems.size} does not match existing count ${this.manifest.readingOrderItems.size}"
+        "Manifest spine item count ${exoManifest.readingOrderItems.size} does not match existing count ${this.exoManifest.readingOrderItems.size}"
       )
     }
 
     for (index in exoManifest.readingOrderItems.indices) {
       this.logger.debug("[{}] Updated URI", index)
-      val oldSpine = this.manifest.readingOrderItems[index]
+      val oldSpine = this.exoManifest.readingOrderItems[index]
       val newSpine = exoManifest.readingOrderItems[index]
       oldSpine.item = newSpine.item
     }
@@ -209,10 +214,10 @@ class ExoAudioBook private constructor(
           downloadTasks = downloadTasks.toList(),
           downloadTasksByID = downloadTasksById.toMap(),
           engineExecutor = engineExecutor,
-          manifest = manifest,
+          exoManifest = manifest,
           readingOrder = handles.toList(),
           readingOrderByID = handlesById.toMap(),
-          readingOrderElementDownloadStatus = statusEvents,
+          readingOrderElementDownloadStatus = statusEvents
         )
 
       for (e in handles) {
@@ -235,5 +240,5 @@ class ExoAudioBook private constructor(
     get() = this.isClosedNow.get()
 
   override val id: PlayerBookID =
-    this.manifest.bookID
+    this.exoManifest.bookID
 }

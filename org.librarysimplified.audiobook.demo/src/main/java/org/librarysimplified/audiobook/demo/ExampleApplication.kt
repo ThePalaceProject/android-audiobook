@@ -8,6 +8,11 @@ import org.librarysimplified.http.vanilla.LSHTTPClients
 
 class ExampleApplication : Application() {
 
+  private lateinit var databaseField: ExampleBookmarkDatabase
+
+  val bookmarkDatabase: ExampleBookmarkDatabase
+    get() = this.databaseField
+
   companion object {
     private lateinit var INSTANCE: ExampleApplication
 
@@ -26,5 +31,6 @@ class ExampleApplication : Application() {
   override fun onCreate() {
     super.onCreate()
     INSTANCE = this
+    this.databaseField = ExampleBookmarkDatabase(this)
   }
 }

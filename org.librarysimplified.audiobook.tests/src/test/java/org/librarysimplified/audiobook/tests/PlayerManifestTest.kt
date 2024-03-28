@@ -838,7 +838,7 @@ class PlayerManifestTest {
     println("# TOC Items")
     var tocTotal = 0L
     tocItems.tocItemsInOrder.forEachIndexed { index, toc ->
-      val size = toc.intervalAbsoluteSeconds.size()
+      val size = toc.intervalAbsoluteMilliseconds.size()
       tocTotal += size
       println("[$index] Size $size | Total $tocTotal | Item $toc")
     }
@@ -852,7 +852,7 @@ class PlayerManifestTest {
       }
     val tocItemIntervalsSum =
       tocItems.tocItemsInOrder.sumOf {
-          i -> (i.intervalAbsoluteSeconds.upper - i.intervalAbsoluteSeconds.lower) + 1
+          i -> (i.intervalAbsoluteMilliseconds.upper - i.intervalAbsoluteMilliseconds.lower) + 1
       }
 
     assertEquals(

@@ -1,4 +1,4 @@
-package org.librarysimplified.audiobook.views.toc
+package org.librarysimplified.audiobook.views
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter

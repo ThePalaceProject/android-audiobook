@@ -36,20 +36,20 @@ object PlayerManifestTOCs {
     /*
      * Our goal here is to construct a table of contents for display, and to put together
      * the structures needed to to efficiently return a TOC item given a reading order item
-     * and a relative offset in seconds. We'll do this by transforming the start times
+     * and a relative offset in milliseconds. We'll do this by transforming the start times
      * and durations of all reading order and TOC items into points on an absolute timeline
      * representing the entirety of the book, and then construct the mappings needed to efficiently
-     * go from "a reading order item and an offset from the start of that item in seconds" to
-     * "a TOC item, and an offset in seconds from the start of that TOC item".
+     * go from "a reading order item and an offset from the start of that item in milliseconds" to
+     * "a TOC item, and an offset in milliseconds from the start of that TOC item".
      *
      * The steps we'll need to (frequently) perform are:
      *
-     * 1. For a given reading order item `i` and a relative offset `t` in seconds from the
+     * 1. For a given reading order item `i` and a relative offset `t` in milliseconds from the
      *    start of `t`, transform to an absolute time `u`. We can calculate `u` by simply looking
      *    up the absolute interval of `i` in the map we construct, and adding the absolute start
      *    time of `i` to `t`.
      *
-     * 2. With the calculated absolute time in seconds `u`, perform a lookup to determine which
+     * 2. With the calculated absolute time in milliseconds `u`, perform a lookup to determine which
      *    TOC item intersects `u`. To do this lookup in O(log n) in the average case, we'll need to
      *    use an interval tree to store the intervals of the TOC items. We could brute-force the
      *    lookup, but that doesn't seem like a very good idea given the frequency that we'll need
@@ -78,13 +78,13 @@ object PlayerManifestTOCs {
     /*
      * Place all of the reading order elements on an absolute timeline. The result is a mapping
      * where, if we know the reading order item, then we know the absolute start and end point
-     * of the item in seconds across the entire book.
+     * of the item in milliseconds across the entire book.
      */
 
     var readingOrderAbsoluteTime = 0L
     manifest.readingOrder.forEach { item ->
       val link = item.link
-      val duration = (link.duration ?: 0L).toLong()
+      val duration = secondsToMilliseconds((link.duration ?: 0L).toLong())
       val lower = readingOrderAbsoluteTime
       val upper = readingOrderAbsoluteTime + Math.max(0L, duration - 1)
       val interval = IntervalL(lower, upper)
@@ -105,9 +105,11 @@ object PlayerManifestTOCs {
     val tocItemsInOrder =
       mutableListOf<PlayerManifestTOCItem>()
 
-    for (index in 0 until tocItemsFlattened.size) {
+    var tocIndex = 0
+
+    for (tocEntryIndex in 0 until tocItemsFlattened.size) {
       val tocMember =
-        tocItemsFlattened[index]
+        tocItemsFlattened[tocEntryIndex]
       val withOffset =
         extractURIOffset(tocMember.item.hrefURI!!)
       val readingOrderInterval =
@@ -131,9 +133,9 @@ object PlayerManifestTOCs {
        */
 
       val upper =
-        if (index + 1 < tocItemsFlattened.size) {
+        if (tocEntryIndex + 1 < tocItemsFlattened.size) {
           val tocMemberNext =
-            tocItemsFlattened[index + 1]
+            tocItemsFlattened[tocEntryIndex + 1]
           val withOffsetNext =
             extractURIOffset(tocMemberNext.item.hrefURI!!)
           val readingOrderIntervalNext =
@@ -157,41 +159,47 @@ object PlayerManifestTOCs {
       val tocInterval =
         IntervalL(lower, upper)
 
-      val tocItem =
-        PlayerManifestTOCItem(
-          title = readingOrderItem.link.title ?: defaultTrackTitle.invoke(index + 1),
-          part = 1,
-          chapter = index + 1,
-          intervalAbsoluteSeconds = tocInterval,
-          readingOrderLink = readingOrderItem
-        )
-
-      tocItemsByInterval[tocInterval] = tocItem
-      tocItemsInOrder.add(tocItem)
-      insertIntervalChecked(tocItemTree, tocInterval)
-
       /*
        * Some books have a special case where the first TOC item points to something that
        * isn't the first reading order item. We must inject a fake TOC item that covers all
        * of the reading items prior to the first real TOC item.
        */
 
-      if (index == 0) {
+      if (tocEntryIndex == 0) {
         if (readingOrderItem != manifest.readingOrder[0]) {
           val tocItemFake =
             PlayerManifestTOCItem(
+              index = tocIndex,
               title = "[Preamble]",
               part = 1,
               chapter = 0,
-              intervalAbsoluteSeconds = IntervalL(0L, lower - 1L),
-              readingOrderLink = manifest.readingOrder[0]
+              intervalAbsoluteMilliseconds = IntervalL(0L, lower - 1L),
+              readingOrderLink = manifest.readingOrder[0],
+              readingOrderOffsetMilliseconds = 0L
             )
 
-          tocItemsByInterval[tocItemFake.intervalAbsoluteSeconds] = tocItemFake
+          tocItemsByInterval[tocItemFake.intervalAbsoluteMilliseconds] = tocItemFake
           tocItemsInOrder.add(0, tocItemFake)
-          insertIntervalChecked(tocItemTree, tocItemFake.intervalAbsoluteSeconds)
+          insertIntervalChecked(tocItemTree, tocItemFake.intervalAbsoluteMilliseconds)
+          ++tocIndex
         }
       }
+
+      val tocItem =
+        PlayerManifestTOCItem(
+          index = tocIndex,
+          title = readingOrderItem.link.title ?: defaultTrackTitle.invoke(tocEntryIndex + 1),
+          part = 1,
+          chapter = tocEntryIndex + 1,
+          intervalAbsoluteMilliseconds = tocInterval,
+          readingOrderLink = readingOrderItem,
+          readingOrderOffsetMilliseconds = withOffset.offset
+        )
+
+      tocItemsByInterval[tocInterval] = tocItem
+      tocItemsInOrder.add(tocItem)
+      insertIntervalChecked(tocItemTree, tocInterval)
+      ++tocIndex
     }
 
     return PlayerManifestTOC(
@@ -200,6 +208,10 @@ object PlayerManifestTOCs {
       tocItemTree = tocItemTree,
       readingOrderIntervals = readingOrderIntervals
     )
+  }
+
+  private fun secondsToMilliseconds(seconds: Long): Long {
+    return seconds * 1000L
   }
 
   private fun insertIntervalChecked(
@@ -287,11 +299,11 @@ object PlayerManifestTOCs {
           offset = offset,
           defaultTrackTitle = defaultTrackTitle
         )
-      offset += (link.duration ?: 0L).toLong()
+      offset += secondsToMilliseconds((link.duration ?: 0L).toLong())
       tocItemsInOrder.add(tocItem)
-      tocItemsByInterval[tocItem.intervalAbsoluteSeconds] = tocItem
-      insertIntervalChecked(tocItemTree, tocItem.intervalAbsoluteSeconds)
-      readingOrderIntervals[item.id] = tocItem.intervalAbsoluteSeconds
+      tocItemsByInterval[tocItem.intervalAbsoluteMilliseconds] = tocItem
+      insertIntervalChecked(tocItemTree, tocItem.intervalAbsoluteMilliseconds)
+      readingOrderIntervals[item.id] = tocItem.intervalAbsoluteMilliseconds
     }
 
     return PlayerManifestTOC(
@@ -312,18 +324,20 @@ object PlayerManifestTOCs {
       titleOrDefault(item, defaultTrackTitle, index)
 
     val duration =
-      (item.link.duration ?: 1L).toLong()
+      secondsToMilliseconds((item.link.duration ?: 1L).toLong())
     val lower =
       offset
     val upper =
       offset + (Math.max(0, duration - 1))
 
     return PlayerManifestTOCItem(
+      index = index,
       title = title,
       part = 1,
-      chapter = index,
-      intervalAbsoluteSeconds = IntervalL(lower, upper),
-      readingOrderLink = item
+      chapter = index + 1,
+      intervalAbsoluteMilliseconds = IntervalL(lower, upper),
+      readingOrderLink = item,
+      readingOrderOffsetMilliseconds = 0L
     )
   }
 

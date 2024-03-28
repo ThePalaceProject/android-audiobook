@@ -17,15 +17,15 @@ import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterCompleted
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventChapterWaiting
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventCreateBookmark
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackBuffering
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackPaused
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackProgressUpdate
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStarted
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackStopped
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithSpineElement.PlayerEventPlaybackWaitingForAction
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterWaiting
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackBuffering
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
@@ -819,23 +819,23 @@ abstract class ExoEngineProviderContract {
       is PlayerEventPlaybackRateChanged ->
         "rateChanged ${event.rate}"
       is PlayerEventPlaybackStarted ->
-        "playbackStarted ${event.spineElement.index} ${event.offsetMilliseconds}"
+        "playbackStarted ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
       is PlayerEventPlaybackBuffering ->
-        "playbackBuffering ${event.spineElement.index} ${event.offsetMilliseconds}"
+        "playbackBuffering ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
       is PlayerEventPlaybackProgressUpdate ->
-        "playbackProgressUpdate ${event.spineElement.index} ${event.offsetMilliseconds} ${event.offsetMilliseconds}"
+        "playbackProgressUpdate ${event.readingOrderItem.index} ${event.offsetMilliseconds} ${event.offsetMilliseconds}"
       is PlayerEventChapterCompleted ->
-        "playbackChapterCompleted ${event.spineElement.index}"
+        "playbackChapterCompleted ${event.readingOrderItem.index}"
       is PlayerEventChapterWaiting ->
-        "playbackChapterWaiting ${event.spineElement.index}"
+        "playbackChapterWaiting ${event.readingOrderItem.index}"
       is PlayerEventPlaybackWaitingForAction ->
-        "playbackWaitingForAction ${event.spineElement.index} ${event.offsetMilliseconds}"
+        "playbackWaitingForAction ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
       is PlayerEventPlaybackPaused ->
-        "playbackPaused ${event.spineElement.index} ${event.offsetMilliseconds}"
+        "playbackPaused ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
       is PlayerEventPlaybackStopped ->
-        "playbackStopped ${event.spineElement.index} ${event.offsetMilliseconds}"
+        "playbackStopped ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
       is PlayerEvent.PlayerEventError ->
-        "playbackError ${event.spineElement?.index} ${event.exception?.javaClass?.canonicalName} ${event.errorCode} ${event.offsetMilliseconds}"
+        "playbackError ${event.readingOrderItem?.index} ${event.exception?.javaClass?.canonicalName} ${event.errorCode} ${event.offsetMilliseconds}"
       PlayerEvent.PlayerEventManifestUpdated ->
         "playerManifestUpdated"
       is PlayerEventCreateBookmark ->
