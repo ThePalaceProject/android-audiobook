@@ -10,6 +10,11 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import io.reactivex.disposables.CompositeDisposable
 import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
@@ -64,13 +69,14 @@ class PlayerTOCChaptersFragment : Fragment() {
 
   private fun onPlayerEvent(event: PlayerEvent) {
     when (event) {
-      is PlayerEvent.PlayerEventWithPosition -> {
+      is PlayerEventWithPosition -> {
         this.adapter.setCurrentTOCItemIndex(event.tocItem.index)
       }
 
-      is PlayerEvent.PlayerEventError,
-      PlayerEvent.PlayerEventManifestUpdated,
-      is PlayerEvent.PlayerEventPlaybackRateChanged -> {
+      is PlayerAccessibilityEvent,
+      is PlayerEventError,
+      PlayerEventManifestUpdated,
+      is PlayerEventPlaybackRateChanged -> {
         // Nothing to do.
       }
     }

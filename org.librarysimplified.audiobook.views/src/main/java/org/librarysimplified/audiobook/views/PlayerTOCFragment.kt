@@ -12,7 +12,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import io.reactivex.disposables.CompositeDisposable
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
 
-class PlayerTOCFragment2 : PlayerBaseFragment() {
+class PlayerTOCFragment : PlayerBaseFragment() {
 
   private var subscriptions: CompositeDisposable = CompositeDisposable()
 

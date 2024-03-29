@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -16,6 +18,7 @@ import androidx.appcompat.widget.Toolbar
 import io.reactivex.disposables.CompositeDisposable
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
@@ -29,12 +32,22 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
+import org.librarysimplified.audiobook.api.PlayerSleepTimer
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.EndOfChapter
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.Off
+import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.WithDuration
+import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent
+import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerFinished
+import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTimerStatusChanged
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Paused
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Running
+import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Stopped
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
 
-class PlayerFragment2 : PlayerBaseFragment() {
+class PlayerFragment : PlayerBaseFragment() {
 
   private var subscriptions: CompositeDisposable = CompositeDisposable()
   private var playerPositionDragging: Boolean = false
@@ -140,7 +153,120 @@ class PlayerFragment2 : PlayerBaseFragment() {
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
 
     this.subscriptions = CompositeDisposable()
-    this.subscriptions.add(PlayerModel.playerEvents.subscribe { event -> onPlayerEvent(event) })
+    this.subscriptions.add(PlayerModel.playerEvents.subscribe { event -> this.onPlayerEvent(event) })
+    this.subscriptions.add(PlayerSleepTimer.events.subscribe { event -> this.onSleepTimerEvent(event) })
+  }
+
+  @UiThread
+  private fun onSleepTimerEvent(
+    event: PlayerSleepTimerEvent
+  ) {
+    return when (event) {
+      PlayerSleepTimerFinished -> {
+        // Nothing to do
+      }
+
+      is PlayerSleepTimerStatusChanged -> {
+        this.onPlayerSleepTimerStatusChanged(event)
+      }
+    }
+  }
+
+  @UiThread
+  private fun onPlayerSleepTimerStatusChanged(
+    event: PlayerSleepTimerStatusChanged
+  ) {
+    return when (val s = event.newStatus) {
+      is Paused -> this.onPlayerSleepTimerStatusPaused(s)
+      is Running -> this.onPlayerSleepTimerStatusRunning(s)
+      is Stopped -> this.onPlayerSleepTimerStatusStopped()
+    }
+  }
+
+  @UiThread
+  private fun onPlayerSleepTimerStatusStopped() {
+    this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+    this.menuSleepText?.text = ""
+    this.menuSleepEndOfChapter.visibility = INVISIBLE
+  }
+
+  @UiThread
+  private fun onPlayerSleepTimerStatusPaused(status: Paused) {
+    return when (val c = status.configuration) {
+      EndOfChapter -> {
+        this.menuSleep.actionView?.contentDescription =
+          this.sleepTimerContentDescriptionEndOfChapter()
+        this.menuSleepText?.text = ""
+        this.menuSleepEndOfChapter.visibility = VISIBLE
+      }
+
+      Off -> {
+        this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+        this.menuSleepText?.text = ""
+        this.menuSleepEndOfChapter.visibility = INVISIBLE
+      }
+
+      is WithDuration -> {
+        this.menuSleep.actionView?.contentDescription =
+          this.sleepTimerContentDescriptionForTime(paused = false, c.duration)
+        this.menuSleepText?.text =
+          PlayerTimeStrings.hourMinuteSecondTextFromDuration(c.duration)
+        this.menuSleepEndOfChapter.visibility = INVISIBLE
+      }
+    }
+  }
+
+  @UiThread
+  private fun onPlayerSleepTimerStatusRunning(status: Running) {
+    return when (val c = status.configuration) {
+      EndOfChapter -> {
+        this.menuSleep.actionView?.contentDescription =
+          this.sleepTimerContentDescriptionEndOfChapter()
+        this.menuSleepText?.text = ""
+        this.menuSleepEndOfChapter.visibility = VISIBLE
+      }
+
+      Off -> {
+        this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
+        this.menuSleepText?.text = ""
+        this.menuSleepEndOfChapter.visibility = INVISIBLE
+      }
+
+      is WithDuration -> {
+        this.menuSleep.actionView?.contentDescription =
+          this.sleepTimerContentDescriptionForTime(paused = true, c.duration)
+        this.menuSleepText?.text =
+          PlayerTimeStrings.hourMinuteSecondTextFromDuration(c.duration)
+        this.menuSleepEndOfChapter.visibility = INVISIBLE
+      }
+    }
+  }
+
+  private fun sleepTimerContentDescriptionEndOfChapter(): String {
+    val builder = java.lang.StringBuilder(128)
+    builder.append(this.resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_icon))
+    builder.append(". ")
+    builder.append(this.resources.getString(R.string.audiobook_accessibility_sleep_timer_currently))
+    builder.append(" ")
+    builder.append(this.resources.getString(R.string.audiobook_accessibility_sleep_timer_description_end_of_chapter))
+    return builder.toString()
+  }
+
+  private fun sleepTimerContentDescriptionForTime(
+    paused: Boolean,
+    remaining: Duration
+  ): String {
+    val builder = java.lang.StringBuilder(128)
+    builder.append(this.resources.getString(R.string.audiobook_accessibility_menu_sleep_timer_icon))
+    builder.append(". ")
+    builder.append(this.resources.getString(R.string.audiobook_accessibility_sleep_timer_currently))
+    builder.append(" ")
+    builder.append(PlayerTimeStrings.minuteSecondSpokenFromDuration(this.timeStrings, remaining))
+    if (paused) {
+      builder.append(". ")
+      builder.append(this.resources.getString(R.string.audiobook_accessibility_sleep_timer_is_paused))
+    }
+    return builder.toString()
   }
 
   @UiThread
@@ -148,6 +274,10 @@ class PlayerFragment2 : PlayerBaseFragment() {
     event: PlayerEvent
   ) {
     return when (event) {
+      is PlayerAccessibilityEvent -> {
+        // Nothing to do
+      }
+
       is PlayerEventError -> {
         // Nothing to do
       }
@@ -157,7 +287,7 @@ class PlayerFragment2 : PlayerBaseFragment() {
       }
 
       is PlayerEventPlaybackRateChanged -> {
-        // Nothing to do
+        this.onPlayerEventPlaybackRateChanged(event)
       }
 
       is PlayerEventChapterCompleted -> {
@@ -194,6 +324,13 @@ class PlayerFragment2 : PlayerBaseFragment() {
     }
   }
 
+  private fun onPlayerEventPlaybackRateChanged(
+    event: PlayerEventPlaybackRateChanged
+  ) {
+    this.menuPlaybackRateText?.text =
+      PlayerPlaybackRateAdapter.textOfRate(PlayerModel.playbackRate)
+  }
+
   @UiThread
   private fun onPlayerEventPlaybackProgressUpdate(
     event: PlayerEventPlaybackProgressUpdate
@@ -209,7 +346,7 @@ class PlayerFragment2 : PlayerBaseFragment() {
   @UiThread
   private fun onPlayerEventPlaybackStarted(event: PlayerEventPlaybackStarted) {
     this.playerDownloadingChapter.visibility = View.GONE
-    this.playerCommands.visibility = View.VISIBLE
+    this.playerCommands.visibility = VISIBLE
     this.playPauseButton.setImageResource(R.drawable.round_pause_24)
     this.playPauseButton.setOnClickListener { PlayerModel.pause() }
     this.playPauseButton.contentDescription =
@@ -369,7 +506,8 @@ class PlayerFragment2 : PlayerBaseFragment() {
      */
 
     if (this.menuPlaybackRate.actionView == null) {
-      val actionView = this.layoutInflater.inflate(R.layout.player_menu_playback_rate_text, null)
+      val actionView =
+        this.layoutInflater.inflate(R.layout.player_menu_playback_rate_text, null)
       this.menuPlaybackRate.actionView = actionView
       this.menuPlaybackRate.setOnMenuItemClickListener {
         this.onMenuPlaybackRateSelected()
@@ -381,9 +519,10 @@ class PlayerFragment2 : PlayerBaseFragment() {
     }
     this.menuPlaybackRate.actionView?.contentDescription =
       this.playbackRateContentDescription()
-
     this.menuPlaybackRateText =
       this.menuPlaybackRate.actionView?.findViewById(R.id.player_menu_playback_rate_text)
+    this.menuPlaybackRateText?.text =
+      PlayerPlaybackRateAdapter.textOfRate(PlayerModel.playbackRate)
 
     /*
      * On API versions older than 23, playback rate changes will have no effect. There is no
@@ -394,7 +533,8 @@ class PlayerFragment2 : PlayerBaseFragment() {
       this.menuPlaybackRate.isVisible = false
     }
 
-    this.menuSleep = this.toolbar.menu.findItem(R.id.player_menu_sleep)
+    this.menuSleep =
+      this.toolbar.menu.findItem(R.id.player_menu_sleep)
 
     /*
      * If the user is using a non-AppCompat theme, the action view will be null.
@@ -416,7 +556,7 @@ class PlayerFragment2 : PlayerBaseFragment() {
 
     this.menuSleepEndOfChapter =
       this.menuSleep.actionView!!.findViewById(R.id.player_menu_sleep_end_of_chapter)
-    this.menuSleepEndOfChapter.visibility = View.INVISIBLE
+    this.menuSleepEndOfChapter.visibility = INVISIBLE
 
     this.menuTOC = this.toolbar.menu.findItem(R.id.player_menu_toc)
     this.menuTOC.setOnMenuItemClickListener { this.onMenuTOCSelected() }

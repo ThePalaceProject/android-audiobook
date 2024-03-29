@@ -547,4 +547,8 @@ object PlayerModel {
   fun bookmarkCreate() {
     this.playerAndBookField?.player?.bookmark()
   }
+
+  fun setPlaybackRate(item: PlayerPlaybackRate) {
+    this.playerAndBookField?.player?.playbackRate = item
+  }
 }

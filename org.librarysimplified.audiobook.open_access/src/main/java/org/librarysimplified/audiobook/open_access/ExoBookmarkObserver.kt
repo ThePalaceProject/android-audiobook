@@ -5,6 +5,7 @@ import org.joda.time.Duration
 import org.joda.time.Instant
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
 import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
@@ -48,6 +49,7 @@ class ExoBookmarkObserver private constructor(
         }
       }
 
+      is PlayerAccessibilityEvent,
       is PlayerEventError,
       PlayerEventManifestUpdated,
       is PlayerEventPlaybackRateChanged,
