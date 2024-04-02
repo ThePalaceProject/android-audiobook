@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.views
 
 import android.app.Application
+import android.graphics.Bitmap
 import android.media.AudioManager
 import androidx.annotation.UiThread
 import androidx.core.content.getSystemService
@@ -49,6 +50,16 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
 object PlayerModel {
+
+  @Volatile
+  private var coverImageField: Bitmap? = null
+
+  /**
+   * The cover image for the audio book.
+   */
+
+  val coverImage: Bitmap?
+    get() = this.coverImageField
 
   private var audioManagerService: AudioManager? = null
   val playbackRate: PlayerPlaybackRate
@@ -550,5 +561,10 @@ object PlayerModel {
 
   fun setPlaybackRate(item: PlayerPlaybackRate) {
     this.playerAndBookField?.player?.playbackRate = item
+  }
+
+  fun setCoverImage(image: Bitmap?) {
+    this.coverImageField = image
+    this.submitViewCommand(PlayerViewCommand.PlayerViewCoverImageChanged)
   }
 }

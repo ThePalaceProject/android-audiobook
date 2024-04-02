@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.demo
 
+import android.graphics.BitmapFactory
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
@@ -38,6 +39,7 @@ import org.librarysimplified.audiobook.views.PlayerPlaybackRateFragment
 import org.librarysimplified.audiobook.views.PlayerSleepTimerFragment
 import org.librarysimplified.audiobook.views.PlayerTOCFragment
 import org.librarysimplified.audiobook.views.PlayerViewCommand
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
@@ -167,6 +169,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       PlayerClosed -> {
+        PlayerModel.setCoverImage(null)
         this.switchFragment(ExampleFragmentSelectBook())
       }
 
@@ -192,7 +195,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       is PlayerOpen -> {
-        this.switchFragment(PlayerFragment())
+        PlayerModel.setCoverImage(BitmapFactory.decodeResource(resources, R.drawable.example_cover))
 
         val bookId =
           PlayerModel.manifest().metadata.identifier
@@ -207,6 +210,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         if (bookmarkLastRead != null) {
           PlayerModel.movePlayheadTo(bookmarkLastRead.position)
         }
+
+        this.switchFragment(PlayerFragment())
       }
 
       PlayerManifestInProgress -> {
@@ -231,6 +236,10 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
       PlayerViewNavigationSleepMenuOpen -> {
         this.popupFragment(PlayerSleepTimerFragment())
+      }
+
+      PlayerViewCoverImageChanged -> {
+        // Nothing to do
       }
     }
   }

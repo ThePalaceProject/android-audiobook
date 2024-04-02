@@ -43,8 +43,10 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Paused
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Running
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Stopped
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
 
 class PlayerFragment : PlayerBaseFragment() {
@@ -143,6 +145,8 @@ class PlayerFragment : PlayerBaseFragment() {
     }
 
     this.playerPosition.setOnTouchListener { _, event -> this.handleTouchOnSeekbar(event) }
+
+    this.coverView.setImageBitmap(PlayerModel.coverImage)
     return view
   }
 
@@ -155,6 +159,22 @@ class PlayerFragment : PlayerBaseFragment() {
     this.subscriptions = CompositeDisposable()
     this.subscriptions.add(PlayerModel.playerEvents.subscribe { event -> this.onPlayerEvent(event) })
     this.subscriptions.add(PlayerSleepTimer.events.subscribe { event -> this.onSleepTimerEvent(event) })
+    this.subscriptions.add(PlayerModel.viewCommands.subscribe { event -> this.onPlayerViewCommand(event) })
+  }
+
+  @UiThread
+  private fun onPlayerViewCommand(event: PlayerViewCommand) {
+    return when (event) {
+      PlayerViewCoverImageChanged -> {
+        this.coverView.setImageBitmap(PlayerModel.coverImage)
+      }
+      PlayerViewNavigationPlaybackRateMenuOpen,
+      PlayerViewNavigationSleepMenuOpen,
+      PlayerViewNavigationTOCClose,
+      PlayerViewNavigationTOCOpen -> {
+        // Nothing to do
+      }
+    }
   }
 
   @UiThread

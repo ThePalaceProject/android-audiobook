@@ -29,4 +29,10 @@ sealed class PlayerViewCommand {
    */
 
   data object PlayerViewNavigationPlaybackRateMenuOpen : PlayerViewCommand()
+
+  /**
+   * The player's cover image changed.
+   */
+
+  data object PlayerViewCoverImageChanged : PlayerViewCommand()
 }
