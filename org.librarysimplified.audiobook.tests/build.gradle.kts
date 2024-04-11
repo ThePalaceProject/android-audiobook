@@ -84,7 +84,6 @@ val dependencyObjects = listOf(
     project(":org.librarysimplified.audiobook.http"),
     project(":org.librarysimplified.audiobook.json_canon"),
     project(":org.librarysimplified.audiobook.json_web_token"),
-    project(":org.librarysimplified.audiobook.lcp"),
     project(":org.librarysimplified.audiobook.lcp.license_status"),
     project(":org.librarysimplified.audiobook.license_check.api"),
     project(":org.librarysimplified.audiobook.license_check.spi"),
@@ -97,7 +96,7 @@ val dependencyObjects = listOf(
     project(":org.librarysimplified.audiobook.manifest_parser.extension_spi"),
     project(":org.librarysimplified.audiobook.manifest_parser.webpub"),
     project(":org.librarysimplified.audiobook.mocking"),
-    project(":org.librarysimplified.audiobook.open_access"),
+    project(":org.librarysimplified.audiobook.media3"),
     project(":org.librarysimplified.audiobook.parser.api"),
     project(":org.librarysimplified.audiobook.views"),
 )

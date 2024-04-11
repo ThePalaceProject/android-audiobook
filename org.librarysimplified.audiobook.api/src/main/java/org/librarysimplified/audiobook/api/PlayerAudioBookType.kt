@@ -41,6 +41,14 @@ interface PlayerAudioBookType : Closeable {
   val supportsIndividualChapterDeletion: Boolean
 
   /**
+   * True iff the underlying audio engine supports the download of individual chapters via
+   * the PlayerDownloadTaskType interface. If this is false, books may only be downloaded using
+   * the [wholeBookDownloadTask].
+   */
+
+  val supportsIndividualChapterDownload: Boolean
+
+  /**
    * The list of reading order items in reading order.
    */
 

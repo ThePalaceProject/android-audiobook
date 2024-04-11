@@ -82,7 +82,7 @@ class PlayerTOCBookmarksFragment : Fragment() {
     index: Int,
     bookmark: PlayerBookmark
   ) {
-    TODO("Not implemented yet!")
+    PlayerModel.bookmarkDelete(bookmark)
   }
 
   private fun onBookmarkSelected(

@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.views
 
 import android.app.Application
+import android.content.Intent
 import android.graphics.Bitmap
 import android.media.AudioManager
 import androidx.annotation.UiThread
@@ -12,10 +13,12 @@ import io.reactivex.subjects.PublishSubject
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
+import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPosition
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
@@ -52,6 +55,12 @@ import java.util.concurrent.Executors
 object PlayerModel {
 
   @Volatile
+  private var intentForPlayerServiceField: Intent? = null
+
+  val notificationIntentForPlayerService: Intent?
+    get() = this.intentForPlayerServiceField
+
+  @Volatile
   private var coverImageField: Bitmap? = null
 
   /**
@@ -86,7 +95,9 @@ object PlayerModel {
 
   private var currentFuture: CompletableFuture<Unit>? = null
 
-  private fun executeTaskCancellingExisting(task: () -> Unit): CompletableFuture<Unit> {
+  private fun executeTaskCancellingExisting(
+    task: () -> Unit
+  ): CompletableFuture<Unit> {
     val newFuture = CompletableFuture<Unit>()
     this.currentFuture?.cancel(true)
     this.currentFuture = newFuture
@@ -95,6 +106,7 @@ object PlayerModel {
       try {
         newFuture.complete(task.invoke())
       } catch (e: Throwable) {
+        this.logger.error("Task exception: ", e)
         newFuture.completeExceptionally(e)
       }
     }
@@ -201,6 +213,17 @@ object PlayerModel {
   val viewCommands: Observable<PlayerViewCommand> =
     this.viewCommandSource.observeOn(AndroidSchedulers.mainThread())
 
+  /*
+   * A source of download status events.
+   */
+
+  private val downloadEventSubject =
+    PublishSubject.create<PlayerReadingOrderItemDownloadStatus>()
+      .toSerialized()
+
+  val downloadEvents: Observable<PlayerReadingOrderItemDownloadStatus> =
+    this.downloadEventSubject.observeOn(AndroidSchedulers.mainThread())
+
   init {
     this.stateSubject.onNext(this.state)
   }
@@ -296,6 +319,7 @@ object PlayerModel {
     parserExtensions: List<ManifestParserExtensionType>
   ): CompletableFuture<Unit> {
     this.logger.debug("downloadAndParseManifestShowingErrors")
+
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseManifest(
         strategy,
@@ -443,6 +467,11 @@ object PlayerModel {
       { exception -> this.logger.error("Player exception: ", exception) }
     )
 
+    newBook.readingOrderElementDownloadStatus.subscribe(
+      { event -> this.downloadEventSubject.onNext(event) },
+      { exception -> this.logger.error("Download exception: ", exception) }
+    )
+
     this.setNewState(PlayerModelState.PlayerOpen(newPair))
   }
 
@@ -533,6 +562,14 @@ object PlayerModel {
     }
   }
 
+  fun skipToNext() {
+    this.playerAndBookField?.player?.skipToNextChapter(0L)
+  }
+
+  fun skipToPrevious() {
+    this.playerAndBookField?.player?.skipToPreviousChapter(0L)
+  }
+
   fun skipForward() {
     this.playerAndBookField?.player?.skipPlayhead(30_000L)
   }
@@ -559,12 +596,41 @@ object PlayerModel {
     this.playerAndBookField?.player?.bookmark()
   }
 
+  fun bookmarkDelete(bookmark: PlayerBookmark) {
+    this.playerAndBookField?.player?.bookmarkDelete(bookmark)
+  }
+
   fun setPlaybackRate(item: PlayerPlaybackRate) {
     this.playerAndBookField?.player?.playbackRate = item
   }
 
+  val isPlaying: Boolean
+    get() = this.playerAndBookField?.player?.playbackIntention == PlayerPlaybackIntention.SHOULD_BE_PLAYING
+
   fun setCoverImage(image: Bitmap?) {
     this.coverImageField = image
     this.submitViewCommand(PlayerViewCommand.PlayerViewCoverImageChanged)
+  }
+
+  /**
+   * Start a background service for the player. This is responsible for handling media buttons
+   * (such as the player views embedded in lock screens in some devices), and for handling
+   * notifications.
+   *
+   * The included [intentForPlayerService] parameter is an intent that will be published whenever
+   * the user clicks published notifications. Typically, this should be an intent that opens the
+   * activity that is hosting the player.
+   *
+   * @param context The application
+   * @param intentForPlayerService The intent that will be published when the user clicks notifications
+   */
+
+  fun startService(
+    context: Application,
+    intentForPlayerService: Intent
+  ) {
+    this.intentForPlayerServiceField = intentForPlayerService
+    val intent = Intent(context, PlayerService::class.java)
+    context.startService(intent)
   }
 }

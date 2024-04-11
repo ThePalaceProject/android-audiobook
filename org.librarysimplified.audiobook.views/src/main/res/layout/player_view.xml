@@ -122,6 +122,7 @@
         android:id="@+id/player_commands"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView
@@ -131,10 +132,10 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/audiobook_accessibility_play"
             android:src="@drawable/baseline_play_arrow_24"
-            app:tint="@color/PalacePrimaryForegroundColor"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:tint="@color/PalacePrimaryForegroundColor" />
 
         <ImageView
             android:id="@+id/player_jump_backwards"
@@ -157,10 +158,10 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/audiobook_accessibility_forward_15"
             android:src="@drawable/round_forward_30_24"
-            app:tint="@color/PalacePrimaryForegroundColor"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/player_play_button" />
+            app:layout_constraintStart_toEndOf="@id/player_play_button"
+            app:tint="@color/PalacePrimaryForegroundColor" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -169,13 +170,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="top"
-        app:constraint_referenced_ids="player_commands,player_downloading_chapter" />
+        app:constraint_referenced_ids="player_commands,player_busy" />
 
     <ProgressBar
-        android:id="@+id/player_downloading_chapter"
+        android:id="@+id/player_busy"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="48dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -210,17 +211,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/player_spine_element" />
 
-    <ImageView
-        android:id="@+id/player_bookmark"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
-        android:alpha="0.5"
-        android:contentDescription="@null"
-        android:focusable="false"
+    <TextView
+        android:id="@+id/player_status"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="8dp"
+        android:alpha=".1"
+        android:gravity="center"
+        android:lines="1"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/baseline_bookmark_added_24" />
+        tools:text="Very, very, very long placeholder text that should never be seen in practice." />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

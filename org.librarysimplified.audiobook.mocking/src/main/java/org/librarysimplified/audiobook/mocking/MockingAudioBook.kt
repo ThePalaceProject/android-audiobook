@@ -59,6 +59,9 @@ class MockingAudioBook(
   override val supportsIndividualChapterDeletion: Boolean
     get() = true
 
+  override val supportsIndividualChapterDownload: Boolean
+    get() = true
+
   override val readingOrder: List<PlayerReadingOrderItemType>
     get() = this.spineItems
 

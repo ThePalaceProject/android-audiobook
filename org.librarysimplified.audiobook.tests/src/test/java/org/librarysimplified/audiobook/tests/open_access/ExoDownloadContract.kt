@@ -11,7 +11,7 @@ import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
-import org.librarysimplified.audiobook.open_access.ExoReadingOrderItemHandle
+import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.slf4j.Logger
 import java.net.URI

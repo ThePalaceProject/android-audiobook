@@ -15,7 +15,7 @@ import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestEncrypted
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLinkProperties
-import org.librarysimplified.audiobook.open_access.BearerTokenExtension
+import org.librarysimplified.audiobook.media3.BearerTokenExtension
 import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
 import org.librarysimplified.http.api.LSHTTPAuthorizationBearerToken
 import org.slf4j.LoggerFactory

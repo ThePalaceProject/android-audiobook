@@ -75,6 +75,19 @@ sealed class PlayerEvent {
     ) : PlayerEventWithPosition()
 
     /**
+     * Playback is currently preparing to play the given spine item. Some audio engines take
+     * a long time to prepare, and so this event is provided in order to allow for indicating
+     * that something is in progress in user interfaces.
+     */
+
+    data class PlayerEventPlaybackPreparing(
+      override val readingOrderItem: PlayerReadingOrderItemType,
+      val offsetMilliseconds: Long,
+      override val tocItem: PlayerManifestTOCItem,
+      override val totalRemainingBookTime: Duration
+    ) : PlayerEventWithPosition()
+
+    /**
      * The given spine item is ready to be played, but waiting for the user's action since it
      * won't automatically start playing.
      */
@@ -156,6 +169,14 @@ sealed class PlayerEvent {
       val kind: PlayerBookmarkKind
     ) : PlayerEventWithPosition()
   }
+
+  /**
+   * Something (probably a user!) has requested that the given bookmark should be deleted.
+   */
+
+  data class PlayerEventDeleteBookmark(
+    val bookmark: PlayerBookmark
+  ) : PlayerEvent()
 
   /**
    * The type of events significant to accessibility.

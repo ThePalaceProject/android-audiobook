@@ -36,4 +36,10 @@
       location="https://outland.iw.int.arc7.info/2020/11/30/engineer/open_access_0.json">
     <AuthenticationNone />
   </Preset>
+
+  <Preset
+      name="Findaway 0"
+      location="https://outland.iw.int.arc7.info/2024/04/10/audiobook-manifest.json">
+    <AuthenticationNone />
+  </Preset>
 </Presets>

@@ -15,6 +15,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackBuffering
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPreparing
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
@@ -139,11 +140,24 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         PlayerBookmarkModel.setBookmarks(bookmarkDatabase.bookmarkList(bookId))
       }
 
+      is PlayerEvent.PlayerEventDeleteBookmark -> {
+        val bookId =
+          PlayerModel.manifest().metadata.identifier
+        val bookmarkDatabase =
+          ExampleApplication.application.bookmarkDatabase
+
+        bookmarkDatabase.bookmarkDelete(
+          bookId,
+          event.bookmark
+        )
+      }
+
       is PlayerEvent.PlayerEventError,
       PlayerEvent.PlayerEventManifestUpdated,
       is PlayerEvent.PlayerEventPlaybackRateChanged,
       is PlayerEventChapterCompleted,
       is PlayerEventChapterWaiting,
+      is PlayerEventPlaybackPreparing,
       is PlayerEventPlaybackBuffering,
       is PlayerEventPlaybackPaused,
       is PlayerEventPlaybackProgressUpdate,

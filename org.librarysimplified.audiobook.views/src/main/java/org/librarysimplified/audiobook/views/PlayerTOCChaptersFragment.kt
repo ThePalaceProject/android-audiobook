@@ -11,11 +11,13 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import io.reactivex.disposables.CompositeDisposable
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventDeleteBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition
 import org.librarysimplified.audiobook.api.PlayerPosition
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 
@@ -65,6 +67,11 @@ class PlayerTOCChaptersFragment : Fragment() {
 
     this.subscriptions = CompositeDisposable()
     this.subscriptions.add(PlayerModel.playerEvents.subscribe(this::onPlayerEvent))
+    this.subscriptions.add(PlayerModel.downloadEvents.subscribe(this::onDownloadEvent))
+  }
+
+  private fun onDownloadEvent(status: PlayerReadingOrderItemDownloadStatus) {
+    this.adapter.update(status)
   }
 
   private fun onPlayerEvent(event: PlayerEvent) {
@@ -73,10 +80,12 @@ class PlayerTOCChaptersFragment : Fragment() {
         this.adapter.setCurrentTOCItemIndex(event.tocItem.index)
       }
 
-      is PlayerAccessibilityEvent,
+      is PlayerEventDeleteBookmark,
       is PlayerEventError,
       PlayerEventManifestUpdated,
-      is PlayerEventPlaybackRateChanged -> {
+      is PlayerEventPlaybackRateChanged,
+      is PlayerAccessibilityEvent,
+      PlayerEventManifestUpdated -> {
         // Nothing to do.
       }
     }

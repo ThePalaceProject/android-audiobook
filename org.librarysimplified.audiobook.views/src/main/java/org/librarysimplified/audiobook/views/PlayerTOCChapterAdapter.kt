@@ -1,17 +1,29 @@
 package org.librarysimplified.audiobook.views
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.joda.time.Duration
 import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 
@@ -62,24 +74,141 @@ class PlayerTOCChapterAdapter(
   ) {
     PlayerUIThread.checkIsUIThread()
 
-    val item = this.book.tableOfContents.tocItemsInOrder[position]
-    holder.titleText.text = item.title
-    holder.downloadedDurationText.text = this.periodFormatter.print(item.duration.toPeriod())
+    val tocItem =
+      this.book.tableOfContents.tocItemsInOrder[position]
+
+    holder.titleText.text =
+      tocItem.title
+    holder.downloadedDurationText.text =
+      this.periodFormatter.print(tocItem.duration.toPeriod())
+
+    val readingOrderItem =
+      this.book.readingOrderByID[tocItem.readingOrderLink.id]!!
 
     var requiresDownload = false
     var failedDownload = false
     var downloading = false
 
-    holder.buttons.visibility = View.GONE
+    val status = readingOrderItem.downloadStatus
+    holder.buttons.visibility = if (status !is PlayerReadingOrderItemDownloaded) {
+      VISIBLE
+    } else {
+      GONE
+    }
+
+    when (status) {
+      is PlayerReadingOrderItemNotDownloaded -> {
+        holder.buttonsDownloading.visibility = INVISIBLE
+        holder.buttonsDownloadFailed.visibility = INVISIBLE
+
+        if (this.book.supportsStreaming) {
+          holder.buttonsNotDownloadedNotStreamable.visibility = INVISIBLE
+          holder.buttonsNotDownloadedStreamable.visibility = VISIBLE
+
+          if (this.book.supportsIndividualChapterDownload) {
+            holder.notDownloadedStreamableRefresh.setOnClickListener {
+              this.book.downloadTasksByID[readingOrderItem.id]?.fetch()
+            }
+            holder.notDownloadedStreamableRefresh.contentDescription =
+              this.context.getString(
+                R.string.audiobook_accessibility_toc_download,
+                position
+              )
+            holder.notDownloadedStreamableRefresh.isEnabled = true
+          } else {
+            holder.notDownloadedStreamableRefresh.contentDescription = null
+            holder.notDownloadedStreamableRefresh.isEnabled = false
+          }
+        } else {
+          holder.buttonsNotDownloadedNotStreamable.visibility = VISIBLE
+          holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
+
+          if (this.book.supportsIndividualChapterDownload) {
+            holder.notDownloadedNotStreamableRefresh.setOnClickListener {
+              this.book.downloadTasksByID[readingOrderItem.id]?.fetch()
+            }
+            holder.notDownloadedNotStreamableRefresh.contentDescription =
+              this.context.getString(
+                R.string.audiobook_accessibility_toc_download,
+                position
+              )
+            holder.notDownloadedNotStreamableRefresh.isEnabled = true
+          } else {
+            holder.notDownloadedNotStreamableRefresh.contentDescription = null
+            holder.notDownloadedNotStreamableRefresh.isEnabled = false
+          }
+          requiresDownload = true
+        }
+      }
+
+      is PlayerReadingOrderItemDownloading -> {
+        holder.buttonsDownloading.visibility = VISIBLE
+        holder.buttonsDownloadFailed.visibility = INVISIBLE
+        holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
+        holder.buttonsNotDownloadedNotStreamable.visibility = INVISIBLE
+
+        if (this.book.supportsIndividualChapterDownload) {
+          holder.downloadingProgress.setOnClickListener {
+            this.onConfirmCancelDownloading(readingOrderItem)
+          }
+          holder.downloadingProgress.isEnabled = true
+        } else {
+          holder.downloadingProgress.isEnabled = false
+        }
+
+        holder.downloadingProgress.contentDescription =
+          this.context.getString(
+            R.string.audiobook_accessibility_toc_progress,
+            position,
+            status.percent
+          )
+        holder.downloadingProgress.visibility = VISIBLE
+        holder.downloadingProgress.progress = status.percent.toFloat() * 0.01f
+
+        downloading = true
+        requiresDownload = this.book.supportsStreaming == false
+      }
+
+      is PlayerReadingOrderItemDownloaded -> {
+        holder.view.isEnabled = true
+      }
+
+      is PlayerReadingOrderItemDownloadFailed -> {
+        holder.buttonsDownloading.visibility = INVISIBLE
+        holder.buttonsDownloadFailed.visibility = VISIBLE
+        holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
+        holder.buttonsNotDownloadedNotStreamable.visibility = INVISIBLE
+
+        if (this.book.supportsIndividualChapterDownload) {
+          holder.downloadFailedRefresh.setOnClickListener {
+            this.book.downloadTasksByID[readingOrderItem.id]?.cancel()
+            this.book.downloadTasksByID[readingOrderItem.id]?.fetch()
+          }
+          holder.downloadFailedRefresh.contentDescription =
+            this.context.getString(R.string.audiobook_accessibility_toc_retry, position)
+          holder.downloadFailedRefresh.isEnabled = true
+        } else {
+          holder.downloadFailedRefresh.contentDescription = null
+          holder.downloadFailedRefresh.isEnabled = false
+        }
+
+        failedDownload = true
+        requiresDownload = this.book.supportsStreaming == false
+      }
+
+      is PlayerReadingOrderItemDownloadExpired -> {
+        // Nothing to do.
+      }
+    }
 
     val view = holder.view
-    view.tag = item
+    view.tag = tocItem
     view.setOnClickListener(this.listener)
     view.contentDescription =
       contentDescriptionOf(
         resources = context.resources,
-        title = item.title,
-        duration = item.duration,
+        title = tocItem.title,
+        duration = tocItem.duration,
         playing = position == this.currentTOCIndex,
         requiresDownload = requiresDownload,
         failedDownload = failedDownload,
@@ -87,10 +216,29 @@ class PlayerTOCChapterAdapter(
       )
 
     if (position == this.currentTOCIndex) {
-      holder.isCurrent.visibility = View.VISIBLE
+      holder.isCurrent.visibility = VISIBLE
     } else {
-      holder.isCurrent.visibility = View.INVISIBLE
+      holder.isCurrent.visibility = INVISIBLE
     }
+  }
+
+  private fun onConfirmCancelDownloading(
+    readingOrderItem: PlayerReadingOrderItemType
+  ) {
+    val dialog =
+      MaterialAlertDialogBuilder(this.context)
+        .setCancelable(true)
+        .setMessage(R.string.audiobook_part_download_stop_confirm)
+        .setPositiveButton(
+          R.string.audiobook_part_download_stop
+        ) { _: DialogInterface, _: Int ->
+          this.book.downloadTasksByID[readingOrderItem.id]?.cancel()
+        }
+        .setNegativeButton(
+          R.string.audiobook_part_download_continue
+        ) { _: DialogInterface, _: Int -> }
+        .create()
+    dialog.show()
   }
 
   private fun contentDescriptionOf(
@@ -151,6 +299,22 @@ class PlayerTOCChapterAdapter(
     }
   }
 
+  fun update(status: PlayerReadingOrderItemDownloadStatus) {
+    val index = findIndex(status)
+    if (index != null) {
+      this.notifyItemChanged(index)
+    }
+  }
+
+  private fun findIndex(status: PlayerReadingOrderItemDownloadStatus): Int? {
+    for (index in 0 until book.readingOrder.size) {
+      if (book.readingOrder[index].id == status.readingOrderItem.id) {
+        return index
+      }
+    }
+    return null
+  }
+
   inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
     val buttons: ViewGroup =
@@ -188,7 +352,7 @@ class PlayerTOCChapterAdapter(
 
     val notDownloadedNotStreamableRefresh: ImageView =
       this.buttonsNotDownloadedNotStreamable.findViewById(
-        R.id.player_toc_item_not_downloaded_not_streamable_refresh
+        R.id.player_toc_item_not_downloaded_streamable_refresh
       )
 
     val downloadingProgress: PlayerCircularProgressView =

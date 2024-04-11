@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ import io.reactivex.disposables.CompositeDisposable
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventDeleteBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
@@ -27,6 +29,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackBuffering
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPreparing
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
@@ -51,8 +54,6 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 
 class PlayerFragment : PlayerBaseFragment() {
 
-  private var subscriptions: CompositeDisposable = CompositeDisposable()
-  private var playerPositionDragging: Boolean = false
   private lateinit var coverView: ImageView
   private lateinit var menuAddBookmark: MenuItem
   private lateinit var menuPlaybackRate: MenuItem
@@ -63,13 +64,14 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var playerAuthorView: TextView
   private lateinit var playerBookmark: ImageView
   private lateinit var playerCommands: ViewGroup
-  private lateinit var playerDownloadingChapter: ProgressBar
+  private lateinit var playerBusy: ProgressBar
   private lateinit var playerInfoModel: PlayerInfoModel
   private lateinit var playerPosition: SeekBar
   private lateinit var playerRemainingBookTime: TextView
   private lateinit var playerSkipBackwardButton: ImageView
   private lateinit var playerSkipForwardButton: ImageView
   private lateinit var playerSpineElement: TextView
+  private lateinit var playerStatus: TextView
   private lateinit var playerTimeCurrent: TextView
   private lateinit var playerTimeMaximum: TextView
   private lateinit var playerTitleView: TextView
@@ -77,6 +79,8 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
   private lateinit var toolbar: Toolbar
 
+  private var subscriptions: CompositeDisposable = CompositeDisposable()
+  private var playerPositionDragging: Boolean = false
   private var menuPlaybackRateText: TextView? = null
   private var menuSleepText: TextView? = null
 
@@ -96,10 +100,8 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.audioBookToolbar)
     this.coverView =
       view.findViewById(R.id.player_cover)!!
-    this.playerBookmark =
-      view.findViewById(R.id.player_bookmark)
-    this.playerDownloadingChapter =
-      view.findViewById(R.id.player_downloading_chapter)
+    this.playerBusy =
+      view.findViewById(R.id.player_busy)
     this.playerCommands =
       view.findViewById(R.id.player_commands)
     this.playerTitleView =
@@ -124,11 +126,12 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.player_spine_element)!!
     this.playerPosition =
       view.findViewById(R.id.player_progress)!!
+    this.playerStatus =
+      view.findViewById(R.id.player_status)
 
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
     this.toolbarConfigureAllActions()
 
-    this.playerBookmark.alpha = 0.0f
     this.playerWaiting.text = ""
     this.playerWaiting.contentDescription = null
     this.playerPosition.isEnabled = false
@@ -211,7 +214,9 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerSleepTimerStatusPaused(status: Paused) {
+  private fun onPlayerSleepTimerStatusPaused(
+    status: Paused
+  ) {
     return when (val c = status.configuration) {
       EndOfChapter -> {
         this.menuSleep.actionView?.contentDescription =
@@ -237,7 +242,9 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerSleepTimerStatusRunning(status: Running) {
+  private fun onPlayerSleepTimerStatusRunning(
+    status: Running
+  ) {
     return when (val c = status.configuration) {
       EndOfChapter -> {
         this.menuSleep.actionView?.contentDescription =
@@ -323,23 +330,35 @@ class PlayerFragment : PlayerBaseFragment() {
       }
 
       is PlayerEventPlaybackBuffering -> {
-        // Nothing to do
+        this.onPlayerEventPlaybackBuffering(event)
       }
 
-      is PlayerEventPlaybackPaused ->
+      is PlayerEventPlaybackPaused -> {
         this.onPlayerEventPlaybackPaused(event)
+      }
 
-      is PlayerEventPlaybackProgressUpdate ->
+      is PlayerEventPlaybackProgressUpdate -> {
         this.onPlayerEventPlaybackProgressUpdate(event)
+      }
 
-      is PlayerEventPlaybackStarted ->
+      is PlayerEventPlaybackStarted -> {
         this.onPlayerEventPlaybackStarted(event)
+      }
 
-      is PlayerEventPlaybackStopped ->
+      is PlayerEventPlaybackStopped -> {
         this.onPlayerEventPlaybackStopped(event)
+      }
 
       is PlayerEventPlaybackWaitingForAction -> {
         // Nothing to do
+      }
+
+      is PlayerEventDeleteBookmark -> {
+        // Nothing to do
+      }
+
+      is PlayerEventPlaybackPreparing -> {
+        this.onPlayerEventPlaybackPreparing(event)
       }
     }
   }
@@ -364,9 +383,14 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackStarted(event: PlayerEventPlaybackStarted) {
-    this.playerDownloadingChapter.visibility = View.GONE
+  private fun onPlayerEventPlaybackStarted(
+    event: PlayerEventPlaybackStarted
+  ) {
+    this.playerStatus.text = "Started"
+
+    this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
+
     this.playPauseButton.setImageResource(R.drawable.round_pause_24)
     this.playPauseButton.setOnClickListener { PlayerModel.pause() }
     this.playPauseButton.contentDescription =
@@ -383,7 +407,48 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackStopped(event: PlayerEventPlaybackStopped) {
+  private fun onPlayerEventPlaybackBuffering(
+    event: PlayerEventPlaybackBuffering
+  ) {
+    this.playerStatus.text = "Buffering…"
+
+    this.playerBusy.visibility = VISIBLE
+    this.playerCommands.visibility = INVISIBLE
+
+    this.onEventUpdateTimeRelatedUI(
+      readingOrderItem = event.readingOrderItem,
+      offsetMilliseconds = event.offsetMilliseconds,
+      tocItem = event.tocItem,
+      totalRemainingBookTime = event.totalRemainingBookTime
+    )
+  }
+
+  @UiThread
+  private fun onPlayerEventPlaybackPreparing(
+    event: PlayerEventPlaybackPreparing
+  ) {
+    this.playerStatus.text = "Preparing…"
+
+    this.playerBusy.visibility = VISIBLE
+    this.playerCommands.visibility = INVISIBLE
+
+    this.onEventUpdateTimeRelatedUI(
+      readingOrderItem = event.readingOrderItem,
+      offsetMilliseconds = event.offsetMilliseconds,
+      tocItem = event.tocItem,
+      totalRemainingBookTime = event.totalRemainingBookTime
+    )
+  }
+
+  @UiThread
+  private fun onPlayerEventPlaybackStopped(
+    event: PlayerEventPlaybackStopped
+  ) {
+    this.playerStatus.text = "Stopped"
+
+    this.playerBusy.visibility = GONE
+    this.playerCommands.visibility = VISIBLE
+
     this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
     this.playPauseButton.setOnClickListener { PlayerModel.play() }
     this.playPauseButton.contentDescription =
@@ -398,7 +463,14 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackPaused(event: PlayerEventPlaybackPaused) {
+  private fun onPlayerEventPlaybackPaused(
+    event: PlayerEventPlaybackPaused
+  ) {
+    this.playerStatus.text = "Paused"
+
+    this.playerBusy.visibility = GONE
+    this.playerCommands.visibility = VISIBLE
+
     this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
     this.playPauseButton.setOnClickListener { PlayerModel.play() }
     this.playPauseButton.contentDescription =

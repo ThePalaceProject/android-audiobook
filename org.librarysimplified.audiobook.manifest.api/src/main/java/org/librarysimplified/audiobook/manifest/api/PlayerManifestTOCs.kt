@@ -171,7 +171,6 @@ object PlayerManifestTOCs {
             PlayerManifestTOCItem(
               index = tocIndex,
               title = "[Preamble]",
-              part = 1,
               chapter = 0,
               intervalAbsoluteMilliseconds = IntervalL(0L, lower - 1L),
               readingOrderLink = manifest.readingOrder[0],
@@ -189,7 +188,6 @@ object PlayerManifestTOCs {
         PlayerManifestTOCItem(
           index = tocIndex,
           title = readingOrderItem.link.title ?: defaultTrackTitle.invoke(tocEntryIndex + 1),
-          part = 1,
           chapter = tocEntryIndex + 1,
           intervalAbsoluteMilliseconds = tocInterval,
           readingOrderLink = readingOrderItem,
@@ -299,7 +297,7 @@ object PlayerManifestTOCs {
           offset = offset,
           defaultTrackTitle = defaultTrackTitle
         )
-      offset += secondsToMilliseconds((link.duration ?: 0L).toLong())
+      offset += tocItem.duration.millis
       tocItemsInOrder.add(tocItem)
       tocItemsByInterval[tocItem.intervalAbsoluteMilliseconds] = tocItem
       insertIntervalChecked(tocItemTree, tocItem.intervalAbsoluteMilliseconds)
@@ -333,7 +331,6 @@ object PlayerManifestTOCs {
     return PlayerManifestTOCItem(
       index = index,
       title = title,
-      part = 1,
       chapter = index + 1,
       intervalAbsoluteMilliseconds = IntervalL(lower, upper),
       readingOrderLink = item,

@@ -4,6 +4,7 @@ import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import org.joda.time.Duration
+import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
@@ -126,6 +127,10 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
 
   override fun bookmark() {
     this.log.debug("bookmark")
+  }
+
+  override fun bookmarkDelete(bookmark: PlayerBookmark) {
+    this.log.debug("bookmarkDelete")
   }
 
   private fun goToChapter(id: PlayerManifestReadingOrderID, offset: Long) {

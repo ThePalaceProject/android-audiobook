@@ -155,4 +155,13 @@ interface PlayerType : AutoCloseable {
    */
 
   fun bookmark()
+
+  /**
+   * Instruct the player to delete a bookmark. This has the effect of generating a
+   * [PlayerEvent.PlayerEventDeleteBookmark] event with the given bookmark.
+   *
+   * @throws java.lang.IllegalStateException If and only if the player is closed
+   */
+
+  fun bookmarkDelete(bookmark: PlayerBookmark)
 }

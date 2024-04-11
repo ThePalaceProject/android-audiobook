@@ -6,7 +6,6 @@ import org.joda.time.Duration
 data class PlayerManifestTOCItem(
   val title: String,
   val index: Int,
-  val part: Int,
   val chapter: Int,
   val intervalAbsoluteMilliseconds: IntervalL,
   val readingOrderLink: PlayerManifestReadingOrderItem,

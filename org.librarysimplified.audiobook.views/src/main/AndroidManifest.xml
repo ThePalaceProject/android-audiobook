@@ -3,6 +3,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" android:maxSdkVersion="34" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application>
         <service
@@ -12,7 +13,7 @@
             android:foregroundServiceType="mediaPlayback" />
 
         <receiver
-            android:name=".PlayerMediaButtonReceiver"
+            android:name="org.librarysimplified.audiobook.views.PlayerMediaButtonReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />

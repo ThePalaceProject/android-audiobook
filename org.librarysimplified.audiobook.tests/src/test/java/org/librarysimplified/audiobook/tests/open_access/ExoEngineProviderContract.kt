@@ -40,9 +40,9 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderItem
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
-import org.librarysimplified.audiobook.open_access.ExoEngineProvider
-import org.librarysimplified.audiobook.open_access.ExoEngineThread
-import org.librarysimplified.audiobook.open_access.ExoReadingOrderItemHandle
+import org.librarysimplified.audiobook.media3.ExoEngineProvider
+import org.librarysimplified.audiobook.media3.ExoEngineThread
+import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.slf4j.Logger
 import java.io.ByteArrayInputStream
