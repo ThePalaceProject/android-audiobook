@@ -23,9 +23,7 @@ class ExoEngineProvider(
   private val threadFactory: (Runnable) -> ExoEngineThread
 ) : PlayerAudioEngineProviderType {
 
-  constructor() : this({ runnable ->
-    ExoEngineThread.create(runnable)
-  })
+  constructor() : this({ runnable -> ExoEngineThread.create(runnable) })
 
   private val log = LoggerFactory.getLogger(ExoEngineProvider::class.java)
 

@@ -16,16 +16,24 @@ import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent.PlayerAccessibilityChapterSelected
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent.PlayerAccessibilityErrorOccurred
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent.PlayerAccessibilityIsBuffering
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent.PlayerAccessibilityIsWaitingForChapter
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent.PlayerAccessibilityPlaybackRateChanged
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent.PlayerAccessibilitySleepTimerSettingChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterWaiting
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackBuffering
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPreparing
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
+import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
@@ -40,10 +48,13 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderItem
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.media3.ExoAudioBookProvider
 import org.librarysimplified.audiobook.media3.ExoEngineProvider
 import org.librarysimplified.audiobook.media3.ExoEngineThread
 import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.slf4j.Logger
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -154,24 +165,6 @@ abstract class ExoEngineProviderContract {
     val result = book_provider_nn.create(this.context())
     this.log().debug("testAudioEnginesFeedbooks:result: {}", result)
     Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
-  }
-
-  /**
-   * Test that the engine rejects the Best New Horror (LCP) book.
-   */
-
-  @Test
-  fun lcpManifest_isRejected() {
-    val manifest = this.parseManifest("bestnewhorror.audiobook-manifest.json")
-    val request = PlayerAudioEngineRequest(
-      manifest = manifest,
-      filter = { true },
-      downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
-      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
-    )
-    val engine_provider = ExoEngineProvider()
-    val book_provider = engine_provider.tryRequest(request)
-    Assertions.assertNull(book_provider, "Engine must reject manifest")
   }
 
   /**
@@ -632,7 +625,7 @@ abstract class ExoEngineProviderContract {
     this.downloadSpineItemAndWait(book.downloadTasks[1])
     Thread.sleep(1000L)
 
-    player.playAtLocation(book.readingOrder[1].position)
+    player.movePlayheadToLocation(book.readingOrder[1].startingPosition)
     player.skipToPreviousChapter(5000L)
     Thread.sleep(12_000L)
 
@@ -705,7 +698,7 @@ abstract class ExoEngineProviderContract {
     this.downloadSpineItemAndWait(book.downloadTasks[1])
     Thread.sleep(1000L)
 
-    player.playAtLocation(book.readingOrder[1].position)
+    player.movePlayheadToLocation(book.readingOrder[1].startingPosition)
     Thread.sleep(10_000L)
 
     player.close()
@@ -765,7 +758,7 @@ abstract class ExoEngineProviderContract {
     this.downloadSpineItemAndWait(book.downloadTasks[1])
     Thread.sleep(1000L)
 
-    player.playAtBookStart()
+    player.movePlayheadToBookStart()
     Thread.sleep(10_000L)
 
     player.close()
@@ -796,7 +789,7 @@ abstract class ExoEngineProviderContract {
 
     var downloaded = false
     while (!downloaded) {
-      val status = downloadTask.spineItems.first().downloadStatus
+      val status = downloadTask.readingOrderItems.first().downloadStatus
       this.log().debug("spine element status: {}", status)
 
       when (status) {
@@ -818,28 +811,63 @@ abstract class ExoEngineProviderContract {
     return when (event) {
       is PlayerEventPlaybackRateChanged ->
         "rateChanged ${event.rate}"
+
       is PlayerEventPlaybackStarted ->
         "playbackStarted ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
+
       is PlayerEventPlaybackBuffering ->
         "playbackBuffering ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
+
       is PlayerEventPlaybackProgressUpdate ->
         "playbackProgressUpdate ${event.readingOrderItem.index} ${event.offsetMilliseconds} ${event.offsetMilliseconds}"
+
       is PlayerEventChapterCompleted ->
         "playbackChapterCompleted ${event.readingOrderItem.index}"
+
       is PlayerEventChapterWaiting ->
         "playbackChapterWaiting ${event.readingOrderItem.index}"
+
       is PlayerEventPlaybackWaitingForAction ->
         "playbackWaitingForAction ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
+
       is PlayerEventPlaybackPaused ->
         "playbackPaused ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
+
       is PlayerEventPlaybackStopped ->
         "playbackStopped ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
+
       is PlayerEvent.PlayerEventError ->
         "playbackError ${event.readingOrderItem?.index} ${event.exception?.javaClass?.canonicalName} ${event.errorCode} ${event.offsetMilliseconds}"
+
       PlayerEvent.PlayerEventManifestUpdated ->
         "playerManifestUpdated"
+
       is PlayerEventCreateBookmark ->
         "playerCreateBookmark"
+
+      is PlayerAccessibilityChapterSelected ->
+        "PlayerAccessibilityChapterSelected"
+
+      is PlayerAccessibilityErrorOccurred ->
+        "PlayerAccessibilityErrorOccurred"
+
+      is PlayerAccessibilityIsBuffering ->
+        "PlayerAccessibilityIsBuffering"
+
+      is PlayerAccessibilityIsWaitingForChapter ->
+        "PlayerAccessibilityIsWaitingForChapter"
+
+      is PlayerAccessibilityPlaybackRateChanged ->
+        "PlayerAccessibilityPlaybackRateChanged"
+
+      is PlayerAccessibilitySleepTimerSettingChanged ->
+        "PlayerAccessibilitySleepTimerSettingChanged"
+
+      is PlayerEvent.PlayerEventDeleteBookmark ->
+        "playerDeleteBookmark"
+
+      is PlayerEventPlaybackPreparing ->
+        "playerPlaybackPreparing"
     }
   }
 
@@ -907,30 +935,30 @@ abstract class ExoEngineProviderContract {
 
     Assertions.assertEquals(
       URI.create("http://www.example.com/0.mp3"),
-      (audioBook.readingOrder[0] as ExoReadingOrderItemHandle).itemManifest.uri
+      (audioBook.readingOrder[0] as ExoReadingOrderItemHandle).itemManifest.item.link.hrefURI!!
     )
     Assertions.assertEquals(
       URI.create("http://www.example.com/1.mp3"),
-      (audioBook.readingOrder[1] as ExoReadingOrderItemHandle).itemManifest.uri
+      (audioBook.readingOrder[1] as ExoReadingOrderItemHandle).itemManifest.item.link.hrefURI!!
     )
     Assertions.assertEquals(
       URI.create("http://www.example.com/2.mp3"),
-      (audioBook.readingOrder[2] as ExoReadingOrderItemHandle).itemManifest.uri
+      (audioBook.readingOrder[2] as ExoReadingOrderItemHandle).itemManifest.item.link.hrefURI!!
     )
 
     audioBook.replaceManifest(manifest1).get()
 
     Assertions.assertEquals(
       URI.create("http://www.example.com/0r.mp3"),
-      (audioBook.readingOrder[0] as ExoReadingOrderItemHandle).itemManifest.uri
+      (audioBook.readingOrder[0] as ExoReadingOrderItemHandle).itemManifest.item.link.hrefURI!!
     )
     Assertions.assertEquals(
       URI.create("http://www.example.com/1r.mp3"),
-      (audioBook.readingOrder[1] as ExoReadingOrderItemHandle).itemManifest.uri
+      (audioBook.readingOrder[1] as ExoReadingOrderItemHandle).itemManifest.item.link.hrefURI!!
     )
     Assertions.assertEquals(
       URI.create("http://www.example.com/2r.mp3"),
-      (audioBook.readingOrder[2] as ExoReadingOrderItemHandle).itemManifest.uri
+      (audioBook.readingOrder[2] as ExoReadingOrderItemHandle).itemManifest.item.link.hrefURI!!
     )
   }
 
@@ -1060,23 +1088,39 @@ abstract class ExoEngineProviderContract {
     val engineProvider =
       ExoEngineProvider(threadFactory = ExoEngineThread.Companion::createWithoutPreparation)
     val bookProvider =
-      engineProvider.tryRequest(request)!!
-    val result =
-      bookProvider.create(this.context())
-    val audioBook =
-      (result as PlayerResult.Success).result
+      engineProvider.tryRequest(request)!! as ExoAudioBookProvider
 
-    audioBook.downloadTasks.first().fetch()
-    audioBook.downloadTasks[1].fetch()
+    bookProvider.setMissingTrackNameGenerator(object : PlayerMissingTrackNameGeneratorType {
+      override fun generateName(trackIndex: Int): String {
+        return "Track $trackIndex"
+      }
+    })
+
+    val result = bookProvider.create(this.context())
+    dumpResult(result)
+    val audioBook = (result as PlayerResult.Success).result
+
+    audioBook.downloadTasks[0].fetch()
 
     Thread.sleep(1_000L)
 
-    Assertions.assertTrue(
-      audioBook.readingOrder[0].downloadStatus is PlayerReadingOrderItemDownloadExpired
+    Assertions.assertInstanceOf(
+      PlayerReadingOrderItemDownloadExpired::class.java,
+      audioBook.readingOrder[0].downloadStatus
     )
-    Assertions.assertTrue(
-      audioBook.readingOrder[1].downloadStatus is PlayerReadingOrderItemDownloadFailed
-    )
+  }
+
+  private fun dumpResult(
+    result: PlayerResult<PlayerAudioBookType, Exception>
+  ) {
+    when (result) {
+      is PlayerResult.Failure -> {
+        log().debug("FAILURE: ", result.failure)
+      }
+      is PlayerResult.Success -> {
+        log().debug("SUCCESS: {}", result.result)
+      }
+    }
   }
 
   /**

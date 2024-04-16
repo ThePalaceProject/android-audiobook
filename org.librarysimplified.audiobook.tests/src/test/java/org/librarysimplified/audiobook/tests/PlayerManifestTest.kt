@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.tests
 
+import org.joda.time.Duration
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -844,7 +845,9 @@ class PlayerManifestTest {
     }
 
     val durationSum =
-      manifest.readingOrder.sumOf { item -> (item.link.duration ?: 0L).toLong() }
+      manifest.readingOrder.sumOf { item ->
+        Duration.standardSeconds((item.link.duration ?: 0L).toLong()).millis
+      }
 
     val readingOrderIntervalsSum =
       tocItems.readingOrderIntervals.values.sumOf {

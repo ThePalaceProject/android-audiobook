@@ -91,10 +91,10 @@ abstract class ExoDownloadContract {
     uri: URI
   ) {
     audioBook?.downloadTasks?.find { task ->
-      task.spineItems.filterIsInstance<ExoReadingOrderItemHandle>().any { item ->
-        item.itemManifest.uri == uri
+      task.readingOrderItems.filterIsInstance<ExoReadingOrderItemHandle>().any { item ->
+        item.itemManifest.item.link.hrefURI == uri
       }
-    }?.spineItems?.filterIsInstance<ExoReadingOrderItemHandle>()?.forEach { spineItem ->
+    }?.readingOrderItems?.filterIsInstance<ExoReadingOrderItemHandle>()?.forEach { spineItem ->
       spineItem.setDownloadStatus(PlayerReadingOrderItemDownloaded(spineItem))
     }
   }

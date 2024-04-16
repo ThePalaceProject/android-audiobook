@@ -8,6 +8,7 @@ import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
+import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerType
@@ -19,6 +20,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.lang.StringBuilder
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
@@ -37,7 +39,8 @@ class ExoAudioBook private constructor(
   private val dataSourceFactory: DataSource.Factory,
   override val readingOrder: List<ExoReadingOrderItemHandle>,
   override val readingOrderByID: Map<PlayerManifestReadingOrderID, ExoReadingOrderItemHandle>,
-  override val readingOrderElementDownloadStatus: PublishSubject<PlayerReadingOrderItemDownloadStatus>
+  override val readingOrderElementDownloadStatus: PublishSubject<PlayerReadingOrderItemDownloadStatus>,
+  private val missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
 ) : PlayerAudioBookType {
 
   private val logger =
@@ -99,10 +102,22 @@ class ExoAudioBook private constructor(
     manifest: PlayerManifest
   ) {
     this.logger.debug("Replacing manifest")
+
+    val newBookID = PlayerBookID.transform(manifest.metadata.identifier)
+    if (this.id != newBookID) {
+      val sb = StringBuilder()
+      sb.append("Manifest book IDs must match!\n")
+      sb.append("  Incoming manifest identifier: ${manifest.metadata.identifier}\n")
+      sb.append("  Incoming book ID:             ${newBookID.value}")
+      sb.append("  This manifest identifier:     ${this.manifest.metadata.identifier}\n")
+      sb.append("  This book ID:                 ${this.id.value}\n")
+      throw IllegalArgumentException(sb.toString())
+    }
+
     return when (val result = ExoManifest.transform(
-      context = context,
       bookID = this.id,
-      manifest = manifest
+      manifest = manifest,
+      missingTrackNames = this.missingTrackNameGenerator
     )) {
       is PlayerResult.Success ->
         this.replaceManifestWith(result.result)
@@ -156,7 +171,8 @@ class ExoAudioBook private constructor(
       extensions: List<PlayerExtensionType>,
       userAgent: PlayerUserAgent,
       contentProtections: List<ContentProtection>,
-      dataSourceFactory: DataSource.Factory
+      dataSourceFactory: DataSource.Factory,
+      missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType
     ): PlayerAudioBookType {
       val directory = this.findDirectoryFor(context, manifest.bookID)
       this.log.debug("Book directory: {}", directory)
@@ -233,7 +249,8 @@ class ExoAudioBook private constructor(
           readingOrderByID = handlesById.toMap(),
           readingOrderElementDownloadStatus = statusEvents,
           contentProtections = contentProtections,
-          dataSourceFactory = dataSourceFactory
+          dataSourceFactory = dataSourceFactory,
+          missingTrackNameGenerator = missingTrackNameGenerator
         )
 
       for (e in handles) {

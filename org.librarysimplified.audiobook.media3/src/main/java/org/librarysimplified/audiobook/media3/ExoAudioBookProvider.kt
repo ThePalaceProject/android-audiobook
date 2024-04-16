@@ -8,6 +8,7 @@ import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerBookID
+import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerResult.Failure
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
@@ -32,6 +33,14 @@ class ExoAudioBookProvider(
   private val engineExecutor: ScheduledExecutorService,
   private val manifest: PlayerManifest,
 ) : PlayerAudioBookProviderType {
+
+  private var missingTrackGenerator: PlayerMissingTrackNameGeneratorType? = null
+
+  fun setMissingTrackNameGenerator(
+    generator: PlayerMissingTrackNameGeneratorType
+  ) {
+    this.missingTrackGenerator = generator
+  }
 
   override fun create(
     context: Application,
@@ -63,10 +72,17 @@ class ExoAudioBookProvider(
       val id =
         PlayerBookID.transform(this.manifest.metadata.identifier)
 
+      val missingTrackNameGenerator =
+        this.missingTrackGenerator ?: object : PlayerMissingTrackNameGeneratorType {
+          override fun generateName(trackIndex: Int): String {
+            return context.getString(R.string.audiobook_player_toc_track_n, trackIndex)
+          }
+        }
+
       return when (val parsed = ExoManifest.transform(
-        context = context,
         bookID = id,
-        manifest = this.manifest
+        manifest = this.manifest,
+        missingTrackNames = missingTrackNameGenerator
       )) {
         is PlayerResult.Success ->
           PlayerResult.Success(
@@ -78,7 +94,8 @@ class ExoAudioBookProvider(
               extensions = extensions,
               userAgent = this.request.userAgent,
               contentProtections = this.request.contentProtections,
-              dataSourceFactory = dataSourceFactory
+              dataSourceFactory = dataSourceFactory,
+              missingTrackNameGenerator = missingTrackNameGenerator
             )
           )
 

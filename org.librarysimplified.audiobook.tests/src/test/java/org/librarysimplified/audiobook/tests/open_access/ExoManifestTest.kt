@@ -1,9 +1,11 @@
 package org.librarysimplified.audiobook.tests.open_access
 
-import android.content.Context
+import android.app.Application
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.librarysimplified.audiobook.api.PlayerBookID
+import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
@@ -20,11 +22,18 @@ import java.net.URI
 
 class ExoManifestTest {
 
+  private val missingNames =
+    object : PlayerMissingTrackNameGeneratorType {
+      override fun generateName(trackIndex: Int): String {
+        return "Track ${trackIndex + 1}"
+      }
+    }
+
   fun log(): Logger =
     LoggerFactory.getLogger(ExoManifestTest::class.java)
 
-  fun context(): Context =
-    Mockito.mock(Context::class.java)
+  fun context(): Application =
+    Mockito.mock(Application::class.java)
 
   @Test
   fun testOkFlatlandGardeur() {
@@ -43,259 +52,218 @@ class ExoManifestTest {
 
     val manifest = success.result
 
-    val exo_result = ExoManifest.transform(context(), manifest)
-    this.log().debug("exo_result: {}", exo_result)
-    assertTrue(exo_result is PlayerResult.Success, "Result is success")
+    val exoResult =
+      ExoManifest.transform(
+        manifest = manifest,
+        bookID = PlayerBookID.transform("x"),
+        missingTrackNames = this.missingNames
+      )
+    dumpResult(exoResult)
+    assertTrue(exoResult is PlayerResult.Success, "Result is success")
 
-    val exo_success: PlayerResult.Success<ExoManifest, Exception> =
-      exo_result as PlayerResult.Success<ExoManifest, Exception>
+    val exoSuccess: PlayerResult.Success<ExoManifest, Exception> =
+      exoResult as PlayerResult.Success<ExoManifest, Exception>
 
-    val exo = exo_success.result
+    val exo = exoSuccess.result
 
     assertEquals(
       "Flatland: A Romance of Many Dimensions",
-      exo.title
-    )
-    assertEquals(
-      "https://librivox.org/flatland-a-romance-of-many-dimensions-by-edwin-abbott-abbott/",
-      exo.id
+      exo.originalManifest.metadata.title
     )
 
     assertEquals(
       9,
-      exo.spineItems.size
+      exo.readingOrderItems.size
     )
 
     assertEquals(
       "Part 1, Sections 1 - 3",
-      exo.spineItems[0].title
+      exo.toc.tocItemsInOrder[0].title
     )
     assertEquals(
       "Part 1, Sections 4 - 5",
-      exo.spineItems[1].title
+      exo.toc.tocItemsInOrder[1].title
     )
     assertEquals(
       "Part 1, Sections 6 - 7",
-      exo.spineItems[2].title
+      exo.toc.tocItemsInOrder[2].title
     )
     assertEquals(
       "Part 1, Sections 8 - 10",
-      exo.spineItems[3].title
+      exo.toc.tocItemsInOrder[3].title
     )
     assertEquals(
       "Part 1, Sections 11 - 12",
-      exo.spineItems[4].title
+      exo.toc.tocItemsInOrder[4].title
     )
     assertEquals(
       "Part 2, Sections 13 - 14",
-      exo.spineItems[5].title
+      exo.toc.tocItemsInOrder[5].title
     )
     assertEquals(
       "Part 2, Sections 15 - 17",
-      exo.spineItems[6].title
+      exo.toc.tocItemsInOrder[6].title
     )
     assertEquals(
       "Part 2, Sections 18 - 20",
-      exo.spineItems[7].title
+      exo.toc.tocItemsInOrder[7].title
     )
     assertEquals(
       "Part 2, Sections 21 - 22",
-      exo.spineItems[8].title
+      exo.toc.tocItemsInOrder[8].title
     )
 
     assertEquals(
       "audio/mpeg",
-      exo.spineItems[0].type.fullType
+      exo.readingOrderItems[0].item.link.type!!.fullType
     )
     assertEquals(
       "audio/mpeg",
-      exo.spineItems[1].type.fullType
+      exo.readingOrderItems[1].item.link.type!!.fullType
     )
     assertEquals(
       "audio/mpeg",
-      exo.spineItems[2].type.fullType
+      exo.readingOrderItems[2].item.link.type!!.fullType
     )
     assertEquals(
       "audio/mpeg",
-      exo.spineItems[3].type.fullType
+      exo.readingOrderItems[3].item.link.type!!.fullType
     )
     assertEquals(
       "audio/mpeg",
-      exo.spineItems[4].type.fullType
+      exo.readingOrderItems[4].item.link.type!!.fullType
     )
     assertEquals(
       "audio/mpeg",
-      exo.spineItems[5].type.fullType
+      exo.readingOrderItems[5].item.link.type!!.fullType
     )
     assertEquals(
       "audio/mpeg",
-      exo.spineItems[6].type.fullType
+      exo.readingOrderItems[6].item.link.type!!.fullType
     )
     assertEquals(
       "audio/mpeg",
-      exo.spineItems[7].type.fullType
+      exo.readingOrderItems[7].item.link.type!!.fullType
     )
     assertEquals(
       "audio/mpeg",
-      exo.spineItems[8].type.fullType
+      exo.readingOrderItems[8].item.link.type!!.fullType
     )
 
     assertEquals(
-      "1371.0",
-      exo.spineItems[0].duration.toString()
+      "PT1371S",
+      exo.toc.tocItemsInOrder[0].duration.toString()
     )
     assertEquals(
-      "1669.0",
-      exo.spineItems[1].duration.toString()
+      "PT1669S",
+      exo.toc.tocItemsInOrder[1].duration.toString()
     )
     assertEquals(
-      "1506.0",
-      exo.spineItems[2].duration.toString()
+      "PT1506S",
+      exo.toc.tocItemsInOrder[2].duration.toString()
     )
     assertEquals(
-      "1798.0",
-      exo.spineItems[3].duration.toString()
+      "PT1798S",
+      exo.toc.tocItemsInOrder[3].duration.toString()
     )
     assertEquals(
-      "1225.0",
-      exo.spineItems[4].duration.toString()
+      "PT1225S",
+      exo.toc.tocItemsInOrder[4].duration.toString()
     )
     assertEquals(
-      "1659.0",
-      exo.spineItems[5].duration.toString()
+      "PT1659S",
+      exo.toc.tocItemsInOrder[5].duration.toString()
     )
     assertEquals(
-      "2086.0",
-      exo.spineItems[6].duration.toString()
+      "PT2086S",
+      exo.toc.tocItemsInOrder[6].duration.toString()
     )
     assertEquals(
-      "2662.0",
-      exo.spineItems[7].duration.toString()
+      "PT2662S",
+      exo.toc.tocItemsInOrder[7].duration.toString()
     )
     assertEquals(
-      "1177.0",
-      exo.spineItems[8].duration.toString()
+      "PT1177S",
+      exo.toc.tocItemsInOrder[8].duration.toString()
     )
 
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_1_abbott.mp3",
-      exo.spineItems[0].uri.toString()
+      exo.readingOrderItems[0].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_2_abbott.mp3",
-      exo.spineItems[1].uri.toString()
+      exo.readingOrderItems[1].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_3_abbott.mp3",
-      exo.spineItems[2].uri.toString()
+      exo.readingOrderItems[2].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_4_abbott.mp3",
-      exo.spineItems[3].uri.toString()
+      exo.readingOrderItems[3].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_5_abbott.mp3",
-      exo.spineItems[4].uri.toString()
+      exo.readingOrderItems[4].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_6_abbott.mp3",
-      exo.spineItems[5].uri.toString()
+      exo.readingOrderItems[5].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_7_abbott.mp3",
-      exo.spineItems[6].uri.toString()
+      exo.readingOrderItems[6].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_8_abbott.mp3",
-      exo.spineItems[7].uri.toString()
+      exo.readingOrderItems[7].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "http://www.archive.org/download/flatland_rg_librivox/flatland_9_abbott.mp3",
-      exo.spineItems[8].uri.toString()
+      exo.readingOrderItems[8].item.link.hrefURI!!.toString()
     )
 
     assertEquals(
       "0",
-      exo.spineItems[0].part.toString()
-    )
-    assertEquals(
-      "0",
-      exo.spineItems[1].part.toString()
-    )
-    assertEquals(
-      "0",
-      exo.spineItems[2].part.toString()
-    )
-    assertEquals(
-      "0",
-      exo.spineItems[3].part.toString()
-    )
-    assertEquals(
-      "0",
-      exo.spineItems[4].part.toString()
-    )
-    assertEquals(
-      "0",
-      exo.spineItems[5].part.toString()
-    )
-    assertEquals(
-      "0",
-      exo.spineItems[6].part.toString()
-    )
-    assertEquals(
-      "0",
-      exo.spineItems[7].part.toString()
-    )
-    assertEquals(
-      "0",
-      exo.spineItems[8].part.toString()
-    )
-
-    assertEquals(
-      "0",
-      exo.spineItems[0].chapter.toString()
+      exo.readingOrderItems[0].index.toString()
     )
     assertEquals(
       "1",
-      exo.spineItems[1].chapter.toString()
+      exo.readingOrderItems[1].index.toString()
     )
     assertEquals(
       "2",
-      exo.spineItems[2].chapter.toString()
+      exo.readingOrderItems[2].index.toString()
     )
     assertEquals(
       "3",
-      exo.spineItems[3].chapter.toString()
+      exo.readingOrderItems[3].index.toString()
     )
     assertEquals(
       "4",
-      exo.spineItems[4].chapter.toString()
+      exo.readingOrderItems[4].index.toString()
     )
     assertEquals(
       "5",
-      exo.spineItems[5].chapter.toString()
+      exo.readingOrderItems[5].index.toString()
     )
     assertEquals(
       "6",
-      exo.spineItems[6].chapter.toString()
+      exo.readingOrderItems[6].index.toString()
     )
     assertEquals(
       "7",
-      exo.spineItems[7].chapter.toString()
+      exo.readingOrderItems[7].index.toString()
     )
     assertEquals(
       "8",
-      exo.spineItems[8].chapter.toString()
+      exo.readingOrderItems[8].index.toString()
     )
   }
 
   @Test
-  @Disabled("Temporarily disabled for manifest refactoring.")
   fun testOkBestNewHorror() {
-    val context = context()
-    Mockito.`when`(context.getString(org.librarysimplified.audiobook.manifest.api.R.string.player_manifest_audiobook_default_track_n, 1))
-      .thenReturn("Track 1")
-
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:flatland"),
@@ -311,146 +279,118 @@ class ExoManifestTest {
 
     val manifest = success.result
 
-    val exo_result = ExoManifest.transform(context, manifest)
-    this.log().debug("exo_result: {}", exo_result)
-    assertTrue(exo_result is PlayerResult.Success, "Result is success")
+    val exoResult =
+      ExoManifest.transform(
+        bookID = PlayerBookID.transform("x"),
+        manifest = manifest,
+        missingTrackNames = this.missingNames
+      )
+    dumpResult(exoResult)
+    assertTrue(exoResult is PlayerResult.Success, "Result is success")
 
-    val exo_success: PlayerResult.Success<ExoManifest, Exception> =
-      exo_result as PlayerResult.Success<ExoManifest, Exception>
+    val exoSuccess: PlayerResult.Success<ExoManifest, Exception> =
+      exoResult as PlayerResult.Success<ExoManifest, Exception>
 
-    val exo = exo_success.result
-
-    assertEquals(
-      "Best New Horror",
-      exo.title
-    )
-    assertEquals(
-      "urn:isbn:9780061552137",
-      exo.id
-    )
+    val exo = exoSuccess.result
 
     assertEquals(
       7,
-      exo.spineItems.size
+      exo.readingOrderItems.size
+    )
+    assertEquals(
+      7,
+      exo.toc.tocItemsInOrder.size
     )
 
     assertEquals(
       "Track 1",
-      exo.spineItems[0].title
+      exo.toc.tocItemsInOrder[0].title
     )
     assertEquals(
-      manifest.toc?.get(1)?.title,
-      exo.spineItems[1].title
+      "Chapter 2",
+      exo.toc.tocItemsInOrder[1].title
     )
     assertEquals(
-      manifest.toc?.get(2)?.title,
-      exo.spineItems[2].title
+      "Chapter 3",
+      exo.toc.tocItemsInOrder[2].title
     )
     assertEquals(
-      manifest.toc?.get(3)?.title,
-      exo.spineItems[3].title
+      "Chapter 4",
+      exo.toc.tocItemsInOrder[3].title
     )
     assertEquals(
-      manifest.toc?.get(4)?.title,
-      exo.spineItems[4].title
+      "Chapter 5",
+      exo.toc.tocItemsInOrder[4].title
     )
     assertEquals(
-      manifest.toc?.get(5)?.title,
-      exo.spineItems[5].title
+      "Chapter 6",
+      exo.toc.tocItemsInOrder[5].title
     )
     assertEquals(
-      manifest.toc?.get(6)?.title,
-      exo.spineItems[6].title
+      "Chapter 7",
+      exo.toc.tocItemsInOrder[6].title
     )
 
-    exo.spineItems.forEachIndexed { index, spineItem ->
-      assertEquals(
-        "audio/mpeg",
-        spineItem.type.fullType
-      )
-
-      assertEquals(
-        "0.0",
-        spineItem.offset.toString()
-      )
-
-      assertEquals(
-        "0",
-        spineItem.part.toString()
-      )
-
-      assertEquals(
-        index.toString(),
-        spineItem.chapter.toString()
-      )
-
-      assertEquals(
-        "http://readium.org/2014/01/lcp",
-        spineItem.originalLink.link.properties.encrypted?.scheme
-      )
-    }
-
     assertEquals(
-      "487.0",
-      exo.spineItems[0].duration.toString()
+      "PT487S",
+      exo.toc.tocItemsInOrder[0].duration.toString()
     )
     assertEquals(
-      "437.0",
-      exo.spineItems[1].duration.toString()
+      "PT437S",
+      exo.toc.tocItemsInOrder[1].duration.toString()
     )
     assertEquals(
-      "364.0",
-      exo.spineItems[2].duration.toString()
+      "PT364S",
+      exo.toc.tocItemsInOrder[2].duration.toString()
     )
     assertEquals(
-      "299.0",
-      exo.spineItems[3].duration.toString()
+      "PT299S",
+      exo.toc.tocItemsInOrder[3].duration.toString()
     )
     assertEquals(
-      "668.0",
-      exo.spineItems[4].duration.toString()
+      "PT668S",
+      exo.toc.tocItemsInOrder[4].duration.toString()
     )
     assertEquals(
-      "626.0",
-      exo.spineItems[5].duration.toString()
+      "PT626S",
+      exo.toc.tocItemsInOrder[5].duration.toString()
     )
     assertEquals(
-      "539.0",
-      exo.spineItems[6].duration.toString()
+      "PT539S",
+      exo.toc.tocItemsInOrder[6].duration.toString()
     )
 
     assertEquals(
       "ee2176d6-c36f-4215-9365-b305514acd64.MP3.mp3",
-      exo.spineItems[0].uri.toString()
+      exo.readingOrderItems[0].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "75272c5c-28c0-4603-9f30-967167072575.MP3.mp3",
-      exo.spineItems[1].uri.toString()
+      exo.readingOrderItems[1].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "d9630648-ee40-40b6-93dc-0681e1dbfc5b.MP3.mp3",
-      exo.spineItems[2].uri.toString()
+      exo.readingOrderItems[2].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "cca56d65-bd7f-48ff-9606-3c2afae5b94f.MP3.mp3",
-      exo.spineItems[3].uri.toString()
+      exo.readingOrderItems[3].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "bcfc1bfa-c6f6-4bc4-a3bd-3bd489fb40c4.MP3.mp3",
-      exo.spineItems[4].uri.toString()
+      exo.readingOrderItems[4].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "a0ca6922-019f-4dc4-9103-2f78ae4e9bf4.MP3.mp3",
-      exo.spineItems[5].uri.toString()
+      exo.readingOrderItems[5].item.link.hrefURI!!.toString()
     )
     assertEquals(
       "0079b4de-6bd1-43d5-a082-afa89134957c.MP3.mp3",
-      exo.spineItems[6].uri.toString()
+      exo.readingOrderItems[6].item.link.hrefURI!!.toString()
     )
   }
 
   @Test
-  @Disabled("Temporarily disabled for manifest refactoring.")
   fun testOkFlatlandTOC() {
     val result =
       ManifestParsers.parse(
@@ -467,32 +407,33 @@ class ExoManifestTest {
 
     val manifest = success.result
 
-    val exo_result = ExoManifest.transform(context(), manifest)
-    this.log().debug("exo_result: {}", exo_result)
-    assertTrue(exo_result is PlayerResult.Success, "Result is success")
+    val exoResult =
+      ExoManifest.transform(
+        bookID = PlayerBookID.transform("x"),
+        manifest = manifest,
+        missingTrackNames = this.missingNames
+      )
+    dumpResult(exoResult)
+    assertTrue(exoResult is PlayerResult.Success, "Result is success")
 
-    val exo_success: PlayerResult.Success<ExoManifest, Exception> =
-      exo_result as PlayerResult.Success<ExoManifest, Exception>
+    val exoSuccess: PlayerResult.Success<ExoManifest, Exception> =
+      exoResult as PlayerResult.Success<ExoManifest, Exception>
 
-    val exo = exo_success.result
+    val exo = exoSuccess.result
 
     assertEquals(
       "Flatland",
-      exo.title
-    )
-    assertEquals(
-      "https://librivox.org/flatland-a-romance-of-many-dimensions-by-edwin-abbott-abbott/",
-      exo.id
+      exo.originalManifest.metadata.title
     )
 
-    assertNotEquals(
+    assertEquals(
       manifest.readingOrder.size,
-      exo.spineItems.size
+      exo.readingOrderItems.size
     )
 
     assertEquals(
-      24,
-      exo.spineItems.size
+      23,
+      exo.toc.tocItemsInOrder.size
     )
 
     val titles = listOf(
@@ -512,7 +453,8 @@ class ExoManifestTest {
       "Part 2 - Other Worlds",
       "Section 13 - How I had a Vision of Lineland",
       "Section 14 - How I vainly tried to explain the nature of Flatland",
-      "Section 15 - Concerning a Stranger from Spaceland",
+      // There is a zero-length section in the middle of the book
+      // "Section 15 - Concerning a Stranger from Spaceland",
       "Section 16 - How the Stranger vainly endeavoured to reveal to me in words the mysteries of Spaceland",
       "Section 17 - How the Sphere, having in vain tried words, resorted to deeds",
       "Section 18 - How I came to Spaceland, and what I saw there",
@@ -520,33 +462,6 @@ class ExoManifestTest {
       "Section 20 - How the Sphere encouraged me in a Vision",
       "Section 21 - How I tried to teach the Theory of Three Dimensions to my Grandson, and with what success",
       "Section 22 - How I then tried to diffuse the Theory of Three Dimensions by other means, and of the result"
-    )
-
-    val offsets = listOf(
-      71.0,
-      80.0,
-      415.0,
-      789.0,
-      18.0,
-      882.0,
-      17.0,
-      948.0,
-      17.0,
-      465.0,
-      1124.0,
-      17.0,
-      452.0,
-      17.0,
-      25.0,
-      802.0,
-      564.0,
-      564.0,
-      1728.0,
-      16.0,
-      981.0,
-      2098.0,
-      18.0,
-      455.0
     )
 
     val durations = listOf(
@@ -566,7 +481,8 @@ class ExoManifestTest {
       8.0,
       777.0,
       1421.0,
-      0.0,
+      // Zero-length TOC items are not allowed.
+      // 0.0,
       1164.0,
       374.0,
       965.0,
@@ -576,35 +492,20 @@ class ExoManifestTest {
       722.0
     )
 
-    exo.spineItems.forEachIndexed { index, spineItem ->
+    exo.toc.tocItemsInOrder.forEachIndexed { index, tocItem ->
+      log().debug("[{}] {} {}", index, tocItem.duration, tocItem.title)
+    }
+
+    exo.toc.tocItemsInOrder.forEachIndexed { index, tocItem ->
       assertEquals(
         titles[index],
-        spineItem.title
+        tocItem.title,
+        "[$index] Title ${titles[index]} == ${tocItem.title}"
       )
-
       assertEquals(
-        offsets[index],
-        spineItem.offset
-      )
-
-      assertEquals(
-        durations[index],
-        spineItem.duration
-      )
-
-      assertEquals(
-        "audio/mpeg",
-        spineItem.type.fullType
-      )
-
-      assertEquals(
-        "0",
-        spineItem.part.toString()
-      )
-
-      assertEquals(
-        index.toString(),
-        spineItem.chapter.toString()
+        durations[index].toLong(),
+        tocItem.duration.standardSeconds,
+        "[$index] Duration ${durations[index].toLong()} == ${tocItem.duration.standardSeconds}"
       )
     }
   }
@@ -626,23 +527,19 @@ class ExoManifestTest {
 
     val manifest = success.result
 
-    val exo_result = ExoManifest.transform(context(), manifest)
-    this.log().debug("exo_result: {}", exo_result)
-    assertTrue(exo_result is PlayerResult.Success, "Result is success")
+    val exoResult =
+      ExoManifest.transform(
+        bookID = PlayerBookID.transform("x"),
+        manifest = manifest,
+        missingTrackNames = this.missingNames
+      )
+    dumpResult(exoResult)
+    assertTrue(exoResult is PlayerResult.Success, "Result is success")
 
-    val exo_success: PlayerResult.Success<ExoManifest, Exception> =
-      exo_result as PlayerResult.Success<ExoManifest, Exception>
+    val exoSuccess: PlayerResult.Success<ExoManifest, Exception> =
+      exoResult as PlayerResult.Success<ExoManifest, Exception>
 
-    val exo = exo_success.result
-
-    assertEquals(
-      "Anna Karenina",
-      exo.title
-    )
-    assertEquals(
-      "urn:isbn:9781603932639",
-      exo.id
-    )
+    val exo = exoSuccess.result
 
     assertNotEquals(
       manifest.readingOrder.size,
@@ -658,6 +555,22 @@ class ExoManifestTest {
       manifest.toc?.size,
       247
     )
+  }
+
+  private fun dumpResult(
+    exoResult: PlayerResult<ExoManifest, Exception>
+  ) {
+    val logger = this.log()
+
+    when (exoResult) {
+      is PlayerResult.Failure -> {
+        logger.debug("exoResult: FAILURE: ", exoResult.failure)
+      }
+
+      is PlayerResult.Success -> {
+        logger.debug("exoResult: SUCCESS: {}", exoResult.result)
+      }
+    }
   }
 
   private fun resource(name: String): ByteArray {
@@ -690,8 +603,10 @@ class ExoManifestTest {
     val manifest =
       success.result
     val exoManifest =
-      (ExoManifest.transform(context(), manifest) as PlayerResult.Success).result
-
-    exoManifest.id
+      (ExoManifest.transform(
+        bookID = PlayerBookID.transform("x"),
+        manifest = manifest,
+        missingTrackNames = this.missingNames
+      ) as PlayerResult.Success).result
   }
 }

@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListenableFutureTask
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import java.net.URI
+import java.util.concurrent.CompletableFuture
 
 /**
  * An implementation of the {@link PlayerDownloadProviderType} interface that receives a
@@ -18,7 +19,7 @@ class ExoUriDownloadProvider(
 ) :
   PlayerDownloadProviderType {
 
-  override fun download(request: PlayerDownloadRequest): ListenableFuture<Unit> {
+  override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
     val numberOfTimesUriWasDownloaded = uriDownloadTimes[request.uri]
 
     // check if this URI is in the map and if it's not add it with
@@ -32,13 +33,10 @@ class ExoUriDownloadProvider(
 
     onRequestSuccessfullyCompleted(request.uri)
 
-    return ListenableFutureTask.create(
-      {
-        request.onProgress.invoke(0)
-        request.onProgress.invoke(50)
-        request.onProgress.invoke(100)
-      },
-      Unit
-    )
+    return CompletableFuture.supplyAsync {
+      request.onProgress.invoke(0)
+      request.onProgress.invoke(50)
+      request.onProgress.invoke(100)
+    }
   }
 }

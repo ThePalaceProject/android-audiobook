@@ -1,12 +1,11 @@
 package org.librarysimplified.audiobook.media3
 
-import android.app.Application
 import org.librarysimplified.audiobook.api.PlayerBookID
+import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCs
-import org.librarysimplified.audiobook.manifest.api.R
 
 /**
  * A manifest transformed such that it contains information relevant to the Exo audio engine.
@@ -26,9 +25,9 @@ data class ExoManifest(
      */
 
     fun transform(
-      context: Application,
       bookID: PlayerBookID,
-      manifest: PlayerManifest
+      manifest: PlayerManifest,
+      missingTrackNames: PlayerMissingTrackNameGeneratorType
     ): PlayerResult<ExoManifest, Exception> {
       try {
         val readingOrderItems =
@@ -42,9 +41,7 @@ data class ExoManifest(
             originalManifest = manifest,
             toc = PlayerManifestTOCs.createTOC(
               manifest,
-              defaultTrackTitle = { index ->
-                context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1)
-              }
+              defaultTrackTitle = { index -> missingTrackNames.generateName(index) }
             ),
             readingOrderItems = readingOrderItems
           )

@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListenableFutureTask
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
+import java.util.concurrent.CompletableFuture
 
 /**
  * An implementation of the {@link PlayerDownloadProviderType} interface that lies about
@@ -12,14 +13,11 @@ import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 
 class DishonestDownloadProvider : PlayerDownloadProviderType {
 
-  override fun download(request: PlayerDownloadRequest): ListenableFuture<Unit> {
-    return ListenableFutureTask.create(
-      {
-        request.onProgress.invoke(0)
-        request.onProgress.invoke(50)
-        request.onProgress.invoke(100)
-      },
-      Unit
-    )
+  override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
+    return CompletableFuture.supplyAsync {
+      request.onProgress.invoke(0)
+      request.onProgress.invoke(50)
+      request.onProgress.invoke(100)
+    }
   }
 }

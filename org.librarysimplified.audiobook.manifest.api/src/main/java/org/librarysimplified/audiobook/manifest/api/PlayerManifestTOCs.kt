@@ -3,6 +3,7 @@ package org.librarysimplified.audiobook.manifest.api
 import com.io7m.kabstand.core.IntervalL
 import com.io7m.kabstand.core.IntervalTree
 import com.io7m.kabstand.core.IntervalTreeDebuggableType
+import org.joda.time.Duration
 import java.net.URI
 import java.util.regex.Pattern
 
@@ -84,9 +85,9 @@ object PlayerManifestTOCs {
     var readingOrderAbsoluteTime = 0L
     manifest.readingOrder.forEach { item ->
       val link = item.link
-      val duration = secondsToMilliseconds((link.duration ?: 0L).toLong())
+      val duration = Duration.standardSeconds((link.duration ?: 0L).toLong())
       val lower = readingOrderAbsoluteTime
-      val upper = readingOrderAbsoluteTime + Math.max(0L, duration - 1)
+      val upper = readingOrderAbsoluteTime + Math.max(0L, duration.millis - 1)
       val interval = IntervalL(lower, upper)
       readingOrderAbsoluteTime = upper + 1
       readingOrderIntervals[item.id] = interval
@@ -125,7 +126,7 @@ object PlayerManifestTOCs {
       val lowerOffset =
         withOffset.offset
       val lower =
-        readingOrderInterval.lower + lowerOffset
+        readingOrderInterval.lower + lowerOffset.millis
 
       /*
        * The upper bound for this TOC item's interval is either one less than the lower bound of
@@ -142,7 +143,7 @@ object PlayerManifestTOCs {
             readingOrderIntervals[withOffsetNext.uriWithoutOffset]!!
           val upperOffset =
             withOffsetNext.offset
-          readingOrderIntervalNext.lower + (upperOffset - 1)
+          readingOrderIntervalNext.lower + (upperOffset.millis - 1)
         } else {
           readingOrderAbsoluteTime - 1
         }
@@ -184,14 +185,22 @@ object PlayerManifestTOCs {
         }
       }
 
+      val title: String =
+        if (tocMember.item.title != null) {
+          tocMember.item.title!!
+        } else {
+          readingOrderItem.link.title
+            ?: defaultTrackTitle.invoke(tocEntryIndex)
+        }
+
       val tocItem =
         PlayerManifestTOCItem(
           index = tocIndex,
-          title = readingOrderItem.link.title ?: defaultTrackTitle.invoke(tocEntryIndex + 1),
+          title = title,
           chapter = tocEntryIndex + 1,
           intervalAbsoluteMilliseconds = tocInterval,
           readingOrderLink = readingOrderItem,
-          readingOrderOffsetMilliseconds = withOffset.offset
+          readingOrderOffsetMilliseconds = withOffset.offset.millis
         )
 
       tocItemsByInterval[tocInterval] = tocItem
@@ -206,10 +215,6 @@ object PlayerManifestTOCs {
       tocItemTree = tocItemTree,
       readingOrderIntervals = readingOrderIntervals
     )
-  }
-
-  private fun secondsToMilliseconds(seconds: Long): Long {
-    return seconds * 1000L
   }
 
   private fun insertIntervalChecked(
@@ -245,7 +250,9 @@ object PlayerManifestTOCs {
   private val uriFragmentOffsetPattern =
     Pattern.compile("t=([0-9]+)")
 
-  private fun extractURIOffset(uri: URI): URIWithOffset {
+  private fun extractURIOffset(
+    uri: URI
+  ): URIWithOffset {
     val fragment =
       uri.fragment
     val withoutOffset =
@@ -263,12 +270,15 @@ object PlayerManifestTOCs {
         0L
       }
 
-    return URIWithOffset(PlayerManifestReadingOrderID(withoutOffset.toString()), offset)
+    return URIWithOffset(
+      PlayerManifestReadingOrderID(withoutOffset.toString()),
+      Duration.standardSeconds(offset)
+    )
   }
 
   private data class URIWithOffset(
     val uriWithoutOffset: PlayerManifestReadingOrderID,
-    val offset: Long
+    val offset: Duration
   )
 
   private fun buildTOCFromManifestReadingOrder(
@@ -322,11 +332,11 @@ object PlayerManifestTOCs {
       titleOrDefault(item, defaultTrackTitle, index)
 
     val duration =
-      secondsToMilliseconds((item.link.duration ?: 1L).toLong())
+      Duration.standardSeconds((item.link.duration ?: 1L).toLong())
     val lower =
       offset
     val upper =
-      offset + (Math.max(0, duration - 1))
+      offset + (Math.max(0, duration.millis - 1))
 
     return PlayerManifestTOCItem(
       index = index,

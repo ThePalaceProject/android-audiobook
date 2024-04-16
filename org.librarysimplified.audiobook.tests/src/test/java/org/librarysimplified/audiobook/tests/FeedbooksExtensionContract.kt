@@ -22,6 +22,7 @@ import java.io.File
 import java.net.URI
 import java.util.LinkedList
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 
@@ -45,9 +46,9 @@ abstract class FeedbooksExtensionContract {
 
     override fun download(
       request: PlayerDownloadRequest
-    ): ListenableFuture<Unit> {
+    ): CompletableFuture<Unit> {
       this.requests.add(request)
-      return Futures.immediateFuture(Unit)
+      return CompletableFuture.completedFuture(Unit)
     }
   }
 

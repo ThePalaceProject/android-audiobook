@@ -11,6 +11,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.URI
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
 
 /*
  * A download provider that loads files from resources.
@@ -40,19 +41,19 @@ class ResourceDownloadProvider private constructor(
     }
   }
 
-  override fun download(request: PlayerDownloadRequest): ListenableFuture<Unit> {
-    val result = SettableFuture.create<Unit>()
+  override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
+    val result = CompletableFuture<Unit>()
 
     this.reportProgress(request, 0)
 
     this.executor.submit {
       try {
         doDownload(request, result)
-        result.set(Unit)
+        result.complete(Unit)
       } catch (e: CancellationException) {
         doCleanUp(request)
       } catch (e: Throwable) {
-        result.setException(e)
+        result.completeExceptionally(e)
         doCleanUp(request)
       }
     }
@@ -74,7 +75,7 @@ class ResourceDownloadProvider private constructor(
 
   private fun doDownload(
     request: PlayerDownloadRequest,
-    result: SettableFuture<Unit>
+    result: CompletableFuture<Unit>
   ) {
     this.log.debug("downloading {} to {}", request.uri, request.outputFile)
 
@@ -125,7 +126,7 @@ class ResourceDownloadProvider private constructor(
     inputStream: InputStream,
     outputStream: FileOutputStream,
     expectedLength: Long,
-    result: SettableFuture<Unit>
+    result: CompletableFuture<Unit>
   ) {
     var progressPrevious = 0.0
     var progressCurrent = 0.0
