@@ -90,6 +90,16 @@ class ExoAudioBookPlayer private constructor(
     this.book.readingOrder.first()
 
   /**
+   * A flag that indicates whether the current reading order item is being read from local storage,
+   * or is being streamed from the network. This flag is expected to be set by the caller when
+   * the caller instructs the player to load a new chapter.
+   */
+
+  @Volatile
+  internal var isStreamingNow: Boolean =
+    false
+
+  /**
    * The state the user has asked the player to be in.
    */
 
@@ -108,7 +118,10 @@ class ExoAudioBookPlayer private constructor(
       tocItemFor = { item, time ->
         this.tocItemFor(item.id, time)
       },
-      toc = this.book.tableOfContents
+      toc = this.book.tableOfContents,
+      isStreamingNow = {
+        this.isStreamingNow
+      }
     )
 
   init {
@@ -121,7 +134,10 @@ class ExoAudioBookPlayer private constructor(
     this.bookmarkObserver =
       ExoBookmarkObserver.create(
         player = this,
-        onBookmarkCreate = this.statusEvents::onNext
+        onBookmarkCreate = this.statusEvents::onNext,
+        isStreamingNow = {
+          this.isStreamingNow
+        }
       )
     this.resources.add(Disposables.fromAction(this.bookmarkObserver::close))
 
@@ -193,7 +209,8 @@ class ExoAudioBookPlayer private constructor(
               readingOrderItem = this.currentReadingOrderElement,
               offsetMilliseconds = 0,
               tocItem = tocItem,
-              totalRemainingBookTime = toc.totalDurationRemaining(tocItem, 0L)
+              totalRemainingBookTime = toc.totalDurationRemaining(tocItem, 0L),
+              isStreaming = this.isStreamingNow
             )
           )
         }
@@ -210,7 +227,8 @@ class ExoAudioBookPlayer private constructor(
             readingOrderItem = this.currentReadingOrderElement,
             offsetMilliseconds = offsetMilliseconds,
             tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
+            isStreaming = this.isStreamingNow
           )
         )
       }
@@ -227,7 +245,8 @@ class ExoAudioBookPlayer private constructor(
               readingOrderItem = this.currentReadingOrderElement,
               offsetMilliseconds = offsetMilliseconds,
               tocItem = tocItem,
-              totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+              totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
+              isStreaming = this.isStreamingNow
             )
           )
         }
@@ -237,7 +256,8 @@ class ExoAudioBookPlayer private constructor(
             readingOrderItem = this.currentReadingOrderElement,
             offsetMilliseconds = offsetMilliseconds,
             tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
+            isStreaming = this.isStreamingNow
           )
         )
       }
@@ -253,7 +273,8 @@ class ExoAudioBookPlayer private constructor(
             readingOrderItem = this.currentReadingOrderElement,
             offsetMilliseconds = offsetMilliseconds,
             tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
+            isStreaming = this.isStreamingNow
           )
         )
       }
@@ -268,7 +289,8 @@ class ExoAudioBookPlayer private constructor(
           PlayerEventChapterCompleted(
             readingOrderItem = this.currentReadingOrderElement,
             tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
+            isStreaming = this.isStreamingNow
           )
         )
         this.playNextSpineElementIfAvailable(this.currentReadingOrderElement, 0L)
@@ -474,7 +496,8 @@ class ExoAudioBookPlayer private constructor(
           PlayerEventChapterWaiting(
             readingOrderItem = element,
             tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, 0L)
+            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, 0L),
+            isStreaming = this.isStreamingNow
           )
         )
         SKIP_TO_CHAPTER_NOT_DOWNLOADED
@@ -497,13 +520,22 @@ class ExoAudioBookPlayer private constructor(
       offset
     )
 
-    val uri =
-      Uri.fromFile(this.book.downloadTasksByID[newElement.id]!!.partFile)
+    val partFile =
+      this.book.downloadTasksByID[newElement.id]!!.partFile
+
+    val targetURI: Uri =
+      if (partFile.isFile) {
+        this.isStreamingNow = false
+        Uri.fromFile(partFile)
+      } else {
+        this.isStreamingNow = true
+        Uri.parse(newElement.itemManifest.item.link.hrefURI!!.toString())
+      }
 
     this.currentReadingOrderElement = newElement
     this.exoPlayer.setMediaSource(
       ProgressiveMediaSource.Factory(this.dataSourceFactory)
-        .createMediaSource(MediaItem.fromUri(uri))
+        .createMediaSource(MediaItem.fromUri(targetURI))
     )
 
     this.exoPlayer.prepare()
@@ -712,7 +744,8 @@ class ExoAudioBookPlayer private constructor(
         offsetMilliseconds = offsetMilliseconds,
         tocItem = tocItem,
         totalRemainingBookTime = durationRemaining,
-        kind = PlayerBookmarkKind.EXPLICIT
+        kind = PlayerBookmarkKind.EXPLICIT,
+        isStreaming = this.isStreamingNow
       )
     )
   }

@@ -4,7 +4,6 @@ import io.audioengine.mobile.AudioEngine
 import io.audioengine.mobile.PlayRequest
 import io.audioengine.mobile.PlaybackEvent
 import io.audioengine.mobile.PlayerState
-import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.subjects.BehaviorSubject
@@ -22,6 +21,7 @@ import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 import org.slf4j.Logger
@@ -71,11 +71,16 @@ class FindawayAdapter(
   private var stateLatest: FindawayPlayerPlaybackStatus =
     FindawayPlayerPlaybackStatus.INITIAL
 
-  val state: FindawayPlayerPlaybackStatus
-    get() = this.stateLatest
+  /**
+   * A flag that indicates whether the current reading order item is being read from local storage,
+   * or is being streamed from the network. The Findaway player is capable of switching between
+   * streaming and reading from local storage, so this flag has to be set or unset fairly
+   * frequently based on what the underlying player says it is doing.
+   */
 
-  val stateObservable: Observable<FindawayPlayerPlaybackStatusTransition> =
-    this.stateSubject
+  @Volatile
+  internal var isStreamingNow: Boolean =
+    false
 
   init {
     this.mostRecentPosition =
@@ -250,6 +255,9 @@ class FindawayAdapter(
 
     this.saveLocation()
 
+    this.isStreamingNow =
+      this.mostRecentPosition.readingOrderItem.downloadStatus !is PlayerReadingOrderItemDownloaded
+
     return when (event.code) {
       PlaybackEvent.PLAYBACK_STARTED -> {
         this.onPlaybackEventPlaybackStarted()
@@ -348,7 +356,8 @@ class FindawayAdapter(
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
         offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
         tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining
+        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
+        isStreaming = this.isStreamingNow,
       )
     )
   }
@@ -361,7 +370,8 @@ class FindawayAdapter(
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
         offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
         tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining
+        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
+        isStreaming = this.isStreamingNow,
       )
     )
   }
@@ -374,7 +384,8 @@ class FindawayAdapter(
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
         offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
         tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining
+        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
+        isStreaming = this.isStreamingNow,
       )
     )
   }
@@ -387,7 +398,8 @@ class FindawayAdapter(
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
         offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
         tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining
+        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
+        isStreaming = this.isStreamingNow,
       )
     )
   }
@@ -399,7 +411,8 @@ class FindawayAdapter(
       PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted(
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
         tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining
+        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
+        isStreaming = this.isStreamingNow,
       )
     )
   }
@@ -412,7 +425,8 @@ class FindawayAdapter(
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
         offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
         tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining
+        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
+        isStreaming = this.isStreamingNow,
       )
     )
   }
@@ -425,7 +439,8 @@ class FindawayAdapter(
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
         offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
         tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining
+        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
+        isStreaming = this.isStreamingNow,
       )
     )
   }
@@ -497,7 +512,8 @@ class FindawayAdapter(
         readingOrderItem = position.readingOrderItem,
         offsetMilliseconds = position.offsetMilliseconds,
         tocItem = position.tocItem,
-        totalRemainingBookTime = position.totalBookDurationRemaining
+        totalRemainingBookTime = position.totalBookDurationRemaining,
+        isStreaming = this.isStreamingNow,
       )
     )
   }
@@ -539,7 +555,8 @@ class FindawayAdapter(
         offsetMilliseconds = position.offsetMilliseconds,
         tocItem = position.tocItem,
         totalRemainingBookTime = position.totalBookDurationRemaining,
-        kind = PlayerBookmarkKind.EXPLICIT
+        kind = PlayerBookmarkKind.EXPLICIT,
+        isStreaming = this.isStreamingNow,
       )
     )
   }

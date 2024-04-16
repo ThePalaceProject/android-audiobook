@@ -79,8 +79,6 @@ class PlayerTOCChapterAdapter(
 
     holder.titleText.text =
       tocItem.title
-    holder.downloadedDurationText.text =
-      this.periodFormatter.print(tocItem.duration.toPeriod())
 
     val readingOrderItem =
       this.book.readingOrderByID[tocItem.readingOrderLink.id]!!
@@ -98,75 +96,11 @@ class PlayerTOCChapterAdapter(
 
     when (status) {
       is PlayerReadingOrderItemNotDownloaded -> {
-        holder.buttonsDownloading.visibility = INVISIBLE
-        holder.buttonsDownloadFailed.visibility = INVISIBLE
-
-        if (this.book.supportsStreaming) {
-          holder.buttonsNotDownloadedNotStreamable.visibility = INVISIBLE
-          holder.buttonsNotDownloadedStreamable.visibility = VISIBLE
-
-          if (this.book.supportsIndividualChapterDownload) {
-            holder.notDownloadedStreamableRefresh.setOnClickListener {
-              this.book.downloadTasksByID[readingOrderItem.id]?.fetch()
-            }
-            holder.notDownloadedStreamableRefresh.contentDescription =
-              this.context.getString(
-                R.string.audiobook_accessibility_toc_download,
-                position
-              )
-            holder.notDownloadedStreamableRefresh.isEnabled = true
-          } else {
-            holder.notDownloadedStreamableRefresh.contentDescription = null
-            holder.notDownloadedStreamableRefresh.isEnabled = false
-          }
-        } else {
-          holder.buttonsNotDownloadedNotStreamable.visibility = VISIBLE
-          holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
-
-          if (this.book.supportsIndividualChapterDownload) {
-            holder.notDownloadedNotStreamableRefresh.setOnClickListener {
-              this.book.downloadTasksByID[readingOrderItem.id]?.fetch()
-            }
-            holder.notDownloadedNotStreamableRefresh.contentDescription =
-              this.context.getString(
-                R.string.audiobook_accessibility_toc_download,
-                position
-              )
-            holder.notDownloadedNotStreamableRefresh.isEnabled = true
-          } else {
-            holder.notDownloadedNotStreamableRefresh.contentDescription = null
-            holder.notDownloadedNotStreamableRefresh.isEnabled = false
-          }
-          requiresDownload = true
-        }
+        // Nothing to do
       }
 
       is PlayerReadingOrderItemDownloading -> {
-        holder.buttonsDownloading.visibility = VISIBLE
-        holder.buttonsDownloadFailed.visibility = INVISIBLE
-        holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
-        holder.buttonsNotDownloadedNotStreamable.visibility = INVISIBLE
-
-        if (this.book.supportsIndividualChapterDownload) {
-          holder.downloadingProgress.setOnClickListener {
-            this.onConfirmCancelDownloading(readingOrderItem)
-          }
-          holder.downloadingProgress.isEnabled = true
-        } else {
-          holder.downloadingProgress.isEnabled = false
-        }
-
-        holder.downloadingProgress.contentDescription =
-          this.context.getString(
-            R.string.audiobook_accessibility_toc_progress,
-            position,
-            status.percent
-          )
-        holder.downloadingProgress.visibility = VISIBLE
-        holder.downloadingProgress.progress = status.percent.toFloat() * 0.01f
-
-        downloading = true
-        requiresDownload = this.book.supportsStreaming == false
+        // Nothing to do
       }
 
       is PlayerReadingOrderItemDownloaded -> {
@@ -174,26 +108,7 @@ class PlayerTOCChapterAdapter(
       }
 
       is PlayerReadingOrderItemDownloadFailed -> {
-        holder.buttonsDownloading.visibility = INVISIBLE
-        holder.buttonsDownloadFailed.visibility = VISIBLE
-        holder.buttonsNotDownloadedStreamable.visibility = INVISIBLE
-        holder.buttonsNotDownloadedNotStreamable.visibility = INVISIBLE
-
-        if (this.book.supportsIndividualChapterDownload) {
-          holder.downloadFailedRefresh.setOnClickListener {
-            this.book.downloadTasksByID[readingOrderItem.id]?.cancel()
-            this.book.downloadTasksByID[readingOrderItem.id]?.fetch()
-          }
-          holder.downloadFailedRefresh.contentDescription =
-            this.context.getString(R.string.audiobook_accessibility_toc_retry, position)
-          holder.downloadFailedRefresh.isEnabled = true
-        } else {
-          holder.downloadFailedRefresh.contentDescription = null
-          holder.downloadFailedRefresh.isEnabled = false
-        }
-
-        failedDownload = true
-        requiresDownload = this.book.supportsStreaming == false
+        // Nothing to do
       }
 
       is PlayerReadingOrderItemDownloadExpired -> {
@@ -319,48 +234,10 @@ class PlayerTOCChapterAdapter(
 
     val buttons: ViewGroup =
       this.view.findViewById(R.id.player_toc_chapter_end_controls)
-    val buttonsDownloadFailed: ViewGroup =
-      this.buttons.findViewById(R.id.player_toc_chapter_item_buttons_error)
-    val buttonsNotDownloadedNotStreamable: ViewGroup =
-      this.buttons.findViewById(R.id.player_toc_chapter_item_buttons_not_downloaded_not_streamable)
-    val buttonsNotDownloadedStreamable: ViewGroup =
-      this.buttons.findViewById(R.id.player_toc_chapter_item_buttons_not_downloaded_streamable)
-    val buttonsDownloading: ViewGroup =
-      this.buttons.findViewById(R.id.player_toc_chapter_item_buttons_downloading)
 
     val titleText: TextView =
       this.view.findViewById(R.id.player_toc_chapter_item_view_title)
     val isCurrent: ImageView =
       this.view.findViewById(R.id.player_toc_chapter_item_is_current)
-
-    val downloadFailedErrorIcon: ImageView =
-      this.buttonsDownloadFailed.findViewById(R.id.player_toc_item_download_failed_error_icon)
-    val downloadFailedRefresh: ImageView =
-      this.buttonsDownloadFailed.findViewById(R.id.player_toc_item_download_failed_refresh)
-
-    val downloadedDurationText: TextView =
-      this.view.findViewById(R.id.player_toc_chapter_item_duration)
-
-    val notDownloadedStreamableRefresh: ImageView =
-      this.buttonsNotDownloadedStreamable.findViewById(
-        R.id.player_toc_item_not_downloaded_streamable_refresh
-      )
-    val notDownloadedStreamableProgress: PlayerCircularProgressView =
-      this.buttonsNotDownloadedStreamable.findViewById(
-        R.id.player_toc_item_not_downloaded_streamable_progress
-      )
-
-    val notDownloadedNotStreamableRefresh: ImageView =
-      this.buttonsNotDownloadedNotStreamable.findViewById(
-        R.id.player_toc_item_not_downloaded_streamable_refresh
-      )
-
-    val downloadingProgress: PlayerCircularProgressView =
-      this.buttonsDownloading.findViewById(R.id.player_toc_item_downloading_progress)
-
-    init {
-      this.downloadingProgress.thickness = 8.0f
-      this.notDownloadedStreamableProgress.thickness = 8.0f
-    }
   }
 }

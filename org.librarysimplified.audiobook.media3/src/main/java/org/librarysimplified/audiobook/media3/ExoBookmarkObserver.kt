@@ -30,7 +30,8 @@ import org.slf4j.LoggerFactory
 
 class ExoBookmarkObserver private constructor(
   private val player: PlayerType,
-  private val onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit
+  private val onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit,
+  private val isStreamingNow: () -> Boolean,
 ) : AutoCloseable {
 
   private val logger =
@@ -97,7 +98,8 @@ class ExoBookmarkObserver private constructor(
           offsetMilliseconds = event.offsetMilliseconds,
           tocItem = event.tocItem,
           totalRemainingBookTime = event.totalRemainingBookTime,
-          kind = PlayerBookmarkKind.LAST_READ
+          kind = PlayerBookmarkKind.LAST_READ,
+          isStreaming = this.isStreamingNow()
         )
       )
     }
@@ -106,11 +108,13 @@ class ExoBookmarkObserver private constructor(
   companion object {
     fun create(
       player: PlayerType,
-      onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit
+      onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit,
+      isStreamingNow: () -> Boolean
     ): ExoBookmarkObserver {
       return ExoBookmarkObserver(
         player = player,
-        onBookmarkCreate = onBookmarkCreate
+        onBookmarkCreate = onBookmarkCreate,
+        isStreamingNow = isStreamingNow
       )
     }
   }

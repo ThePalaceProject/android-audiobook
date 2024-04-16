@@ -25,7 +25,8 @@ class ExoAdapter(
   private val exoPlayer: ExoPlayer,
   private val currentReadingOrderItem: () -> PlayerReadingOrderItemType,
   private val toc: PlayerManifestTOC,
-  private val tocItemFor: (PlayerReadingOrderItemType, Long) -> PlayerManifestTOCItem
+  private val tocItemFor: (PlayerReadingOrderItemType, Long) -> PlayerManifestTOCItem,
+  private val isStreamingNow: () -> Boolean,
 ) : Player.Listener, AutoCloseable {
 
   private val closed =
@@ -163,7 +164,8 @@ class ExoAdapter(
         readingOrderItem = readingOrderItem,
         offsetMilliseconds = offsetMilliseconds,
         tocItem = tocItem,
-        totalRemainingBookTime = durationRemaining
+        totalRemainingBookTime = durationRemaining,
+        isStreaming = this.isStreamingNow()
       )
     )
   }

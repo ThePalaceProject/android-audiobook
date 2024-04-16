@@ -96,7 +96,10 @@ class FindawayPlayer(
     this.bookmarkObserver =
       FindawayBookmarkObserver.create(
         player = this,
-        onBookmarkCreate = this.eventSource::onNext
+        onBookmarkCreate = this.eventSource::onNext,
+        isStreamingNow = {
+          this.engineAdapter.isStreamingNow
+        }
       )
     this.resources.add(
       Disposables.fromAction(this.bookmarkObserver::close)

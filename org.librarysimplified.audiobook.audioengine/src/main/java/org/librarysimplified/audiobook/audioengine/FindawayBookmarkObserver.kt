@@ -23,7 +23,8 @@ import org.slf4j.LoggerFactory
 
 class FindawayBookmarkObserver private constructor(
   private val player: PlayerType,
-  private val onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit
+  private val onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit,
+  private val isStreamingNow: () -> Boolean
 ) : AutoCloseable {
 
   private val logger =
@@ -91,7 +92,8 @@ class FindawayBookmarkObserver private constructor(
           offsetMilliseconds = event.offsetMilliseconds,
           tocItem = event.tocItem,
           totalRemainingBookTime = event.totalRemainingBookTime,
-          kind = PlayerBookmarkKind.LAST_READ
+          kind = PlayerBookmarkKind.LAST_READ,
+          isStreaming = this.isStreamingNow.invoke()
         )
       )
     }
@@ -100,11 +102,13 @@ class FindawayBookmarkObserver private constructor(
   companion object {
     fun create(
       player: PlayerType,
-      onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit
+      onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit,
+      isStreamingNow: () -> Boolean
     ): FindawayBookmarkObserver {
       return FindawayBookmarkObserver(
         player = player,
-        onBookmarkCreate = onBookmarkCreate
+        onBookmarkCreate = onBookmarkCreate,
+        isStreamingNow = isStreamingNow
       )
     }
   }

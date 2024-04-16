@@ -49,7 +49,17 @@ sealed class PlayerEvent {
 
     abstract val tocItem: PlayerManifestTOCItem
 
+    /**
+     * The total remaining time in the entire book.
+     */
+
     abstract val totalRemainingBookTime: Duration
+
+    /**
+     * Whether the audio data is coming from a downloaded file, or streaming from the network.
+     */
+
+    abstract val isStreaming: Boolean
 
     /**
      * Playback of the given reading order item has started.
@@ -59,7 +69,8 @@ sealed class PlayerEvent {
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long,
       override val tocItem: PlayerManifestTOCItem,
-      override val totalRemainingBookTime: Duration
+      override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
     /**
@@ -71,7 +82,8 @@ sealed class PlayerEvent {
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long,
       override val tocItem: PlayerManifestTOCItem,
-      override val totalRemainingBookTime: Duration
+      override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
     /**
@@ -84,7 +96,8 @@ sealed class PlayerEvent {
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long,
       override val tocItem: PlayerManifestTOCItem,
-      override val totalRemainingBookTime: Duration
+      override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
     /**
@@ -96,7 +109,8 @@ sealed class PlayerEvent {
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long,
       override val tocItem: PlayerManifestTOCItem,
-      override val totalRemainingBookTime: Duration
+      override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
     /**
@@ -108,7 +122,8 @@ sealed class PlayerEvent {
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long,
       override val tocItem: PlayerManifestTOCItem,
-      override val totalRemainingBookTime: Duration
+      override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
     /**
@@ -119,7 +134,8 @@ sealed class PlayerEvent {
     data class PlayerEventChapterCompleted(
       override val readingOrderItem: PlayerReadingOrderItemType,
       override val tocItem: PlayerManifestTOCItem,
-      override val totalRemainingBookTime: Duration
+      override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
     /**
@@ -130,7 +146,8 @@ sealed class PlayerEvent {
     data class PlayerEventChapterWaiting(
       override val readingOrderItem: PlayerReadingOrderItemType,
       override val tocItem: PlayerManifestTOCItem,
-      override val totalRemainingBookTime: Duration
+      override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
     /**
@@ -141,7 +158,8 @@ sealed class PlayerEvent {
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long,
       override val tocItem: PlayerManifestTOCItem,
-      override val totalRemainingBookTime: Duration
+      override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
     /**
@@ -152,7 +170,8 @@ sealed class PlayerEvent {
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: Long,
       override val tocItem: PlayerManifestTOCItem,
-      override val totalRemainingBookTime: Duration
+      override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
     /**
@@ -166,6 +185,7 @@ sealed class PlayerEvent {
       val offsetMilliseconds: Long,
       override val tocItem: PlayerManifestTOCItem,
       override val totalRemainingBookTime: Duration,
+      override val isStreaming: Boolean,
       val kind: PlayerBookmarkKind
     ) : PlayerEventWithPosition()
   }

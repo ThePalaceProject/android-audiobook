@@ -75,7 +75,8 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
         readingOrderItem = this.book.readingOrder.first(),
         offsetMilliseconds = 0L,
         tocItem = this.book.tableOfContents.tocItemsInOrder.first(),
-        totalRemainingBookTime = Duration.millis(0L)
+        totalRemainingBookTime = Duration.millis(0L),
+        isStreaming = false
       )
     )
   }
@@ -141,7 +142,8 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
           readingOrderItem = element,
           offsetMilliseconds = offset,
           tocItem = this.book.tableOfContents.tocItemsInOrder.first(),
-          totalRemainingBookTime = Duration.millis(0L)
+          totalRemainingBookTime = Duration.millis(0L),
+          isStreaming = false
         )
       )
     }
