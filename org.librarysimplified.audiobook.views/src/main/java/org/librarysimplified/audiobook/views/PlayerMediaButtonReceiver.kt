@@ -7,13 +7,14 @@ import org.slf4j.LoggerFactory
 
 class PlayerMediaButtonReceiver : MediaButtonReceiver() {
 
-  private val logger = LoggerFactory.getLogger(PlayerMediaButtonReceiver::class.java)
+  private val logger =
+    LoggerFactory.getLogger(PlayerMediaButtonReceiver::class.java)
 
   override fun onReceive(context: Context?, intent: Intent?) {
     try {
       super.onReceive(context, intent)
     } catch (exception: IllegalStateException) {
-      this.logger.error("Received exception on MediaButtonReceiver: {}", exception)
+      this.logger.error("Received exception on MediaButtonReceiver: ", exception)
     }
   }
 }

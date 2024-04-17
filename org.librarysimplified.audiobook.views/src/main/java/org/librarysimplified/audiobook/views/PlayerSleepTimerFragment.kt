@@ -1,6 +1,5 @@
 package org.librarysimplified.audiobook.views
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -21,26 +20,20 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerConfigurationPreset.M
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfigurationPreset.MINUTES_60
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfigurationPreset.NOW
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfigurationPreset.OFF
-import org.librarysimplified.audiobook.api.PlayerType
-import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilitySleepTimerSettingChanged
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.slf4j.LoggerFactory
 
 /**
  * A sleep timer configuration fragment.
- *
- * New instances MUST be created with {@link #newInstance()} rather than calling the constructor
- * directly. The public constructor only exists because the Android API requires it.
- *
- * Activities hosting this fragment MUST implement the {@link org.librarysimplified.audiobook.views.PlayerFragmentListenerType}
- * interface. An exception will be raised if this is not the case.
  */
 
 class PlayerSleepTimerFragment : DialogFragment() {
 
-  private val log = LoggerFactory.getLogger(PlayerSleepTimerFragment::class.java)
-  private lateinit var listener: PlayerFragmentListenerType
+  private val log =
+    LoggerFactory.getLogger(PlayerSleepTimerFragment::class.java)
+
+  private lateinit var list: RecyclerView
   private lateinit var adapter: PlayerSleepTimerAdapter
-  private lateinit var player: PlayerType
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -50,49 +43,25 @@ class PlayerSleepTimerFragment : DialogFragment() {
     val view: ViewGroup =
       inflater.inflate(R.layout.player_sleep_timer_view, container, false) as ViewGroup
 
-    val list: RecyclerView =
-      view.findViewById(R.id.list)
-    this.dialog?.setTitle(R.string.audiobook_player_menu_sleep_title)
+    this.list = view.findViewById(R.id.list)
+    this.list.layoutManager = LinearLayoutManager(view.context)
+    this.list.setHasFixedSize(true)
 
-    list.layoutManager = LinearLayoutManager(view.context)
-    list.setHasFixedSize(true)
-    list.adapter = this.adapter
-
-    val cancelButton: TextView =
-      view.findViewById(R.id.cancel_button)
-
-    cancelButton.setOnClickListener {
-      dismiss()
-    }
-
+    val cancelButton: TextView = view.findViewById(R.id.cancel_button)
+    cancelButton.setOnClickListener { this.dismiss() }
     return view
   }
 
-  override fun onAttach(context: Context) {
-    super.onAttach(context)
+  override fun onStart() {
+    super.onStart()
 
-    if (context is PlayerFragmentListenerType) {
-      this.listener = context
-      this.player = this.listener.onPlayerWantsPlayer()
-      this.adapter =
-        PlayerSleepTimerAdapter(
-          context = context,
-          rates = this.enabledSleepTimerConfigurations(),
-          onSelect = { item -> this.onSleepTimerSelected(item) }
-        )
-    } else {
-      throw ClassCastException(
-        StringBuilder(64)
-          .append("The activity hosting this fragment must implement one or more listener interfaces.\n")
-          .append("  Activity: ")
-          .append(context::class.java.canonicalName)
-          .append('\n')
-          .append("  Required interface: ")
-          .append(PlayerFragmentListenerType::class.java.canonicalName)
-          .append('\n')
-          .toString()
+    this.adapter =
+      PlayerSleepTimerAdapter(
+        context = this.requireContext(),
+        rates = this.enabledSleepTimerConfigurations(),
+        onSelect = { item -> this.onSleepTimerSelected(item) }
       )
-    }
+    this.list.adapter = this.adapter
   }
 
   /**
@@ -102,7 +71,9 @@ class PlayerSleepTimerFragment : DialogFragment() {
 
   private fun enabledSleepTimerConfigurations(): List<PlayerSleepTimerConfigurationPreset> {
     val nowEnabled =
-      requireContext().resources.getBoolean(R.bool.audiobook_player_debug_sleep_timer_now_enabled)
+      this.requireContext()
+        .resources.getBoolean(R.bool.audiobook_player_debug_sleep_timer_now_enabled)
+
     return PlayerSleepTimerConfigurationPreset.entries.filter { configuration ->
       when (configuration) {
         MINUTES_15,
@@ -119,16 +90,6 @@ class PlayerSleepTimerFragment : DialogFragment() {
   private fun onSleepTimerSelected(item: PlayerSleepTimerConfigurationPreset) {
     this.log.debug("onSleepTimerSelected: {}", item)
 
-    try {
-      this.listener.onPlayerAccessibilityEvent(
-        PlayerAccessibilitySleepTimerSettingChanged(
-          PlayerSleepTimerAdapter.hasBeenSetToContentDescriptionOf(resources, item)
-        )
-      )
-    } catch (ex: Exception) {
-      this.log.debug("ignored exception in event handler: ", ex)
-    }
-
     PlayerSleepTimer.configure(
       when (item) {
         NOW -> WithDuration(Duration.standardSeconds(1))
@@ -141,19 +102,6 @@ class PlayerSleepTimerFragment : DialogFragment() {
       }
     )
 
-    if (this.player.isPlaying) {
-      PlayerSleepTimer.start()
-    } else {
-      PlayerSleepTimer.pause()
-    }
-
-    this.dismiss()
-  }
-
-  companion object {
-    @JvmStatic
-    fun newInstance(): PlayerSleepTimerFragment {
-      return PlayerSleepTimerFragment()
-    }
+    PlayerUIThread.runOnUIThreadDelayed({ this.dismiss() }, 250L)
   }
 }

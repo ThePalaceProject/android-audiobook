@@ -33,10 +33,23 @@ class FeedbooksStatusCheck(
   private val logger =
     LoggerFactory.getLogger(FeedbooksStatusCheck::class.java)
 
+  private fun event(message: String) {
+    this.parameters.onStatusChanged.invoke(
+      SingleLicenseCheckStatus(
+        source = "FeedbooksStatusCheck",
+        message = message
+      )
+    )
+  }
+
   override fun execute(): SingleLicenseCheckResult {
+    this.event("Started status check…")
+
     return when (val link = this.parameters.manifest.links.find(this::linkIsLicenseLink)) {
-      null ->
+      null -> {
+        this.event("Check is not applicable: No license link.")
         SingleLicenseCheckResult.NotApplicable("No license link.")
+      }
       is PlayerManifestLink.LinkBasic -> {
         val href = link.href
         if (href == null) {
@@ -45,8 +58,10 @@ class FeedbooksStatusCheck(
           this.checkLink(href)
         }
       }
-      is PlayerManifestLink.LinkTemplated ->
+      is PlayerManifestLink.LinkTemplated -> {
+        this.event("Check is not applicable: Templated links are not supported.")
         SingleLicenseCheckResult.NotApplicable("Templated links are not supported.")
+      }
     }
   }
 
@@ -55,13 +70,7 @@ class FeedbooksStatusCheck(
 
   private fun checkLink(target: URI): SingleLicenseCheckResult {
     this.logger.debug("fetching license document")
-
-    this.parameters.onStatusChanged.invoke(
-      SingleLicenseCheckStatus(
-        source = "org.librarysimplified.audiobook.feedbooks.FeedbooksStatusCheck",
-        message = "Fetching license document $target..."
-      )
-    )
+    this.event("Fetching license document $target…")
 
     val request =
       Request.Builder()
@@ -73,6 +82,7 @@ class FeedbooksStatusCheck(
       this.logger.debug("response: {} {}", response.code, response.message)
 
       if (!response.isSuccessful) {
+        this.event("Check is not applicable: The server failed to produce a license status document.")
         return SingleLicenseCheckResult.NotApplicable(
           "The server failed to produce a license status document."
         )
@@ -93,13 +103,17 @@ class FeedbooksStatusCheck(
         this.logger.debug("license status: {}", document.status)
         when (document.status) {
           READY,
-          ACTIVE ->
+          ACTIVE -> {
+            this.event("Check succeeded: License status is ${document.status}")
             SingleLicenseCheckResult.Succeeded("License status is ${document.status}")
+          }
           REVOKED,
           RETURNED,
           CANCELLED,
-          EXPIRED ->
+          EXPIRED -> {
+            this.event("Check failed: License status is ${document.status}")
             SingleLicenseCheckResult.Failed("License status is ${document.status}")
+          }
         }
       }
       is ParseResult.Failure -> {
@@ -111,7 +125,10 @@ class FeedbooksStatusCheck(
             error.column,
             error.message
           )
+          this.event("License parse error: ${error.source}: ${error.line}:${error.column}: ${error.message}")
         }
+
+        this.event("Check is not applicable: The server produced an unparseable license status document.")
         return SingleLicenseCheckResult.NotApplicable(
           "The server produced an unparseable license status document."
         )

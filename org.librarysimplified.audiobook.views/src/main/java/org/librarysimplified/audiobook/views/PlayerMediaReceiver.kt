@@ -5,11 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 
-class PlayerMediaReceiver(private val onAudioBecomingNoisy: () -> Unit) : BroadcastReceiver() {
+class PlayerMediaReceiver(
+  private val onAudioBecomingNoisy: () -> Unit
+) : BroadcastReceiver() {
 
   override fun onReceive(context: Context?, intent: Intent?) {
     if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
-      onAudioBecomingNoisy()
+      this.onAudioBecomingNoisy()
     }
   }
 }

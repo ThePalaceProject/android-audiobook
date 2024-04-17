@@ -1,6 +1,5 @@
 package org.librarysimplified.audiobook.views
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,27 +9,20 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
-import org.librarysimplified.audiobook.api.PlayerType
-import org.librarysimplified.audiobook.views.PlayerAccessibilityEvent.PlayerAccessibilityPlaybackRateChanged
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.slf4j.LoggerFactory
 
 /**
  * A playback rate configuration fragment.
- *
- * New instances MUST be created with {@link #newInstance()} rather than calling the constructor
- * directly. The public constructor only exists because the Android API requires it.
- *
- * Activities hosting this fragment MUST implement the {@link org.librarysimplified.audiobook.views.PlayerFragmentListenerType}
- * interface. An exception will be raised if this is not the case.
  */
 
 class PlayerPlaybackRateFragment : DialogFragment() {
 
-  private val log = LoggerFactory.getLogger(PlayerPlaybackRateFragment::class.java)
-  private lateinit var listener: PlayerFragmentListenerType
+  private val log =
+    LoggerFactory.getLogger(PlayerPlaybackRateFragment::class.java)
+
   private lateinit var adapter: PlayerPlaybackRateAdapter
-  private lateinit var player: PlayerType
-  private lateinit var parameters: PlayerFragmentParameters
+  private lateinit var list: RecyclerView
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -40,89 +32,32 @@ class PlayerPlaybackRateFragment : DialogFragment() {
     val view: ViewGroup =
       inflater.inflate(R.layout.player_rate_view, container, false) as ViewGroup
 
-    val list: RecyclerView =
-      view.findViewById(R.id.list)
-    this.dialog?.setTitle(R.string.audiobook_player_menu_playback_rate_title)
+    this.list = view.findViewById(R.id.list)
+    this.list.layoutManager = LinearLayoutManager(view.context)
+    this.list.setHasFixedSize(true)
 
-    list.layoutManager = LinearLayoutManager(view.context)
-    list.setHasFixedSize(true)
-    list.adapter = this.adapter
-
-    val cancelButton: TextView =
-      view.findViewById(R.id.cancel_button)
-
-    cancelButton.setOnClickListener {
-      dismiss()
-    }
-
+    val cancelButton: TextView = view.findViewById(R.id.cancel_button)
+    cancelButton.setOnClickListener { this.dismiss() }
     return view
   }
 
-  override fun onAttach(context: Context) {
-    super.onAttach(context)
+  override fun onStart() {
+    super.onStart()
 
-    this.parameters =
-      requireArguments().getSerializable(parametersKey)
-        as PlayerFragmentParameters
-
-    if (context is PlayerFragmentListenerType) {
-      this.listener = context
-
-      this.player = this.listener.onPlayerWantsPlayer()
-
-      this.adapter =
-        PlayerPlaybackRateAdapter(
-          resources = this.resources,
-          rates = PlayerPlaybackRate.values().toList(),
-          onSelect = { item -> this.onPlaybackRateSelected(item) }
-        )
-
-      this.adapter.setCurrentPlaybackRate(this.player.playbackRate)
-    } else {
-      throw ClassCastException(
-        StringBuilder(64)
-          .append("The activity hosting this fragment must implement one or more listener interfaces.\n")
-          .append("  Activity: ")
-          .append(context::class.java.canonicalName)
-          .append('\n')
-          .append("  Required interface: ")
-          .append(PlayerFragmentListenerType::class.java.canonicalName)
-          .append('\n')
-          .toString()
-      )
-    }
+    this.adapter = PlayerPlaybackRateAdapter(
+      resources = this.resources,
+      rates = PlayerPlaybackRate.entries.toList(),
+      onSelect = this::onPlaybackRateSelected
+    )
+    this.list.adapter = this.adapter
+    this.adapter.setCurrentPlaybackRate(PlayerModel.playbackRate)
   }
 
   private fun onPlaybackRateSelected(item: PlayerPlaybackRate) {
     this.log.debug("onPlaybackRateSelected: {}", item)
 
-    try {
-      this.listener.onPlayerAccessibilityEvent(
-        PlayerAccessibilityPlaybackRateChanged(
-          PlayerPlaybackRateAdapter.hasBeenSetToContentDescriptionOfRate(resources, item)
-        )
-      )
-    } catch (ex: Exception) {
-      this.log.debug("ignored exception in handler: ", ex)
-    }
-
+    PlayerModel.setPlaybackRate(item)
     this.adapter.setCurrentPlaybackRate(item)
-    this.player.playbackRate = item
-    this.dismiss()
-  }
-
-  companion object {
-
-    const val parametersKey =
-      "org.librarysimplified.audiobook.views.PlayerPlaybackRateFragment.parameters"
-
-    @JvmStatic
-    fun newInstance(parameters: PlayerFragmentParameters): PlayerPlaybackRateFragment {
-      val args = Bundle()
-      args.putSerializable(parametersKey, parameters)
-      val fragment = PlayerPlaybackRateFragment()
-      fragment.arguments = args
-      return fragment
-    }
+    PlayerUIThread.runOnUIThreadDelayed({ this.dismiss() }, 250L)
   }
 }

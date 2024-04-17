@@ -16,9 +16,8 @@ dependencies {
     implementation(project(":org.librarysimplified.audiobook.manifest_parser.api"))
     implementation(project(":org.librarysimplified.audiobook.manifest_parser.extension_spi"))
     implementation(project(":org.librarysimplified.audiobook.manifest_parser.webpub"))
-    implementation(project(":org.librarysimplified.audiobook.open_access"))
+    implementation(project(":org.librarysimplified.audiobook.media3"))
     implementation(project(":org.librarysimplified.audiobook.parser.api"))
-    implementation(project(":org.librarysimplified.audiobook.rbdigital"))
     implementation(project(":org.librarysimplified.audiobook.views"))
 
     implementation(libs.androidx.activity)
@@ -107,6 +106,7 @@ dependencies {
     implementation(libs.jackson.core)
     implementation(libs.jackson.databind)
     implementation(libs.joda.time)
+    implementation(libs.kabstand)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
@@ -125,14 +125,17 @@ dependencies {
     implementation(libs.palace.http.api)
     implementation(libs.palace.http.vanilla)
     implementation(libs.palace.theme)
+    implementation(libs.r2.shared)
+    implementation(libs.r2.streamer)
     implementation(libs.reactive.streams)
     implementation(libs.rxandroid2)
-    implementation(libs.rxjava)
     implementation(libs.rxjava2)
     implementation(libs.slf4j)
 
-    if (project.hasProperty("org.thepalaceproject.audiobook.demo.with_findaway")) {
-        if (project.property("org.thepalaceproject.audiobook.demo.with_findaway") == "true") {
+    if (project.hasProperty("org.thepalaceproject.findaway.enabled")) {
+        if (project.property("org.thepalaceproject.findaway.enabled") == "true") {
+            implementation(project(":org.librarysimplified.audiobook.audioengine"))
+
             implementation(libs.dagger)
             implementation(libs.exoplayer2.core)
             implementation(libs.findaway)
@@ -150,12 +153,12 @@ dependencies {
             implementation(libs.moshi.kotlin)
             implementation(libs.okhttp3)
             implementation(libs.okhttp3.logging.interceptor)
-            implementation(libs.palace.findaway)
             implementation(libs.retrofit2)
             implementation(libs.retrofit2.adapter.rxjava)
             implementation(libs.retrofit2.converter.gson)
             implementation(libs.retrofit2.converter.moshi)
             implementation(libs.rxandroid)
+            implementation(libs.rxjava)
             implementation(libs.rxrelay)
             implementation(libs.sqlbrite)
             implementation(libs.stately.common)

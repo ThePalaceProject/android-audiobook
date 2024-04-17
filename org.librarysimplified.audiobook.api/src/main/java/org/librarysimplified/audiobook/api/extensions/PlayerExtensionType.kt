@@ -1,9 +1,9 @@
 package org.librarysimplified.audiobook.api.extensions
 
-import com.google.common.util.concurrent.ListenableFuture
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 
 /**
@@ -37,5 +37,5 @@ interface PlayerExtensionType {
     downloadProvider: PlayerDownloadProviderType,
     originalRequest: PlayerDownloadRequest,
     link: PlayerManifestLink
-  ): ListenableFuture<Unit>?
+  ): CompletableFuture<Unit>?
 }

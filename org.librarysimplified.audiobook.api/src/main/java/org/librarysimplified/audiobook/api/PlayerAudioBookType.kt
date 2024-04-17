@@ -1,10 +1,11 @@
 package org.librarysimplified.audiobook.api
 
-import com.google.common.util.concurrent.ListenableFuture
+import io.reactivex.Observable
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
-import rx.Observable
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import java.io.Closeable
-import java.util.SortedMap
+import java.util.concurrent.CompletableFuture
 
 /**
  * An instance of an audio book. The audio book must be closed when it is no longer needed.
@@ -40,48 +41,42 @@ interface PlayerAudioBookType : Closeable {
   val supportsIndividualChapterDeletion: Boolean
 
   /**
-   * The list of spine items in reading order.
+   * True iff the underlying audio engine supports the download of individual chapters via
+   * the PlayerDownloadTaskType interface. If this is false, books may only be downloaded using
+   * the [wholeBookDownloadTask].
    */
 
-  val spine: List<PlayerSpineElementType>
+  val supportsIndividualChapterDownload: Boolean
+
+  /**
+   * The list of reading order items in reading order.
+   */
+
+  val readingOrder: List<PlayerReadingOrderItemType>
 
   /**
    * The list of download tasks for each available audiobook file.
    */
+
   val downloadTasks: List<PlayerDownloadTaskType>
 
   /**
-   * The spine items organized by their unique IDs.
+   * The list of download tasks for each available audiobook file.
    */
 
-  val spineByID: Map<String, PlayerSpineElementType>
+  val downloadTasksByID: Map<PlayerManifestReadingOrderID, PlayerDownloadTaskType>
 
   /**
-   * The spine items grouped into parts and chapters.
+   * The reading order items organized by their unique IDs.
    */
 
-  val spineByPartAndChapter: SortedMap<Int, SortedMap<Int, PlayerSpineElementType>>
-
-  /**
-   * A convenience method for accessing elements of the #spineByPartAndChapter property.
-   */
-
-  fun spineElementForPartAndChapter(
-    part: Int,
-    chapter: Int
-  ): PlayerSpineElementType? {
-    if (this.spineByPartAndChapter.containsKey(part)) {
-      val chapters = this.spineByPartAndChapter[part]!!
-      return chapters[chapter]
-    }
-    return null
-  }
+  val readingOrderByID: Map<PlayerManifestReadingOrderID, PlayerReadingOrderItemType>
 
   /**
    * An observable publishing changes to the current download status of the part.
    */
 
-  val spineElementDownloadStatus: Observable<PlayerSpineElementDownloadStatus>
+  val readingOrderElementDownloadStatus: Observable<PlayerReadingOrderItemDownloadStatus>
 
   /**
    * Create a player for the audio book. The player must be closed when it is no longer needed.
@@ -113,7 +108,17 @@ interface PlayerAudioBookType : Closeable {
    * @see [id]
    */
 
-  fun replaceManifest(
-    manifest: PlayerManifest
-  ): ListenableFuture<Unit>
+  fun replaceManifest(manifest: PlayerManifest): CompletableFuture<Unit>
+
+  /**
+   * @return The table of contents generated from the manifest
+   */
+
+  val tableOfContents: PlayerManifestTOC
+
+  /**
+   * The most recent manifest
+   */
+
+  val manifest: PlayerManifest
 }

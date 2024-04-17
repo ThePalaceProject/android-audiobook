@@ -9,7 +9,7 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.okhttp3)
     implementation(libs.palace.http.api)
-    implementation(libs.rxjava)
+    implementation(libs.rxjava2)
     implementation(libs.slf4j)
 
     compileOnly(libs.jcip)

@@ -1,7 +1,5 @@
 package org.librarysimplified.audiobook.feedbooks
 
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadRequestCredentials.BearerToken
@@ -13,6 +11,7 @@ import org.librarysimplified.audiobook.json_web_token.JSONWebTokenClaims
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.slf4j.LoggerFactory
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 
 /**
@@ -40,7 +39,7 @@ class FeedbooksPlayerExtension : PlayerExtensionType {
     downloadProvider: PlayerDownloadProviderType,
     originalRequest: PlayerDownloadRequest,
     link: PlayerManifestLink
-  ): ListenableFuture<Unit>? {
+  ): CompletableFuture<Unit>? {
     return when (link.properties.encrypted?.scheme) {
       "http://www.feedbooks.com/audiobooks/access-restriction" ->
         this.runBearerTokenRetrieval(
@@ -55,15 +54,18 @@ class FeedbooksPlayerExtension : PlayerExtensionType {
   private fun runBearerTokenRetrieval(
     downloadProvider: PlayerDownloadProviderType,
     originalRequest: PlayerDownloadRequest
-  ): ListenableFuture<Unit> {
+  ): CompletableFuture<Unit> {
     this.logger.debug("running bearer token authentication for {}", originalRequest.uri)
 
-    val currentConfiguration =
-      this.configuration ?: return Futures.immediateFailedFuture(
-        IllegalStateException(
-          "Link requires Feedbooks support, but the Feedbooks extension has not been configured."
-        )
+    val failure = CompletableFuture<Unit>()
+    failure.completeExceptionally(
+      IllegalStateException(
+        "Link requires Feedbooks support, but the Feedbooks extension has not been configured."
       )
+    )
+
+    val currentConfiguration =
+      this.configuration ?: return failure
 
     val tokenHeader =
       JOSEHeader(

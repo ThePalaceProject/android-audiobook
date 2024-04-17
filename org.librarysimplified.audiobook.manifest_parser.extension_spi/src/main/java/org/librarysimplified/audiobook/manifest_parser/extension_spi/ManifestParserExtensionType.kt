@@ -1,8 +1,8 @@
 package org.librarysimplified.audiobook.manifest_parser.extension_spi
 
 import one.irradia.fieldrush.api.FRParserObjectFieldSchema
-import org.librarysimplified.audiobook.manifest.api.PlayerManifestExtensionValueType
 import org.librarysimplified.audiobook.api.PlayerVersion
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestExtensionValueType
 
 /**
  * A parser extension.

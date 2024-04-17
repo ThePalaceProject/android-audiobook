@@ -2,6 +2,7 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="?android:attr/selectableItemBackground"
     android:layout_width="match_parent"
     android:layout_height="80dp">
 
@@ -24,6 +25,8 @@
         android:padding="12dp"
         android:textAlignment="center"
         android:textSize="24sp"
+        android:clickable="false"
+        android:focusable="false"
         tools:text="Placeholder" />
 
 </RelativeLayout>

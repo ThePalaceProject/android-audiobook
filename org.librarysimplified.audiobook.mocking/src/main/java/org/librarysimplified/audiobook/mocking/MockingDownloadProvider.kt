@@ -1,12 +1,11 @@
 package org.librarysimplified.audiobook.mocking
 
-import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
-import com.google.common.util.concurrent.SettableFuture
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import java.io.IOException
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
 
 /**
  * A fake download provider that takes URIs of the form "urn:n" where "n" is a positive integer,
@@ -18,22 +17,20 @@ class MockingDownloadProvider(
   private val executorService: ListeningExecutorService
 ) : PlayerDownloadProviderType {
 
-  override fun download(request: PlayerDownloadRequest): ListenableFuture<Unit> {
-    val result = SettableFuture.create<Unit>()
+  override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
+    val result = CompletableFuture<Unit>()
 
     this.reportProgress(request, 0)
-
-    this.executorService.submit {
+    this.executorService.execute {
       try {
         if (this.shouldFail.invoke(request)) {
           throw IOException("Failed!")
         }
-
-        doDownload(request, result)
-        result.set(Unit)
+        result.complete(doDownload(request, result))
       } catch (e: CancellationException) {
+        result.cancel(true)
       } catch (e: Throwable) {
-        result.setException(e)
+        result.completeExceptionally(e)
       }
     }
     return result
@@ -47,7 +44,7 @@ class MockingDownloadProvider(
     }
   }
 
-  private fun doDownload(request: PlayerDownloadRequest, result: SettableFuture<Unit>) {
+  private fun doDownload(request: PlayerDownloadRequest, result: CompletableFuture<Unit>) {
     val time = Math.max(1, request.uri.rawSchemeSpecificPart.toInt()) * 10
 
     request.onProgress(0)

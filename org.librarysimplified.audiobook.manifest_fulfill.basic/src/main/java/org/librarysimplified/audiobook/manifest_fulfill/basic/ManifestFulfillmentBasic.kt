@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.manifest_fulfill.basic
 
-import okhttp3.OkHttpClient
+import io.reactivex.Observable
+import io.reactivex.subjects.PublishSubject
 import one.irradia.mime.vanilla.MIMEParser
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
@@ -11,15 +12,12 @@ import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
 import org.librarysimplified.http.api.LSHTTPRequestBuilderType.AllowRedirects.ALLOW_UNSAFE_REDIRECTS
 import org.librarysimplified.http.api.LSHTTPResponseStatus
 import org.slf4j.LoggerFactory
-import rx.Observable
-import rx.subjects.PublishSubject
 
 /**
  * A fulfillment strategy that expects to receive a manifest directly, via HTTP basic authentication.
  */
 
 class ManifestFulfillmentBasic(
-  private val client: OkHttpClient,
   private val configuration: ManifestFulfillmentBasicParameters
 ) : ManifestFulfillmentStrategyType {
 
@@ -35,12 +33,7 @@ class ManifestFulfillmentBasic(
   override fun execute(): PlayerResult<ManifestFulfilled, ManifestFulfillmentErrorType> {
     this.logger.debug("fulfilling manifest: {}", this.configuration.uri)
 
-    this.eventSubject.onNext(
-      ManifestFulfillmentEvent(
-        "Fulfilling ${this.configuration.uri}"
-      )
-    )
-
+    this.eventSubject.onNext(ManifestFulfillmentEvent("Fulfilling ${this.configuration.uri}…"))
     val credentials = this.configuration.credentials
     val httpClient = this.configuration.httpClient
 
@@ -59,6 +52,7 @@ class ManifestFulfillmentBasic(
       .allowRedirects(ALLOW_UNSAFE_REDIRECTS)
       .build()
 
+    this.eventSubject.onNext(ManifestFulfillmentEvent("Connecting…"))
     val response = request.execute()
 
     val responseCode = response.properties?.status ?: 0
@@ -119,6 +113,6 @@ class ManifestFulfillmentBasic(
   }
 
   override fun close() {
-    this.eventSubject.onCompleted()
+    this.eventSubject.onComplete()
   }
 }

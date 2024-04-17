@@ -111,13 +111,17 @@ object PlayerTimeStrings {
     return duration?.let { time -> hourMinuteSecondTextFromDuration(time) }.orEmpty()
   }
 
-  fun hourMinuteTextFromRemainingTime(context: Context, remainingTime: Long): String {
-    val minutes = ((remainingTime / (1000 * 60)) % 60).toInt()
-    val hours = (remainingTime / (1000 * 60 * 60)).toInt()
-
-    return if (hours == 0) {
+  fun hourMinuteTextFromRemainingTime(
+    context: Context,
+    remainingTime: Duration
+  ): String {
+    val hours = remainingTime.standardHours
+    return if (hours == 0L) {
+      val minutes = remainingTime.standardMinutes
       context.getString(R.string.audiobook_player_remaining_time_minutes_only, minutes)
     } else {
+      val withoutHours = remainingTime.minus(Duration.standardHours(hours))
+      val minutes = withoutHours.standardMinutes
       context.getString(R.string.audiobook_player_remaining_time, hours, minutes)
     }
   }

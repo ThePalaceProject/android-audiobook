@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.api
 
-import com.google.common.util.concurrent.ListenableFuture
+import java.util.concurrent.CompletableFuture
 
 /**
  * A provider of downloads.
@@ -29,7 +29,5 @@ interface PlayerDownloadProviderType {
    * @return A future representing the download in progress.
    */
 
-  fun download(
-    request: PlayerDownloadRequest
-  ): ListenableFuture<Unit>
+  fun download(request: PlayerDownloadRequest): CompletableFuture<Unit>
 }

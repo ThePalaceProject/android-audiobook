@@ -1,0 +1,444 @@
+{
+  "@context": "https://readium.org/webpub-manifest/context.jsonld",
+  "metadata": {
+    "@type": "http://schema.org/Audiobook",
+    "identifier": "urn:isbn:9781442304611",
+    "title": "The Demon's Covenant",
+    "language": "en",
+    "modified": "2021-06-29T02:33:44Z",
+    "published": "2010-05-18T00:00:00Z",
+    "publisher": "Simon \u0026 Schuster audio",
+    "author": "Sarah Rees Brennan",
+    "duration": 51693
+  },
+  "links": [
+    {
+      "href": "manifest.json",
+      "type": "application/audiobook+json",
+      "rel": "self"
+    }
+  ],
+  "readingOrder": [
+    {
+      "href": "9781442304611_00_TheDemonsCovenant_Title.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_00_TheDemonsCovenant_Title.mp3",
+      "duration": 41,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_01_TheDemonsCovenant_CH01.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_01_TheDemonsCovenant_CH01.mp3",
+      "duration": 1872,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_02_TheDemonsCovenant_CH02.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_02_TheDemonsCovenant_CH02.mp3",
+      "duration": 1741,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_03_TheDemonsCovenant_CH03.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_03_TheDemonsCovenant_CH03.mp3",
+      "duration": 1738,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_04_TheDemonsCovenant_CH04.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_04_TheDemonsCovenant_CH04.mp3",
+      "duration": 1302,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_05_TheDemonsCovenant_CH05.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_05_TheDemonsCovenant_CH05.mp3",
+      "duration": 1538,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_06_TheDemonsCovenant_CH06.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_06_TheDemonsCovenant_CH06.mp3",
+      "duration": 2354,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_07_TheDemonsCovenant_CH07.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_07_TheDemonsCovenant_CH07.mp3",
+      "duration": 2051,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_08_TheDemonsCovenant_CH08.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_08_TheDemonsCovenant_CH08.mp3",
+      "duration": 2239,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_09_TheDemonsCovenant_CH09.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_09_TheDemonsCovenant_CH09.mp3",
+      "duration": 1126,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_10_TheDemonsCovenant_CH10.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_10_TheDemonsCovenant_CH10.mp3",
+      "duration": 3324,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_11_TheDemonsCovenant_CH11.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_11_TheDemonsCovenant_CH11.mp3",
+      "duration": 2531,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_12_TheDemonsCovenant_CH12.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_12_TheDemonsCovenant_CH12.mp3",
+      "duration": 3874,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_13_TheDemonsCovenant_CH13.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_13_TheDemonsCovenant_CH13.mp3",
+      "duration": 2695,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_14_TheDemonsCovenant_CH14.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_14_TheDemonsCovenant_CH14.mp3",
+      "duration": 1621,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_15_TheDemonsCovenant_CH15.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_15_TheDemonsCovenant_CH15.mp3",
+      "duration": 2502,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_16_TheDemonsCovenant_CH16.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_16_TheDemonsCovenant_CH16.mp3",
+      "duration": 3338,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_17_TheDemonsCovenant_CH17.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_17_TheDemonsCovenant_CH17.mp3",
+      "duration": 2798,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_18_TheDemonsCovenant_CH18.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_18_TheDemonsCovenant_CH18.mp3",
+      "duration": 3116,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_19_TheDemonsCovenant_CH19.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_19_TheDemonsCovenant_CH19.mp3",
+      "duration": 3106,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_20_TheDemonsCovenant_CH20.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_20_TheDemonsCovenant_CH20.mp3",
+      "duration": 2913,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_21_TheDemonsCovenant_CH21.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_21_TheDemonsCovenant_CH21.mp3",
+      "duration": 3790,
+      "bitrate": 96,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9781442304611_22_TheDemonsCovenant_Credits.mp3",
+      "type": "audio/mpeg",
+      "title": "9781442304611_22_TheDemonsCovenant_Credits.mp3",
+      "duration": 72,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "profile": "http://readium.org/lcp/profile-1.0",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "href": "898ffc3a898b67a583092a86bbfa7ebd9262e3.jpg",
+      "type": "image/jpeg",
+      "rel": "cover",
+      "height": 2400,
+      "width": 2400
+    }
+  ],
+  "toc": [
+    {
+      "href": "9781442304611_01_TheDemonsCovenant_CH01.mp3#t=0",
+      "title": "Chapter 1"
+    },
+    {
+      "href": "9781442304611_02_TheDemonsCovenant_CH02.mp3#t=0",
+      "title": "Chapter 2"
+    },
+    {
+      "href": "9781442304611_03_TheDemonsCovenant_CH03.mp3#t=0",
+      "title": "Chapter 3"
+    },
+    {
+      "href": "9781442304611_04_TheDemonsCovenant_CH04.mp3#t=0",
+      "title": "Chapter 4"
+    },
+    {
+      "href": "9781442304611_05_TheDemonsCovenant_CH05.mp3#t=0",
+      "title": "Chapter 5"
+    },
+    {
+      "href": "9781442304611_06_TheDemonsCovenant_CH06.mp3#t=0",
+      "title": "Chapter 6"
+    },
+    {
+      "href": "9781442304611_07_TheDemonsCovenant_CH07.mp3#t=0",
+      "title": "Chapter 7"
+    },
+    {
+      "href": "9781442304611_08_TheDemonsCovenant_CH08.mp3#t=0",
+      "title": "Chapter 8"
+    },
+    {
+      "href": "9781442304611_09_TheDemonsCovenant_CH09.mp3#t=0",
+      "title": "Chapter 9"
+    },
+    {
+      "href": "9781442304611_10_TheDemonsCovenant_CH10.mp3#t=0",
+      "title": "Chapter 10"
+    },
+    {
+      "href": "9781442304611_11_TheDemonsCovenant_CH11.mp3#t=0",
+      "title": "Chapter 11"
+    },
+    {
+      "href": "9781442304611_12_TheDemonsCovenant_CH12.mp3#t=0",
+      "title": "Chapter 12"
+    },
+    {
+      "href": "9781442304611_13_TheDemonsCovenant_CH13.mp3#t=0",
+      "title": "Chapter 13"
+    },
+    {
+      "href": "9781442304611_14_TheDemonsCovenant_CH14.mp3#t=0",
+      "title": "Chapter 14"
+    },
+    {
+      "href": "9781442304611_15_TheDemonsCovenant_CH15.mp3#t=0",
+      "title": "Chapter 15"
+    },
+    {
+      "href": "9781442304611_16_TheDemonsCovenant_CH16.mp3#t=0",
+      "title": "Chapter 16"
+    },
+    {
+      "href": "9781442304611_17_TheDemonsCovenant_CH17.mp3#t=0",
+      "title": "Chapter 17"
+    },
+    {
+      "href": "9781442304611_18_TheDemonsCovenant_CH18.mp3#t=0",
+      "title": "Chapter 18"
+    },
+    {
+      "href": "9781442304611_19_TheDemonsCovenant_CH19.mp3#t=0",
+      "title": "Chapter 19"
+    },
+    {
+      "href": "9781442304611_20_TheDemonsCovenant_CH20.mp3#t=0",
+      "title": "Chapter 20"
+    },
+    {
+      "href": "9781442304611_21_TheDemonsCovenant_CH21.mp3#t=0",
+      "title": "Chapter 21"
+    },
+    {
+      "href": "9781442304611_22_TheDemonsCovenant_Credits.mp3#t=0",
+      "title": "Chapter 22"
+    }
+  ]
+}

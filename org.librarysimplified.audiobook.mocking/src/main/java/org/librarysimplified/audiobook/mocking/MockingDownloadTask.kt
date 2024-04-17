@@ -1,21 +1,19 @@
 package org.librarysimplified.audiobook.mocking
 
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloadFailed
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementDownloading
-import org.librarysimplified.audiobook.api.PlayerSpineElementDownloadStatus.PlayerSpineElementNotDownloaded
-import org.librarysimplified.audiobook.api.PlayerSpineElementType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import kotlin.random.Random
 
@@ -26,7 +24,7 @@ import kotlin.random.Random
 class MockingDownloadTask(
   private val downloadStatusExecutor: ExecutorService,
   private val downloadProvider: PlayerDownloadProviderType,
-  private val spineElements: List<MockingSpineElement>
+  private val readingOrderItemList: List<MockingReadingOrderItem>
 ) : PlayerDownloadTaskType {
 
   private val log = LoggerFactory.getLogger(MockingDownloadTask::class.java)
@@ -40,9 +38,9 @@ class MockingDownloadTask(
   }
 
   private sealed class State {
-    object Initial : State()
-    object Downloaded : State()
-    data class Downloading(val future: ListenableFuture<Unit>) : State()
+    data object Initial : State()
+    data object Downloaded : State()
+    data class Downloading(val future: CompletableFuture<Unit>) : State()
   }
 
   private fun stateGetCurrent() =
@@ -61,26 +59,26 @@ class MockingDownloadTask(
 
   private fun onNotDownloaded() {
     this.log.debug("not downloaded")
-    this.spineElements.forEach { spineElement ->
-      spineElement.setDownloadStatus(PlayerSpineElementNotDownloaded(spineElement))
+    this.readingOrderItemList.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerReadingOrderItemNotDownloaded(spineElement))
     }
   }
 
   private fun onDownloading(percent: Int) {
     this.percent = percent
-    this.spineElements.forEach { spineElement ->
-      spineElement.setDownloadStatus(PlayerSpineElementDownloading(spineElement, percent))
+    this.readingOrderItemList.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerReadingOrderItemDownloading(spineElement, percent))
     }
   }
 
   private fun onDownloaded() {
     this.log.debug("downloaded")
-    this.spineElements.forEach { spineElement ->
-      spineElement.setDownloadStatus(PlayerSpineElementDownloaded(spineElement))
+    this.readingOrderItemList.forEach { spineElement ->
+      spineElement.setDownloadStatus(PlayerReadingOrderItemDownloaded(spineElement))
     }
   }
 
-  private fun onStartDownload(): ListenableFuture<Unit> {
+  private fun onStartDownload(): CompletableFuture<Unit> {
     this.log.debug("starting download")
 
     val future =
@@ -101,24 +99,18 @@ class MockingDownloadTask(
      * Add a callback to the future that will report download success and failure.
      */
 
-    Futures.addCallback(
-      future,
-      object : FutureCallback<Unit> {
-        override fun onSuccess(result: Unit?) {
-          this@MockingDownloadTask.onDownloadCompleted()
+    future.whenComplete { unit, exception ->
+      when (exception) {
+        null -> {
+          onDownloadCompleted()
         }
-
-        override fun onFailure(exception: Throwable?) {
-          when (exception) {
-            is CancellationException ->
-              this@MockingDownloadTask.onDownloadCancelled()
-            else ->
-              this@MockingDownloadTask.onDownloadFailed(kotlin.Exception(exception))
-          }
+        is CancellationException ->
+          onDownloadCancelled()
+        else -> {
+          onDownloadFailed(Exception(exception))
         }
-      },
-      this.downloadStatusExecutor
-    )
+      }
+    }
 
     return future
   }
@@ -134,9 +126,9 @@ class MockingDownloadTask(
     this.log.error("onDownloadFailed: ", e)
     this.stateSetCurrent(State.Initial)
     this.onBroadcastState()
-    this.spineElements.forEach { spineElement ->
+    this.readingOrderItemList.forEach { spineElement ->
       spineElement.setDownloadStatus(
-        PlayerSpineElementDownloadFailed(
+        PlayerReadingOrderItemDownloadFailed(
           spineElement, e, e.message ?: "Missing exception message"
         )
       )
@@ -181,10 +173,6 @@ class MockingDownloadTask(
     }
   }
 
-  override fun fulfillsSpineElement(spineElement: PlayerSpineElementType): Boolean {
-    return spineElements.contains(spineElement)
-  }
-
   private fun onDeleteDownloading(state: State.Downloading) {
     this.log.debug("cancelling download in progress")
 
@@ -202,6 +190,6 @@ class MockingDownloadTask(
   override val progress: Double
     get() = this.percent.toDouble()
 
-  override val spineItems: List<PlayerSpineElementType>
-    get() = this.spineElements
+  override val readingOrderItems: List<PlayerReadingOrderItemType>
+    get() = this.readingOrderItemList
 }

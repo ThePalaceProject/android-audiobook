@@ -6,16 +6,9 @@ package org.librarysimplified.audiobook.manifest.api
 
 data class PlayerManifest(
   val originalBytes: ByteArray,
-  val readingOrder: List<PlayerManifestLink>,
+  val readingOrder: List<PlayerManifestReadingOrderItem>,
   val metadata: PlayerManifestMetadata,
   val links: List<PlayerManifestLink>,
   val extensions: List<PlayerManifestExtensionValueType>,
   val toc: List<PlayerManifestLink>?
-) {
-  @Deprecated(
-    message = "Use readingOrder",
-    replaceWith = ReplaceWith("readingOrder")
-  )
-  val spine: List<PlayerManifestLink> =
-    this.readingOrder
-}
+)

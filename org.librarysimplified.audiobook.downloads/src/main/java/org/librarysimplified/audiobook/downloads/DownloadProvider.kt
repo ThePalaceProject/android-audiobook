@@ -1,8 +1,5 @@
 package org.librarysimplified.audiobook.downloads
 
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.ListeningExecutorService
-import com.google.common.util.concurrent.SettableFuture
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -16,6 +13,8 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 
 /*
@@ -23,10 +22,11 @@ import java.util.concurrent.TimeUnit
  */
 
 class DownloadProvider private constructor(
-  private val executor: ListeningExecutorService
+  private val executor: ExecutorService
 ) : PlayerDownloadProviderType {
 
-  private val log = LoggerFactory.getLogger(DownloadProvider::class.java)
+  private val log =
+    LoggerFactory.getLogger(DownloadProvider::class.java)
 
   companion object {
 
@@ -36,24 +36,24 @@ class DownloadProvider private constructor(
      * @param executor A listening executor that will be used for download tasks
      */
 
-    fun create(executor: ListeningExecutorService): PlayerDownloadProviderType {
+    fun create(executor: ExecutorService): PlayerDownloadProviderType {
       return DownloadProvider(executor)
     }
   }
 
-  override fun download(request: PlayerDownloadRequest): ListenableFuture<Unit> {
-    val result = SettableFuture.create<Unit>()
+  override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
+    val result = CompletableFuture<Unit>()
 
     this.reportProgress(request, 0)
 
     this.executor.submit {
       try {
-        doDownload(request, result)
-        result.set(Unit)
+        result.complete(doDownload(request, result))
       } catch (e: CancellationException) {
         doCleanUp(request)
+        result.cancel(true)
       } catch (e: Throwable) {
-        result.setException(e)
+        result.completeExceptionally(e)
         doCleanUp(request)
       }
     }
@@ -78,7 +78,7 @@ class DownloadProvider private constructor(
 
   private fun doDownload(
     request: PlayerDownloadRequest,
-    result: SettableFuture<Unit>
+    result: CompletableFuture<Unit>
   ) {
     this.log.debug("downloading {} to {}", request.uri, request.outputFile)
 
@@ -148,7 +148,7 @@ class DownloadProvider private constructor(
   private fun handleSuccessfulResponse(
     response: Response,
     request: PlayerDownloadRequest,
-    result: SettableFuture<Unit>
+    result: CompletableFuture<Unit>
   ) {
     /*
      * Check if the future has been cancelled. If it has, don't start copying.
@@ -205,12 +205,14 @@ class DownloadProvider private constructor(
     inputStream: InputStream,
     outputStream: FileOutputStream,
     expectedLength: Long,
-    result: SettableFuture<Unit>
+    result: CompletableFuture<Unit>
   ) {
-    var progressPrevious = 0.0
-    var progressCurrent = 0.0
+    var progressCurrent: Double
     var received = 0L
     val buffer = ByteArray(1024)
+    var timeLast = System.currentTimeMillis()
+
+    this.reportProgress(request, 0)
 
     while (true) {
       /*
@@ -230,19 +232,19 @@ class DownloadProvider private constructor(
       outputStream.write(buffer, 0, r)
 
       /*
-       * Only report progress when the progress has changed by 5% or more. This essentially
-       * throttles event delivery to avoid updating progress indicators hundreds of times per
-       * second.
+       * Throttle progress updates to one every ~500ms.
        */
 
       progressCurrent = (received.toDouble() / expectedLength.toDouble()) * 100.0
-      if (progressCurrent - progressPrevious > 5.0 || progressCurrent >= 100.0) {
-        progressPrevious = progressCurrent
+      val enoughTimeElapsed = (System.currentTimeMillis() - timeLast) >= 500L
+      if (progressCurrent >= 100.0 || enoughTimeElapsed) {
+        timeLast = System.currentTimeMillis()
         this.log.debug("download progress: {}", progressCurrent)
+        this.reportProgress(request, progressCurrent.toInt())
       }
-
-      this.reportProgress(request, progressCurrent.toInt())
     }
+
+    this.reportProgress(request, 100)
     outputStream.flush()
   }
 }

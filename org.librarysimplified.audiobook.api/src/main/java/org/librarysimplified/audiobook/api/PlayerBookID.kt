@@ -21,4 +21,8 @@ data class PlayerBookID private constructor(val value: String) {
       return PlayerBookID(sb.toString())
     }
   }
+
+  override fun toString(): String {
+    return this.value
+  }
 }

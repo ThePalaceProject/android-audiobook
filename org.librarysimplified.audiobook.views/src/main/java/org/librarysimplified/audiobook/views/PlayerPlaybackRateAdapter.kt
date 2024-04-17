@@ -22,8 +22,7 @@ class PlayerPlaybackRateAdapter(
   private val resources: Resources,
   private val rates: List<PlayerPlaybackRate>,
   private val onSelect: (PlayerPlaybackRate) -> Unit
-) :
-  RecyclerView.Adapter<PlayerPlaybackRateAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<PlayerPlaybackRateAdapter.ViewHolder>() {
 
   private val listener: View.OnClickListener =
     View.OnClickListener { v -> this.onSelect(v.tag as PlayerPlaybackRate) }
@@ -61,12 +60,16 @@ class PlayerPlaybackRateAdapter(
       return when (item) {
         THREE_QUARTERS_TIME ->
           resources.getString(R.string.audiobook_accessibility_menu_playback_speed_0p75)
+
         NORMAL_TIME ->
           resources.getString(R.string.audiobook_accessibility_menu_playback_speed_1)
+
         ONE_AND_A_QUARTER_TIME ->
           resources.getString(R.string.audiobook_accessibility_menu_playback_speed_1p25)
+
         ONE_AND_A_HALF_TIME ->
           resources.getString(R.string.audiobook_accessibility_menu_playback_speed_1p5)
+
         DOUBLE_TIME ->
           resources.getString(R.string.audiobook_accessibility_menu_playback_speed_2)
       }
@@ -118,7 +121,8 @@ class PlayerPlaybackRateAdapter(
     holder.text.text = textOfRate(item)
 
     if (item == this.currentRate) {
-      holder.view.contentDescription = menuItemSelectedContentDescriptionOfRate(this.resources, item)
+      holder.view.contentDescription =
+        menuItemSelectedContentDescriptionOfRate(this.resources, item)
       holder.view.isEnabled = false
       holder.text.isEnabled = false
     } else {
