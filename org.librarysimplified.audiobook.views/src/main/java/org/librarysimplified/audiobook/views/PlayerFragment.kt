@@ -61,20 +61,20 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var menuSleepEndOfChapter: ImageView
   private lateinit var menuTOC: MenuItem
   private lateinit var playPauseButton: ImageView
-  private lateinit var playerAuthorView: TextView
+  private lateinit var playerBookAuthor: TextView
+  private lateinit var playerBookTitle: TextView
   private lateinit var playerBookmark: ImageView
-  private lateinit var playerCommands: ViewGroup
   private lateinit var playerBusy: ProgressBar
+  private lateinit var playerChapterTitle: TextView
+  private lateinit var playerCommands: ViewGroup
   private lateinit var playerInfoModel: PlayerInfoModel
   private lateinit var playerPosition: SeekBar
   private lateinit var playerRemainingBookTime: TextView
   private lateinit var playerSkipBackwardButton: ImageView
   private lateinit var playerSkipForwardButton: ImageView
-  private lateinit var playerSpineElement: TextView
   private lateinit var playerStatus: TextView
   private lateinit var playerTimeCurrent: TextView
   private lateinit var playerTimeMaximum: TextView
-  private lateinit var playerTitleView: TextView
   private lateinit var playerWaiting: TextView
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
   private lateinit var toolbar: Toolbar
@@ -104,10 +104,10 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.player_busy)
     this.playerCommands =
       view.findViewById(R.id.player_commands)
-    this.playerTitleView =
-      view.findViewById(R.id.player_title)
-    this.playerAuthorView =
-      view.findViewById(R.id.player_author)
+    this.playerBookTitle =
+      view.findViewById(R.id.playerBookTitle)
+    this.playerBookAuthor =
+      view.findViewById(R.id.playerBookAuthor)
     this.playPauseButton =
       view.findViewById(R.id.player_play_button)!!
     this.playerSkipForwardButton =
@@ -122,8 +122,8 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.player_time_maximum)!!
     this.playerRemainingBookTime =
       view.findViewById(R.id.player_remaining_book_time)!!
-    this.playerSpineElement =
-      view.findViewById(R.id.player_spine_element)!!
+    this.playerChapterTitle =
+      view.findViewById(R.id.playerChapterTitle)!!
     this.playerPosition =
       view.findViewById(R.id.player_progress)!!
     this.playerStatus =
@@ -132,8 +132,6 @@ class PlayerFragment : PlayerBaseFragment() {
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
     this.toolbarConfigureAllActions()
 
-    this.playerWaiting.text = ""
-    this.playerWaiting.contentDescription = null
     this.playerPosition.isEnabled = false
     this.playerPositionDragging = false
 
@@ -322,7 +320,7 @@ class PlayerFragment : PlayerBaseFragment() {
       }
 
       is PlayerEventChapterWaiting -> {
-        // Nothing to do
+        this.onPlayerEventPlaybackChapterWaiting(event)
       }
 
       is PlayerEventCreateBookmark -> {
@@ -387,6 +385,7 @@ class PlayerFragment : PlayerBaseFragment() {
   ) {
     this.playerStatus.text = "Started"
 
+    this.playerWaiting.visibility = INVISIBLE
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
 
@@ -395,11 +394,27 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playPauseButton.contentDescription =
       this.getString(R.string.audiobook_accessibility_pause)
     this.playerPosition.isEnabled = true
-    this.playerWaiting.text = ""
 
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
       offsetMilliseconds = event.offsetMilliseconds,
+      positionMetadata = event.positionMetadata,
+    )
+  }
+
+  @UiThread
+  private fun onPlayerEventPlaybackChapterWaiting(
+    event: PlayerEventChapterWaiting
+  ) {
+    this.playerStatus.text = "Waiting for chapter to download…"
+
+    this.playerWaiting.visibility = VISIBLE
+    this.playerBusy.visibility = VISIBLE
+    this.playerCommands.visibility = INVISIBLE
+
+    this.onEventUpdateTimeRelatedUI(
+      readingOrderItem = event.readingOrderItem,
+      offsetMilliseconds = 0,
       positionMetadata = event.positionMetadata,
     )
   }
@@ -410,6 +425,7 @@ class PlayerFragment : PlayerBaseFragment() {
   ) {
     this.playerStatus.text = "Buffering…"
 
+    this.playerWaiting.visibility = INVISIBLE
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
@@ -426,6 +442,7 @@ class PlayerFragment : PlayerBaseFragment() {
   ) {
     this.playerStatus.text = "Preparing…"
 
+    this.playerWaiting.visibility = INVISIBLE
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
@@ -442,6 +459,7 @@ class PlayerFragment : PlayerBaseFragment() {
   ) {
     this.playerStatus.text = "Stopped"
 
+    this.playerWaiting.visibility = INVISIBLE
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
 
@@ -527,7 +545,9 @@ class PlayerFragment : PlayerBaseFragment() {
       this.playerPosition.progress = offsetMilliseconds.toInt()
     }
 
-    this.playerTitleView.text = positionMetadata.tocItem.title
+    this.playerChapterTitle.text = positionMetadata.tocItem.title
+    this.playerBookTitle.text = PlayerModel.bookTitle
+    this.playerBookAuthor.text = PlayerModel.bookAuthor
 
     this.playerRemainingBookTime.text =
       PlayerTimeStrings.hourMinuteTextFromRemainingTime(

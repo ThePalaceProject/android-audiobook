@@ -52,6 +52,9 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
   override val isClosed: Boolean
     get() = false
 
+  override var isStreamingPermitted: Boolean =
+    false
+
   override val events: Observable<PlayerEvent>
     get() = this.statusEvents
 

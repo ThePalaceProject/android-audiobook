@@ -102,6 +102,28 @@ class ExoAudioBookPlayer private constructor(
     false
 
   /**
+   * The ExoPlayer implementation exposes an [ExoPlayerPlaybackStatus.BUFFERING] state that's
+   * reached when the player starts buffering. Unfortunately, it's perfectly normal for the
+   * player to also publish other states (such as [ExoPlayerPlaybackStatus.PAUSED]) before
+   * the player has actually finished buffering. Therefore, thanks to this bad design, it's
+   * necessary for us to track buffering separately; set the flag when buffering starts, and
+   * unset it when something significant happens (like [ExoPlayerPlaybackStatus.PLAYING]).
+   */
+
+  @Volatile
+  internal var isBufferingNow: Boolean =
+    false
+
+  /**
+   * A flag that indicates whether chapters can be streamed before they are downloaded. Users
+   * may choose not to permit this various reasons (bandwidth usage, etc).
+   */
+
+  @Volatile
+  private var isStreamingPermittedField: Boolean =
+    false
+
+  /**
    * The state the user has asked the player to be in.
    */
 
@@ -198,10 +220,10 @@ class ExoAudioBookPlayer private constructor(
   ) {
     PlayerUIThread.checkIsUIThread()
 
-    val toc = this.book.tableOfContents
-
     when (state.newState) {
       ExoPlayerPlaybackStatus.INITIAL -> {
+        this.isBufferingNow = false
+
         if (state.oldState == ExoPlayerPlaybackStatus.PLAYING) {
           val offsetMilliseconds =
             this.exoAdapter.currentTrackOffsetMilliseconds()
@@ -222,6 +244,8 @@ class ExoAudioBookPlayer private constructor(
       }
 
       ExoPlayerPlaybackStatus.BUFFERING -> {
+        this.isBufferingNow = true
+
         val offsetMilliseconds =
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
@@ -240,6 +264,8 @@ class ExoAudioBookPlayer private constructor(
       }
 
       ExoPlayerPlaybackStatus.PLAYING -> {
+        this.isBufferingNow = false
+
         val offsetMilliseconds =
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
@@ -276,17 +302,30 @@ class ExoAudioBookPlayer private constructor(
         val positionMetadata =
           this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
-        this.statusEvents.onNext(
-          PlayerEventPlaybackPaused(
-            isStreaming = this.isStreamingNow,
-            offsetMilliseconds = offsetMilliseconds,
-            positionMetadata = positionMetadata,
-            readingOrderItem = this.currentReadingOrderElement,
+        if (this.isBufferingNow) {
+          this.statusEvents.onNext(
+            PlayerEventPlaybackBuffering(
+              isStreaming = this.isStreamingNow,
+              offsetMilliseconds = offsetMilliseconds,
+              positionMetadata = positionMetadata,
+              readingOrderItem = this.currentReadingOrderElement,
+            )
           )
-        )
+        } else {
+          this.statusEvents.onNext(
+            PlayerEventPlaybackPaused(
+              isStreaming = this.isStreamingNow,
+              offsetMilliseconds = offsetMilliseconds,
+              positionMetadata = positionMetadata,
+              readingOrderItem = this.currentReadingOrderElement,
+            )
+          )
+        }
       }
 
       ExoPlayerPlaybackStatus.CHAPTER_ENDED -> {
+        this.isBufferingNow = false
+
         val offsetMilliseconds =
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
@@ -483,6 +522,11 @@ class ExoAudioBookPlayer private constructor(
     this.log.debug("moveToReadingOrderItemIfAvailable: {}", element.index)
     PlayerUIThread.checkIsUIThread()
 
+    if (this.isStreamingPermitted) {
+      this.preparePlayer(element, offsetMilliseconds)
+      return SKIP_TO_CHAPTER_READY
+    }
+
     return when (val downloadStatus = element.downloadStatus) {
       is PlayerReadingOrderItemNotDownloaded,
       is PlayerReadingOrderItemDownloading,
@@ -497,8 +541,6 @@ class ExoAudioBookPlayer private constructor(
 
         val tocItem =
           tocItemFor(element.id, 0L)
-        val toc =
-          this.book.tableOfContents
         val positionMetadata =
           this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
@@ -898,6 +940,13 @@ class ExoAudioBookPlayer private constructor(
 
   override val isClosed: Boolean
     get() = this.closed.get()
+
+  override var isStreamingPermitted: Boolean
+    get() =
+      this.isStreamingPermittedField
+    set(value) {
+      this.isStreamingPermittedField = value
+    }
 
   override fun close() {
     if (this.closed.compareAndSet(false, true)) {

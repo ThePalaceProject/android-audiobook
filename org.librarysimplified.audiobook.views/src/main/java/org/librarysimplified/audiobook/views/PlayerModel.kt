@@ -61,6 +61,12 @@ object PlayerModel {
     get() = this.intentForPlayerServiceField
 
   @Volatile
+  var bookTitle: String = ""
+
+  @Volatile
+  var bookAuthor: String = ""
+
+  @Volatile
   private var coverImageField: Bitmap? = null
 
   /**

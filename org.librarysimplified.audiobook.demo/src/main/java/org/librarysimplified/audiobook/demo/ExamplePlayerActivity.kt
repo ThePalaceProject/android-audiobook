@@ -208,6 +208,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
       is PlayerOpen -> {
         PlayerModel.setCoverImage(BitmapFactory.decodeResource(resources, R.drawable.example_cover))
+        PlayerModel.bookTitle = PlayerModel.manifest().metadata.title
+        PlayerModel.bookAuthor = "An Example Author."
 
         val bookId =
           PlayerModel.manifest().metadata.identifier

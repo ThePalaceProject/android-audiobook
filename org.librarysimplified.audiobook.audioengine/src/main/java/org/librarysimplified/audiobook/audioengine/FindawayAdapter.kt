@@ -43,6 +43,14 @@ class FindawayAdapter(
   private val intention: () -> PlayerPlaybackIntention,
 ) : AutoCloseable {
 
+  /**
+   * A flag to track whether the user has permitted streaming or not. This is currently unused
+   * in the Findaway player as it is next to impossible to get it to stop streaming.
+   */
+
+  internal var isStreamingPermitted: Boolean =
+    false
+
   @Volatile
   private var currentPlaybackRateField: PlayerPlaybackRate =
     PlayerPlaybackRate.NORMAL_TIME
@@ -68,10 +76,6 @@ class FindawayAdapter(
 
   @Volatile
   private var mostRecentPosition: FindawayPlayerPosition
-
-  @Volatile
-  private var stateLatest: FindawayPlayerPlaybackStatus =
-    FindawayPlayerPlaybackStatus.INITIAL
 
   /**
    * A flag that indicates whether the current reading order item is being read from local storage,

@@ -43,6 +43,12 @@ interface PlayerType : AutoCloseable {
   val isClosed: Boolean
 
   /**
+   * @return `true` if chapters can be played before they are downloaded
+   */
+
+  var isStreamingPermitted: Boolean
+
+  /**
    * An observable that publishes player status updates.
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed

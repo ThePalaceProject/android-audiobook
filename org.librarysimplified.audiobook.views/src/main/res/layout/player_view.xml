@@ -20,7 +20,7 @@
         tools:title="Placeholder" />
 
     <TextView
-        android:id="@+id/player_title"
+        android:id="@+id/playerBookTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
@@ -38,7 +38,7 @@
         tools:text="Very, very, very long placeholder text that should never be seen in practice." />
 
     <TextView
-        android:id="@+id/player_author"
+        android:id="@+id/playerBookAuthor"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -50,7 +50,7 @@
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/player_title"
+        app:layout_constraintTop_toBottomOf="@id/playerBookTitle"
         tools:text="Very, very, very long placeholder text that should never be seen in practice." />
 
     <TextView
@@ -63,7 +63,7 @@
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/player_author"
+        app:layout_constraintTop_toBottomOf="@id/playerBookAuthor"
         tools:text="4 hr 56 min remaining" />
 
     <SeekBar
@@ -103,7 +103,7 @@
         app:layout_constraintTop_toBottomOf="@id/player_progress" />
 
     <TextView
-        android:id="@+id/player_spine_element"
+        android:id="@+id/playerChapterTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/player_progress"
@@ -194,6 +194,8 @@
         android:text="@string/audiobook_player_waiting"
         android:textSize="14sp"
         android:textStyle="bold"
+        android:visibility="invisible"
+        tools:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/bottom_barrier"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -203,13 +205,15 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:contentDescription="@string/audiobook_accessibility_book_cover"
         android:scaleType="fitCenter"
         android:src="@drawable/baseline_work_24"
         app:layout_constraintBottom_toTopOf="@id/player_waiting_buffering"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/player_spine_element" />
+        app:layout_constraintTop_toBottomOf="@id/playerChapterTitle" />
 
     <TextView
         android:id="@+id/player_status"

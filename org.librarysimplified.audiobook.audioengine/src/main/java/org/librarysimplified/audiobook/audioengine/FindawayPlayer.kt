@@ -318,6 +318,11 @@ class FindawayPlayer(
 
   override val isClosed: Boolean
     get() = this.closed.get()
+  override var isStreamingPermitted: Boolean
+    get() = this.engineAdapter.isStreamingPermitted
+    set(value) {
+      this.engineAdapter.isStreamingPermitted = value
+    }
 
   override fun close() {
     if (this.closed.compareAndSet(false, true)) {
