@@ -77,7 +77,7 @@ class PlayerTOCChaptersFragment : Fragment() {
   private fun onPlayerEvent(event: PlayerEvent) {
     when (event) {
       is PlayerEventWithPosition -> {
-        this.adapter.setCurrentTOCItemIndex(event.tocItem.index)
+        this.adapter.setCurrentTOCItemIndex(event.positionMetadata.tocItem.index)
       }
 
       is PlayerEventDeleteBookmark,

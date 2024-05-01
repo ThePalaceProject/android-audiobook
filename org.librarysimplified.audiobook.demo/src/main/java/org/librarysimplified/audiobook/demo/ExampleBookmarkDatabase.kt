@@ -2,8 +2,10 @@ package org.librarysimplified.audiobook.demo
 
 import android.app.Application
 import org.joda.time.DateTime
+import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
+import org.librarysimplified.audiobook.api.PlayerBookmarkMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -45,20 +47,36 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
     val offset: Long
   ) : Serializable
 
+  private data class SerializableMetadata(
+    val chapterTitle: String,
+    val chapterProgressEstimate: Double,
+    val creationTime: DateTime,
+    val bookProgressEstimate: Double,
+    val totalRemainingBookTime: Duration
+  ) : Serializable {
+    fun toMetadata(): PlayerBookmarkMetadata {
+      return PlayerBookmarkMetadata(
+        chapterTitle = this.chapterTitle,
+        chapterProgressEstimate = this.chapterProgressEstimate,
+        creationTime = this.creationTime,
+        bookProgressEstimate = this.bookProgressEstimate,
+        totalRemainingBookTime = this.totalRemainingBookTime
+      )
+    }
+  }
+
   private data class SerializableBookmark(
     val kind: PlayerBookmarkKind,
     val bookId: SerializableBookID,
-    val date: DateTime,
-    val title: String,
-    val position: SerializablePosition
+    val position: SerializablePosition,
+    val metadata: SerializableMetadata
   ) : Serializable {
     fun toBookmark(): PlayerBookmark {
       return PlayerBookmark(
         kind = this.kind,
-        title = this.title,
-        date = this.date,
         readingOrderID = PlayerManifestReadingOrderID(this.position.id.value),
-        offsetMilliseconds = this.position.offset
+        offsetMilliseconds = this.position.offset,
+        metadata = this.metadata.toMetadata()
       )
     }
   }
@@ -90,7 +108,7 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
       this.bookmarks.bookmarksExplicit[serializableBookID] ?: mapOf()
 
     return explicitsForBook.values.toList()
-      .sortedBy(SerializableBookmark::date)
+      .sortedBy { b -> b.metadata.creationTime }
       .map(SerializableBookmark::toBookmark)
   }
 
@@ -165,11 +183,16 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
     return SerializableBookmark(
       kind = bookmark.kind,
       bookId = SerializableBookID(bookId),
-      title = bookmark.title,
-      date = bookmark.date,
       position = SerializablePosition(
         id = SerializableReadingOrderID(bookmark.readingOrderID.text),
         offset = bookmark.offsetMilliseconds
+      ),
+      metadata = SerializableMetadata(
+        chapterTitle = bookmark.metadata.chapterTitle,
+        chapterProgressEstimate = bookmark.metadata.chapterProgressEstimate,
+        creationTime = bookmark.metadata.creationTime,
+        bookProgressEstimate = bookmark.metadata.bookProgressEstimate,
+        totalRemainingBookTime = bookmark.metadata.totalRemainingBookTime
       )
     )
   }

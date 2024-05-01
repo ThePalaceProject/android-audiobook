@@ -4,6 +4,7 @@ import io.reactivex.disposables.Disposable
 import org.joda.time.Duration
 import org.joda.time.Instant
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
+import org.librarysimplified.audiobook.api.PlayerBookmarkMetadata
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
@@ -90,10 +91,10 @@ class FindawayBookmarkObserver private constructor(
         PlayerEventCreateBookmark(
           readingOrderItem = event.readingOrderItem,
           offsetMilliseconds = event.offsetMilliseconds,
-          tocItem = event.tocItem,
-          totalRemainingBookTime = event.totalRemainingBookTime,
           kind = PlayerBookmarkKind.LAST_READ,
-          isStreaming = this.isStreamingNow.invoke()
+          isStreaming = this.isStreamingNow.invoke(),
+          positionMetadata = event.positionMetadata,
+          bookmarkMetadata = PlayerBookmarkMetadata.fromPositionMetadata(event.positionMetadata)
         )
       )
     }

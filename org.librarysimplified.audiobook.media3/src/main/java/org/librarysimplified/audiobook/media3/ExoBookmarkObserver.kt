@@ -4,6 +4,7 @@ import io.reactivex.disposables.Disposable
 import org.joda.time.Duration
 import org.joda.time.Instant
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
+import org.librarysimplified.audiobook.api.PlayerBookmarkMetadata
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventDeleteBookmark
@@ -96,10 +97,10 @@ class ExoBookmarkObserver private constructor(
         PlayerEventCreateBookmark(
           readingOrderItem = event.readingOrderItem,
           offsetMilliseconds = event.offsetMilliseconds,
-          tocItem = event.tocItem,
-          totalRemainingBookTime = event.totalRemainingBookTime,
+          positionMetadata = event.positionMetadata,
           kind = PlayerBookmarkKind.LAST_READ,
-          isStreaming = this.isStreamingNow()
+          isStreaming = this.isStreamingNow(),
+          bookmarkMetadata = PlayerBookmarkMetadata.fromPositionMetadata(event.positionMetadata)
         )
       )
     }

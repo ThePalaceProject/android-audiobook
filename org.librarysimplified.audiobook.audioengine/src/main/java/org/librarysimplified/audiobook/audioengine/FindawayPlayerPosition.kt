@@ -6,7 +6,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 
 data class FindawayPlayerPosition(
   val readingOrderItem: PlayerReadingOrderItemType,
-  val offsetMilliseconds: Long,
+  val readingOrderItemOffsetMilliseconds: Long,
   val part: Int,
   val chapter: Int,
   val tocItem: PlayerManifestTOCItem,

@@ -6,12 +6,12 @@ import io.reactivex.subjects.PublishSubject
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
+import org.librarysimplified.audiobook.api.PlayerPositionMetadata
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.slf4j.LoggerFactory
@@ -54,32 +54,6 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
 
   override val events: Observable<PlayerEvent>
     get() = this.statusEvents
-
-  fun error(
-    exception: Exception?,
-    errorCode: Int
-  ) {
-    this.statusEvents.onNext(
-      PlayerEvent.PlayerEventError(
-        readingOrderItem = null,
-        offsetMilliseconds = 0,
-        exception = exception,
-        errorCode = errorCode
-      )
-    )
-  }
-
-  fun buffering() {
-    this.statusEvents.onNext(
-      PlayerEventWithPosition.PlayerEventPlaybackBuffering(
-        readingOrderItem = this.book.readingOrder.first(),
-        offsetMilliseconds = 0L,
-        tocItem = this.book.tableOfContents.tocItemsInOrder.first(),
-        totalRemainingBookTime = Duration.millis(0L),
-        isStreaming = false
-      )
-    )
-  }
 
   override fun play() {
     this.log.debug("play")
@@ -141,8 +115,12 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
         PlayerEventPlaybackStarted(
           readingOrderItem = element,
           offsetMilliseconds = offset,
-          tocItem = this.book.tableOfContents.tocItemsInOrder.first(),
-          totalRemainingBookTime = Duration.millis(0L),
+          positionMetadata = PlayerPositionMetadata(
+            tocItem = this.book.tableOfContents.tocItemsInOrder.first(),
+            totalRemainingBookTime = Duration.millis(0L),
+            chapterProgressEstimate = 0.0,
+            bookProgressEstimate = 0.0
+          ),
           isStreaming = false
         )
       )

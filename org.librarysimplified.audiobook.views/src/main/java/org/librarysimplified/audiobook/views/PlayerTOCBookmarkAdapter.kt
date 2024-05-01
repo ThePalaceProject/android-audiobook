@@ -117,9 +117,9 @@ class PlayerTOCBookmarkAdapter(
       val offset =
         Duration(bookmark.offsetMilliseconds)
       val bookmarkDateStr =
-        bookmark.date.toString("MMMM dd, yyyy", Locale.ROOT)
+        bookmark.metadata.creationTime.toString("MMMM dd, yyyy", Locale.ROOT)
 
-      this.bookmarkTitle.text = bookmark.title
+      this.bookmarkTitle.text = bookmark.metadata.chapterTitle
       this.bookmarkOffset.text =
         this@PlayerTOCBookmarkAdapter.periodFormatter.print(offset.toPeriod())
       this.bookmarkDate.text = bookmarkDateStr

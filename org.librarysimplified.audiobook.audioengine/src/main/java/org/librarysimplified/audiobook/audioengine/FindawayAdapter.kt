@@ -10,6 +10,7 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
+import org.librarysimplified.audiobook.api.PlayerBookmarkMetadata
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackBuffering
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
@@ -21,6 +22,7 @@ import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
+import org.librarysimplified.audiobook.api.PlayerPositionMetadata
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
@@ -86,7 +88,7 @@ class FindawayAdapter(
     this.mostRecentPosition =
       FindawayPlayerPosition(
         readingOrderItem = this.book.readingOrder.first(),
-        offsetMilliseconds = 0L,
+        readingOrderItemOffsetMilliseconds = 0L,
         part = this.book.readingOrder.first().itemManifest.part,
         chapter = this.book.readingOrder.first().itemManifest.sequence,
         tocItem = this.tocItemFor(this.book.readingOrder.first().id, 0L),
@@ -151,7 +153,7 @@ class FindawayAdapter(
     this.events.onNext(
       PlayerEvent.PlayerEventError(
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
-        offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
+        offsetMilliseconds = this.mostRecentPosition.readingOrderItemOffsetMilliseconds,
         exception = thrown,
         errorCode = code
       )
@@ -348,16 +350,43 @@ class FindawayAdapter(
     // Nothing to do
   }
 
+  private fun positionMetadataFor(
+    position: FindawayPlayerPosition
+  ): PlayerPositionMetadata {
+    val bookProgressEstimate =
+      position.readingOrderItem.index.toDouble() / this.book.readingOrder.size.toDouble()
+
+    val chapterDuration =
+      position.readingOrderItem.duration
+    val chapterProgressEstimate =
+      if (chapterDuration != null) {
+        position.readingOrderItemOffsetMilliseconds.toDouble() / chapterDuration.millis.toDouble()
+      } else {
+        0.0
+      }
+
+    return PlayerPositionMetadata(
+      tocItem = position.tocItem,
+      totalRemainingBookTime = position.totalBookDurationRemaining,
+      chapterProgressEstimate = chapterProgressEstimate,
+      bookProgressEstimate = bookProgressEstimate
+    )
+  }
+
   private fun onPlaybackEventBufferingStarted() {
     this.logger.debug("[{}]: onPlaybackEvent: playback buffering started", this.id)
 
+    val position =
+      this.mostRecentPosition
+    val positionMetadata =
+      this.positionMetadataFor(position)
+
     this.events.onNext(
       PlayerEventPlaybackBuffering(
-        readingOrderItem = this.mostRecentPosition.readingOrderItem,
-        offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
-        tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
         isStreaming = this.isStreamingNow,
+        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        positionMetadata = positionMetadata,
+        readingOrderItem = position.readingOrderItem,
       )
     )
   }
@@ -365,13 +394,17 @@ class FindawayAdapter(
   private fun onPlaybackEventPreparing() {
     this.logger.debug("[{}]: onPlaybackEventPreparing", this.id)
 
+    val position =
+      this.mostRecentPosition
+    val positionMetadata =
+      this.positionMetadataFor(position)
+
     this.events.onNext(
       PlayerEventPlaybackPreparing(
-        readingOrderItem = this.mostRecentPosition.readingOrderItem,
-        offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
-        tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
         isStreaming = this.isStreamingNow,
+        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        positionMetadata = positionMetadata,
+        readingOrderItem = position.readingOrderItem,
       )
     )
   }
@@ -379,13 +412,17 @@ class FindawayAdapter(
   private fun onPlaybackEventPlaybackPaused() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackPaused", this.id)
 
+    val position =
+      this.mostRecentPosition
+    val positionMetadata =
+      this.positionMetadataFor(position)
+
     this.events.onNext(
       PlayerEventPlaybackPaused(
-        readingOrderItem = this.mostRecentPosition.readingOrderItem,
-        offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
-        tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
         isStreaming = this.isStreamingNow,
+        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        positionMetadata = positionMetadata,
+        readingOrderItem = position.readingOrderItem,
       )
     )
   }
@@ -393,13 +430,17 @@ class FindawayAdapter(
   private fun onPlaybackEventPlaybackStopped() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackStopped", this.id)
 
+    val position =
+      this.mostRecentPosition
+    val positionMetadata =
+      this.positionMetadataFor(position)
+
     this.events.onNext(
       PlayerEventPlaybackStopped(
-        readingOrderItem = this.mostRecentPosition.readingOrderItem,
-        offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
-        tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
         isStreaming = this.isStreamingNow,
+        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        positionMetadata = positionMetadata,
+        readingOrderItem = position.readingOrderItem,
       )
     )
   }
@@ -407,12 +448,16 @@ class FindawayAdapter(
   private fun onPlaybackEventChapterCompleted() {
     this.logger.debug("[{}]: onPlaybackEventChapterCompleted", this.id)
 
+    val position =
+      this.mostRecentPosition
+    val positionMetadata =
+      this.positionMetadataFor(position)
+
     this.events.onNext(
       PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted(
-        readingOrderItem = this.mostRecentPosition.readingOrderItem,
-        tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
         isStreaming = this.isStreamingNow,
+        positionMetadata = positionMetadata,
+        readingOrderItem = position.readingOrderItem,
       )
     )
   }
@@ -420,13 +465,17 @@ class FindawayAdapter(
   private fun onPlaybackEventPlaybackStarted() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackStarted", this.id)
 
+    val position =
+      this.mostRecentPosition
+    val positionMetadata =
+      this.positionMetadataFor(position)
+
     this.events.onNext(
       PlayerEventPlaybackStarted(
-        readingOrderItem = this.mostRecentPosition.readingOrderItem,
-        offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
-        tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
         isStreaming = this.isStreamingNow,
+        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        positionMetadata = positionMetadata,
+        readingOrderItem = position.readingOrderItem,
       )
     )
   }
@@ -434,13 +483,17 @@ class FindawayAdapter(
   private fun onPlaybackEventPlaybackProgressUpdate() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackProgressUpdate", this.id)
 
+    val position =
+      this.mostRecentPosition
+    val positionMetadata =
+      this.positionMetadataFor(position)
+
     this.events.onNext(
       PlayerEventPlaybackProgressUpdate(
-        readingOrderItem = this.mostRecentPosition.readingOrderItem,
-        offsetMilliseconds = this.mostRecentPosition.offsetMilliseconds,
-        tocItem = this.mostRecentPosition.tocItem,
-        totalRemainingBookTime = this.mostRecentPosition.totalBookDurationRemaining,
         isStreaming = this.isStreamingNow,
+        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        positionMetadata = positionMetadata,
+        readingOrderItem = position.readingOrderItem,
       )
     )
   }
@@ -489,7 +542,7 @@ class FindawayAdapter(
     this.mostRecentPosition =
       FindawayPlayerPosition(
         readingOrderItem = readingOrderItem,
-        offsetMilliseconds = offsetMilliseconds,
+        readingOrderItemOffsetMilliseconds = offsetMilliseconds,
         part = chapter.part,
         chapter = chapter.chapter,
         tocItem = tocItem,
@@ -505,15 +558,17 @@ class FindawayAdapter(
   }
 
   fun broadcastPlaybackPosition() {
-    val position = this.mostRecentPosition
+    val position =
+      this.mostRecentPosition
+    val positionMetadata =
+      this.positionMetadataFor(position)
 
     this.events.onNext(
       PlayerEventPlaybackProgressUpdate(
-        readingOrderItem = position.readingOrderItem,
-        offsetMilliseconds = position.offsetMilliseconds,
-        tocItem = position.tocItem,
-        totalRemainingBookTime = position.totalBookDurationRemaining,
         isStreaming = this.isStreamingNow,
+        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        positionMetadata = positionMetadata,
+        readingOrderItem = position.readingOrderItem,
       )
     )
   }
@@ -541,22 +596,25 @@ class FindawayAdapter(
     this.play(
       PlayerPosition(
         position.readingOrderItem.id,
-        position.offsetMilliseconds
+        position.readingOrderItemOffsetMilliseconds
       )
     )
   }
 
   fun bookmark() {
-    val position = this.mostRecentPosition
+    val position =
+      this.mostRecentPosition
+    val positionMetadata =
+      this.positionMetadataFor(position)
 
     this.events.onNext(
       PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark(
-        readingOrderItem = position.readingOrderItem,
-        offsetMilliseconds = position.offsetMilliseconds,
-        tocItem = position.tocItem,
-        totalRemainingBookTime = position.totalBookDurationRemaining,
-        kind = PlayerBookmarkKind.EXPLICIT,
         isStreaming = this.isStreamingNow,
+        kind = PlayerBookmarkKind.EXPLICIT,
+        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        positionMetadata = positionMetadata,
+        readingOrderItem = position.readingOrderItem,
+        bookmarkMetadata = PlayerBookmarkMetadata.fromPositionMetadata(positionMetadata)
       )
     )
   }
@@ -569,7 +627,7 @@ class FindawayAdapter(
     val position =
       this.mostRecentPosition
     val nextMs =
-      position.offsetMilliseconds + milliseconds
+      position.readingOrderItemOffsetMilliseconds + milliseconds
 
     /*
      * The target time might be before the start of the current chapter.
@@ -626,7 +684,7 @@ class FindawayAdapter(
     val position =
       this.mostRecentPosition
     val nextMs =
-      position.offsetMilliseconds + milliseconds
+      position.readingOrderItemOffsetMilliseconds + milliseconds
 
     /*
      * We need to know the duration of the current chapter. This information might not

@@ -8,6 +8,7 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
+import org.librarysimplified.audiobook.api.PlayerPositionMetadata
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
@@ -156,18 +157,44 @@ class ExoAdapter(
       this.currentTrackOffsetMilliseconds()
     val tocItem =
       this.tocItemFor.invoke(readingOrderItem, offsetMilliseconds)
-    val durationRemaining =
-      this.toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+    val positionMetadata =
+      positionMetadataFor(tocItem, offsetMilliseconds)
 
     this.events.onNext(
       PlayerEventPlaybackProgressUpdate(
-        readingOrderItem = readingOrderItem,
+        isStreaming = this.isStreamingNow(),
         offsetMilliseconds = offsetMilliseconds,
-        tocItem = tocItem,
-        totalRemainingBookTime = durationRemaining,
-        isStreaming = this.isStreamingNow()
+        positionMetadata = positionMetadata,
+        readingOrderItem = readingOrderItem,
       )
     )
+  }
+
+  internal fun positionMetadataFor(
+    tocItem: PlayerManifestTOCItem,
+    offsetMilliseconds: Long
+  ): PlayerPositionMetadata {
+    val durationRemaining =
+      this.toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+
+    val bookProgressEstimate =
+      tocItem.index.toDouble() / this.toc.tocItemsInOrder.size.toDouble()
+
+    val chapterDuration =
+      tocItem.durationMilliseconds
+    val chapterOffsetMilliseconds =
+      offsetMilliseconds - tocItem.readingOrderOffsetMilliseconds
+    val chapterProgressEstimate =
+      chapterOffsetMilliseconds.toDouble() / chapterDuration.toDouble()
+
+    val positionMetadata =
+      PlayerPositionMetadata(
+        tocItem = tocItem,
+        totalRemainingBookTime = durationRemaining,
+        chapterProgressEstimate = chapterProgressEstimate,
+        bookProgressEstimate = bookProgressEstimate
+      )
+    return positionMetadata
   }
 
   override fun close() {

@@ -1,6 +1,5 @@
 package org.librarysimplified.audiobook.api
 
-import org.joda.time.DateTime
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 
 /**
@@ -9,10 +8,9 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 
 class PlayerBookmark(
   val kind: PlayerBookmarkKind,
-  val title: String,
-  val date: DateTime,
   val readingOrderID: PlayerManifestReadingOrderID,
-  val offsetMilliseconds: Long
+  val offsetMilliseconds: Long,
+  val metadata: PlayerBookmarkMetadata
 ) {
   val position: PlayerPosition =
     PlayerPosition(this.readingOrderID, this.offsetMilliseconds)

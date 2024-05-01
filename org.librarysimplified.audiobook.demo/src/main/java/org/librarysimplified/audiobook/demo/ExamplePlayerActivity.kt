@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
-import org.joda.time.DateTime
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
@@ -130,10 +129,9 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           bookId,
           PlayerBookmark(
             kind = event.kind,
-            title = event.tocItem.title,
-            date = DateTime.now(),
             readingOrderID = event.readingOrderItem.id,
-            offsetMilliseconds = event.offsetMilliseconds
+            offsetMilliseconds = event.offsetMilliseconds,
+            metadata = event.bookmarkMetadata
           )
         )
 

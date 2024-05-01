@@ -34,6 +34,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
+import org.librarysimplified.audiobook.api.PlayerPositionMetadata
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.EndOfChapter
@@ -45,7 +46,6 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTime
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Paused
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Running
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Stopped
-import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
@@ -377,8 +377,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
       offsetMilliseconds = event.offsetMilliseconds,
-      tocItem = event.tocItem,
-      totalRemainingBookTime = event.totalRemainingBookTime
+      positionMetadata = event.positionMetadata,
     )
   }
 
@@ -401,8 +400,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
       offsetMilliseconds = event.offsetMilliseconds,
-      tocItem = event.tocItem,
-      totalRemainingBookTime = event.totalRemainingBookTime
+      positionMetadata = event.positionMetadata,
     )
   }
 
@@ -418,8 +416,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
       offsetMilliseconds = event.offsetMilliseconds,
-      tocItem = event.tocItem,
-      totalRemainingBookTime = event.totalRemainingBookTime
+      positionMetadata = event.positionMetadata,
     )
   }
 
@@ -435,8 +432,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
       offsetMilliseconds = event.offsetMilliseconds,
-      tocItem = event.tocItem,
-      totalRemainingBookTime = event.totalRemainingBookTime
+      positionMetadata = event.positionMetadata,
     )
   }
 
@@ -457,8 +453,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
       offsetMilliseconds = event.offsetMilliseconds,
-      tocItem = event.tocItem,
-      totalRemainingBookTime = event.totalRemainingBookTime
+      positionMetadata = event.positionMetadata,
     )
   }
 
@@ -479,8 +474,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
       offsetMilliseconds = event.offsetMilliseconds,
-      tocItem = event.tocItem,
-      totalRemainingBookTime = event.totalRemainingBookTime
+      positionMetadata = event.positionMetadata,
     )
   }
 
@@ -523,28 +517,27 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onEventUpdateTimeRelatedUI(
     readingOrderItem: PlayerReadingOrderItemType,
     offsetMilliseconds: Long,
-    tocItem: PlayerManifestTOCItem,
-    totalRemainingBookTime: Duration
+    positionMetadata: PlayerPositionMetadata,
   ) {
     this.playerPosition.max =
-      tocItem.durationMilliseconds.toInt()
+      positionMetadata.tocItem.durationMilliseconds.toInt()
     this.playerPosition.isEnabled = true
 
     if (!this.playerPositionDragging) {
       this.playerPosition.progress = offsetMilliseconds.toInt()
     }
 
-    this.playerTitleView.text = tocItem.title
+    this.playerTitleView.text = positionMetadata.tocItem.title
 
     this.playerRemainingBookTime.text =
       PlayerTimeStrings.hourMinuteTextFromRemainingTime(
         this.requireContext(),
-        totalRemainingBookTime
+        positionMetadata.totalRemainingBookTime
       )
 
     this.playerTimeMaximum.text =
       PlayerTimeStrings.hourMinuteSecondTextFromDurationOptional(
-        tocItem.duration.minus(Duration.millis(offsetMilliseconds))
+        positionMetadata.tocItem.duration.minus(Duration.millis(offsetMilliseconds))
       )
 
     this.playerTimeMaximum.contentDescription =

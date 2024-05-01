@@ -14,6 +14,7 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
+import org.librarysimplified.audiobook.api.PlayerBookmarkMetadata
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventDeleteBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
@@ -33,6 +34,7 @@ import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.NORMAL_TIME
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
+import org.librarysimplified.audiobook.api.PlayerPositionMetadata
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
@@ -201,16 +203,19 @@ class ExoAudioBookPlayer private constructor(
     when (state.newState) {
       ExoPlayerPlaybackStatus.INITIAL -> {
         if (state.oldState == ExoPlayerPlaybackStatus.PLAYING) {
+          val offsetMilliseconds =
+            this.exoAdapter.currentTrackOffsetMilliseconds()
           val tocItem =
             this.tocItemFor(this.currentReadingOrderElement.id, 0L)
+          val positionMetadata =
+            this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
           this.statusEvents.onNext(
             PlayerEventPlaybackStopped(
-              readingOrderItem = this.currentReadingOrderElement,
+              isStreaming = this.isStreamingNow,
               offsetMilliseconds = 0,
-              tocItem = tocItem,
-              totalRemainingBookTime = toc.totalDurationRemaining(tocItem, 0L),
-              isStreaming = this.isStreamingNow
+              positionMetadata = positionMetadata,
+              readingOrderItem = this.currentReadingOrderElement,
             )
           )
         }
@@ -221,14 +226,15 @@ class ExoAudioBookPlayer private constructor(
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
           this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+        val positionMetadata =
+          this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
         this.statusEvents.onNext(
           PlayerEventPlaybackBuffering(
-            readingOrderItem = this.currentReadingOrderElement,
+            isStreaming = this.isStreamingNow,
             offsetMilliseconds = offsetMilliseconds,
-            tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
-            isStreaming = this.isStreamingNow
+            positionMetadata = positionMetadata,
+            readingOrderItem = this.currentReadingOrderElement,
           )
         )
       }
@@ -238,26 +244,26 @@ class ExoAudioBookPlayer private constructor(
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
           this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+        val positionMetadata =
+          this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
         if (state.oldState != ExoPlayerPlaybackStatus.PLAYING) {
           this.statusEvents.onNext(
             PlayerEventPlaybackStarted(
-              readingOrderItem = this.currentReadingOrderElement,
+              isStreaming = this.isStreamingNow,
               offsetMilliseconds = offsetMilliseconds,
-              tocItem = tocItem,
-              totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
-              isStreaming = this.isStreamingNow
+              positionMetadata = positionMetadata,
+              readingOrderItem = this.currentReadingOrderElement,
             )
           )
         }
 
         this.statusEvents.onNext(
           PlayerEventPlaybackProgressUpdate(
-            readingOrderItem = this.currentReadingOrderElement,
+            isStreaming = this.isStreamingNow,
             offsetMilliseconds = offsetMilliseconds,
-            tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
-            isStreaming = this.isStreamingNow
+            positionMetadata = positionMetadata,
+            readingOrderItem = this.currentReadingOrderElement,
           )
         )
       }
@@ -267,14 +273,15 @@ class ExoAudioBookPlayer private constructor(
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
           this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+        val positionMetadata =
+          this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
         this.statusEvents.onNext(
           PlayerEventPlaybackPaused(
-            readingOrderItem = this.currentReadingOrderElement,
+            isStreaming = this.isStreamingNow,
             offsetMilliseconds = offsetMilliseconds,
-            tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
-            isStreaming = this.isStreamingNow
+            positionMetadata = positionMetadata,
+            readingOrderItem = this.currentReadingOrderElement,
           )
         )
       }
@@ -284,13 +291,14 @@ class ExoAudioBookPlayer private constructor(
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
           this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+        val positionMetadata =
+          this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
         this.statusEvents.onNext(
           PlayerEventChapterCompleted(
+            isStreaming = this.isStreamingNow,
+            positionMetadata = positionMetadata,
             readingOrderItem = this.currentReadingOrderElement,
-            tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, offsetMilliseconds),
-            isStreaming = this.isStreamingNow
           )
         )
         this.playNextSpineElementIfAvailable(this.currentReadingOrderElement, 0L)
@@ -491,13 +499,14 @@ class ExoAudioBookPlayer private constructor(
           tocItemFor(element.id, 0L)
         val toc =
           this.book.tableOfContents
+        val positionMetadata =
+          this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
         this.statusEvents.onNext(
           PlayerEventChapterWaiting(
+            isStreaming = this.isStreamingNow,
+            positionMetadata = positionMetadata,
             readingOrderItem = element,
-            tocItem = tocItem,
-            totalRemainingBookTime = toc.totalDurationRemaining(tocItem, 0L),
-            isStreaming = this.isStreamingNow
           )
         )
         SKIP_TO_CHAPTER_NOT_DOWNLOADED
@@ -738,14 +747,32 @@ class ExoAudioBookPlayer private constructor(
     val durationRemaining =
       this.book.tableOfContents.totalDurationRemaining(tocItem, offsetMilliseconds)
 
+    val bookProgressEstimate =
+      readingOrderItem.index.toDouble() / this.book.readingOrder.size.toDouble()
+
+    val chapterDuration =
+      tocItem.durationMilliseconds
+    val chapterOffsetMilliseconds =
+      offsetMilliseconds - tocItem.readingOrderOffsetMilliseconds
+    val chapterProgressEstimate =
+      chapterOffsetMilliseconds.toDouble() / chapterDuration.toDouble()
+
+    val positionMetadata =
+      PlayerPositionMetadata(
+        tocItem = tocItem,
+        totalRemainingBookTime = durationRemaining,
+        chapterProgressEstimate = chapterProgressEstimate,
+        bookProgressEstimate = bookProgressEstimate
+      )
+
     this.statusEvents.onNext(
       PlayerEventCreateBookmark(
         readingOrderItem,
         offsetMilliseconds = offsetMilliseconds,
-        tocItem = tocItem,
-        totalRemainingBookTime = durationRemaining,
         kind = PlayerBookmarkKind.EXPLICIT,
-        isStreaming = this.isStreamingNow
+        isStreaming = this.isStreamingNow,
+        positionMetadata = positionMetadata,
+        bookmarkMetadata = PlayerBookmarkMetadata.fromPositionMetadata(positionMetadata)
       )
     )
   }

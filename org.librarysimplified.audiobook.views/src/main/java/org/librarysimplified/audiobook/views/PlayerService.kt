@@ -229,7 +229,7 @@ class PlayerService : Service() {
 
     session.setMetadata(
       MediaMetadataCompat.Builder()
-        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, event.tocItem.title)
+        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, event.positionMetadata.tocItem.title)
         .build()
     )
 
