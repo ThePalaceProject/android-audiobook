@@ -37,6 +37,19 @@ class ExoAdapter(
     BehaviorSubject.create<ExoPlayerPlaybackStatusTransition>()
       .toSerialized()
 
+  /**
+   * The ExoPlayer implementation exposes an [ExoPlayer.STATE_BUFFERING] state that's
+   * reached when the player starts buffering. Unfortunately, it's perfectly normal for the
+   * player to also publish other states before the player has actually finished buffering.
+   * Therefore, thanks to this bad design, it's necessary for us to track buffering separately;
+   * set the flag when buffering starts, and unset it when something significant happens
+   * (like [ExoPlayer.STATE_READY]).
+   */
+
+  @Volatile
+  internal var isBufferingNow: Boolean =
+    false
+
   @Volatile
   private var stateLatest: ExoPlayerPlaybackStatus =
     ExoPlayerPlaybackStatus.INITIAL
@@ -77,10 +90,12 @@ class ExoAdapter(
 
     when (playbackState) {
       ExoPlayer.STATE_BUFFERING -> {
+        this.isBufferingNow = true
         this.newState(ExoPlayerPlaybackStatus.BUFFERING)
       }
 
       ExoPlayer.STATE_ENDED -> {
+        this.isBufferingNow = false
         this.newState(ExoPlayerPlaybackStatus.CHAPTER_ENDED)
       }
 
@@ -89,6 +104,7 @@ class ExoAdapter(
       }
 
       ExoPlayer.STATE_READY -> {
+        this.isBufferingNow = false
         if (this.exoPlayer.isPlaying) {
           this.newState(ExoPlayerPlaybackStatus.PLAYING)
         } else {
@@ -119,6 +135,7 @@ class ExoAdapter(
       this.newState(ExoPlayerPlaybackStatus.PLAYING)
     } else {
       if (this.exoPlayer.isLoading) {
+        this.isBufferingNow = true
         this.newState(ExoPlayerPlaybackStatus.BUFFERING)
       } else {
         this.newState(ExoPlayerPlaybackStatus.PAUSED)
@@ -172,10 +189,10 @@ class ExoAdapter(
 
   internal fun positionMetadataFor(
     tocItem: PlayerManifestTOCItem,
-    offsetMilliseconds: Long
+    readingOrderItemOffsetMilliseconds: Long
   ): PlayerPositionMetadata {
     val durationRemaining =
-      this.toc.totalDurationRemaining(tocItem, offsetMilliseconds)
+      this.toc.totalDurationRemaining(tocItem, readingOrderItemOffsetMilliseconds)
 
     val bookProgressEstimate =
       tocItem.index.toDouble() / this.toc.tocItemsInOrder.size.toDouble()
@@ -183,18 +200,16 @@ class ExoAdapter(
     val chapterDuration =
       tocItem.durationMilliseconds
     val chapterOffsetMilliseconds =
-      offsetMilliseconds - tocItem.readingOrderOffsetMilliseconds
+      readingOrderItemOffsetMilliseconds - tocItem.readingOrderOffsetMilliseconds
     val chapterProgressEstimate =
       chapterOffsetMilliseconds.toDouble() / chapterDuration.toDouble()
 
-    val positionMetadata =
-      PlayerPositionMetadata(
-        tocItem = tocItem,
-        totalRemainingBookTime = durationRemaining,
-        chapterProgressEstimate = chapterProgressEstimate,
-        bookProgressEstimate = bookProgressEstimate
-      )
-    return positionMetadata
+    return PlayerPositionMetadata(
+      tocItem = tocItem,
+      totalRemainingBookTime = durationRemaining,
+      chapterProgressEstimate = chapterProgressEstimate,
+      bookProgressEstimate = bookProgressEstimate
+    )
   }
 
   override fun close() {

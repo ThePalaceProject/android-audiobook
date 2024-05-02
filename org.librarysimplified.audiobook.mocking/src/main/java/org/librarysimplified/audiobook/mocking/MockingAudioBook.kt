@@ -46,14 +46,6 @@ class MockingAudioBook(
     return element
   }
 
-  fun createDownloadTask(elements: List<MockingReadingOrderItem>): MockingDownloadTask {
-    return MockingDownloadTask(
-      downloadStatusExecutor = this.downloadStatusExecutor,
-      downloadProvider = this.downloadProvider,
-      readingOrderItemList = elements
-    )
-  }
-
   override var supportsStreaming: Boolean = false
 
   override val supportsIndividualChapterDeletion: Boolean

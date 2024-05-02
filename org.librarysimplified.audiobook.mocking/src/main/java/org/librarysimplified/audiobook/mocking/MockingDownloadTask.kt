@@ -2,6 +2,7 @@ package org.librarysimplified.audiobook.mocking
 
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
@@ -24,7 +25,8 @@ import kotlin.random.Random
 class MockingDownloadTask(
   private val downloadStatusExecutor: ExecutorService,
   private val downloadProvider: PlayerDownloadProviderType,
-  private val readingOrderItemList: List<MockingReadingOrderItem>
+  private val readingOrderItemList: List<MockingReadingOrderItem>,
+  override val index: Int
 ) : PlayerDownloadTaskType {
 
   private val log = LoggerFactory.getLogger(MockingDownloadTask::class.java)
@@ -192,4 +194,17 @@ class MockingDownloadTask(
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = this.readingOrderItemList
+
+  override val status: PlayerDownloadTaskStatus
+    get() = when (this.stateGetCurrent()) {
+      State.Downloaded -> PlayerDownloadTaskStatus.IdleDownloaded
+      is State.Downloading -> PlayerDownloadTaskStatus.Downloading(
+        if (this.progress == 0.0) {
+          null
+        } else {
+          this.progress
+        }
+      )
+      State.Initial -> PlayerDownloadTaskStatus.IdleNotDownloaded
+    }
 }

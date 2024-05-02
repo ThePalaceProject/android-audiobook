@@ -225,7 +225,8 @@ class FindawayAudioBook private constructor(
           manifest = manifest,
           spineElements = listOf(element),
           chapter = spineItem.sequence,
-          part = spineItem.part
+          part = spineItem.part,
+          index = index
         )
 
         downloadTasks.add(downloadTask)

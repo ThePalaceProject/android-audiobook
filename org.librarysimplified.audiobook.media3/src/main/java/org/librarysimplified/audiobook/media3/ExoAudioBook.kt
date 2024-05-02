@@ -187,11 +187,16 @@ class ExoAudioBook private constructor(
         ArrayList<ExoReadingOrderItemHandle>()
       val handlesById =
         HashMap<PlayerManifestReadingOrderID, ExoReadingOrderItemHandle>()
+      val downloadTasksById =
+        HashMap<PlayerManifestReadingOrderID, ExoDownloadTask>()
+      val downloadTasks =
+        ArrayList<ExoDownloadTask>()
 
       var handlePrevious: ExoReadingOrderItemHandle? = null
 
       /*
-       * Build a doubly-linked list of manifest item handles.
+       * Build a doubly-linked list of manifest item handles, and create download
+       * tasks for each reading order item.
        */
 
       for (manifestItem in manifest.readingOrderItems) {
@@ -211,32 +216,24 @@ class ExoAudioBook private constructor(
           handlePrevious.nextElement = handle
         }
         handlePrevious = handle
+
+        val partFile =
+          File(directory, "${manifestItem.index}.part")
+        val task =
+          ExoDownloadTask(
+            downloadProvider = downloadProvider,
+            downloadStatusExecutor = engineExecutor,
+            extensions = extensions,
+            originalLink = manifestItem.item.link,
+            partFile = partFile,
+            readingOrderItem = handle,
+            userAgent = userAgent,
+            index = manifestItem.index
+          )
+
+        downloadTasksById.put(manifestItem.item.id, task)
+        downloadTasks.add(task)
       }
-
-      /*
-       * Create download tasks for each reading order item.
-       */
-
-      val downloadTasksById =
-        HashMap<PlayerManifestReadingOrderID, ExoDownloadTask>()
-      val downloadTasks =
-        manifest.readingOrderItems.map { item ->
-          val partFile =
-            File(directory, "${item.index}.part")
-          val task =
-            ExoDownloadTask(
-              downloadProvider = downloadProvider,
-              downloadStatusExecutor = engineExecutor,
-              extensions = extensions,
-              originalLink = item.item.link,
-              partFile = partFile,
-              readingOrderItems = handles,
-              userAgent = userAgent,
-            )
-
-          downloadTasksById.put(item.item.id, task)
-          task
-        }
 
       val book =
         ExoAudioBook(

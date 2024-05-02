@@ -87,9 +87,28 @@ class ExoAudioBookPlayer private constructor(
   private var currentPlaybackRate: PlayerPlaybackRate =
     NORMAL_TIME
 
+  /**
+   * The current intended playback target. This refers to a reading order item and an offset
+   * within that item, and essentially represents that most recent place to which the user
+   * explicitly navigated (we also count a chapter ending and a new chapter starting as being
+   * an explicit navigation).
+   */
+
+  private data class CurrentPlaybackTarget(
+    val readingOrderItem: ExoReadingOrderItemHandle,
+    val readingOrderItemTargetOffsetMilliseconds: Long,
+  )
+
+  /**
+   * The reading order element that we're currently trying to play.
+   */
+
   @Volatile
-  private var currentReadingOrderElement: ExoReadingOrderItemHandle =
-    this.book.readingOrder.first()
+  private var currentReadingOrderElement: CurrentPlaybackTarget =
+    CurrentPlaybackTarget(
+      readingOrderItem = this.book.readingOrder.first(),
+      readingOrderItemTargetOffsetMilliseconds = 0L
+    )
 
   /**
    * A flag that indicates whether the current reading order item is being read from local storage,
@@ -99,19 +118,6 @@ class ExoAudioBookPlayer private constructor(
 
   @Volatile
   internal var isStreamingNow: Boolean =
-    false
-
-  /**
-   * The ExoPlayer implementation exposes an [ExoPlayerPlaybackStatus.BUFFERING] state that's
-   * reached when the player starts buffering. Unfortunately, it's perfectly normal for the
-   * player to also publish other states (such as [ExoPlayerPlaybackStatus.PAUSED]) before
-   * the player has actually finished buffering. Therefore, thanks to this bad design, it's
-   * necessary for us to track buffering separately; set the flag when buffering starts, and
-   * unset it when something significant happens (like [ExoPlayerPlaybackStatus.PLAYING]).
-   */
-
-  @Volatile
-  internal var isBufferingNow: Boolean =
     false
 
   /**
@@ -137,7 +143,7 @@ class ExoAudioBookPlayer private constructor(
       events = this.statusEvents,
       exoPlayer = this.exoPlayer,
       currentReadingOrderItem = {
-        this.currentReadingOrderElement
+        this.currentReadingOrderElement.readingOrderItem
       },
       tocItemFor = { item, time ->
         this.tocItemFor(item.id, time)
@@ -222,13 +228,11 @@ class ExoAudioBookPlayer private constructor(
 
     when (state.newState) {
       ExoPlayerPlaybackStatus.INITIAL -> {
-        this.isBufferingNow = false
-
         if (state.oldState == ExoPlayerPlaybackStatus.PLAYING) {
           val offsetMilliseconds =
             this.exoAdapter.currentTrackOffsetMilliseconds()
           val tocItem =
-            this.tocItemFor(this.currentReadingOrderElement.id, 0L)
+            this.tocItemFor(this.currentReadingOrderElement.readingOrderItem.id, 0L)
           val positionMetadata =
             this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
@@ -237,19 +241,17 @@ class ExoAudioBookPlayer private constructor(
               isStreaming = this.isStreamingNow,
               offsetMilliseconds = 0,
               positionMetadata = positionMetadata,
-              readingOrderItem = this.currentReadingOrderElement,
+              readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
             )
           )
         }
       }
 
       ExoPlayerPlaybackStatus.BUFFERING -> {
-        this.isBufferingNow = true
-
         val offsetMilliseconds =
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
-          this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+          this.tocItemFor(this.currentReadingOrderElement.readingOrderItem.id, offsetMilliseconds)
         val positionMetadata =
           this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
@@ -258,18 +260,16 @@ class ExoAudioBookPlayer private constructor(
             isStreaming = this.isStreamingNow,
             offsetMilliseconds = offsetMilliseconds,
             positionMetadata = positionMetadata,
-            readingOrderItem = this.currentReadingOrderElement,
+            readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
           )
         )
       }
 
       ExoPlayerPlaybackStatus.PLAYING -> {
-        this.isBufferingNow = false
-
         val offsetMilliseconds =
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
-          this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+          this.tocItemFor(this.currentReadingOrderElement.readingOrderItem.id, offsetMilliseconds)
         val positionMetadata =
           this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
@@ -279,7 +279,7 @@ class ExoAudioBookPlayer private constructor(
               isStreaming = this.isStreamingNow,
               offsetMilliseconds = offsetMilliseconds,
               positionMetadata = positionMetadata,
-              readingOrderItem = this.currentReadingOrderElement,
+              readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
             )
           )
         }
@@ -289,7 +289,7 @@ class ExoAudioBookPlayer private constructor(
             isStreaming = this.isStreamingNow,
             offsetMilliseconds = offsetMilliseconds,
             positionMetadata = positionMetadata,
-            readingOrderItem = this.currentReadingOrderElement,
+            readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
           )
         )
       }
@@ -298,17 +298,17 @@ class ExoAudioBookPlayer private constructor(
         val offsetMilliseconds =
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
-          this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+          this.tocItemFor(this.currentReadingOrderElement.readingOrderItem.id, offsetMilliseconds)
         val positionMetadata =
           this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
-        if (this.isBufferingNow) {
+        if (this.exoAdapter.isBufferingNow) {
           this.statusEvents.onNext(
             PlayerEventPlaybackBuffering(
               isStreaming = this.isStreamingNow,
               offsetMilliseconds = offsetMilliseconds,
               positionMetadata = positionMetadata,
-              readingOrderItem = this.currentReadingOrderElement,
+              readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
             )
           )
         } else {
@@ -317,19 +317,17 @@ class ExoAudioBookPlayer private constructor(
               isStreaming = this.isStreamingNow,
               offsetMilliseconds = offsetMilliseconds,
               positionMetadata = positionMetadata,
-              readingOrderItem = this.currentReadingOrderElement,
+              readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
             )
           )
         }
       }
 
       ExoPlayerPlaybackStatus.CHAPTER_ENDED -> {
-        this.isBufferingNow = false
-
         val offsetMilliseconds =
           this.exoAdapter.currentTrackOffsetMilliseconds()
         val tocItem =
-          this.tocItemFor(this.currentReadingOrderElement.id, offsetMilliseconds)
+          this.tocItemFor(this.currentReadingOrderElement.readingOrderItem.id, offsetMilliseconds)
         val positionMetadata =
           this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
@@ -337,10 +335,10 @@ class ExoAudioBookPlayer private constructor(
           PlayerEventChapterCompleted(
             isStreaming = this.isStreamingNow,
             positionMetadata = positionMetadata,
-            readingOrderItem = this.currentReadingOrderElement,
+            readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
           )
         )
-        this.playNextSpineElementIfAvailable(this.currentReadingOrderElement, 0L)
+        this.playNextSpineElementIfAvailable(this.currentReadingOrderElement.readingOrderItem)
       }
     }
   }
@@ -401,54 +399,36 @@ class ExoAudioBookPlayer private constructor(
   private fun onDownloadStatusChanged(status: PlayerReadingOrderItemDownloadStatus) {
     PlayerUIThread.checkIsUIThread()
 
-    when (this.intention) {
-      /*
-       * If the we're supposed to be playing the current reading order item, and the status is
-       * anything other than "downloaded", stop everything. Otherwise, try to play the item.
-       */
+    /*
+     * If the status of the current reading order item becomes "downloaded", and we're
+     * intending to play it, then try to start playback.
+     */
 
+    when (this.intention) {
       SHOULD_BE_PLAYING -> {
-        if (this.currentReadingOrderElement.id == status.readingOrderItem.id) {
+        if (this.currentReadingOrderElement.readingOrderItem.id == status.readingOrderItem.id) {
           when (status) {
             is PlayerReadingOrderItemNotDownloaded,
             is PlayerReadingOrderItemDownloading,
             is PlayerReadingOrderItemDownloadExpired,
             is PlayerReadingOrderItemDownloadFailed -> {
-              this.log.debug("Reading order item status changed, stopping playback")
-              this.opStop()
+              // Nothing to do.
             }
 
             is PlayerReadingOrderItemDownloaded -> {
-              this.log.debug("Reading order item status changed, trying to start playback")
-              this.moveToReadingOrderItemIfAvailable(
-                element = this.currentReadingOrderElement,
-                offsetMilliseconds = this.exoAdapter.currentTrackOffsetMilliseconds()
+              this.log.debug(
+                "Reading order item {} status changed, trying to start playback",
+                status.readingOrderItem.id
               )
+              this.preparePlayer(this.currentReadingOrderElement)
               this.exoAdapter.playIfNotAlreadyPlaying()
             }
           }
         }
       }
 
-      /*
-       * If the we're stopped on the current reading order item, and the status is anything other
-       * than "downloaded", redundantly stop everything.
-       */
-
       SHOULD_BE_STOPPED -> {
-        if (this.currentReadingOrderElement.id == status.readingOrderItem.id) {
-          when (status) {
-            is PlayerReadingOrderItemNotDownloaded,
-            is PlayerReadingOrderItemDownloading,
-            is PlayerReadingOrderItemDownloadExpired,
-            is PlayerReadingOrderItemDownloadFailed -> {
-              this.log.debug("Reading order item status changed, stopping playback")
-              this.opStop()
-            }
-
-            is PlayerReadingOrderItemDownloaded -> Unit
-          }
-        }
+        // Nothing to do.
       }
     }
   }
@@ -477,11 +457,8 @@ class ExoAudioBookPlayer private constructor(
     this.exoPlayer.seekTo(0L)
   }
 
-  private fun playNextSpineElementIfAvailable(
-    element: ExoReadingOrderItemHandle,
-    offset: Long
-  ): SkipChapterStatus {
-    this.log.debug("playNextSpineElementIfAvailable: {} {}", element.index, offset)
+  private fun playNextSpineElementIfAvailable(element: ExoReadingOrderItemHandle): SkipChapterStatus {
+    this.log.debug("playNextSpineElementIfAvailable: {}", element.itemManifest.item.id)
     PlayerUIThread.checkIsUIThread()
 
     val next = element.next as ExoReadingOrderItemHandle?
@@ -490,7 +467,12 @@ class ExoAudioBookPlayer private constructor(
       return SKIP_TO_CHAPTER_NONEXISTENT
     }
 
-    return this.moveToReadingOrderItemIfAvailable(next, offset)
+    return this.preparePlayer(
+      CurrentPlaybackTarget(
+        readingOrderItem = next,
+        readingOrderItemTargetOffsetMilliseconds = 0L
+      )
+    )
   }
 
   private fun playPreviousSpineElementIfAvailable(
@@ -512,67 +494,62 @@ class ExoAudioBookPlayer private constructor(
       0L
     }
 
-    return this.moveToReadingOrderItemIfAvailable(previous, newOffset)
+    return this.preparePlayer(
+      CurrentPlaybackTarget(
+        readingOrderItem = previous,
+        readingOrderItemTargetOffsetMilliseconds = newOffset
+      )
+    )
   }
 
-  private fun moveToReadingOrderItemIfAvailable(
-    element: ExoReadingOrderItemHandle,
-    offsetMilliseconds: Long
-  ): SkipChapterStatus {
-    this.log.debug("moveToReadingOrderItemIfAvailable: {}", element.index)
-    PlayerUIThread.checkIsUIThread()
+  private fun preparePlayer(target: CurrentPlaybackTarget): SkipChapterStatus {
+    this.log.debug(
+      "preparePlayer: [{}] (offset {})",
+      target.readingOrderItem.id,
+      target.readingOrderItemTargetOffsetMilliseconds
+    )
 
-    if (this.isStreamingPermitted) {
-      this.preparePlayer(element, offsetMilliseconds)
-      return SKIP_TO_CHAPTER_READY
-    }
+    this.currentReadingOrderElement = target
 
-    return when (val downloadStatus = element.downloadStatus) {
-      is PlayerReadingOrderItemNotDownloaded,
-      is PlayerReadingOrderItemDownloading,
-      is PlayerReadingOrderItemDownloadExpired,
-      is PlayerReadingOrderItemDownloadFailed -> {
+    val tocItem =
+      tocItemFor(
+        readingOrderID = target.readingOrderItem.id,
+        offsetMilliseconds = target.readingOrderItemTargetOffsetMilliseconds)
+
+    val positionMetadata =
+      this.exoAdapter.positionMetadataFor(
+        tocItem = tocItem,
+        readingOrderItemOffsetMilliseconds = target.readingOrderItemTargetOffsetMilliseconds
+      )
+
+    val downloadStatus = target.readingOrderItem.downloadStatus
+    if (downloadStatus !is PlayerReadingOrderItemDownloaded) {
+      if (!this.isStreamingPermitted) {
         this.log.debug(
-          "moveToReadingOrderItemIfAvailable: reading order item {} is not downloaded ({}), cannot continue",
-          element.index, downloadStatus
+          "preparePlayer: [{}] Download status is {} and streaming is not permitted. Waiting!",
+          target.readingOrderItem.id,
+          downloadStatus.javaClass.simpleName
         )
-
-        this.currentReadingOrderElement = element
-
-        val tocItem =
-          tocItemFor(element.id, 0L)
-        val positionMetadata =
-          this.exoAdapter.positionMetadataFor(tocItem, offsetMilliseconds)
 
         this.statusEvents.onNext(
           PlayerEventChapterWaiting(
             isStreaming = this.isStreamingNow,
             positionMetadata = positionMetadata,
-            readingOrderItem = element,
+            readingOrderItem = target.readingOrderItem,
           )
         )
-        SKIP_TO_CHAPTER_NOT_DOWNLOADED
-      }
-
-      is PlayerReadingOrderItemDownloaded -> {
-        this.preparePlayer(element, offsetMilliseconds)
-        SKIP_TO_CHAPTER_READY
+        return SKIP_TO_CHAPTER_NOT_DOWNLOADED
+      } else {
+        this.log.debug(
+          "preparePlayer: [{}] Download status is {} and streaming is permitted. Streaming!",
+          target.readingOrderItem.id,
+          downloadStatus.javaClass.simpleName
+        )
       }
     }
-  }
-
-  private fun preparePlayer(
-    newElement: ExoReadingOrderItemHandle,
-    offset: Long
-  ) {
-    this.log.debug(
-      "preparePlayer: {} (offset {})",
-      newElement.index,
-      offset
-    )
 
     val partFile =
-      this.book.downloadTasksByID[newElement.id]!!.partFile
+      this.book.downloadTasksByID[target.readingOrderItem.id]!!.partFile
 
     val targetURI: Uri =
       if (partFile.isFile) {
@@ -580,18 +557,23 @@ class ExoAudioBookPlayer private constructor(
         Uri.fromFile(partFile)
       } else {
         this.isStreamingNow = true
-        Uri.parse(newElement.itemManifest.item.link.hrefURI!!.toString())
+        Uri.parse(target.readingOrderItem.itemManifest.item.link.hrefURI!!.toString())
       }
 
-    this.currentReadingOrderElement = newElement
+    this.log.debug(
+      "preparePlayer: [{}] Setting media source and preparing player now.",
+      target.readingOrderItem.id
+    )
+
     this.exoPlayer.setMediaSource(
       ProgressiveMediaSource.Factory(this.dataSourceFactory)
         .createMediaSource(MediaItem.fromUri(targetURI))
     )
 
     this.exoPlayer.prepare()
-    this.zeroBugTracker.recordTrackDuration(newElement.index, this.exoPlayer.duration)
-    this.seek(offset)
+    this.zeroBugTracker.recordTrackDuration(target.readingOrderItem.index, this.exoPlayer.duration)
+    this.seek(target.readingOrderItemTargetOffsetMilliseconds)
+    return SKIP_TO_CHAPTER_READY
   }
 
   private fun seek(offsetMs: Long) {
@@ -614,7 +596,7 @@ class ExoAudioBookPlayer private constructor(
     this.intention = SHOULD_BE_PLAYING
     when (this.exoAdapter.state) {
       ExoPlayerPlaybackStatus.INITIAL -> {
-        this.preparePlayer(this.currentReadingOrderElement, 0L)
+        this.preparePlayer(this.currentReadingOrderElement)
         this.exoPlayer.play()
       }
 
@@ -661,12 +643,12 @@ class ExoAudioBookPlayer private constructor(
     SKIP_TO_CHAPTER_READY
   }
 
-  private fun opSkipToNextChapter(
-    offset: Long
-  ): SkipChapterStatus {
+  private fun opSkipToNextChapter(): SkipChapterStatus {
     this.log.debug("opSkipToNextChapter")
     PlayerUIThread.checkIsUIThread()
-    return this.playNextSpineElementIfAvailable(this.currentReadingOrderElement, offset)
+    return this.playNextSpineElementIfAvailable(
+      this.currentReadingOrderElement.readingOrderItem
+    )
   }
 
   private fun opSkipToPreviousChapter(
@@ -674,7 +656,9 @@ class ExoAudioBookPlayer private constructor(
   ): SkipChapterStatus {
     this.log.debug("opSkipToPreviousChapter")
     PlayerUIThread.checkIsUIThread()
-    return this.playPreviousSpineElementIfAvailable(this.currentReadingOrderElement, offset)
+    return this.playPreviousSpineElementIfAvailable(
+      this.currentReadingOrderElement.readingOrderItem, offset
+    )
   }
 
   private fun opPause() {
@@ -758,12 +742,14 @@ class ExoAudioBookPlayer private constructor(
      * it's more efficient to simply seek to the right offset and start playing.
      */
 
-    if (requestedSpineElement.id == this.currentReadingOrderElement.id) {
+    if (requestedSpineElement.id == this.currentReadingOrderElement.readingOrderItem.id) {
       this.seek(location.offsetMilliseconds)
     } else {
-      this.moveToReadingOrderItemIfAvailable(
-        element = requestedSpineElement,
-        offsetMilliseconds = location.offsetMilliseconds
+      this.preparePlayer(
+        CurrentPlaybackTarget(
+          readingOrderItem = requestedSpineElement,
+          readingOrderItemTargetOffsetMilliseconds = location.offsetMilliseconds
+        )
       )
     }
   }
@@ -785,12 +771,12 @@ class ExoAudioBookPlayer private constructor(
     val offsetMilliseconds =
       this.exoAdapter.currentTrackOffsetMilliseconds()
     val tocItem =
-      this.tocItemFor(readingOrderItem.id, offsetMilliseconds)
+      this.tocItemFor(readingOrderItem.readingOrderItem.id, offsetMilliseconds)
     val durationRemaining =
       this.book.tableOfContents.totalDurationRemaining(tocItem, offsetMilliseconds)
 
     val bookProgressEstimate =
-      readingOrderItem.index.toDouble() / this.book.readingOrder.size.toDouble()
+      readingOrderItem.readingOrderItem.index.toDouble() / this.book.readingOrder.size.toDouble()
 
     val chapterDuration =
       tocItem.durationMilliseconds
@@ -809,7 +795,7 @@ class ExoAudioBookPlayer private constructor(
 
     this.statusEvents.onNext(
       PlayerEventCreateBookmark(
-        readingOrderItem,
+        readingOrderItem.readingOrderItem,
         offsetMilliseconds = offsetMilliseconds,
         kind = PlayerBookmarkKind.EXPLICIT,
         isStreaming = this.isStreamingNow,
@@ -868,7 +854,7 @@ class ExoAudioBookPlayer private constructor(
     this.checkNotClosed()
 
     runOnUIThread {
-      val status = this.opSkipToNextChapter(offset = offset)
+      val status = this.opSkipToNextChapter()
 
       // if there's no next chapter, the player will go to the end of the chapter
       if (status == SKIP_TO_CHAPTER_NONEXISTENT) {

@@ -224,7 +224,7 @@ object PlayerModel {
    */
 
   private val downloadEventSubject =
-    PublishSubject.create<PlayerReadingOrderItemDownloadStatus>()
+    BehaviorSubject.create<PlayerReadingOrderItemDownloadStatus>()
       .toSerialized()
 
   val downloadEvents: Observable<PlayerReadingOrderItemDownloadStatus> =

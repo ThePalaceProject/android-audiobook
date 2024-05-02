@@ -8,6 +8,18 @@ package org.librarysimplified.audiobook.api
 interface PlayerDownloadTaskType {
 
   /**
+   * The index of the download task (or `0` for "whole book" tasks).
+   */
+
+  val index: Int
+
+  /**
+   * The current status of the task
+   */
+
+  val status: PlayerDownloadTaskStatus
+
+  /**
    * Run the download task.
    */
 

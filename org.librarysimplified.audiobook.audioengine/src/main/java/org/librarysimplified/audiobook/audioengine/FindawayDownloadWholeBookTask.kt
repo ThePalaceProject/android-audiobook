@@ -2,6 +2,7 @@ package org.librarysimplified.audiobook.audioengine
 
 import io.audioengine.mobile.DownloadEvent
 import io.reactivex.disposables.Disposable
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
@@ -37,6 +38,16 @@ class FindawayDownloadWholeBookTask(
 
   override val progress: Double
     get() = this.determineProgress()
+
+  override val index: Int
+    get() = 0
+
+  override val status: PlayerDownloadTaskStatus
+    get() = run {
+      val task = this.audioBook.downloadTasks[this.currentDownloadTaskIndex]
+        as FindawayChapterDownloadTask
+      return task.status
+    }
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = this.audioBook.readingOrder

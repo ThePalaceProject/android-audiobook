@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.mocking
 
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 
@@ -31,6 +32,10 @@ class MockingDownloadWholeBookTask(
 
   override val progress: Double
     get() = calculateProgress()
+  override val index: Int
+    get() = 0
+  override val status: PlayerDownloadTaskStatus
+    get() = PlayerDownloadTaskStatus.IdleNotDownloaded
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = this.audioBook.readingOrder

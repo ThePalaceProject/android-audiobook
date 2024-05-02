@@ -18,6 +18,7 @@ import androidx.annotation.UiThread
 import androidx.appcompat.widget.Toolbar
 import io.reactivex.disposables.CompositeDisposable
 import org.joda.time.Duration
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventDeleteBookmark
@@ -67,7 +68,8 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var playerBusy: ProgressBar
   private lateinit var playerChapterTitle: TextView
   private lateinit var playerCommands: ViewGroup
-  private lateinit var playerInfoModel: PlayerInfoModel
+  private lateinit var playerDownloadMessage: TextView
+  private lateinit var playerDownloadProgress: ProgressBar
   private lateinit var playerPosition: SeekBar
   private lateinit var playerRemainingBookTime: TextView
   private lateinit var playerSkipBackwardButton: ImageView
@@ -115,7 +117,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerSkipBackwardButton =
       view.findViewById(R.id.player_jump_backwards)
     this.playerWaiting =
-      view.findViewById(R.id.player_waiting_buffering)
+      view.findViewById(R.id.playerMustBeDownloaded)
     this.playerTimeCurrent =
       view.findViewById(R.id.player_time)!!
     this.playerTimeMaximum =
@@ -128,6 +130,11 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.player_progress)!!
     this.playerStatus =
       view.findViewById(R.id.player_status)
+
+    this.playerDownloadMessage =
+      view.findViewById<TextView>(R.id.playerDownloadMessage)
+    this.playerDownloadProgress =
+      view.findViewById<ProgressBar>(R.id.playerDownloadProgress)
 
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
     this.toolbarConfigureAllActions()
@@ -161,6 +168,67 @@ class PlayerFragment : PlayerBaseFragment() {
     this.subscriptions.add(PlayerModel.playerEvents.subscribe { event -> this.onPlayerEvent(event) })
     this.subscriptions.add(PlayerSleepTimer.events.subscribe { event -> this.onSleepTimerEvent(event) })
     this.subscriptions.add(PlayerModel.viewCommands.subscribe { event -> this.onPlayerViewCommand(event) })
+    this.subscriptions.add(PlayerModel.downloadEvents.subscribe { event -> this.onDownloadEvent() })
+  }
+
+  @UiThread
+  private fun onDownloadEvent() {
+    val tasks = PlayerModel.book().downloadTasks
+
+    /*
+     * First, search for a task that is downloading with an available progress value. This
+     * is the task that's going to be most interesting in terms of what's going on in the
+     * background.
+     */
+
+    this.playerDownloadMessage.text = ""
+    this.playerDownloadProgress.visibility = INVISIBLE
+
+    for (task in tasks) {
+      when (val st = task.status) {
+        is PlayerDownloadTaskStatus.Downloading -> {
+          val progress = st.progress
+          if (progress != null) {
+            this.playerDownloadMessage.text =
+              this.resources.getString(R.string.audiobook_player_downloading, task.index + 1)
+            this.playerDownloadProgress.visibility = VISIBLE
+            this.playerDownloadProgress.isIndeterminate = false
+            this.playerDownloadProgress.progress = progress.toInt()
+            return
+          }
+        }
+        PlayerDownloadTaskStatus.IdleDownloaded,
+        PlayerDownloadTaskStatus.IdleNotDownloaded -> {
+          // Nothing important to say here.
+        }
+      }
+    }
+
+    /*
+     * If none of the tasks were downloading with an available progress value, then try
+     * to find a task that's downloading but that _doesn't_ have an available progress
+     * value. This indicates that the task is running, but is currently sitting waiting
+     * for the server to respond.
+     */
+
+    for (task in tasks) {
+      when (val st = task.status) {
+        is PlayerDownloadTaskStatus.Downloading -> {
+          val progress = st.progress
+          if (progress == null) {
+            this.playerDownloadMessage.text =
+              this.resources.getString(R.string.audiobook_player_downloading, task.index + 1)
+            this.playerDownloadProgress.visibility = VISIBLE
+            this.playerDownloadProgress.isIndeterminate = true
+            return
+          }
+        }
+        PlayerDownloadTaskStatus.IdleDownloaded,
+        PlayerDownloadTaskStatus.IdleNotDownloaded -> {
+          // Nothing important to say here.
+        }
+      }
+    }
   }
 
   @UiThread

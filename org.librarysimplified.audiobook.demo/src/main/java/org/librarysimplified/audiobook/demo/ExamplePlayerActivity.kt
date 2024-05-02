@@ -226,6 +226,10 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         }
 
         this.switchFragment(PlayerFragment())
+
+        PlayerModel.book()
+          .wholeBookDownloadTask
+          .fetch()
       }
 
       PlayerManifestInProgress -> {

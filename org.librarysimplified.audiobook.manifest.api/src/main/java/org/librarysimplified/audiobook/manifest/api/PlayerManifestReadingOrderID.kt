@@ -35,4 +35,8 @@ data class PlayerManifestReadingOrderID(
       }
     }
   }
+
+  override fun toString(): String {
+    return this.text
+  }
 }

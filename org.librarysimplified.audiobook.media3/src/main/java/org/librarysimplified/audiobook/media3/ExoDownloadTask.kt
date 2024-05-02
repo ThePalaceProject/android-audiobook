@@ -3,12 +3,14 @@ package org.librarysimplified.audiobook.media3
 import net.jcip.annotations.GuardedBy
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
@@ -30,13 +32,16 @@ class ExoDownloadTask(
   private val downloadStatusExecutor: ExecutorService,
   private val downloadProvider: PlayerDownloadProviderType,
   private val originalLink: PlayerManifestLink,
-  override val readingOrderItems: List<ExoReadingOrderItemHandle>,
+  private val readingOrderItem: ExoReadingOrderItemHandle,
   private val userAgent: PlayerUserAgent,
   private val extensions: List<PlayerExtensionType>,
-  val partFile: File
+  val partFile: File,
+  override val index: Int
 ) : PlayerDownloadTaskType {
 
-  private val log = LoggerFactory.getLogger(ExoDownloadTask::class.java)
+  private val log =
+    LoggerFactory.getLogger(ExoDownloadTask::class.java)
+
   private var percent: Int = 0
   private val stateLock: Any = Object()
 
@@ -72,24 +77,24 @@ class ExoDownloadTask(
   }
 
   private fun onNotDownloaded() {
-    this.log.debug("not downloaded")
-    this.readingOrderItems.forEach { spineElement ->
-      spineElement.setDownloadStatus(PlayerReadingOrderItemNotDownloaded(spineElement))
-    }
+    this.log.debug("[{}] not downloaded", this.readingOrderItem.id)
+    this.readingOrderItem.setDownloadStatus(
+      PlayerReadingOrderItemNotDownloaded(this.readingOrderItem)
+    )
   }
 
   private fun onDownloading(percent: Int) {
+    this.log.debug("[{}] onDownloading {}", this.readingOrderItem.id, percent)
+
     this.percent = percent
-    this.readingOrderItems.forEach { spineElement ->
-      spineElement.setDownloadStatus(PlayerReadingOrderItemDownloading(spineElement, percent))
-    }
+    this.readingOrderItem.setDownloadStatus(
+      PlayerReadingOrderItemDownloading(this.readingOrderItem, percent)
+    )
   }
 
   private fun onDownloaded() {
-    this.log.debug("downloaded")
-    this.readingOrderItems.forEach { spineElement ->
-      spineElement.setDownloadStatus(PlayerReadingOrderItemDownloaded(spineElement))
-    }
+    this.log.debug("[{}] onDownloaded {}", this.readingOrderItem.id, this.percent)
+    this.readingOrderItem.setDownloadStatus(PlayerReadingOrderItemDownloaded(this.readingOrderItem))
   }
 
   private fun createDownloadingRequest(
@@ -108,8 +113,10 @@ class ExoDownloadTask(
         null -> {
           this@ExoDownloadTask.onDownloadCompleted()
         }
+
         is CancellationException ->
           this@ExoDownloadTask.onDownloadCancelled()
+
         else -> {
           if (targetLink.expires) {
             this@ExoDownloadTask.onDownloadExpired(Exception(exception))
@@ -122,7 +129,7 @@ class ExoDownloadTask(
   }
 
   private fun onStartDownload(): CompletableFuture<Unit> {
-    this.log.debug("download: {}", this.originalLink.hrefURI)
+    this.log.debug("[{}] download: {}", this.readingOrderItem.id, this.originalLink.hrefURI)
 
     val request =
       PlayerDownloadRequest(
@@ -162,43 +169,39 @@ class ExoDownloadTask(
   }
 
   private fun onDownloadCancelled() {
-    this.log.error("onDownloadCancelled")
+    this.log.error("[{}] onDownloadCancelled", this.readingOrderItem.id)
     this.stateSetCurrent(Initial)
     this.onDeleteDownloaded()
   }
 
   private fun onDownloadExpired(exception: Exception) {
-    this.log.error("onDownloadExpired: ", exception)
+    this.log.error("[{}] onDownloadExpired: ", this.readingOrderItem.id, exception)
     this.stateSetCurrent(Initial)
-    this.readingOrderItems.forEach { item ->
-      item.setDownloadStatus(
-        PlayerReadingOrderItemDownloadExpired(
-          item, exception, exception.message ?: "Missing exception message"
-        )
+    this.readingOrderItem.setDownloadStatus(
+      PlayerReadingOrderItemDownloadExpired(
+        this.readingOrderItem, exception, exception.message ?: "Missing exception message"
       )
-    }
+    )
   }
 
   private fun onDownloadFailed(exception: Exception) {
-    this.log.error("onDownloadFailed: ", exception)
+    this.log.error("[{}] onDownloadFailed: ", this.readingOrderItem.id, exception)
     this.stateSetCurrent(Initial)
-    this.readingOrderItems.forEach { item ->
-      item.setDownloadStatus(
-        PlayerReadingOrderItemDownloadFailed(
-          item, exception, exception.message ?: "Missing exception message"
-        )
+    this.readingOrderItem.setDownloadStatus(
+      PlayerReadingOrderItemDownloadFailed(
+        this.readingOrderItem, exception, exception.message ?: "Missing exception message"
       )
-    }
+    )
   }
 
   private fun onDownloadCompleted() {
-    this.log.debug("onDownloadCompleted")
+    this.log.debug("[{}] onDownloadCompleted", this.readingOrderItem.id)
     this.stateSetCurrent(Downloaded)
     this.onBroadcastState()
   }
 
   private fun onDeleteDownloading(state: Downloading) {
-    this.log.debug("cancelling download in progress")
+    this.log.debug("[{}] onDeleteDownloading", this.readingOrderItem.id)
 
     state.future.cancel(true)
     this.stateSetCurrent(Initial)
@@ -206,12 +209,12 @@ class ExoDownloadTask(
   }
 
   private fun onDeleteDownloaded() {
-    this.log.debug("deleting file {}", this.partFile)
+    this.log.debug("[{}] onDeleteDownloaded {}", this.readingOrderItem.id, this.partFile)
 
     try {
       ExoFileIO.fileDelete(this.partFile)
     } catch (e: Exception) {
-      this.log.error("failed to delete file: ", e)
+      this.log.error("[{}] failed to delete file: ", this.readingOrderItem.id, e)
     } finally {
       this.stateSetCurrent(Initial)
       this.onBroadcastState()
@@ -219,7 +222,7 @@ class ExoDownloadTask(
   }
 
   override fun delete() {
-    this.log.debug("delete")
+    this.log.debug("[{}] delete", this.readingOrderItem.id)
 
     return when (val current = this.stateGetCurrent()) {
       Initial -> this.onBroadcastState()
@@ -228,16 +231,32 @@ class ExoDownloadTask(
     }
   }
 
+  override val status: PlayerDownloadTaskStatus
+    get() = when (this.stateGetCurrent()) {
+      Downloaded -> PlayerDownloadTaskStatus.IdleDownloaded
+      is Downloading -> PlayerDownloadTaskStatus.Downloading(
+        if (this.progress == 0.0) {
+          null
+        } else {
+          this.progress
+        }
+      )
+
+      Initial -> PlayerDownloadTaskStatus.IdleNotDownloaded
+    }
+
   override fun fetch() {
-    this.log.debug("fetch")
+    this.log.debug("[{}] fetch", this.readingOrderItem.id)
 
     when (this.stateGetCurrent()) {
       Initial -> {
         this.onStartDownload()
       }
+
       Downloaded -> {
         this.onDownloaded()
       }
+
       is Downloading -> {
         this.onDownloading(this.percent)
       }
@@ -256,4 +275,7 @@ class ExoDownloadTask(
 
   override val progress: Double
     get() = this.percent.toDouble()
+
+  override val readingOrderItems: List<PlayerReadingOrderItemType>
+    get() = listOf(this.readingOrderItem)
 }
