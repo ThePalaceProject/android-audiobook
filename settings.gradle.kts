@@ -154,6 +154,6 @@ include(":org.librarysimplified.audiobook.parser.api")
 include(":org.librarysimplified.audiobook.tests")
 include(":org.librarysimplified.audiobook.views")
 
-if (this.findawayDRM) {
+if (findawayDRM) {
     include(":org.librarysimplified.audiobook.audioengine")
 }
