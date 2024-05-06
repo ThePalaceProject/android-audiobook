@@ -338,7 +338,7 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2024-05-03T20:15:08+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="13.0.0-beta0001">
+    <c:release date="2024-05-06T09:28:16+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="13.0.0-beta0001">
       <c:changes/>
     </c:release>
   </c:releases>
