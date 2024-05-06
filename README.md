@@ -2,7 +2,7 @@ audiobook-android
 ===
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/ThePalaceProject/android-audiobook/android-main.yml)](https://github.com/ThePalaceProject/android-audiobook/actions?query=workflow%3A%22Android+CI+%28Authenticated%29%22)
-[![Maven Central](https://img.shields.io/maven-central/v/org.thepalaceproject.audiobook/org.librarysimplified.audiobook.api.svg?style=flat-square)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.librarysimplified.audiobook%22)
+[![Maven Central](https://img.shields.io/maven-central/v/org.thepalaceproject.audiobook/org.librarysimplified.audiobook.api.svg?style=flat-square)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.thepalaceproject.audiobook%22)
 [![Maven Central (snapshot)](https://img.shields.io/nexus/s/https/s01.oss.sonatype.org/org.thepalaceproject.audiobook/org.librarysimplified.audiobook.api.svg?style=flat-square)](https://s01.oss.sonatype.org/content/repositories/snapshots/org.thepalaceproject.audiobook/)
 
 ### Compilation
@@ -32,28 +32,28 @@ by applications (as applications tend to have centralized code to handle downloa
 [simple implementation](https://github.com/ThePalaceProject/android-audiobook/tree/develop/org.librarysimplified.audiobook.downloads)
 is available to ease integration.
 
-|Module|Description|
-|------|-----------|
-|[org.librarysimplified.audiobook.api](org.librarysimplified.audiobook.api)|AudioBook API (API specification)|
-|[org.librarysimplified.audiobook.downloads](org.librarysimplified.audiobook.downloads)|AudioBook API (Download provider)|
-|[org.librarysimplified.audiobook.feedbooks](org.librarysimplified.audiobook.feedbooks)|AudioBook API (Feedbooks-specific functionality)|
-|[org.librarysimplified.audiobook.json_canon](org.librarysimplified.audiobook.json_canon)|AudioBook API (JSON canonicalization functionality)|
-|[org.librarysimplified.audiobook.json_web_token](org.librarysimplified.audiobook.json_web_token)|AudioBook API (JSON web token functionality)|
-|[org.librarysimplified.audiobook.lcp.license_status](org.librarysimplified.audiobook.lcp.license_status)|AudioBook API (LCP License Status document support)|
-|[org.librarysimplified.audiobook.license_check.api](org.librarysimplified.audiobook.license_check.api)|AudioBook API (License check API)|
-|[org.librarysimplified.audiobook.license_check.spi](org.librarysimplified.audiobook.license_check.spi)|AudioBook API (License check SPI)|
-|[org.librarysimplified.audiobook.manifest.api](org.librarysimplified.audiobook.manifest.api)|AudioBook API (Manifest types)|
-|[org.librarysimplified.audiobook.manifest_parser.api](org.librarysimplified.audiobook.manifest_parser.api)|AudioBook API (Manifest parser API)|
-|[org.librarysimplified.audiobook.manifest_parser.extension_spi](org.librarysimplified.audiobook.manifest_parser.extension_spi)|AudioBook API (Manifest parser extension SPI)|
-|[org.librarysimplified.audiobook.manifest_parser.webpub](org.librarysimplified.audiobook.manifest_parser.webpub)|AudioBook API (Readium WebPub manifest parser)|
-|[org.librarysimplified.audiobook.mocking](org.librarysimplified.audiobook.mocking)|AudioBook API (Mock API implementation)|
-|[org.librarysimplified.audiobook.open_access](org.librarysimplified.audiobook.open_access)|AudioBook API (Open access player implementation)|
-|[org.librarysimplified.audiobook.parser.api](org.librarysimplified.audiobook.parser.api)|AudioBook API (Parser API)|
-|[org.librarysimplified.audiobook.rbdigital](org.librarysimplified.audiobook.rbdigital)|AudioBook API (RBDigital-specific functionality)|
-|[org.librarysimplified.audiobook.tests](org.librarysimplified.audiobook.tests)|AudioBook API (Test suite)|
-|[org.librarysimplified.audiobook.tests.device](org.librarysimplified.audiobook.tests.device)|AudioBook API (On-device test suite)|
-|[org.librarysimplified.audiobook.tests.sandbox](org.librarysimplified.audiobook.tests.sandbox)|AudioBook API (Sandbox)|
-|[org.librarysimplified.audiobook.views](org.librarysimplified.audiobook.views)|AudioBook API (Standard UI components)|
+| Module                                                                                                                        |Description|
+|-------------------------------------------------------------------------------------------------------------------------------|-----------|
+| [org.librarysimplified.audiobook.api](org.librarysimplified.audiobook.api)                                                    |AudioBook API (API specification)|
+| [org.librarysimplified.audiobook.downloads](org.librarysimplified.audiobook.downloads)                                        |AudioBook API (Download provider)|
+| [org.librarysimplified.audiobook.feedbooks](org.librarysimplified.audiobook.feedbooks)                                        |AudioBook API (Feedbooks-specific functionality)|
+| [org.librarysimplified.audiobook.json_canon](org.librarysimplified.audiobook.json_canon)                                      |AudioBook API (JSON canonicalization functionality)|
+| [org.librarysimplified.audiobook.json_web_token](org.librarysimplified.audiobook.json_web_token)                              |AudioBook API (JSON web token functionality)|
+| [org.librarysimplified.audiobook.lcp.license_status](org.librarysimplified.audiobook.lcp.license_status)                      |AudioBook API (LCP License Status document support)|
+| [org.librarysimplified.audiobook.license_check.api](org.librarysimplified.audiobook.license_check.api)                        |AudioBook API (License check API)|
+| [org.librarysimplified.audiobook.license_check.spi](org.librarysimplified.audiobook.license_check.spi)                        |AudioBook API (License check SPI)|
+| [org.librarysimplified.audiobook.manifest.api](org.librarysimplified.audiobook.manifest.api)                                  |AudioBook API (Manifest types)|
+| [org.librarysimplified.audiobook.manifest_parser.api](org.librarysimplified.audiobook.manifest_parser.api)                    |AudioBook API (Manifest parser API)|
+| [org.librarysimplified.audiobook.manifest_parser.extension_spi](org.librarysimplified.audiobook.manifest_parser.extension_spi) |AudioBook API (Manifest parser extension SPI)|
+| [org.librarysimplified.audiobook.manifest_parser.webpub](org.librarysimplified.audiobook.manifest_parser.webpub)              |AudioBook API (Readium WebPub manifest parser)|
+| [org.librarysimplified.audiobook.mocking](org.librarysimplified.audiobook.mocking)                                            |AudioBook API (Mock API implementation)|
+| [org.librarysimplified.audiobook.open_access](org.librarysimplified.audiobook.open_access)                                    |AudioBook API (Open access player implementation)|
+| [org.librarysimplified.audiobook.parser.api](org.librarysimplified.audiobook.parser.api)                                      |AudioBook API (Parser API)|
+| [org.librarysimplified.audiobook.rbdigital](org.librarysimplified.audiobook.rbdigital)                                        |AudioBook API (RBDigital-specific functionality)|
+| [org.librarysimplified.audiobook.tests](org.librarysimplified.audiobook.tests)                                                |AudioBook API (Test suite)|
+| [org.librarysimplified.audiobook.tests.device](org.librarysimplified.audiobook.tests.device)                                  |AudioBook API (On-device test suite)|
+| [org.librarysimplified.audiobook.tests.sandbox](org.librarysimplified.audiobook.tests.sandbox)                                |AudioBook API (Sandbox)|
+| [org.librarysimplified.audiobook.views](org.librarysimplified.audiobook.views)                                                |AudioBook API (Standard UI components)|
 
 ### Changelog
 
