@@ -76,7 +76,7 @@ abstract class BearerTokenExtensionContract {
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 
-    extension.authorization = null
+    extension.setAuthorization(null)
 
     val future =
       extension.onDownloadLink(
@@ -112,10 +112,10 @@ abstract class BearerTokenExtensionContract {
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 
-    extension.authorization = LSHTTPAuthorizationBasic.ofUsernamePassword(
+    extension.setAuthorization(LSHTTPAuthorizationBasic.ofUsernamePassword(
       userName = "user",
       password = "pw"
-    )
+    ))
 
     val future =
       extension.onDownloadLink(
@@ -153,7 +153,7 @@ abstract class BearerTokenExtensionContract {
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 
-    extension.authorization = LSHTTPAuthorizationBearerToken.ofToken("abcd")
+    extension.setAuthorization(LSHTTPAuthorizationBearerToken.ofToken("abcd"))
 
     val future =
       extension.onDownloadLink(
@@ -188,7 +188,7 @@ abstract class BearerTokenExtensionContract {
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 
-    extension.authorization = LSHTTPAuthorizationBearerToken.ofToken("abcd")
+    extension.setAuthorization(LSHTTPAuthorizationBearerToken.ofToken("abcd"))
 
     val future =
       extension.onDownloadLink(
@@ -228,7 +228,7 @@ abstract class BearerTokenExtensionContract {
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 
-    extension.authorization = LSHTTPAuthorizationBearerToken.ofToken("abcd")
+    extension.setAuthorization(LSHTTPAuthorizationBearerToken.ofToken("abcd"))
 
     val future =
       extension.onDownloadLink(

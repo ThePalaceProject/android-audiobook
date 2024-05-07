@@ -7,7 +7,6 @@ dependencies {
     implementation(libs.irradia.mime.vanilla)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
-    implementation(libs.okhttp3)
     implementation(libs.palace.http.api)
     implementation(libs.rxjava2)
     implementation(libs.slf4j)

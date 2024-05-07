@@ -16,6 +16,7 @@ import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Downloaded
 import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Downloading
+import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Failed
 import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Initial
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -58,6 +59,7 @@ class ExoDownloadTask(
 
   private sealed class State {
     data object Initial : State()
+    data class Failed(val exception: Exception) : State()
     data object Downloaded : State()
     data class Downloading(val future: CompletableFuture<Unit>) : State()
   }
@@ -69,10 +71,11 @@ class ExoDownloadTask(
     synchronized(this.stateLock) { this.state = newState }
 
   private fun onBroadcastState() {
-    when (this.stateGetCurrent()) {
+    when (val s = this.stateGetCurrent()) {
       Initial -> this.onNotDownloaded()
       Downloaded -> this.onDownloaded()
       is Downloading -> this.onDownloading(this.percent)
+      is Failed -> this.onDownloadFailed(s.exception)
     }
   }
 
@@ -186,7 +189,7 @@ class ExoDownloadTask(
 
   private fun onDownloadFailed(exception: Exception) {
     this.log.error("[{}] onDownloadFailed: ", this.readingOrderItem.id, exception)
-    this.stateSetCurrent(Initial)
+    this.stateSetCurrent(Failed(exception))
     this.readingOrderItem.setDownloadStatus(
       PlayerReadingOrderItemDownloadFailed(
         this.readingOrderItem, exception, exception.message ?: "Missing exception message"
@@ -228,6 +231,7 @@ class ExoDownloadTask(
       Initial -> this.onBroadcastState()
       Downloaded -> this.onDeleteDownloaded()
       is Downloading -> this.onDeleteDownloading(current)
+      is Failed -> this.onBroadcastState()
     }
   }
 
@@ -243,6 +247,7 @@ class ExoDownloadTask(
       )
 
       Initial -> PlayerDownloadTaskStatus.IdleNotDownloaded
+      is Failed -> PlayerDownloadTaskStatus.Failed
     }
 
   override fun fetch() {
@@ -260,6 +265,10 @@ class ExoDownloadTask(
       is Downloading -> {
         this.onDownloading(this.percent)
       }
+
+      is Failed -> {
+        this.onStartDownload()
+      }
     }
   }
 
@@ -270,6 +279,7 @@ class ExoDownloadTask(
       Initial -> this.onBroadcastState()
       Downloaded -> this.onBroadcastState()
       is Downloading -> this.onDeleteDownloading(current)
+      is Failed -> this.onBroadcastState()
     }
   }
 

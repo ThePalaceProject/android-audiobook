@@ -9,6 +9,7 @@ dependencies {
     implementation(libs.joda.time)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
+    implementation(libs.palace.http.api)
     implementation(libs.r2.shared)
     implementation(libs.rxandroid2)
     implementation(libs.rxjava2)

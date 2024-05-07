@@ -3,6 +3,7 @@ package org.librarysimplified.audiobook.api.extensions
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 
@@ -15,6 +16,12 @@ import java.util.concurrent.ExecutorService
  */
 
 interface PlayerExtensionType {
+
+  /**
+   * Provide (or revoke, if `null`) authorization information to this extension.
+   */
+
+  fun setAuthorization(authorization: LSHTTPAuthorizationType?)
 
   /**
    * The name of the extension. Conventionally, this is the fully-qualified name of the

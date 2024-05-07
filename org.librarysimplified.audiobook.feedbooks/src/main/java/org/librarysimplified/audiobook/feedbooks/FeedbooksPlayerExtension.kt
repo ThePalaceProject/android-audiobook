@@ -9,6 +9,7 @@ import org.librarysimplified.audiobook.json_web_token.JSONWebSignature
 import org.librarysimplified.audiobook.json_web_token.JSONWebSignatureAlgorithmHMACSha256
 import org.librarysimplified.audiobook.json_web_token.JSONWebTokenClaims
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -31,6 +32,12 @@ class FeedbooksPlayerExtension : PlayerExtensionType {
   private val logger =
     LoggerFactory.getLogger(FeedbooksPlayerExtension::class.java)
 
+  override fun setAuthorization(
+    authorization: LSHTTPAuthorizationType?
+  ) {
+    // Not used by this extension.
+  }
+
   override val name: String =
     "org.librarysimplified.audiobook.feedbooks"
 
@@ -46,6 +53,7 @@ class FeedbooksPlayerExtension : PlayerExtensionType {
           downloadProvider = downloadProvider,
           originalRequest = originalRequest
         )
+
       else ->
         null
     }

@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.net.minidev.json.smart)
     implementation(libs.nimbus.jose.jwt)
     implementation(libs.okhttp3)
+    implementation(libs.palace.http.api)
     implementation(libs.slf4j)
 }
 

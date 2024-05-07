@@ -21,7 +21,6 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUserAgent
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.views.PlayerBaseFragment
 import org.librarysimplified.audiobook.views.PlayerBookmarkModel
 import org.librarysimplified.audiobook.views.PlayerFragment
@@ -47,7 +46,6 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 
 class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity) {
 
-  private val playerExtensions: List<PlayerExtensionType> = listOf()
   private var fragmentNow: Fragment = ExampleFragmentError()
   private var subscriptions: CompositeDisposable = CompositeDisposable()
 
@@ -197,7 +195,6 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         PlayerModel.openPlayerForManifest(
           context = ExampleApplication.application,
           userAgent = PlayerUserAgent("AudioBookDemo"),
-          extensions = this.playerExtensions,
           manifest = state.manifest
         )
       }

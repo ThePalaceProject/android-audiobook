@@ -6,6 +6,8 @@ sealed class PlayerDownloadTaskStatus {
 
   data object IdleDownloaded : PlayerDownloadTaskStatus()
 
+  data object Failed : PlayerDownloadTaskStatus()
+
   data class Downloading(
     val progress: Double?
   ) : PlayerDownloadTaskStatus()

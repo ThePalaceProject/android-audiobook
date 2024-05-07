@@ -46,13 +46,20 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestInPr
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLicenseChecksFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
+import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
+import java.util.ServiceLoader
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
 object PlayerModel {
+
+  @Volatile
+  var playerExtensions: List<PlayerExtensionType> =
+    ServiceLoader.load(PlayerExtensionType::class.java)
+      .toList()
 
   @Volatile
   private var intentForPlayerServiceField: Intent? = null
@@ -358,14 +365,14 @@ object PlayerModel {
       throw OperationFailedException()
     }
 
-    val (_, _, downloadBytes) =
-      (downloadResult as PlayerResult.Success).result
+    val result = (downloadResult as PlayerResult.Success).result
+    this.configurePlayerExtensions(result.authorization)
 
     val parseResult =
       this.parseManifest(
         source = sourceURI,
         extensions = parserExtensions,
-        data = downloadBytes
+        data = result.data
       )
 
     if (parseResult is ParseResult.Failure) {
@@ -389,13 +396,31 @@ object PlayerModel {
     this.setNewState(PlayerManifestOK(parsedManifest))
   }
 
+  private fun configurePlayerExtensions(
+    authorization: LSHTTPAuthorizationType?
+  ) {
+    this.logger.debug("Providing authorization to player extensions…")
+
+    this.playerExtensions.forEachIndexed { index, extension ->
+      this.logger.debug("configurePlayerExtensions: [{}] extension {}", index, extension.name)
+      extension.setAuthorization(authorization)
+    }
+  }
+
   fun openPlayerForManifest(
     context: Application,
     userAgent: PlayerUserAgent,
-    extensions: List<PlayerExtensionType>,
     manifest: PlayerManifest
   ): CompletableFuture<Unit> {
     this.logger.debug("openPlayerForManifest")
+
+    if (this.playerExtensions.isEmpty()) {
+      this.logger.debug("openPlayerForManifest: No player extensions were provided.")
+    } else {
+      this.playerExtensions.forEachIndexed { index, extension ->
+        this.logger.debug("openPlayerForManifest: [{}] extension {}", index, extension.name)
+      }
+    }
 
     this.audioManagerService =
       context.getSystemService<AudioManager>()
@@ -405,7 +430,7 @@ object PlayerModel {
         manifest = manifest,
         userAgent = userAgent,
         context = context,
-        extensions = extensions
+        extensions = this.playerExtensions
       )
     }
   }

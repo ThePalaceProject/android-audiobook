@@ -1,45 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Presets xmlns="urn:org.librarysimplified.audiobook.demo.presets:xml:1">
-  <Preset
-    name="Archive.org (The Word Of An Engineer)"
-    location="https://api.archivelab.org/books/wordofengineer_1403.poem_librivox/opds_audio_manifest">
-    <AuthenticationNone />
-  </Preset>
+    <Preset
+        name="Archive.org (The Word Of An Engineer)"
+        location="https://api.archivelab.org/books/wordofengineer_1403.poem_librivox/opds_audio_manifest">
+        <AuthenticationNone />
+    </Preset>
 
-  <Preset
-    name="Flatland"
-    location="https://raw.githubusercontent.com/HadrienGardeur/audiobook-manifest/gh-pages/examples/flatland.audiobook-manifest">
-    <AuthenticationNone />
-  </Preset>
+    <Preset
+        name="Flatland"
+        location="https://raw.githubusercontent.com/HadrienGardeur/audiobook-manifest/gh-pages/examples/flatland.audiobook-manifest">
+        <AuthenticationNone />
+    </Preset>
 
-  <Preset
-      name="Flatland TOC"
-      location="https://raw.githubusercontent.com/readium/webpub-manifest/master/examples/Flatland/manifest.json">
-    <AuthenticationNone />
-  </Preset>
+    <Preset
+        name="Flatland TOC"
+        location="https://raw.githubusercontent.com/readium/webpub-manifest/master/examples/Flatland/manifest.json">
+        <AuthenticationNone />
+    </Preset>
 
-  <Preset
-    name="Archive.org (Tom Sawyer)"
-    location="https://api.archivelab.org/books/tom_sawyer_librivox/opds_audio_manifest">
-    <AuthenticationNone />
-  </Preset>
+    <Preset
+        name="Archive.org (Tom Sawyer)"
+        location="https://api.archivelab.org/books/tom_sawyer_librivox/opds_audio_manifest">
+        <AuthenticationNone />
+    </Preset>
 
-  <Preset
-    name="io7m Demo"
-    location="https://ataxia.io7m.com/2018/08/02/open_access_0.json">
-    <AuthenticationNone />
-  </Preset>
+    <Preset
+        name="io7m Demo"
+        location="https://ataxia.io7m.com/2018/08/02/open_access_0.json">
+        <AuthenticationNone />
+    </Preset>
 
-  <Preset
-      name="Arc7 Demo"
-      location="https://outland.iw.int.arc7.info/2020/11/30/engineer/open_access_0.json">
-    <AuthenticationNone />
-  </Preset>
+    <Preset
+        name="Arc7 Demo"
+        location="https://outland.iw.int.arc7.info/2020/11/30/engineer/open_access_0.json">
+        <AuthenticationNone />
+    </Preset>
 
-  <Preset
-      name="Findaway 0"
-      location="https://outland.iw.int.arc7.info/2024/04/10/audiobook-manifest.json">
-    <AuthenticationNone />
-  </Preset>
+    <Preset
+        name="Findaway 0"
+        location="https://outland.iw.int.arc7.info/2024/04/10/audiobook-manifest.json">
+        <AuthenticationNone />
+    </Preset>
+
+    <Preset
+        name="Columbarium"
+        location="https://minotaur.dev.palaceproject.io/minotaur-test-library/works/127460/fulfill/2">
+        <AuthenticationBasic
+            password="9Bg@v59C"
+            userName="05550000000041" />
+    </Preset>
 </Presets>

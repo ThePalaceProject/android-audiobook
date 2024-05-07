@@ -197,6 +197,7 @@ class PlayerFragment : PlayerBaseFragment() {
             return
           }
         }
+        PlayerDownloadTaskStatus.Failed,
         PlayerDownloadTaskStatus.IdleDownloaded,
         PlayerDownloadTaskStatus.IdleNotDownloaded -> {
           // Nothing important to say here.
@@ -223,9 +224,33 @@ class PlayerFragment : PlayerBaseFragment() {
             return
           }
         }
+        PlayerDownloadTaskStatus.Failed,
         PlayerDownloadTaskStatus.IdleDownloaded,
         PlayerDownloadTaskStatus.IdleNotDownloaded -> {
           // Nothing important to say here.
+        }
+      }
+    }
+
+    /*
+     * If none of the tasks were downloading, then some of them might have failed, and it's
+     * worth announcing this...
+     */
+
+    for (task in tasks) {
+      when (task.status) {
+        is PlayerDownloadTaskStatus.Downloading,
+        PlayerDownloadTaskStatus.IdleDownloaded,
+        PlayerDownloadTaskStatus.IdleNotDownloaded -> {
+          // Nothing important to say here.
+        }
+
+        PlayerDownloadTaskStatus.Failed -> {
+          this.playerDownloadMessage.text =
+            this.resources.getString(R.string.audiobook_player_downloading_failed, task.index + 1)
+          this.playerDownloadProgress.visibility = INVISIBLE
+          this.playerDownloadProgress.isIndeterminate = false
+          return
         }
       }
     }

@@ -14,11 +14,17 @@ class BearerTokenExtension : PlayerExtensionType {
   private val logger =
     LoggerFactory.getLogger(BearerTokenExtension::class.java)
 
+  override fun setAuthorization(
+    authorization: LSHTTPAuthorizationType?
+  ) {
+    this.authorization = authorization
+  }
+
   override val name: String =
-    "org.librarysimplified.audiobook.open_access.BearerTokenExtension"
+    "org.librarysimplified.audiobook.media3.BearerTokenExtension"
 
   @Volatile
-  var authorization: LSHTTPAuthorizationType? = null
+  private var authorization: LSHTTPAuthorizationType? = null
 
   override fun onDownloadLink(
     statusExecutor: ExecutorService,
@@ -26,7 +32,7 @@ class BearerTokenExtension : PlayerExtensionType {
     originalRequest: PlayerDownloadRequest,
     link: PlayerManifestLink
   ): CompletableFuture<Unit>? {
-    val authHeader = authorization?.toHeaderValue()
+    val authHeader = this.authorization?.toHeaderValue()
 
     return if (
       link.properties.encrypted?.scheme == null &&
