@@ -169,6 +169,28 @@ class PlayerFragment : PlayerBaseFragment() {
     this.subscriptions.add(PlayerSleepTimer.events.subscribe { event -> this.onSleepTimerEvent(event) })
     this.subscriptions.add(PlayerModel.viewCommands.subscribe { event -> this.onPlayerViewCommand(event) })
     this.subscriptions.add(PlayerModel.downloadEvents.subscribe { event -> this.onDownloadEvent() })
+
+    if (PlayerModel.isPlaying) {
+      this.setButtonToShowPause()
+    } else {
+      this.setButtonToShowPlay()
+    }
+  }
+
+  @UiThread
+  private fun setButtonToShowPause() {
+    this.playPauseButton.setImageResource(R.drawable.round_pause_24)
+    this.playPauseButton.setOnClickListener { PlayerModel.pause() }
+    this.playPauseButton.contentDescription =
+      this.getString(R.string.audiobook_accessibility_pause)
+  }
+
+  @UiThread
+  private fun setButtonToShowPlay() {
+    this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
+    this.playPauseButton.setOnClickListener { PlayerModel.play() }
+    this.playPauseButton.contentDescription =
+      this.getString(R.string.audiobook_accessibility_play)
   }
 
   @UiThread
@@ -482,10 +504,8 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
 
-    this.playPauseButton.setImageResource(R.drawable.round_pause_24)
-    this.playPauseButton.setOnClickListener { PlayerModel.pause() }
-    this.playPauseButton.contentDescription =
-      this.getString(R.string.audiobook_accessibility_pause)
+    this.setButtonToShowPause()
+
     this.playerPosition.isEnabled = true
 
     this.onEventUpdateTimeRelatedUI(
@@ -556,10 +576,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
 
-    this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
-    this.playPauseButton.setOnClickListener { PlayerModel.play() }
-    this.playPauseButton.contentDescription =
-      this.getString(R.string.audiobook_accessibility_play)
+    this.setButtonToShowPlay()
 
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
@@ -577,10 +594,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
 
-    this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
-    this.playPauseButton.setOnClickListener { PlayerModel.play() }
-    this.playPauseButton.contentDescription =
-      this.getString(R.string.audiobook_accessibility_play)
+    this.setButtonToShowPlay()
 
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
