@@ -48,6 +48,7 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Paused
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Running
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Stopped
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
@@ -284,6 +285,7 @@ class PlayerFragment : PlayerBaseFragment() {
       PlayerViewCoverImageChanged -> {
         this.coverView.setImageBitmap(PlayerModel.coverImage)
       }
+      PlayerViewNavigationCloseAll,
       PlayerViewNavigationPlaybackRateMenuOpen,
       PlayerViewNavigationSleepMenuOpen,
       PlayerViewNavigationTOCClose,
@@ -805,7 +807,7 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   private fun onToolbarNavigationSelected(): Boolean {
-    PlayerModel.closeBookOrDismissError()
+    PlayerModel.submitViewCommand(PlayerViewNavigationCloseAll)
     return true
   }
 

@@ -67,6 +67,14 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
     this.subscriptions.dispose()
   }
 
+  private fun close() {
+    try {
+      PlayerModel.closeBookOrDismissError()
+    } catch (e: Exception) {
+      this.logger.error("Failed to close book: ", e)
+    }
+  }
+
   private fun switchFragment(fragment: Fragment) {
     this.fragmentNow = fragment
     this.supportFragmentManager.beginTransaction()
@@ -82,13 +90,11 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
   override fun onBackPressed() {
     return when (val f = this.fragmentNow) {
       is ExampleFragmentError -> {
-        PlayerModel.closeBookOrDismissError()
-        Unit
+        this.close()
       }
 
       is ExampleFragmentProgress -> {
-        PlayerModel.closeBookOrDismissError()
-        Unit
+        this.close()
       }
 
       is ExampleFragmentSelectBook -> {
@@ -98,7 +104,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       is PlayerBaseFragment -> {
         when (f) {
           is PlayerFragment -> {
-            PlayerModel.closeBookOrDismissError()
+            this.close()
             Unit
           }
 
@@ -261,6 +267,11 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
       PlayerViewCoverImageChanged -> {
         // Nothing to do
+      }
+
+      PlayerViewCommand.PlayerViewNavigationCloseAll -> {
+        this.close()
+        this.switchFragment(ExampleFragmentSelectBook())
       }
     }
   }

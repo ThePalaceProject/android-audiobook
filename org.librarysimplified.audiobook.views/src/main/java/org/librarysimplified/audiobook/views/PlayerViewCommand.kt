@@ -7,6 +7,12 @@ package org.librarysimplified.audiobook.views
 sealed class PlayerViewCommand {
 
   /**
+   * The user performed an action that means the entire player should be closed.
+   */
+
+  data object PlayerViewNavigationCloseAll : PlayerViewCommand()
+
+  /**
    * The user performed an action that means the TOC should be closed.
    */
 
