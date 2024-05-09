@@ -515,6 +515,9 @@ object PlayerModel {
   private fun opCloseBookOrDismissError() {
     this.currentFuture?.cancel(true)
 
+    this.bookTitle = ""
+    this.setCoverImage(null)
+
     when (val current = this.stateField) {
       is PlayerBookOpenFailed ->
         this.setNewState(PlayerModelState.PlayerClosed)
