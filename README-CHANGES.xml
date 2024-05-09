@@ -347,7 +347,10 @@
     <c:release date="2024-05-06T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0003">
       <c:changes/>
     </c:release>
-    <c:release date="2024-05-07T15:47:53+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0004">
+    <c:release date="2024-05-07T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0004">
+      <c:changes/>
+    </c:release>
+    <c:release date="2024-05-09T16:52:02+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0005">
       <c:changes/>
     </c:release>
   </c:releases>
