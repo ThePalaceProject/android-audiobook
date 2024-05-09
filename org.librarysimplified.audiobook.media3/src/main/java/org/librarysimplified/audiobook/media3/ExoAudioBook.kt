@@ -260,9 +260,28 @@ class ExoAudioBook private constructor(
 
   override fun close() {
     if (this.isClosedNow.compareAndSet(false, true)) {
-      this.logger.debug("Closed audio book")
-      this.manifestUpdates.onComplete()
-      this.readingOrderElementDownloadStatus.onComplete()
+      try {
+        this.logger.debug("Closing audio book")
+
+        try {
+          this.wholeBookTask.cancel()
+        } catch (e: Exception) {
+          this.logger.error("Failed to cancel download task: ", e)
+        }
+
+        for (task in this.downloadTasks) {
+          try {
+            task.cancel()
+          } catch (e: Exception) {
+            this.logger.error("Failed to cancel download task: ", e)
+          }
+        }
+
+        this.manifestUpdates.onComplete()
+        this.readingOrderElementDownloadStatus.onComplete()
+      } finally {
+        this.logger.debug("Closed audio book")
+      }
     }
   }
 

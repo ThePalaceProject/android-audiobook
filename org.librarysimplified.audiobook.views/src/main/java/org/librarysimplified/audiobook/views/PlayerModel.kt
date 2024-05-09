@@ -548,13 +548,21 @@ object PlayerModel {
      * Cancel the sleep timer.
      */
 
-    PlayerSleepTimer.cancel()
+    try {
+      PlayerSleepTimer.cancel()
+    } catch (e: Exception) {
+      this.logger.error("Failed to cancel sleep timer: ", e)
+    }
 
     /*
      * Clear the bookmark list.
      */
 
-    PlayerBookmarkModel.clearBookmarks()
+    try {
+      PlayerBookmarkModel.clearBookmarks()
+    } catch (e: Exception) {
+      this.logger.error("Failed to clear bookmarks: ", e)
+    }
 
     /*
      * Drop the title and cover.
@@ -586,7 +594,6 @@ object PlayerModel {
 
       is PlayerModelState.PlayerOpen -> {
         current.player.close()
-        PlayerBookmarkModel.clearBookmarks()
         this.setNewState(PlayerModelState.PlayerClosed)
       }
 
