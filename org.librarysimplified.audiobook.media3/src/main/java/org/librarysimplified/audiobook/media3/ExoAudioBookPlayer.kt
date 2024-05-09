@@ -735,21 +735,12 @@ class ExoAudioBookPlayer private constructor(
       this.book.readingOrderByID[location.readingOrderID]
         ?: return this.log.debug("Reading order item {} does not exist", location)
 
-    /*
-     * If the current reading order item is the same as the requested reading order item, then
-     * it's more efficient to simply seek to the right offset and start playing.
-     */
-
-    if (requestedSpineElement.id == this.currentReadingOrderElement.readingOrderItem.id) {
-      this.seek(location.offsetMilliseconds)
-    } else {
-      this.preparePlayer(
-        CurrentPlaybackTarget(
-          readingOrderItem = requestedSpineElement,
-          readingOrderItemTargetOffsetMilliseconds = location.offsetMilliseconds
-        )
+    this.preparePlayer(
+      CurrentPlaybackTarget(
+        readingOrderItem = requestedSpineElement,
+        readingOrderItemTargetOffsetMilliseconds = location.offsetMilliseconds
       )
-    }
+    )
   }
 
   private fun opClose() {
