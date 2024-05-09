@@ -43,8 +43,12 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
+import org.slf4j.LoggerFactory
 
 class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity) {
+
+  private val logger =
+    LoggerFactory.getLogger(ExamplePlayerActivity::class.java)
 
   private var fragmentNow: Fragment = ExampleFragmentError()
   private var subscriptions: CompositeDisposable = CompositeDisposable()
@@ -192,10 +196,31 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       is PlayerManifestOK -> {
+        val bookId =
+          state.manifest.metadata.identifier
+        val bookmarkDatabase =
+          ExampleApplication.application.bookmarkDatabase
+        val bookmarksAll =
+          bookmarkDatabase.bookmarkList(bookId)
+        val bookmarkLastRead =
+          bookmarkDatabase.bookmarkFindLastRead(bookId)
+
+        PlayerBookmarkModel.setBookmarks(bookmarksAll)
+
+        val initialPosition =
+          if (bookmarkLastRead != null) {
+            this.logger.debug("Restoring last-read position: {}", bookmarkLastRead.position)
+            bookmarkLastRead.position
+          } else {
+            null
+          }
+
         PlayerModel.openPlayerForManifest(
           context = ExampleApplication.application,
           userAgent = PlayerUserAgent("AudioBookDemo"),
-          manifest = state.manifest
+          manifest = state.manifest,
+          fetchAll = true,
+          initialPosition = initialPosition
         )
       }
 
@@ -207,26 +232,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         PlayerModel.setCoverImage(BitmapFactory.decodeResource(resources, R.drawable.example_cover))
         PlayerModel.bookTitle = PlayerModel.manifest().metadata.title
         PlayerModel.bookAuthor = "An Example Author."
-
-        val bookId =
-          PlayerModel.manifest().metadata.identifier
-        val bookmarkDatabase =
-          ExampleApplication.application.bookmarkDatabase
-        val bookmarksAll =
-          bookmarkDatabase.bookmarkList(bookId)
-        val bookmarkLastRead =
-          bookmarkDatabase.bookmarkFindLastRead(bookId)
-
-        PlayerBookmarkModel.setBookmarks(bookmarksAll)
-        if (bookmarkLastRead != null) {
-          PlayerModel.movePlayheadTo(bookmarkLastRead.position)
-        }
-
         this.switchFragment(PlayerFragment())
-
-        PlayerModel.book()
-          .wholeBookDownloadTask
-          .fetch()
       }
 
       PlayerManifestInProgress -> {

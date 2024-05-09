@@ -420,7 +420,9 @@ object PlayerModel {
   fun openPlayerForManifest(
     context: Application,
     userAgent: PlayerUserAgent,
-    manifest: PlayerManifest
+    manifest: PlayerManifest,
+    fetchAll: Boolean,
+    initialPosition: PlayerPosition?
   ): CompletableFuture<Unit> {
     this.logger.debug("openPlayerForManifest")
 
@@ -440,7 +442,9 @@ object PlayerModel {
         manifest = manifest,
         userAgent = userAgent,
         context = context,
-        extensions = this.playerExtensions
+        extensions = this.playerExtensions,
+        fetchAll = fetchAll,
+        initialPosition = initialPosition
       )
     }
   }
@@ -449,7 +453,9 @@ object PlayerModel {
     manifest: PlayerManifest,
     userAgent: PlayerUserAgent,
     context: Application,
-    extensions: List<PlayerExtensionType>
+    extensions: List<PlayerExtensionType>,
+    fetchAll: Boolean,
+    initialPosition: PlayerPosition?
   ) {
     this.logger.debug("opOpenPlayerForManifest")
 
@@ -514,6 +520,19 @@ object PlayerModel {
     )
 
     this.setNewState(PlayerModelState.PlayerOpen(newPair))
+
+    if (fetchAll) {
+      newPair.audioBook.wholeBookDownloadTask.fetch()
+    }
+
+    if (initialPosition != null) {
+      this.logger.debug("An initial position of {} was specified.", initialPosition)
+      this.movePlayheadTo(initialPosition)
+    } else {
+      this.logger.debug(
+        "No initial position was specified. Playback will begin at the start of the book."
+      )
+    }
   }
 
   fun closeBookOrDismissError(): CompletableFuture<Unit> {
