@@ -182,11 +182,9 @@ class ExoAudioBookPlayer private constructor(
     this.exoPlayer.addListener(this.exoAdapter)
     this.statusExecutor.scheduleAtFixedRate({
       runOnUIThread {
-        if (this.intention == SHOULD_BE_PLAYING) {
-          this.exoAdapter.broadcastPlaybackPosition()
-        }
+        this.exoAdapter.broadcastPlaybackPosition()
       }
-    }, 500L, 500L, TimeUnit.MILLISECONDS)
+    }, 750L, 750L, TimeUnit.MILLISECONDS)
 
     /*
      * Subscribe to player status updates.

@@ -551,6 +551,12 @@ object PlayerModel {
     PlayerSleepTimer.cancel()
 
     /*
+     * Clear the bookmark list.
+     */
+
+    PlayerBookmarkModel.clearBookmarks()
+
+    /*
      * Drop the title and cover.
      */
 

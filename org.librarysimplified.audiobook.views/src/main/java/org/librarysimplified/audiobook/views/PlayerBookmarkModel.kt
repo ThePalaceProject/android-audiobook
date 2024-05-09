@@ -5,8 +5,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import org.librarysimplified.audiobook.api.PlayerBookmark
+import org.slf4j.LoggerFactory
 
 object PlayerBookmarkModel {
+
+  private val logger =
+    LoggerFactory.getLogger(PlayerBookmarkModel::class.java)
 
   @Volatile
   private var bookmarksNow: List<PlayerBookmark> = listOf<PlayerBookmark>()
@@ -28,6 +32,15 @@ object PlayerBookmarkModel {
 
   fun setBookmarks(newBookmarks: List<PlayerBookmark>) {
     this.bookmarksNow = newBookmarks.toList()
+
+    if (this.bookmarksNow.isEmpty()) {
+      this.logger.debug("setBookmarks: Bookmark list is now empty.")
+    } else {
+      this.bookmarksNow.forEachIndexed { index, playerBookmark ->
+        this.logger.debug("setBookmarks: [{}] {}", index, playerBookmark)
+      }
+    }
+
     this.bookmarksSubject.onNext(this.bookmarksNow)
   }
 
