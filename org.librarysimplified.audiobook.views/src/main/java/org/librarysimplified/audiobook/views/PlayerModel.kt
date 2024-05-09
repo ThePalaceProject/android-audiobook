@@ -596,34 +596,46 @@ object PlayerModel {
   }
 
   fun seekTo(milliseconds: Long) {
-    this.playerAndBookField?.player?.seekTo(milliseconds)
+    try {
+      this.playerAndBookField?.player?.seekTo(milliseconds)
+    } catch (e: Exception) {
+      this.logger.error("seekTo: ", e)
+    }
   }
 
   fun play() {
-    this.playerAndBookField?.player?.play()
+    try {
+      this.playerAndBookField?.player?.play()
 
-    when (PlayerSleepTimer.status) {
-      is PlayerSleepTimerType.Status.Paused -> PlayerSleepTimer.unpause()
-      is PlayerSleepTimerType.Status.Running -> {
-        // Nothing to do
-      }
+      when (PlayerSleepTimer.status) {
+        is PlayerSleepTimerType.Status.Paused -> PlayerSleepTimer.unpause()
+        is PlayerSleepTimerType.Status.Running -> {
+          // Nothing to do
+        }
 
-      is PlayerSleepTimerType.Status.Stopped -> {
-        when (PlayerSleepTimer.configuration) {
-          PlayerSleepTimerConfiguration.EndOfChapter -> PlayerSleepTimer.start()
-          PlayerSleepTimerConfiguration.Off -> {
-            // Nothing to do
+        is PlayerSleepTimerType.Status.Stopped -> {
+          when (PlayerSleepTimer.configuration) {
+            PlayerSleepTimerConfiguration.EndOfChapter -> PlayerSleepTimer.start()
+            PlayerSleepTimerConfiguration.Off -> {
+              // Nothing to do
+            }
+
+            is PlayerSleepTimerConfiguration.WithDuration -> PlayerSleepTimer.start()
           }
-
-          is PlayerSleepTimerConfiguration.WithDuration -> PlayerSleepTimer.start()
         }
       }
+    } catch (e: Exception) {
+      this.logger.error("play: ", e)
     }
   }
 
   fun pause() {
-    this.playerAndBookField?.player?.pause()
-    PlayerSleepTimer.pause()
+    try {
+      this.playerAndBookField?.player?.pause()
+      PlayerSleepTimer.pause()
+    } catch (e: Exception) {
+      this.logger.error("pause: ", e)
+    }
   }
 
   fun playOrPauseAsAppropriate() {
@@ -638,19 +650,35 @@ object PlayerModel {
   }
 
   fun skipToNext() {
-    this.playerAndBookField?.player?.skipToNextChapter(0L)
+    try {
+      this.playerAndBookField?.player?.skipToNextChapter(0L)
+    } catch (e: Exception) {
+      this.logger.error("skipToNext: ", e)
+    }
   }
 
   fun skipToPrevious() {
-    this.playerAndBookField?.player?.skipToPreviousChapter(0L)
+    try {
+      this.playerAndBookField?.player?.skipToPreviousChapter(0L)
+    } catch (e: Exception) {
+      this.logger.error("skipToPrevious: ", e)
+    }
   }
 
   fun skipForward() {
-    this.playerAndBookField?.player?.skipPlayhead(30_000L)
+    try {
+      this.playerAndBookField?.player?.skipPlayhead(30_000L)
+    } catch (e: Exception) {
+      this.logger.error("skipForward: ", e)
+    }
   }
 
   fun skipBack() {
-    this.playerAndBookField?.player?.skipPlayhead(-30_000L)
+    try {
+      this.playerAndBookField?.player?.skipPlayhead(-30_000L)
+    } catch (e: Exception) {
+      this.logger.error("skipBack: ", e)
+    }
   }
 
   fun book(): PlayerAudioBookType {
@@ -659,7 +687,11 @@ object PlayerModel {
   }
 
   fun movePlayheadTo(playerPosition: PlayerPosition) {
-    this.playerAndBookField?.player?.movePlayheadToLocation(playerPosition)
+    try {
+      this.playerAndBookField?.player?.movePlayheadToLocation(playerPosition)
+    } catch (e: Exception) {
+      this.logger.error("movePlayheadTo: ", e)
+    }
   }
 
   fun manifest(): PlayerManifest {
@@ -668,15 +700,27 @@ object PlayerModel {
   }
 
   fun bookmarkCreate() {
-    this.playerAndBookField?.player?.bookmark()
+    try {
+      this.playerAndBookField?.player?.bookmark()
+    } catch (e: Exception) {
+      this.logger.error("bookmarkCreate: ", e)
+    }
   }
 
   fun bookmarkDelete(bookmark: PlayerBookmark) {
-    this.playerAndBookField?.player?.bookmarkDelete(bookmark)
+    try {
+      this.playerAndBookField?.player?.bookmarkDelete(bookmark)
+    } catch (e: Exception) {
+      this.logger.error("bookmarkDelete: ", e)
+    }
   }
 
   fun setPlaybackRate(item: PlayerPlaybackRate) {
-    this.playerAndBookField?.player?.playbackRate = item
+    try {
+      this.playerAndBookField?.player?.playbackRate = item
+    } catch (e: Exception) {
+      this.logger.error("setPlaybackRate: ", e)
+    }
   }
 
   val isPlaying: Boolean
