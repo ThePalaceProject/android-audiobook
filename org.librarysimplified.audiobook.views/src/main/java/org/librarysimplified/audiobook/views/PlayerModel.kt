@@ -22,6 +22,7 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
+import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUserAgent
@@ -236,6 +237,15 @@ object PlayerModel {
 
   val downloadEvents: Observable<PlayerReadingOrderItemDownloadStatus> =
     this.downloadEventSubject.observeOn(AndroidSchedulers.mainThread())
+
+  /*
+   * Subscribe to the sleep timer so that the player can be paused when the timer expires.
+   */
+
+  private val sleepTimerSubscription =
+    PlayerSleepTimer.events.subscribe {
+      this.onSleepTimerEvent(it)
+    }
 
   init {
     this.stateSubject.onNext(this.state)
@@ -515,6 +525,16 @@ object PlayerModel {
   private fun opCloseBookOrDismissError() {
     this.currentFuture?.cancel(true)
 
+    /*
+     * Cancel the sleep timer.
+     */
+
+    PlayerSleepTimer.cancel()
+
+    /*
+     * Drop the title and cover.
+     */
+
     PlayerUIThread.runOnUIThread {
       this.bookTitle = ""
       this.setCoverImage(null)
@@ -554,6 +574,25 @@ object PlayerModel {
   private fun setNewState(newState: PlayerModelState) {
     this.stateField = newState
     this.stateSubject.onNext(newState)
+  }
+
+  private fun onSleepTimerEvent(
+    event: PlayerSleepTimerEvent
+  ) {
+    try {
+      return when (event) {
+        PlayerSleepTimerEvent.PlayerSleepTimerFinished -> {
+          this.logger.debug("Sleep timer finished: Pausing player")
+          this.playerAndBookField?.player?.pause()
+          Unit
+        }
+        is PlayerSleepTimerEvent.PlayerSleepTimerStatusChanged -> {
+          // Nothing to do
+        }
+      }
+    } catch (e: Exception) {
+      this.logger.error("onSleepTimerEvent: ", e)
+    }
   }
 
   fun seekTo(milliseconds: Long) {

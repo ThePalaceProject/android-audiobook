@@ -102,6 +102,7 @@ class PlayerSleepTimerFragment : DialogFragment() {
       }
     )
 
+    PlayerSleepTimer.start()
     PlayerUIThread.runOnUIThreadDelayed({ this.dismiss() }, 250L)
   }
 }
