@@ -96,7 +96,7 @@ class ExoBookmarkObserver private constructor(
       this.onBookmarkCreate(
         PlayerEventCreateBookmark(
           readingOrderItem = event.readingOrderItem,
-          offsetMilliseconds = event.offsetMilliseconds,
+          readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
           positionMetadata = event.positionMetadata,
           kind = PlayerBookmarkKind.LAST_READ,
           isStreaming = this.isStreamingNow(),

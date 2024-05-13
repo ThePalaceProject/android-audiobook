@@ -90,7 +90,7 @@ class FindawayBookmarkObserver private constructor(
       this.onBookmarkCreate(
         PlayerEventCreateBookmark(
           readingOrderItem = event.readingOrderItem,
-          offsetMilliseconds = event.offsetMilliseconds,
+          readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
           kind = PlayerBookmarkKind.LAST_READ,
           isStreaming = this.isStreamingNow.invoke(),
           positionMetadata = event.positionMetadata,

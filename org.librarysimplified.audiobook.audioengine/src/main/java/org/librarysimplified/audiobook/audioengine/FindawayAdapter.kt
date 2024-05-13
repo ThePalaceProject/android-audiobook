@@ -424,7 +424,7 @@ class FindawayAdapter(
     this.events.onNext(
       PlayerEventPlaybackPaused(
         isStreaming = this.isStreamingNow,
-        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        readingOrderItemOffsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
         readingOrderItem = position.readingOrderItem,
       )
@@ -442,7 +442,7 @@ class FindawayAdapter(
     this.events.onNext(
       PlayerEventPlaybackStopped(
         isStreaming = this.isStreamingNow,
-        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        readingOrderItemOffsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
         readingOrderItem = position.readingOrderItem,
       )
@@ -541,7 +541,10 @@ class FindawayAdapter(
     val tocItem =
       this.tocItemFor(readingOrderItem.id, offsetMilliseconds)
     val totalRemaining =
-      this.book.tableOfContents.totalDurationRemaining(tocItem, offsetMilliseconds)
+      this.book.tableOfContents.totalDurationRemaining(
+        tocItem = tocItem,
+        readingOrderItemOffsetMilliseconds = offsetMilliseconds
+      )
 
     this.mostRecentPosition =
       FindawayPlayerPosition(
@@ -615,7 +618,7 @@ class FindawayAdapter(
       PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark(
         isStreaming = this.isStreamingNow,
         kind = PlayerBookmarkKind.EXPLICIT,
-        offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
+        readingOrderItemOffsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
         readingOrderItem = position.readingOrderItem,
         bookmarkMetadata = PlayerBookmarkMetadata.fromPositionMetadata(positionMetadata)

@@ -237,7 +237,7 @@ class ExoAudioBookPlayer private constructor(
           this.statusEvents.onNext(
             PlayerEventPlaybackStopped(
               isStreaming = this.isStreamingNow,
-              offsetMilliseconds = 0,
+              readingOrderItemOffsetMilliseconds = 0,
               positionMetadata = positionMetadata,
               readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
             )
@@ -313,7 +313,7 @@ class ExoAudioBookPlayer private constructor(
           this.statusEvents.onNext(
             PlayerEventPlaybackPaused(
               isStreaming = this.isStreamingNow,
-              offsetMilliseconds = offsetMilliseconds,
+              readingOrderItemOffsetMilliseconds = offsetMilliseconds,
               positionMetadata = positionMetadata,
               readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
             )
@@ -762,7 +762,10 @@ class ExoAudioBookPlayer private constructor(
     val tocItem =
       this.tocItemFor(readingOrderItem.readingOrderItem.id, offsetMilliseconds)
     val durationRemaining =
-      this.book.tableOfContents.totalDurationRemaining(tocItem, offsetMilliseconds)
+      this.book.tableOfContents.totalDurationRemaining(
+        tocItem = tocItem,
+        readingOrderItemOffsetMilliseconds = offsetMilliseconds
+      )
 
     val bookProgressEstimate =
       readingOrderItem.readingOrderItem.index.toDouble() / this.book.readingOrder.size.toDouble()
@@ -785,7 +788,7 @@ class ExoAudioBookPlayer private constructor(
     this.statusEvents.onNext(
       PlayerEventCreateBookmark(
         readingOrderItem.readingOrderItem,
-        offsetMilliseconds = offsetMilliseconds,
+        readingOrderItemOffsetMilliseconds = offsetMilliseconds,
         kind = PlayerBookmarkKind.EXPLICIT,
         isStreaming = this.isStreamingNow,
         positionMetadata = positionMetadata,

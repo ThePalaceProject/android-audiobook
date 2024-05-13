@@ -965,4 +965,36 @@ class PlayerManifestTest {
 
     this.checkTOCInvariants(tocItems, manifest)
   }
+
+  /**
+   * Random game audio.
+   */
+
+  @Test
+  fun testRandomGameAudio() {
+    val result =
+      ManifestParsers.parse(
+        uri = URI.create("random-game-audio.json"),
+        streams = this.resource("random-game-audio.json"),
+        extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
+      )
+    this.log().debug("result: {}", result)
+    assertTrue(result is ParseResult.Success, "Result is success")
+
+    val success: ParseResult.Success<PlayerManifest> =
+      result as ParseResult.Success<PlayerManifest>
+
+    val manifest =
+      success.result
+    val tocItems =
+      PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+
+    assertEquals(4, tocItems.tocItemsInOrder.size)
+    assertEquals(0, tocItems.tocItemsInOrder[0].readingOrderOffsetMilliseconds)
+    assertEquals(10000, tocItems.tocItemsInOrder[1].readingOrderOffsetMilliseconds)
+    assertEquals(20000, tocItems.tocItemsInOrder[2].readingOrderOffsetMilliseconds)
+    assertEquals(30000, tocItems.tocItemsInOrder[3].readingOrderOffsetMilliseconds)
+
+    this.checkTOCInvariants(tocItems, manifest)
+  }
 }

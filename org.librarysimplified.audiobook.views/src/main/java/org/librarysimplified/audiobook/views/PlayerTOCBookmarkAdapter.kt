@@ -93,7 +93,7 @@ class PlayerTOCBookmarkAdapter(
         )
         builder.append(" ")
         builder.append(
-          PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(
+          PlayerTimeStrings.elapsedTOCItemTimeSpoken(
             this@PlayerTOCBookmarkAdapter.timeStrings,
             offset
           )

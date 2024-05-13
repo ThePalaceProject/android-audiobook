@@ -664,9 +664,14 @@ object PlayerModel {
   fun pause() {
     try {
       this.playerAndBookField?.player?.pause()
+    } catch (e: Exception) {
+      this.logger.error("Pause: ", e)
+    }
+
+    try {
       PlayerSleepTimer.pause()
     } catch (e: Exception) {
-      this.logger.error("pause: ", e)
+      this.logger.error("Pause: ", e)
     }
   }
 

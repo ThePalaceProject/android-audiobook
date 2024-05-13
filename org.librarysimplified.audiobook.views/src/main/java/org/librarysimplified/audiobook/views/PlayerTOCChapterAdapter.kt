@@ -179,7 +179,7 @@ class PlayerTOCChapterAdapter(
       builder.append(resources.getString(R.string.audiobook_accessibility_toc_chapter_duration_is))
       builder.append(" ")
       builder.append(
-        PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(this.timeStrings, duration)
+        PlayerTimeStrings.durationSpoken(this.timeStrings, duration)
       )
       builder.append(". ")
     }

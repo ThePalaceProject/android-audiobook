@@ -140,7 +140,7 @@ sealed class PlayerEvent {
 
     data class PlayerEventPlaybackPaused(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long,
+      val readingOrderItemOffsetMilliseconds: Long,
       override val positionMetadata: PlayerPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
@@ -151,7 +151,7 @@ sealed class PlayerEvent {
 
     data class PlayerEventPlaybackStopped(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long,
+      val readingOrderItemOffsetMilliseconds: Long,
       override val positionMetadata: PlayerPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
@@ -164,7 +164,7 @@ sealed class PlayerEvent {
 
     data class PlayerEventCreateBookmark(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long,
+      val readingOrderItemOffsetMilliseconds: Long,
       override val positionMetadata: PlayerPositionMetadata,
       override val isStreaming: Boolean,
       val bookmarkMetadata: PlayerBookmarkMetadata,

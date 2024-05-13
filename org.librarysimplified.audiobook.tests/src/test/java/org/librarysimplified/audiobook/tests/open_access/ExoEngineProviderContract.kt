@@ -53,8 +53,6 @@ import org.librarysimplified.audiobook.media3.ExoEngineProvider
 import org.librarysimplified.audiobook.media3.ExoEngineThread
 import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
-import org.mockito.Mockito
-import org.mockito.kotlin.any
 import org.slf4j.Logger
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -831,10 +829,10 @@ abstract class ExoEngineProviderContract {
         "playbackWaitingForAction ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
 
       is PlayerEventPlaybackPaused ->
-        "playbackPaused ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
+        "playbackPaused ${event.readingOrderItem.index} ${event.readingOrderItemOffsetMilliseconds}"
 
       is PlayerEventPlaybackStopped ->
-        "playbackStopped ${event.readingOrderItem.index} ${event.offsetMilliseconds}"
+        "playbackStopped ${event.readingOrderItem.index} ${event.readingOrderItemOffsetMilliseconds}"
 
       is PlayerEvent.PlayerEventError ->
         "playbackError ${event.readingOrderItem?.index} ${event.exception?.javaClass?.canonicalName} ${event.errorCode} ${event.offsetMilliseconds}"

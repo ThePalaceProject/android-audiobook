@@ -32,6 +32,12 @@
     </Preset>
 
     <Preset
+        name="io7m Demo 2"
+        location="https://ataxia.io7m.com/2024/05/13/book.json">
+        <AuthenticationNone />
+    </Preset>
+
+    <Preset
         name="Arc7 Demo"
         location="https://outland.iw.int.arc7.info/2020/11/30/engineer/open_access_0.json">
         <AuthenticationNone />
@@ -41,13 +47,5 @@
         name="Findaway 0"
         location="https://outland.iw.int.arc7.info/2024/04/10/audiobook-manifest.json">
         <AuthenticationNone />
-    </Preset>
-
-    <Preset
-        name="Columbarium"
-        location="https://minotaur.dev.palaceproject.io/minotaur-test-library/works/127460/fulfill/2">
-        <AuthenticationBasic
-            password="9Bg@v59C"
-            userName="05550000000041" />
     </Preset>
 </Presets>

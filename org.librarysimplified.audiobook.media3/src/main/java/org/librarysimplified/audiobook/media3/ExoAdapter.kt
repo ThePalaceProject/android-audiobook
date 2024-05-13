@@ -192,7 +192,10 @@ class ExoAdapter(
     readingOrderItemOffsetMilliseconds: Long
   ): PlayerPositionMetadata {
     val durationRemaining =
-      this.toc.totalDurationRemaining(tocItem, readingOrderItemOffsetMilliseconds)
+      this.toc.totalDurationRemaining(
+        tocItem = tocItem,
+        readingOrderItemOffsetMilliseconds = readingOrderItemOffsetMilliseconds
+      )
 
     val bookProgressEstimate =
       tocItem.index.toDouble() / this.toc.tocItemsInOrder.size.toDouble()

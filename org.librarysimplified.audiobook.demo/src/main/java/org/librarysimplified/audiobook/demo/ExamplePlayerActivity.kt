@@ -138,7 +138,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           PlayerBookmark(
             kind = event.kind,
             readingOrderID = event.readingOrderItem.id,
-            offsetMilliseconds = event.offsetMilliseconds,
+            offsetMilliseconds = event.readingOrderItemOffsetMilliseconds,
             metadata = event.bookmarkMetadata
           )
         )

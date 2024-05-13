@@ -49,7 +49,21 @@ object PlayerTimeStrings {
      * The word for "second" in the current language.
      */
 
-    val secondText: String
+    val secondText: String,
+
+    /**
+     * The phrase for "remaining in chapter" in the current language, as in
+     * "2 minutes remaining in chapter"
+     */
+
+    val remainingInChapter: String,
+
+    /**
+     * The phrase for "elapsed in chapter" in the current language, as in
+     * "2 minutes elapsed in chapter"
+     */
+
+    val elapsedInChapter: String
   ) {
 
     fun minutes(minutes: Long): String =
@@ -70,7 +84,9 @@ object PlayerTimeStrings {
           minutesText = resources.getString(R.string.audiobook_accessibility_minutes),
           minuteText = resources.getString(R.string.audiobook_accessibility_minute),
           secondsText = resources.getString(R.string.audiobook_accessibility_seconds),
-          secondText = resources.getString(R.string.audiobook_accessibility_second)
+          secondText = resources.getString(R.string.audiobook_accessibility_second),
+          remainingInChapter = resources.getString(R.string.audiobook_accessibility_remaining_in_chapter),
+          elapsedInChapter = resources.getString(R.string.audiobook_accessibility_elapsed_in_chapter),
         )
       }
     }
@@ -87,55 +103,78 @@ object PlayerTimeStrings {
       .appendSeconds()
       .toFormatter()
 
-  private val minuteSecondFormatter: PeriodFormatter =
-    PeriodFormatterBuilder()
-      .printZeroAlways()
-      .minimumPrintedDigits(2)
-      .appendMinutes()
-      .appendLiteral(":")
-      .appendSeconds()
-      .toFormatter()
-
   fun hourMinuteSecondTextFromMilliseconds(milliseconds: Long): String {
-    return hourMinuteSecondFormatter.print(Duration.millis(milliseconds).toPeriod())
+    return this.hourMinuteSecondFormatter.print(Duration.millis(milliseconds).toPeriod())
   }
 
-  fun hourMinuteSecondSpokenFromMilliseconds(
-    translations: SpokenTranslations,
-    milliseconds: Long
-  ): String {
-    return hourMinuteSecondSpokenFromDuration(translations, Duration.millis(milliseconds))
-  }
-
-  fun hourMinuteSecondTextFromDurationOptional(duration: Duration?): String {
-    return duration?.let { time -> hourMinuteSecondTextFromDuration(time) }.orEmpty()
-  }
-
-  fun hourMinuteTextFromRemainingTime(
+  fun remainingBookTime(
     context: Context,
     remainingTime: Duration
   ): String {
-    val hours = remainingTime.standardHours
-    return if (hours == 0L) {
-      val minutes = remainingTime.standardMinutes
-      context.getString(R.string.audiobook_player_remaining_time_minutes_only, minutes)
-    } else {
-      val withoutHours = remainingTime.minus(Duration.standardHours(hours))
-      val minutes = withoutHours.standardMinutes
-      context.getString(R.string.audiobook_player_remaining_time, hours, minutes)
+    val hours =
+      remainingTime.standardHours
+    val withoutHours =
+      remainingTime.minus(Duration.standardHours(hours))
+    val minutes =
+      withoutHours.standardMinutes
+
+    if (hours > 0L) {
+      return context.getString(R.string.audiobook_player_remaining_time, hours, minutes)
     }
+
+    if (minutes > 0L) {
+      return context.getString(R.string.audiobook_player_remaining_time_minutes_only, minutes)
+    }
+
+    return context.getString(
+      R.string.audiobook_player_remaining_time_seconds_only,
+      withoutHours.standardSeconds
+    )
   }
 
-  fun hourMinuteSecondTextFromDuration(duration: Duration): String {
-    return hourMinuteSecondFormatter.print(duration.toPeriod())
+  fun durationText(duration: Duration): String {
+    return this.hourMinuteSecondFormatter.print(duration.toPeriod())
   }
 
-  fun hourMinuteSecondSpokenFromDuration(
-    translations: SpokenTranslations,
-    duration: Duration
+  fun remainingTOCItemTime(
+    time: Duration
   ): String {
+    return this.hourMinuteSecondFormatter.print(time.toPeriod())
+  }
+
+  fun remainingTOCItemTimeSpoken(
+    translations: SpokenTranslations,
+    time: Duration
+  ): String {
+    val builder = this.durationSpokenBase(translations, time)
+    builder.append(' ')
+    builder.append(translations.remainingInChapter)
+    return builder.toString().trim()
+  }
+
+  fun elapsedTOCItemTime(
+    time: Duration
+  ): CharSequence {
+    return this.hourMinuteSecondFormatter.print(time.toPeriod())
+  }
+
+  fun elapsedTOCItemTimeSpoken(
+    translations: SpokenTranslations,
+    time: Duration
+  ): CharSequence {
+    val builder = this.durationSpokenBase(translations, time)
+
+    builder.append(' ')
+    builder.append(translations.elapsedInChapter)
+    return builder.toString().trim()
+  }
+
+  private fun durationSpokenBase(
+    translations: SpokenTranslations,
+    time: Duration
+  ): StringBuilder {
     val builder = StringBuilder(64)
-    var period = duration.toPeriod()
+    var period = time.toPeriod()
 
     val hours = period.toStandardHours()
     if (hours.hours > 0) {
@@ -161,37 +200,13 @@ object PlayerTimeStrings {
       builder.append(' ')
       builder.append(translations.seconds(seconds.seconds.toLong()))
     }
-
-    return builder.toString().trim()
+    return builder
   }
 
-  fun minuteSecondTextFromDuration(duration: Duration): String {
-    return minuteSecondFormatter.print(duration.toPeriod())
-  }
-
-  fun minuteSecondSpokenFromDuration(
-    translations: SpokenTranslations,
+  fun durationSpoken(
+    timeStrings: SpokenTranslations,
     duration: Duration
   ): String {
-    val builder = StringBuilder(64)
-    var period = duration.toPeriod()
-
-    val minutes = period.toStandardMinutes()
-    if (minutes.minutes > 0) {
-      builder.append(minutes.minutes)
-      builder.append(' ')
-      builder.append(translations.minutes(minutes.minutes.toLong()))
-      builder.append(' ')
-      period = period.minus(Period.minutes(minutes.minutes))
-    }
-
-    val seconds = period.toStandardSeconds()
-    if (seconds.seconds > 0) {
-      builder.append(seconds.seconds)
-      builder.append(' ')
-      builder.append(translations.seconds(seconds.seconds.toLong()))
-    }
-
-    return builder.toString().trim()
+    return this.durationSpokenBase(timeStrings, duration).toString().trim()
   }
 }

@@ -2,8 +2,9 @@
 
 <resources>
 
-    <string name="audiobook_player_remaining_time">%1$d hr %2$d min remaining</string>
-    <string name="audiobook_player_remaining_time_minutes_only">%d min remaining</string>
+    <string name="audiobook_player_remaining_time">%1$d hours %2$d minutes remaining in book</string>
+    <string name="audiobook_player_remaining_time_minutes_only">%d minutes remaining in book</string>
+    <string name="audiobook_player_remaining_time_seconds_only">%d seconds remaining in book</string>
 
     <string name="audiobook_part_download_stop_confirm">Stop downloading this book part?</string>
     <string name="audiobook_part_download_stop">Stop</string>
@@ -54,6 +55,8 @@
     <string name="audiobook_accessibility_hour">Hour</string>
     <string name="audiobook_accessibility_minute">Minute</string>
     <string name="audiobook_accessibility_second">Second</string>
+    <string name="audiobook_accessibility_remaining_in_chapter">Remaining In Chapter</string>
+    <string name="audiobook_accessibility_elapsed_in_chapter">Elapsed In Chapter</string>
 
     <string name="audiobook_accessibility_navigation_back">Back</string>
 

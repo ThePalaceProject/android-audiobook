@@ -53,10 +53,25 @@ data class PlayerManifestTOC(
 
   fun totalDurationRemaining(
     tocItem: PlayerManifestTOCItem,
-    offsetMilliseconds: Long
+    readingOrderItemOffsetMilliseconds: Long
   ): Duration {
-    return this.totalDuration.minus(
-      Duration.millis(tocItem.intervalAbsoluteMilliseconds.lower + offsetMilliseconds)
-    )
+    /*
+     * First, determine the current position on the absolute timeline. Essentially, we look
+     * up the reading order item that owns this TOC item, and add the given reading order item
+     * offset in milliseconds to the absolute time of the start of the reading order item.
+     */
+
+    val readingOrderItem =
+      tocItem.readingOrderLink
+    val readingOrderInterval =
+      this.readingOrderIntervals[readingOrderItem.id] ?: return Duration.ZERO
+    val absoluteReadingOrderPosition =
+      readingOrderInterval.lower + readingOrderItemOffsetMilliseconds
+
+    /*
+     * We then subtract the absolute position from the total duration of the book.
+     */
+
+    return this.totalDuration.minus(Duration.millis(absoluteReadingOrderPosition))
   }
 }

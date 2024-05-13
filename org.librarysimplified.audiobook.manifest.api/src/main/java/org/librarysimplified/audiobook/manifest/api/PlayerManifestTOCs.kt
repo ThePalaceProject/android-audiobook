@@ -143,9 +143,9 @@ object PlayerManifestTOCs {
             readingOrderIntervals[withOffsetNext.uriWithoutOffset]!!
           val upperOffset =
             withOffsetNext.offset
-          readingOrderIntervalNext.lower + (upperOffset.millis - 1)
+          Math.max(0L, readingOrderIntervalNext.lower + (upperOffset.millis - 1L))
         } else {
-          readingOrderAbsoluteTime - 1
+          readingOrderAbsoluteTime - 1L
         }
 
       /*

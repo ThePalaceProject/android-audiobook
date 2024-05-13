@@ -77,7 +77,7 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var playerSkipForwardButton: ImageView
   private lateinit var playerStatus: TextView
   private lateinit var playerTimeCurrent: TextView
-  private lateinit var playerTimeMaximum: TextView
+  private lateinit var playerTimeRemaining: TextView
   private lateinit var playerWaiting: TextView
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
   private lateinit var toolbar: Toolbar
@@ -86,6 +86,23 @@ class PlayerFragment : PlayerBaseFragment() {
   private var playerPositionDragging: Boolean = false
   private var menuPlaybackRateText: TextView? = null
   private var menuSleepText: TextView? = null
+
+  /*
+   * Unfortunately, at API level 24, we can't store the minimum player position in the player
+   * position seek bar. We have to store it separately here and do the arithmetic ourselves to
+   * translate seek bar positions to player seek positions. This is updated every time the
+   * player publishes a playback event. This violates our rule of having stateless fragments,
+   * but it should be harmless as playback events are very frequent; the window of opportunity
+   * for the code to view stale state is tiny.
+   *
+   * In practice, we store offset of the current TOC item from the start of the reading order
+   * item that contains it. This allows us to set the maximum value of the slider to the duration
+   * of the TOC item in milliseconds, and then use these values to calculate the reading order
+   * item offset to pass to the player for seek operations.
+   */
+
+  @Volatile
+  private var playerPositionMin: Long = 0
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -121,7 +138,7 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.playerMustBeDownloaded)
     this.playerTimeCurrent =
       view.findViewById(R.id.player_time)!!
-    this.playerTimeMaximum =
+    this.playerTimeRemaining =
       view.findViewById(R.id.player_time_maximum)!!
     this.playerRemainingBookTime =
       view.findViewById(R.id.player_remaining_book_time)!!
@@ -133,9 +150,9 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.player_status)
 
     this.playerDownloadMessage =
-      view.findViewById<TextView>(R.id.playerDownloadMessage)
+      view.findViewById(R.id.playerDownloadMessage)
     this.playerDownloadProgress =
-      view.findViewById<ProgressBar>(R.id.playerDownloadProgress)
+      view.findViewById(R.id.playerDownloadProgress)
 
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
     this.toolbarConfigureAllActions()
@@ -350,7 +367,7 @@ class PlayerFragment : PlayerBaseFragment() {
         this.menuSleep.actionView?.contentDescription =
           this.sleepTimerContentDescriptionForTime(paused = false, c.duration)
         this.menuSleepText?.text =
-          PlayerTimeStrings.hourMinuteSecondTextFromDuration(c.duration)
+          PlayerTimeStrings.durationText(c.duration)
         this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
     }
@@ -378,7 +395,7 @@ class PlayerFragment : PlayerBaseFragment() {
         this.menuSleep.actionView?.contentDescription =
           this.sleepTimerContentDescriptionForTime(paused = true, c.duration)
         this.menuSleepText?.text =
-          PlayerTimeStrings.hourMinuteSecondTextFromDuration(c.duration)
+          PlayerTimeStrings.durationText(c.duration)
         this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
     }
@@ -403,7 +420,7 @@ class PlayerFragment : PlayerBaseFragment() {
     builder.append(". ")
     builder.append(this.resources.getString(R.string.audiobook_accessibility_sleep_timer_currently))
     builder.append(" ")
-    builder.append(PlayerTimeStrings.minuteSecondSpokenFromDuration(this.timeStrings, remaining))
+    builder.append(PlayerTimeStrings.durationSpoken(this.timeStrings, remaining))
     if (paused) {
       builder.append(". ")
       builder.append(this.resources.getString(R.string.audiobook_accessibility_sleep_timer_is_paused))
@@ -491,7 +508,7 @@ class PlayerFragment : PlayerBaseFragment() {
   ) {
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
-      offsetMilliseconds = event.offsetMilliseconds,
+      readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
       positionMetadata = event.positionMetadata,
     )
   }
@@ -512,7 +529,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
-      offsetMilliseconds = event.offsetMilliseconds,
+      readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
       positionMetadata = event.positionMetadata,
     )
   }
@@ -529,7 +546,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
-      offsetMilliseconds = 0,
+      readingOrderItemOffsetMilliseconds = 0,
       positionMetadata = event.positionMetadata,
     )
   }
@@ -546,7 +563,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
-      offsetMilliseconds = event.offsetMilliseconds,
+      readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
       positionMetadata = event.positionMetadata,
     )
   }
@@ -563,7 +580,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
-      offsetMilliseconds = event.offsetMilliseconds,
+      readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
       positionMetadata = event.positionMetadata,
     )
   }
@@ -582,7 +599,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
-      offsetMilliseconds = event.offsetMilliseconds,
+      readingOrderItemOffsetMilliseconds = event.readingOrderItemOffsetMilliseconds,
       positionMetadata = event.positionMetadata,
     )
   }
@@ -600,7 +617,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.onEventUpdateTimeRelatedUI(
       readingOrderItem = event.readingOrderItem,
-      offsetMilliseconds = event.offsetMilliseconds,
+      readingOrderItemOffsetMilliseconds = event.readingOrderItemOffsetMilliseconds,
       positionMetadata = event.positionMetadata,
     )
   }
@@ -638,20 +655,36 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   private fun onReleasedPlayerPositionBar() {
-    PlayerModel.seekTo(this.playerPosition.progress.toLong())
+    val tocItemOffsetMilliseconds =
+      this.playerPosition.progress.toLong()
+    val readingOrderItemOffsetMilliseconds =
+      this.playerPositionMin + tocItemOffsetMilliseconds
+
+    PlayerModel.seekTo(readingOrderItemOffsetMilliseconds)
   }
 
   private fun onEventUpdateTimeRelatedUI(
     readingOrderItem: PlayerReadingOrderItemType,
-    offsetMilliseconds: Long,
+    readingOrderItemOffsetMilliseconds: Long,
     positionMetadata: PlayerPositionMetadata,
   ) {
+    /*
+     * The number of milliseconds into the TOC item is the current reading order offset milliseconds
+     * minus the offset of the TOC item.
+     */
+
+    val tocItemOffsetMilliseconds =
+      Math.max(0, readingOrderItemOffsetMilliseconds - positionMetadata.tocItem.readingOrderOffsetMilliseconds)
+
+    this.playerPositionMin =
+      positionMetadata.tocItem.readingOrderOffsetMilliseconds
     this.playerPosition.max =
       positionMetadata.tocItem.durationMilliseconds.toInt()
+
     this.playerPosition.isEnabled = true
 
     if (!this.playerPositionDragging) {
-      this.playerPosition.progress = offsetMilliseconds.toInt()
+      this.playerPosition.progress = tocItemOffsetMilliseconds.toInt()
     }
 
     this.playerChapterTitle.text = positionMetadata.tocItem.title
@@ -659,49 +692,34 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBookAuthor.text = PlayerModel.bookAuthor
 
     this.playerRemainingBookTime.text =
-      PlayerTimeStrings.hourMinuteTextFromRemainingTime(
+      PlayerTimeStrings.remainingBookTime(
         this.requireContext(),
         positionMetadata.totalRemainingBookTime
       )
 
-    this.playerTimeMaximum.text =
-      PlayerTimeStrings.hourMinuteSecondTextFromDurationOptional(
-        positionMetadata.tocItem.duration.minus(Duration.millis(offsetMilliseconds))
+    this.playerTimeRemaining.text =
+      PlayerTimeStrings.remainingTOCItemTime(
+        positionMetadata.tocItem.duration.minus(
+          Duration.millis(tocItemOffsetMilliseconds)
+        )
       )
 
-    this.playerTimeMaximum.contentDescription =
-      this.playerTimeRemainingSpokenOptional(offsetMilliseconds, readingOrderItem.duration)
+    this.playerTimeRemaining.contentDescription =
+      PlayerTimeStrings.remainingTOCItemTimeSpoken(
+        translations = timeStrings,
+        time = positionMetadata.tocItem.duration.minus(Duration.millis(tocItemOffsetMilliseconds))
+      )
+
     this.playerTimeCurrent.text =
-      PlayerTimeStrings.hourMinuteSecondTextFromMilliseconds(offsetMilliseconds)
+      PlayerTimeStrings.elapsedTOCItemTime(
+        time = Duration.millis(tocItemOffsetMilliseconds)
+      )
+
     this.playerTimeCurrent.contentDescription =
-      this.playerTimeCurrentSpoken(offsetMilliseconds)
-  }
-
-  private fun playerTimeCurrentSpoken(offsetMilliseconds: Long): String {
-    return this.getString(
-      R.string.audiobook_accessibility_player_time_current,
-      PlayerTimeStrings.hourMinuteSecondSpokenFromMilliseconds(this.timeStrings, offsetMilliseconds)
-    )
-  }
-
-  private fun playerTimeRemainingSpoken(
-    offsetMilliseconds: Long,
-    duration: Duration
-  ): String {
-    val remaining = duration.minus(Duration.millis(offsetMilliseconds))
-    return this.getString(
-      R.string.audiobook_accessibility_player_time_remaining,
-      PlayerTimeStrings.hourMinuteSecondSpokenFromDuration(this.timeStrings, remaining)
-    )
-  }
-
-  private fun playerTimeRemainingSpokenOptional(
-    offsetMilliseconds: Long,
-    duration: Duration?
-  ): String {
-    return duration?.let { time ->
-      this.playerTimeRemainingSpoken(offsetMilliseconds, time)
-    } ?: ""
+      PlayerTimeStrings.elapsedTOCItemTimeSpoken(
+        translations = timeStrings,
+        time = Duration.millis(tocItemOffsetMilliseconds)
+      )
   }
 
   private fun toolbarConfigureAllActions() {
