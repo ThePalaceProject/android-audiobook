@@ -15,6 +15,7 @@ import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPosition
@@ -514,6 +515,11 @@ object PlayerModel {
       { exception -> this.logger.error("Player exception: ", exception) }
     )
 
+    newPlayer.events.subscribe(
+      { event -> this.onHandleChapterCompletionForSleepTimer(event) },
+      { exception -> this.logger.error("Player exception: ", exception) }
+    )
+
     newBook.readingOrderElementDownloadStatus.subscribe(
       { event -> this.downloadEventSubject.onNext(event) },
       { exception -> this.logger.error("Download exception: ", exception) }
@@ -532,6 +538,28 @@ object PlayerModel {
       this.logger.debug(
         "No initial position was specified. Playback will begin at the start of the book."
       )
+    }
+  }
+
+  private fun onHandleChapterCompletionForSleepTimer(
+    event: PlayerEvent
+  ) {
+    return when (event) {
+      is PlayerEventChapterCompleted -> {
+        when (PlayerSleepTimer.configuration) {
+          PlayerSleepTimerConfiguration.EndOfChapter -> {
+            this.logger.debug("Chapter finished; completing sleep timer now.")
+            PlayerSleepTimer.finish()
+          }
+          PlayerSleepTimerConfiguration.Off,
+          is PlayerSleepTimerConfiguration.WithDuration -> {
+            // Nothing to do.
+          }
+        }
+      }
+      else -> {
+        // Nothing to do.
+      }
     }
   }
 

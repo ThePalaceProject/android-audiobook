@@ -7,6 +7,7 @@ import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerPositionMetadata
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
@@ -53,6 +54,14 @@ class ExoAdapter(
   @Volatile
   private var stateLatest: ExoPlayerPlaybackStatus =
     ExoPlayerPlaybackStatus.INITIAL
+
+  /**
+   * We track the current TOC item when the player is playing. This allows us to publish
+   * "chapter completed" events when we cross a TOC item boundary within a reading order item.
+   */
+
+  @Volatile
+  private var tocItemTracked: PlayerManifestTOCItem? = null
 
   val state: ExoPlayerPlaybackStatus
     get() = this.stateLatest
@@ -185,6 +194,29 @@ class ExoAdapter(
         readingOrderItem = readingOrderItem,
       )
     )
+
+    /*
+     * Compare TOC items when the player is actually playing. If the player isn't playing,
+     * then don't track TOC items.
+     */
+
+    if (this.exoPlayer.isPlaying) {
+      val tocItemPrevious = this.tocItemTracked
+      if (tocItemPrevious != null) {
+        if (tocItemPrevious.index != tocItem.index) {
+          this.events.onNext(
+            PlayerEventChapterCompleted(
+              readingOrderItem = readingOrderItem,
+              positionMetadata = positionMetadata,
+              isStreaming = this.isStreamingNow(),
+            )
+          )
+        }
+      }
+      this.tocItemTracked = tocItem
+    } else {
+      this.tocItemTracked = null
+    }
   }
 
   internal fun positionMetadataFor(

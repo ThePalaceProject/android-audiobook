@@ -17,7 +17,7 @@
     <string name="audiobook_player_menu_toc_title_bookmarks">Bookmarks</string>
     <string name="audiobook_player_menu_toc_title_chapters">Chapters</string>
 
-    <string name="audiobook_player_sleep_end_of_chapter">End of file</string>
+    <string name="audiobook_player_sleep_end_of_chapter">End of chapter</string>
     <string name="audiobook_player_sleep_60">60:00</string>
     <string name="audiobook_player_sleep_45">45:00</string>
     <string name="audiobook_player_initial">00:00:00</string>
