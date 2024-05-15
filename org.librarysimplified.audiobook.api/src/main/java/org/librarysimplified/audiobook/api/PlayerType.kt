@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.api
 
 import io.reactivex.Observable
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 
 /**
  * A player for a book.
@@ -77,22 +78,6 @@ interface PlayerType : AutoCloseable {
   fun pause()
 
   /**
-   * Skip to the next chapter at the given offset.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
-   */
-
-  fun skipToNextChapter(offset: Long)
-
-  /**
-   * Skip to the previous chapter at the given offset.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
-   */
-
-  fun skipToPreviousChapter(offset: Long)
-
-  /**
    * Skip forwards/backwards, possibly across chapter boundaries. If the given parameter is
    * positive, skip forwards. If the given parameter is negative, skip backwards. If the given
    * parameter is `0`, do nothing.
@@ -137,20 +122,21 @@ interface PlayerType : AutoCloseable {
   fun movePlayheadToLocation(location: PlayerPosition)
 
   /**
+   * Equivalent to [movePlayheadToLocation] but with the time specified as a value in milliseconds
+   * on the absolute timeline.
+   *
+   * @throws java.lang.IllegalStateException If and only if the player is closed
+   */
+
+  fun movePlayheadToAbsoluteTime(milliseconds: PlayerMillisecondsAbsolute)
+
+  /**
    * Move playhead to the start of the book but do not start playback.
    *
    * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
   fun movePlayheadToBookStart()
-
-  /**
-   * Seek to the given millisecond offset in the current chapter.
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
-   */
-
-  fun seekTo(milliseconds: Long)
 
   /**
    * Instruct the player to create a bookmark. This has the effect of generating a

@@ -7,13 +7,15 @@ import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
-import org.librarysimplified.audiobook.api.PlayerPositionMetadata
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 import org.slf4j.LoggerFactory
 
 /**
@@ -68,16 +70,6 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
     this.callEvents.onNext("pause")
   }
 
-  override fun skipToNextChapter(offset: Long) {
-    this.log.debug("skipToNextChapter")
-    this.callEvents.onNext("skipToNextChapter")
-  }
-
-  override fun skipToPreviousChapter(offset: Long) {
-    this.log.debug("skipToPreviousChapter")
-    this.callEvents.onNext("skipToPreviousChapter")
-  }
-
   override fun skipForward() {
     this.log.debug("skipForward")
     this.callEvents.onNext("skipForward")
@@ -96,11 +88,11 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
   override fun movePlayheadToBookStart() {
     this.log.debug("movePlayheadToBookStart")
     this.movePlayheadToLocation(
-      PlayerPosition(this.book.spineItems.first().id, 0L))
+      PlayerPosition(this.book.spineItems.first().id, PlayerMillisecondsReadingOrderItem(0L)))
   }
 
-  override fun seekTo(milliseconds: Long) {
-    this.log.debug("seekTo")
+  override fun movePlayheadToAbsoluteTime(milliseconds: PlayerMillisecondsAbsolute) {
+    this.log.debug("movePlayheadToAbsoluteTime")
   }
 
   override fun bookmark() {
@@ -111,15 +103,17 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
     this.log.debug("bookmarkDelete")
   }
 
-  private fun goToChapter(id: PlayerManifestReadingOrderID, offset: Long) {
+  private fun goToChapter(id: PlayerManifestReadingOrderID, offset: PlayerMillisecondsReadingOrderItem) {
     val element = this.book.spineItems.find { element -> element.id == id }
     if (element != null) {
       this.statusEvents.onNext(
         PlayerEventPlaybackStarted(
           readingOrderItem = element,
           offsetMilliseconds = offset,
-          positionMetadata = PlayerPositionMetadata(
+          positionMetadata = PlayerManifestPositionMetadata(
             tocItem = this.book.tableOfContents.tocItemsInOrder.first(),
+            tocItemRemaining = Duration.millis(0),
+            tocItemPosition = Duration.millis(0),
             totalRemainingBookTime = Duration.millis(0L),
             chapterProgressEstimate = 0.0,
             bookProgressEstimate = 0.0

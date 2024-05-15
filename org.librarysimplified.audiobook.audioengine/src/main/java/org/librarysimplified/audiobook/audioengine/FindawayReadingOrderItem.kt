@@ -8,6 +8,8 @@ import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsoluteInterval
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 
 /**
  * A spine element in an audio book.
@@ -19,7 +21,7 @@ class FindawayReadingOrderItem(
   override val index: Int,
   var nextElement: PlayerReadingOrderItemType?,
   var prevElement: PlayerReadingOrderItemType?,
-  override val duration: Duration
+  val interval: PlayerMillisecondsAbsoluteInterval
 ) : PlayerReadingOrderItemType {
 
   override fun toString(): String {
@@ -53,6 +55,9 @@ class FindawayReadingOrderItem(
   override val previous: PlayerReadingOrderItemType?
     get() = this.prevElement
 
+  override val duration: Duration
+    get() = Duration.millis(this.interval.size().value)
+
   override val id: PlayerManifestReadingOrderID
     get() = this.itemManifest.id
 
@@ -73,7 +78,7 @@ class FindawayReadingOrderItem(
   override val startingPosition: PlayerPosition
     get() = PlayerPosition(
       readingOrderID = this.itemManifest.id,
-      offsetMilliseconds = 0L
+      offsetMilliseconds = PlayerMillisecondsReadingOrderItem(0L)
     )
 
   override val downloadStatus: PlayerReadingOrderItemDownloadStatus

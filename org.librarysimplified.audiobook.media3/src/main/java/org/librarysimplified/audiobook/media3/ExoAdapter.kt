@@ -1,18 +1,21 @@
 package org.librarysimplified.audiobook.media3
 
+import android.net.Uri
+import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
-import org.librarysimplified.audiobook.api.PlayerPositionMetadata
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.Logger
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -25,9 +28,8 @@ class ExoAdapter(
   private val logger: Logger,
   private val events: Subject<PlayerEvent>,
   private val exoPlayer: ExoPlayer,
-  private val currentReadingOrderItem: () -> PlayerReadingOrderItemType,
+  private val currentReadingOrderItem: () -> ExoReadingOrderItemHandle,
   private val toc: PlayerManifestTOC,
-  private val tocItemFor: (PlayerReadingOrderItemType, Long) -> PlayerManifestTOCItem,
   private val isStreamingNow: () -> Boolean,
 ) : Player.Listener, AutoCloseable {
 
@@ -51,9 +53,32 @@ class ExoAdapter(
   internal var isBufferingNow: Boolean =
     false
 
+  /**
+   * When we want to skip playback to a particular point in a particular chapter, we tell
+   * the player to prepare that chapter's audio, and then immediately seek to the given offset
+   * in milliseconds. Unfortunately, because we observe the underlying player's position and
+   * place that position into "buffering" events that we then publish, any UI observing these
+   * events will see the playback position first seek to position 0 in the chapter, followed
+   * by the actual playback position when buffering finishes. To prevent this, we publish
+   * a fake "buffering" position each time we tell the player to prepare, and publish this
+   * fake position in the events.
+   */
+
+  @Volatile
+  private var fakeBufferingPosition: PlayerMillisecondsReadingOrderItem? = null
+
   @Volatile
   private var stateLatest: ExoPlayerPlaybackStatus =
     ExoPlayerPlaybackStatus.INITIAL
+
+  /**
+   * We track the URI of the data source that was most recently given to [ExoPlayer.setMediaSource].
+   * The reason for this is that preparation is expensive, and we don't want to redundantly
+   * prepare a new data source if one for the same URI is already prepared.
+   */
+
+  @Volatile
+  private var preparedURI: Uri? = null
 
   /**
    * We track the current TOC item when the player is playing. This allows us to publish
@@ -69,11 +94,19 @@ class ExoAdapter(
   val stateObservable: Observable<ExoPlayerPlaybackStatusTransition> =
     this.stateSubject
 
-  fun currentTrackOffsetMilliseconds(): Long {
-    if (this.exoPlayer.isCommandAvailable(ExoPlayer.COMMAND_GET_CURRENT_MEDIA_ITEM)) {
-      return this.exoPlayer.currentPosition
+  fun currentTrackOffsetMilliseconds(): PlayerMillisecondsReadingOrderItem {
+    if (this.isBufferingNow) {
+      val fakeOffset = this.fakeBufferingPosition
+      if (fakeOffset != null) {
+        this.fakeBufferingPosition = null
+        return fakeOffset
+      }
     }
-    return 0L
+
+    if (this.exoPlayer.isCommandAvailable(ExoPlayer.COMMAND_GET_CURRENT_MEDIA_ITEM)) {
+      return PlayerMillisecondsReadingOrderItem(this.exoPlayer.currentPosition)
+    }
+    return PlayerMillisecondsReadingOrderItem(0L)
   }
 
   override fun onPlayerError(error: PlaybackException) {
@@ -182,9 +215,13 @@ class ExoAdapter(
     val offsetMilliseconds =
       this.currentTrackOffsetMilliseconds()
     val tocItem =
-      this.tocItemFor.invoke(readingOrderItem, offsetMilliseconds)
+      this.toc.lookupTOCItem(readingOrderItem.id, offsetMilliseconds)
     val positionMetadata =
-      positionMetadataFor(tocItem, offsetMilliseconds)
+      this.toc.positionMetadataFor(
+        readingOrderItemID = readingOrderItem.id,
+        readingOrderItemOffset = offsetMilliseconds,
+        readingOrderItemInterval = readingOrderItem.interval
+      )
 
     this.events.onNext(
       PlayerEventPlaybackProgressUpdate(
@@ -219,34 +256,6 @@ class ExoAdapter(
     }
   }
 
-  internal fun positionMetadataFor(
-    tocItem: PlayerManifestTOCItem,
-    readingOrderItemOffsetMilliseconds: Long
-  ): PlayerPositionMetadata {
-    val durationRemaining =
-      this.toc.totalDurationRemaining(
-        tocItem = tocItem,
-        readingOrderItemOffsetMilliseconds = readingOrderItemOffsetMilliseconds
-      )
-
-    val bookProgressEstimate =
-      tocItem.index.toDouble() / this.toc.tocItemsInOrder.size.toDouble()
-
-    val chapterDuration =
-      tocItem.durationMilliseconds
-    val chapterOffsetMilliseconds =
-      readingOrderItemOffsetMilliseconds - tocItem.readingOrderOffsetMilliseconds
-    val chapterProgressEstimate =
-      chapterOffsetMilliseconds.toDouble() / chapterDuration.toDouble()
-
-    return PlayerPositionMetadata(
-      tocItem = tocItem,
-      totalRemainingBookTime = durationRemaining,
-      chapterProgressEstimate = chapterProgressEstimate,
-      bookProgressEstimate = bookProgressEstimate
-    )
-  }
-
   override fun close() {
     if (this.closed.compareAndSet(false, true)) {
       this.stateSubject.onComplete()
@@ -258,5 +267,38 @@ class ExoAdapter(
       return
     }
     this.exoPlayer.play()
+  }
+
+  fun prepare(
+    dataSourceFactory: DataSource.Factory,
+    targetURI: Uri,
+    offset: PlayerMillisecondsReadingOrderItem
+  ) {
+    this.logger.debug(
+      "prepare: [{}] Setting media source and preparing player now.",
+      targetURI
+    )
+
+    if (this.preparedURI == targetURI) {
+      this.logger.debug(
+        "prepare: [{}] A media source with this URI is already prepared; skipping preparation.",
+        targetURI
+      )
+      return
+    }
+
+    this.preparedURI = targetURI
+    this.fakeBufferingPosition = offset
+
+    val mediaSource =
+      ProgressiveMediaSource.Factory(dataSourceFactory)
+        .createMediaSource(MediaItem.fromUri(targetURI))
+    this.exoPlayer.setMediaSource(mediaSource)
+    this.exoPlayer.prepare()
+
+    this.logger.debug(
+      "prepare: [{}] Scheduled prepare on ExoPlayer.",
+      targetURI
+    )
   }
 }

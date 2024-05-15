@@ -6,12 +6,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application>
-        <service
-            android:name="org.librarysimplified.audiobook.views.PlayerService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
-
         <receiver
             android:name="org.librarysimplified.audiobook.views.PlayerMediaButtonReceiver"
             android:exported="false">

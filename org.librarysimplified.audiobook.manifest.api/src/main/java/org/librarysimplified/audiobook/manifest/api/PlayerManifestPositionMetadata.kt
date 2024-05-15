@@ -1,15 +1,26 @@
-package org.librarysimplified.audiobook.api
+package org.librarysimplified.audiobook.manifest.api
 
 import org.joda.time.Duration
-import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 
-data class PlayerPositionMetadata(
+data class PlayerManifestPositionMetadata(
 
   /**
    * The table of contents item within which the current position falls
    */
 
   val tocItem: PlayerManifestTOCItem,
+
+  /**
+   * The current time relative to the current TOC item
+   */
+
+  val tocItemPosition: Duration,
+
+  /**
+   * The current time remaining in the current TOC item
+   */
+
+  val tocItemRemaining: Duration,
 
   /**
    * The total remaining time in the entire book.

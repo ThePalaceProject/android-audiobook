@@ -34,6 +34,7 @@ import org.librarysimplified.audiobook.license_check.api.LicenseChecks
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckStatus
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorType
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
@@ -655,14 +656,6 @@ object PlayerModel {
     }
   }
 
-  fun seekTo(milliseconds: Long) {
-    try {
-      this.playerAndBookField?.player?.seekTo(milliseconds)
-    } catch (e: Exception) {
-      this.logger.error("seekTo: ", e)
-    }
-  }
-
   fun play() {
     try {
       this.playerAndBookField?.player?.play()
@@ -714,22 +707,6 @@ object PlayerModel {
     }
   }
 
-  fun skipToNext() {
-    try {
-      this.playerAndBookField?.player?.skipToNextChapter(0L)
-    } catch (e: Exception) {
-      this.logger.error("skipToNext: ", e)
-    }
-  }
-
-  fun skipToPrevious() {
-    try {
-      this.playerAndBookField?.player?.skipToPreviousChapter(0L)
-    } catch (e: Exception) {
-      this.logger.error("skipToPrevious: ", e)
-    }
-  }
-
   fun skipForward() {
     try {
       this.playerAndBookField?.player?.skipPlayhead(30_000L)
@@ -756,6 +733,14 @@ object PlayerModel {
       this.playerAndBookField?.player?.movePlayheadToLocation(playerPosition)
     } catch (e: Exception) {
       this.logger.error("movePlayheadTo: ", e)
+    }
+  }
+
+  fun movePlayheadToAbsoluteTime(newOffset: PlayerMillisecondsAbsolute) {
+    try {
+      this.playerAndBookField?.player?.movePlayheadToAbsoluteTime(newOffset)
+    } catch (e: Exception) {
+      this.logger.error("movePlayheadToAbsoluteTime: ", e)
     }
   }
 
@@ -794,27 +779,5 @@ object PlayerModel {
   fun setCoverImage(image: Bitmap?) {
     this.coverImageField = image
     this.submitViewCommand(PlayerViewCommand.PlayerViewCoverImageChanged)
-  }
-
-  /**
-   * Start a background service for the player. This is responsible for handling media buttons
-   * (such as the player views embedded in lock screens in some devices), and for handling
-   * notifications.
-   *
-   * The included [intentForPlayerService] parameter is an intent that will be published whenever
-   * the user clicks published notifications. Typically, this should be an intent that opens the
-   * activity that is hosting the player.
-   *
-   * @param context The application
-   * @param intentForPlayerService The intent that will be published when the user clicks notifications
-   */
-
-  fun startService(
-    context: Application,
-    intentForPlayerService: Intent
-  ) {
-    this.intentForPlayerServiceField = intentForPlayerService
-    val intent = Intent(context, PlayerService::class.java)
-    context.startService(intent)
   }
 }

@@ -20,6 +20,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerType
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.LoggerFactory
 
 class FindawayBookmarkObserver private constructor(
@@ -76,7 +77,7 @@ class FindawayBookmarkObserver private constructor(
      * at least a few seconds of the chapter.
      */
 
-    if (event.offsetMilliseconds < 3_000L) {
+    if (event.offsetMilliseconds < PlayerMillisecondsReadingOrderItem(3_000L)) {
       return
     }
 

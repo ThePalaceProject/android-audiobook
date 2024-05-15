@@ -1,6 +1,5 @@
 package org.librarysimplified.audiobook.manifest.api
 
-import com.io7m.kabstand.core.IntervalL
 import com.io7m.kabstand.core.IntervalTree
 import com.io7m.kabstand.core.IntervalTreeDebuggableType
 import org.joda.time.Duration
@@ -71,10 +70,14 @@ object PlayerManifestTOCs {
       outputItems = tocItemsFlattened
     )
 
+    val readingOrderItemTree =
+      IntervalTree.empty<PlayerMillisecondsAbsolute>()
     val readingOrderIntervals =
-      mutableMapOf<PlayerManifestReadingOrderID, IntervalL>()
+      mutableMapOf<PlayerManifestReadingOrderID, PlayerMillisecondsAbsoluteInterval>()
     val readingOrderByID =
       mutableMapOf<PlayerManifestReadingOrderID, PlayerManifestReadingOrderItem>()
+    val readingOrderItemsByInterval =
+      mutableMapOf<PlayerMillisecondsAbsoluteInterval, PlayerManifestReadingOrderID>()
 
     /*
      * Place all of the reading order elements on an absolute timeline. The result is a mapping
@@ -88,10 +91,17 @@ object PlayerManifestTOCs {
       val duration = Duration.standardSeconds((link.duration ?: 0L).toLong())
       val lower = readingOrderAbsoluteTime
       val upper = readingOrderAbsoluteTime + Math.max(0L, duration.millis - 1)
-      val interval = IntervalL(lower, upper)
+      val interval =
+        PlayerMillisecondsAbsoluteInterval(
+          lower = PlayerMillisecondsAbsolute(lower),
+          upper = PlayerMillisecondsAbsolute(upper)
+        )
+
+      readingOrderItemTree.add(interval)
       readingOrderAbsoluteTime = upper + 1
       readingOrderIntervals[item.id] = interval
       readingOrderByID[item.id] = item
+      readingOrderItemsByInterval[interval] = item.id
     }
 
     /*
@@ -100,9 +110,9 @@ object PlayerManifestTOCs {
      */
 
     val tocItemTree =
-      IntervalTree.empty<Long>()
+      IntervalTree.empty<PlayerMillisecondsAbsolute>()
     val tocItemsByInterval =
-      mutableMapOf<IntervalL, PlayerManifestTOCItem>()
+      mutableMapOf<PlayerMillisecondsAbsoluteInterval, PlayerManifestTOCItem>()
     val tocItemsInOrder =
       mutableListOf<PlayerManifestTOCItem>()
 
@@ -125,15 +135,15 @@ object PlayerManifestTOCs {
 
       val lowerOffset =
         withOffset.offset
-      val lower =
-        readingOrderInterval.lower + lowerOffset.millis
+      val lower: PlayerMillisecondsAbsolute =
+        PlayerMillisecondsAbsolute(readingOrderInterval.lower.value + lowerOffset.millis)
 
       /*
        * The upper bound for this TOC item's interval is either one less than the lower bound of
        * the next TOC item, or it is the upper bound of all remaining reading order items.
        */
 
-      val upper =
+      val upper: PlayerMillisecondsAbsolute =
         if (tocEntryIndex + 1 < tocItemsFlattened.size) {
           val tocMemberNext =
             tocItemsFlattened[tocEntryIndex + 1]
@@ -143,9 +153,12 @@ object PlayerManifestTOCs {
             readingOrderIntervals[withOffsetNext.uriWithoutOffset]!!
           val upperOffset =
             withOffsetNext.offset
-          Math.max(0L, readingOrderIntervalNext.lower + (upperOffset.millis - 1L))
+
+          PlayerMillisecondsAbsolute(
+            Math.max(0L, readingOrderIntervalNext.lower.value + (upperOffset.millis - 1L))
+          )
         } else {
-          readingOrderAbsoluteTime - 1L
+          PlayerMillisecondsAbsolute(readingOrderAbsoluteTime - 1L)
         }
 
       /*
@@ -158,7 +171,7 @@ object PlayerManifestTOCs {
       }
 
       val tocInterval =
-        IntervalL(lower, upper)
+        PlayerMillisecondsAbsoluteInterval(lower, upper)
 
       /*
        * Some books have a special case where the first TOC item points to something that
@@ -168,14 +181,18 @@ object PlayerManifestTOCs {
 
       if (tocEntryIndex == 0) {
         if (readingOrderItem != manifest.readingOrder[0]) {
+          val interval =
+            PlayerMillisecondsAbsoluteInterval(
+              lower = PlayerMillisecondsAbsolute(0),
+              upper = PlayerMillisecondsAbsolute(lower.value - 1L)
+            )
+
           val tocItemFake =
             PlayerManifestTOCItem(
               index = tocIndex,
               title = "[Preamble]",
               chapter = 0,
-              intervalAbsoluteMilliseconds = IntervalL(0L, lower - 1L),
-              readingOrderLink = manifest.readingOrder[0],
-              readingOrderOffsetMilliseconds = 0L
+              intervalAbsoluteMilliseconds = interval
             )
 
           tocItemsByInterval[tocItemFake.intervalAbsoluteMilliseconds] = tocItemFake
@@ -198,9 +215,7 @@ object PlayerManifestTOCs {
           index = tocIndex,
           title = title,
           chapter = tocEntryIndex + 1,
-          intervalAbsoluteMilliseconds = tocInterval,
-          readingOrderLink = readingOrderItem,
-          readingOrderOffsetMilliseconds = withOffset.offset.millis
+          intervalAbsoluteMilliseconds = tocInterval
         )
 
       tocItemsByInterval[tocInterval] = tocItem
@@ -213,13 +228,15 @@ object PlayerManifestTOCs {
       tocItemsInOrder = tocItemsInOrder.toList(),
       tocItemsByInterval = tocItemsByInterval.toMap(),
       tocItemTree = tocItemTree,
-      readingOrderIntervals = readingOrderIntervals
+      readingOrderIntervals = readingOrderIntervals,
+      readingOrderItemsByInterval = readingOrderItemsByInterval,
+      readingOrderItemTree = readingOrderItemTree
     )
   }
 
   private fun insertIntervalChecked(
-    tocItemTree: IntervalTreeDebuggableType<Long>,
-    tocInterval: IntervalL
+    tocItemTree: IntervalTreeDebuggableType<PlayerMillisecondsAbsolute>,
+    tocInterval: PlayerMillisecondsAbsoluteInterval
   ) {
     val overlapping = tocItemTree.overlapping(tocInterval)
     check(overlapping.isEmpty()) {
@@ -290,21 +307,24 @@ object PlayerManifestTOCs {
     var offset = 0L
 
     val tocItemTree =
-      IntervalTree.empty<Long>()
+      IntervalTree.empty<PlayerMillisecondsAbsolute>()
     val tocItemsByInterval =
-      mutableMapOf<IntervalL, PlayerManifestTOCItem>()
+      mutableMapOf<PlayerMillisecondsAbsoluteInterval, PlayerManifestTOCItem>()
     val tocItemsInOrder =
       mutableListOf<PlayerManifestTOCItem>()
+    val readingOrderItemTree =
+      IntervalTree.empty<PlayerMillisecondsAbsolute>()
     val readingOrderIntervals =
-      mutableMapOf<PlayerManifestReadingOrderID, IntervalL>()
+      mutableMapOf<PlayerManifestReadingOrderID, PlayerMillisecondsAbsoluteInterval>()
+    val readingOrderItemsByInterval =
+      mutableMapOf<PlayerMillisecondsAbsoluteInterval, PlayerManifestReadingOrderID>()
 
     manifest.readingOrder.forEachIndexed { index, item ->
-      val link = item.link
       val tocItem =
         this.buildTOCItem(
           index = index,
           item = item,
-          offset = offset,
+          offset = PlayerMillisecondsAbsolute(offset),
           defaultTrackTitle = defaultTrackTitle
         )
       offset += tocItem.duration.millis
@@ -312,20 +332,24 @@ object PlayerManifestTOCs {
       tocItemsByInterval[tocItem.intervalAbsoluteMilliseconds] = tocItem
       insertIntervalChecked(tocItemTree, tocItem.intervalAbsoluteMilliseconds)
       readingOrderIntervals[item.id] = tocItem.intervalAbsoluteMilliseconds
+      readingOrderItemTree.add(tocItem.intervalAbsoluteMilliseconds)
+      readingOrderItemsByInterval[tocItem.intervalAbsoluteMilliseconds] = item.id
     }
 
     return PlayerManifestTOC(
       tocItemsInOrder = tocItemsInOrder.toList(),
       tocItemsByInterval = tocItemsByInterval.toMap(),
       tocItemTree = tocItemTree,
-      readingOrderIntervals = readingOrderIntervals
+      readingOrderIntervals = readingOrderIntervals,
+      readingOrderItemTree = readingOrderItemTree,
+      readingOrderItemsByInterval = readingOrderItemsByInterval
     )
   }
 
   private fun buildTOCItem(
     index: Int,
     item: PlayerManifestReadingOrderItem,
-    offset: Long,
+    offset: PlayerMillisecondsAbsolute,
     defaultTrackTitle: (Int) -> String
   ): PlayerManifestTOCItem {
     val title =
@@ -333,18 +357,16 @@ object PlayerManifestTOCs {
 
     val duration =
       Duration.standardSeconds((item.link.duration ?: 1L).toLong())
-    val lower =
+    val lower: PlayerMillisecondsAbsolute =
       offset
-    val upper =
-      offset + (Math.max(0, duration.millis - 1))
+    val upper: PlayerMillisecondsAbsolute =
+      PlayerMillisecondsAbsolute(offset.value + (Math.max(0, duration.millis - 1)))
 
     return PlayerManifestTOCItem(
       index = index,
       title = title,
       chapter = index + 1,
-      intervalAbsoluteMilliseconds = IntervalL(lower, upper),
-      readingOrderLink = item,
-      readingOrderOffsetMilliseconds = 0L
+      intervalAbsoluteMilliseconds = PlayerMillisecondsAbsoluteInterval(lower, upper)
     )
   }
 

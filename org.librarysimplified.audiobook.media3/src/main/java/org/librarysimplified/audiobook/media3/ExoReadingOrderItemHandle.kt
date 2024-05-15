@@ -9,6 +9,8 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsoluteInterval
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 
 /**
  * A spine element in an audio book.
@@ -17,9 +19,9 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 class ExoReadingOrderItemHandle(
   private val downloadStatusEvents: PublishSubject<PlayerReadingOrderItemDownloadStatus>,
   val itemManifest: ExoManifestMutableReadingOrderItem,
-  internal var nextElement: PlayerReadingOrderItemType?,
-  internal var previousElement: PlayerReadingOrderItemType?,
-  @Volatile override var duration: Duration?
+  val interval: PlayerMillisecondsAbsoluteInterval,
+  internal var nextElement: ExoReadingOrderItemHandle?,
+  internal var previousElement: ExoReadingOrderItemHandle?
 ) : PlayerReadingOrderItemType {
 
   /**
@@ -37,11 +39,14 @@ class ExoReadingOrderItemHandle(
   override val book: PlayerAudioBookType
     get() = this.bookActual
 
-  override val next: PlayerReadingOrderItemType?
+  override val next: ExoReadingOrderItemHandle?
     get() = this.nextElement
 
-  override val previous: PlayerReadingOrderItemType?
+  override val previous: ExoReadingOrderItemHandle?
     get() = this.previousElement
+
+  override val duration: Duration
+    get() = Duration.millis(this.interval.size().value)
 
   fun setBook(book: ExoAudioBook) {
     this.bookActual = book
@@ -65,5 +70,5 @@ class ExoReadingOrderItemHandle(
     this.itemManifest.index
 
   override val startingPosition: PlayerPosition =
-    PlayerPosition(this.id, 0L)
+    PlayerPosition(this.id, PlayerMillisecondsReadingOrderItem(0L))
 }

@@ -13,6 +13,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestScalar
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCs
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseResult
@@ -840,7 +841,7 @@ class PlayerManifestTest {
     var tocTotal = 0L
     tocItems.tocItemsInOrder.forEachIndexed { index, toc ->
       val size = toc.intervalAbsoluteMilliseconds.size()
-      tocTotal += size
+      tocTotal += size.value
       println("[$index] Size $size | Total $tocTotal | Item $toc")
     }
 
@@ -851,11 +852,11 @@ class PlayerManifestTest {
 
     val readingOrderIntervalsSum =
       tocItems.readingOrderIntervals.values.sumOf {
-        i -> (i.upper - i.lower) + 1
+        i -> (i.upper - i.lower).value + 1
       }
     val tocItemIntervalsSum =
       tocItems.tocItemsInOrder.sumOf {
-          i -> (i.intervalAbsoluteMilliseconds.upper - i.intervalAbsoluteMilliseconds.lower) + 1
+          i -> (i.intervalAbsoluteMilliseconds.upper - i.intervalAbsoluteMilliseconds.lower).value + 1
       }
 
     assertEquals(
@@ -872,7 +873,7 @@ class PlayerManifestTest {
     for (item in manifest.readingOrder) {
       val duration = (item.link.duration ?: 1).toLong() + 10
       for (time in 0..duration) {
-        val tocItem = tocItems.lookupTOCItem(item.id, time)
+        val tocItem = tocItems.lookupTOCItem(item.id, PlayerMillisecondsReadingOrderItem(time))
         assertNotNull(tocItem, "TOC item for ${item.id} time $time must not be null")
       }
     }
@@ -990,10 +991,10 @@ class PlayerManifestTest {
       PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
 
     assertEquals(4, tocItems.tocItemsInOrder.size)
-    assertEquals(0, tocItems.tocItemsInOrder[0].readingOrderOffsetMilliseconds)
-    assertEquals(10000, tocItems.tocItemsInOrder[1].readingOrderOffsetMilliseconds)
-    assertEquals(20000, tocItems.tocItemsInOrder[2].readingOrderOffsetMilliseconds)
-    assertEquals(30000, tocItems.tocItemsInOrder[3].readingOrderOffsetMilliseconds)
+    assertEquals(0, tocItems.tocItemsInOrder[0].intervalAbsoluteMilliseconds.lower.value)
+    assertEquals(10000, tocItems.tocItemsInOrder[1].intervalAbsoluteMilliseconds.lower.value)
+    assertEquals(20000, tocItems.tocItemsInOrder[2].intervalAbsoluteMilliseconds.lower.value)
+    assertEquals(30000, tocItems.tocItemsInOrder[3].intervalAbsoluteMilliseconds.lower.value)
 
     this.checkTOCInvariants(tocItems, manifest)
   }

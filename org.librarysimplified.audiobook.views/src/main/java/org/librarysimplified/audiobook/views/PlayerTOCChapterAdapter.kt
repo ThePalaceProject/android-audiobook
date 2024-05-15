@@ -18,11 +18,6 @@ import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
@@ -80,41 +75,11 @@ class PlayerTOCChapterAdapter(
     holder.titleText.text =
       tocItem.title
 
-    val readingOrderItem =
-      this.book.readingOrderByID[tocItem.readingOrderLink.id]!!
-
     var requiresDownload = false
     var failedDownload = false
     var downloading = false
 
-    val status = readingOrderItem.downloadStatus
-    holder.buttons.visibility = if (status !is PlayerReadingOrderItemDownloaded) {
-      VISIBLE
-    } else {
-      GONE
-    }
-
-    when (status) {
-      is PlayerReadingOrderItemNotDownloaded -> {
-        // Nothing to do
-      }
-
-      is PlayerReadingOrderItemDownloading -> {
-        // Nothing to do
-      }
-
-      is PlayerReadingOrderItemDownloaded -> {
-        holder.view.isEnabled = true
-      }
-
-      is PlayerReadingOrderItemDownloadFailed -> {
-        // Nothing to do
-      }
-
-      is PlayerReadingOrderItemDownloadExpired -> {
-        // Nothing to do.
-      }
-    }
+    holder.buttons.visibility = GONE
 
     val view = holder.view
     view.tag = tocItem

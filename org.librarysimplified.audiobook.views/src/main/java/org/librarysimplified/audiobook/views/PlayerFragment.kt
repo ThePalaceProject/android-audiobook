@@ -35,8 +35,6 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
-import org.librarysimplified.audiobook.api.PlayerPositionMetadata
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.EndOfChapter
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.Off
@@ -47,12 +45,15 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent.PlayerSleepTime
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Paused
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Running
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Stopped
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
+import org.slf4j.LoggerFactory
 
 class PlayerFragment : PlayerBaseFragment() {
 
@@ -94,15 +95,10 @@ class PlayerFragment : PlayerBaseFragment() {
    * player publishes a playback event. This violates our rule of having stateless fragments,
    * but it should be harmless as playback events are very frequent; the window of opportunity
    * for the code to view stale state is tiny.
-   *
-   * In practice, we store offset of the current TOC item from the start of the reading order
-   * item that contains it. This allows us to set the maximum value of the slider to the duration
-   * of the TOC item in milliseconds, and then use these values to calculate the reading order
-   * item offset to pass to the player for seek operations.
    */
 
   @Volatile
-  private var playerPositionMin: Long = 0
+  private var playerPositionMin: PlayerMillisecondsAbsolute = PlayerMillisecondsAbsolute(0)
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -185,7 +181,11 @@ class PlayerFragment : PlayerBaseFragment() {
     this.subscriptions = CompositeDisposable()
     this.subscriptions.add(PlayerModel.playerEvents.subscribe { event -> this.onPlayerEvent(event) })
     this.subscriptions.add(PlayerSleepTimer.events.subscribe { event -> this.onSleepTimerEvent(event) })
-    this.subscriptions.add(PlayerModel.viewCommands.subscribe { event -> this.onPlayerViewCommand(event) })
+    this.subscriptions.add(PlayerModel.viewCommands.subscribe { event ->
+      this.onPlayerViewCommand(
+        event
+      )
+    })
     this.subscriptions.add(PlayerModel.downloadEvents.subscribe { event -> this.onDownloadEvent() })
 
     if (PlayerModel.isPlaying) {
@@ -237,6 +237,7 @@ class PlayerFragment : PlayerBaseFragment() {
             return
           }
         }
+
         PlayerDownloadTaskStatus.Failed,
         PlayerDownloadTaskStatus.IdleDownloaded,
         PlayerDownloadTaskStatus.IdleNotDownloaded -> {
@@ -264,6 +265,7 @@ class PlayerFragment : PlayerBaseFragment() {
             return
           }
         }
+
         PlayerDownloadTaskStatus.Failed,
         PlayerDownloadTaskStatus.IdleDownloaded,
         PlayerDownloadTaskStatus.IdleNotDownloaded -> {
@@ -302,6 +304,7 @@ class PlayerFragment : PlayerBaseFragment() {
       PlayerViewCoverImageChanged -> {
         this.coverView.setImageBitmap(PlayerModel.coverImage)
       }
+
       PlayerViewNavigationCloseAll,
       PlayerViewNavigationPlaybackRateMenuOpen,
       PlayerViewNavigationSleepMenuOpen,
@@ -506,11 +509,7 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onPlayerEventPlaybackProgressUpdate(
     event: PlayerEventPlaybackProgressUpdate
   ) {
-    this.onEventUpdateTimeRelatedUI(
-      readingOrderItem = event.readingOrderItem,
-      readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
-      positionMetadata = event.positionMetadata,
-    )
+    this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
   @UiThread
@@ -527,11 +526,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerPosition.isEnabled = true
 
-    this.onEventUpdateTimeRelatedUI(
-      readingOrderItem = event.readingOrderItem,
-      readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
-      positionMetadata = event.positionMetadata,
-    )
+    this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
   @UiThread
@@ -544,11 +539,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
-    this.onEventUpdateTimeRelatedUI(
-      readingOrderItem = event.readingOrderItem,
-      readingOrderItemOffsetMilliseconds = 0,
-      positionMetadata = event.positionMetadata,
-    )
+    this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
   @UiThread
@@ -561,11 +552,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
-    this.onEventUpdateTimeRelatedUI(
-      readingOrderItem = event.readingOrderItem,
-      readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
-      positionMetadata = event.positionMetadata,
-    )
+    this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
   @UiThread
@@ -578,11 +565,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
-    this.onEventUpdateTimeRelatedUI(
-      readingOrderItem = event.readingOrderItem,
-      readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
-      positionMetadata = event.positionMetadata,
-    )
+    this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
   @UiThread
@@ -597,11 +580,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.setButtonToShowPlay()
 
-    this.onEventUpdateTimeRelatedUI(
-      readingOrderItem = event.readingOrderItem,
-      readingOrderItemOffsetMilliseconds = event.readingOrderItemOffsetMilliseconds,
-      positionMetadata = event.positionMetadata,
-    )
+    this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
   @UiThread
@@ -615,11 +594,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.setButtonToShowPlay()
 
-    this.onEventUpdateTimeRelatedUI(
-      readingOrderItem = event.readingOrderItem,
-      readingOrderItemOffsetMilliseconds = event.readingOrderItemOffsetMilliseconds,
-      positionMetadata = event.positionMetadata,
-    )
+    this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
   override fun onStop() {
@@ -657,34 +632,35 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onReleasedPlayerPositionBar() {
     val tocItemOffsetMilliseconds =
       this.playerPosition.progress.toLong()
-    val readingOrderItemOffsetMilliseconds =
-      this.playerPositionMin + tocItemOffsetMilliseconds
+    val newOffset: PlayerMillisecondsAbsolute =
+      PlayerMillisecondsAbsolute(this.playerPositionMin.value + tocItemOffsetMilliseconds)
 
-    PlayerModel.seekTo(readingOrderItemOffsetMilliseconds)
+    PlayerModel.movePlayheadToAbsoluteTime(newOffset)
   }
 
   private fun onEventUpdateTimeRelatedUI(
-    readingOrderItem: PlayerReadingOrderItemType,
-    readingOrderItemOffsetMilliseconds: Long,
-    positionMetadata: PlayerPositionMetadata,
+    positionMetadata: PlayerManifestPositionMetadata,
   ) {
-    /*
-     * The number of milliseconds into the TOC item is the current reading order offset milliseconds
-     * minus the offset of the TOC item.
-     */
+    val lower =
+      positionMetadata.tocItem.intervalAbsoluteMilliseconds.lower()
+    val upperRelative =
+      positionMetadata.tocItem.intervalAbsoluteMilliseconds.size().value.toInt()
+    val progress =
+      positionMetadata.tocItemPosition.millis.toInt()
 
-    val tocItemOffsetMilliseconds =
-      Math.max(0, readingOrderItemOffsetMilliseconds - positionMetadata.tocItem.readingOrderOffsetMilliseconds)
+    run {
+      val log = LoggerFactory.getLogger(PlayerFragment::class.java)
+      log.debug("LOWER:          {}", lower)
+      log.debug("UPPER RELATIVE: {}", upperRelative)
+      log.debug("PROGRESS:       {}", progress)
+      log.debug("--")
+    }
 
-    this.playerPositionMin =
-      positionMetadata.tocItem.readingOrderOffsetMilliseconds
-    this.playerPosition.max =
-      positionMetadata.tocItem.durationMilliseconds.toInt()
-
+    this.playerPositionMin = lower
+    this.playerPosition.max = upperRelative
     this.playerPosition.isEnabled = true
-
     if (!this.playerPositionDragging) {
-      this.playerPosition.progress = tocItemOffsetMilliseconds.toInt()
+      this.playerPosition.progress = progress
     }
 
     this.playerChapterTitle.text = positionMetadata.tocItem.title
@@ -698,27 +674,23 @@ class PlayerFragment : PlayerBaseFragment() {
       )
 
     this.playerTimeRemaining.text =
-      PlayerTimeStrings.remainingTOCItemTime(
-        positionMetadata.tocItem.duration.minus(
-          Duration.millis(tocItemOffsetMilliseconds)
-        )
-      )
+      PlayerTimeStrings.remainingTOCItemTime(positionMetadata.tocItemRemaining)
 
     this.playerTimeRemaining.contentDescription =
       PlayerTimeStrings.remainingTOCItemTimeSpoken(
         translations = timeStrings,
-        time = positionMetadata.tocItem.duration.minus(Duration.millis(tocItemOffsetMilliseconds))
+        time = positionMetadata.tocItemRemaining
       )
 
     this.playerTimeCurrent.text =
       PlayerTimeStrings.elapsedTOCItemTime(
-        time = Duration.millis(tocItemOffsetMilliseconds)
+        time = positionMetadata.tocItemPosition
       )
 
     this.playerTimeCurrent.contentDescription =
       PlayerTimeStrings.elapsedTOCItemTimeSpoken(
         translations = timeStrings,
-        time = Duration.millis(tocItemOffsetMilliseconds)
+        time = positionMetadata.tocItemPosition
       )
   }
 

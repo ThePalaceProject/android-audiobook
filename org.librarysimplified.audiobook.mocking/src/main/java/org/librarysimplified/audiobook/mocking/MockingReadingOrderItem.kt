@@ -7,6 +7,7 @@ import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 
 /**
  * A fake spine element in a fake audio book.
@@ -26,7 +27,7 @@ class MockingReadingOrderItem(
     get() = this.downloadTasksAreSupported
 
   override val startingPosition: PlayerPosition
-    get() = PlayerPosition(this.id, 0L)
+    get() = PlayerPosition(this.id, PlayerMillisecondsReadingOrderItem(0L))
 
   override val book: PlayerAudioBookType
     get() = this.bookMocking

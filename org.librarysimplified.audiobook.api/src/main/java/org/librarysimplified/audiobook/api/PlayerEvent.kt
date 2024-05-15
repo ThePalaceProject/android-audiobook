@@ -1,5 +1,8 @@
 package org.librarysimplified.audiobook.api
 
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
+
 /**
  * The type of events signalled by the player.
  */
@@ -27,7 +30,7 @@ sealed class PlayerEvent {
 
   data class PlayerEventError(
     val readingOrderItem: PlayerReadingOrderItemType?,
-    val offsetMilliseconds: Long,
+    val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
     val exception: java.lang.Exception?,
     val errorCode: Int
   ) : PlayerEvent()
@@ -44,7 +47,7 @@ sealed class PlayerEvent {
      * The player position metadata.
      */
 
-    abstract val positionMetadata: PlayerPositionMetadata
+    abstract val positionMetadata: PlayerManifestPositionMetadata
 
     /**
      * Whether the audio data is coming from a downloaded file, or streaming from the network.
@@ -58,8 +61,8 @@ sealed class PlayerEvent {
 
     data class PlayerEventPlaybackStarted(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long,
-      override val positionMetadata: PlayerPositionMetadata,
+      val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
@@ -70,8 +73,8 @@ sealed class PlayerEvent {
 
     data class PlayerEventPlaybackBuffering(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long,
-      override val positionMetadata: PlayerPositionMetadata,
+      val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
@@ -83,8 +86,8 @@ sealed class PlayerEvent {
 
     data class PlayerEventPlaybackPreparing(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long,
-      override val positionMetadata: PlayerPositionMetadata,
+      val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
@@ -95,8 +98,8 @@ sealed class PlayerEvent {
 
     data class PlayerEventPlaybackWaitingForAction(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long,
-      override val positionMetadata: PlayerPositionMetadata,
+      val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
@@ -107,8 +110,8 @@ sealed class PlayerEvent {
 
     data class PlayerEventPlaybackProgressUpdate(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val offsetMilliseconds: Long,
-      override val positionMetadata: PlayerPositionMetadata,
+      val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
@@ -119,7 +122,7 @@ sealed class PlayerEvent {
 
     data class PlayerEventChapterCompleted(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      override val positionMetadata: PlayerPositionMetadata,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
@@ -130,7 +133,7 @@ sealed class PlayerEvent {
 
     data class PlayerEventChapterWaiting(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      override val positionMetadata: PlayerPositionMetadata,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
@@ -140,8 +143,8 @@ sealed class PlayerEvent {
 
     data class PlayerEventPlaybackPaused(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val readingOrderItemOffsetMilliseconds: Long,
-      override val positionMetadata: PlayerPositionMetadata,
+      val readingOrderItemOffsetMilliseconds: PlayerMillisecondsReadingOrderItem,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
@@ -151,8 +154,8 @@ sealed class PlayerEvent {
 
     data class PlayerEventPlaybackStopped(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val readingOrderItemOffsetMilliseconds: Long,
-      override val positionMetadata: PlayerPositionMetadata,
+      val readingOrderItemOffsetMilliseconds: PlayerMillisecondsReadingOrderItem,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
     ) : PlayerEventWithPosition()
 
@@ -164,8 +167,8 @@ sealed class PlayerEvent {
 
     data class PlayerEventCreateBookmark(
       override val readingOrderItem: PlayerReadingOrderItemType,
-      val readingOrderItemOffsetMilliseconds: Long,
-      override val positionMetadata: PlayerPositionMetadata,
+      val readingOrderItemOffsetMilliseconds: PlayerMillisecondsReadingOrderItem,
+      override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean,
       val bookmarkMetadata: PlayerBookmarkMetadata,
       val kind: PlayerBookmarkKind

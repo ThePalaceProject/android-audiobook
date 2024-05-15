@@ -7,6 +7,7 @@ import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
 import org.librarysimplified.audiobook.api.PlayerBookmarkMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.ObjectInputStream
@@ -75,7 +76,7 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
       return PlayerBookmark(
         kind = this.kind,
         readingOrderID = PlayerManifestReadingOrderID(this.position.id.value),
-        offsetMilliseconds = this.position.offset,
+        offsetMilliseconds = PlayerMillisecondsReadingOrderItem(this.position.offset),
         metadata = this.metadata.toMetadata()
       )
     }
@@ -127,7 +128,7 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
       ?.remove(
         SerializablePosition(
           SerializableReadingOrderID(bookmark.readingOrderID.text),
-          bookmark.offsetMilliseconds
+          bookmark.offsetMilliseconds.value
         )
       )
     this.ioExecutor.execute { this.saveMap() }
@@ -142,7 +143,7 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
     val position =
       SerializablePosition(
         id = SerializableReadingOrderID(bookmark.readingOrderID.text),
-        offset = bookmark.offsetMilliseconds
+        offset = bookmark.offsetMilliseconds.value
       )
 
     val serializableBookID =
@@ -185,7 +186,7 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
       bookId = SerializableBookID(bookId),
       position = SerializablePosition(
         id = SerializableReadingOrderID(bookmark.readingOrderID.text),
-        offset = bookmark.offsetMilliseconds
+        offset = bookmark.offsetMilliseconds.value
       ),
       metadata = SerializableMetadata(
         chapterTitle = bookmark.metadata.chapterTitle,

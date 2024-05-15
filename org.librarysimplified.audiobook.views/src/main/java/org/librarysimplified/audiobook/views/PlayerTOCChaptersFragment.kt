@@ -16,7 +16,6 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition
-import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
@@ -92,13 +91,7 @@ class PlayerTOCChaptersFragment : Fragment() {
   }
 
   private fun onTOCItemSelected(item: PlayerManifestTOCItem) {
-    PlayerModel.movePlayheadTo(
-      PlayerPosition(
-        item.readingOrderLink.id,
-        item.readingOrderOffsetMilliseconds
-      )
-    )
-
+    PlayerModel.movePlayheadToAbsoluteTime(item.intervalAbsoluteMilliseconds.lower)
     PlayerUIThread.runOnUIThreadDelayed({
       PlayerModel.submitViewCommand(PlayerViewCommand.PlayerViewNavigationTOCClose)
     }, 250L)

@@ -15,6 +15,9 @@ import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUIThread.runOnUIThread
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsoluteInterval
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -172,7 +175,7 @@ class FindawayPlayer(
     this.log.debug("[{}]: opSkipToPreviousChapter: {}", this.id, offset)
     PlayerUIThread.checkIsUIThread()
 
-    this.engineAdapter.skipToPreviousChapter(offset)
+    this.engineAdapter.skipToPreviousChapter()
   }
 
   private fun opSkipToNextChapter(
@@ -181,7 +184,7 @@ class FindawayPlayer(
     this.log.debug("[{}]: opSkipToNextChapter: {}", this.id, offset)
     PlayerUIThread.checkIsUIThread()
 
-    this.engineAdapter.skipToNextChapter(offset)
+    this.engineAdapter.skipToNextChapter()
   }
 
   private fun opBookmarkDelete(bookmark: PlayerBookmark) {
@@ -243,26 +246,6 @@ class FindawayPlayer(
     }
   }
 
-  override fun skipToNextChapter(
-    offset: Long
-  ) {
-    this.checkNotClosed()
-
-    runOnUIThread {
-      this.opSkipToNextChapter(offset)
-    }
-  }
-
-  override fun skipToPreviousChapter(
-    offset: Long
-  ) {
-    this.checkNotClosed()
-
-    runOnUIThread {
-      this.opSkipToPreviousChapter(offset)
-    }
-  }
-
   override val events: Observable<PlayerEvent>
     get() = this.eventSource
 
@@ -282,19 +265,57 @@ class FindawayPlayer(
     }
   }
 
+  override fun movePlayheadToAbsoluteTime(milliseconds: PlayerMillisecondsAbsolute) {
+    this.checkNotClosed()
+
+    runOnUIThread {
+      this.log.debug("opSeekTo")
+
+      val readingOrderItems =
+        this.book.tableOfContents.readingOrderItemTree.overlapping(
+          PlayerMillisecondsAbsoluteInterval(milliseconds, milliseconds)
+        )
+
+      if (readingOrderItems.isEmpty()) {
+        this.log.warn("opSeekTo: No reading order item overlaps absolute time {}ms", milliseconds)
+        return@runOnUIThread
+      }
+
+      val readingOrderItemInterval =
+        readingOrderItems.first()
+      val readingOrderItemID =
+        this.book.tableOfContents.readingOrderItemsByInterval[readingOrderItemInterval]
+
+      if (readingOrderItemID == null) {
+        this.log.warn("opSeekTo:  No reading order item for interval {}", readingOrderItemInterval)
+        return@runOnUIThread
+      }
+
+      val readingOrderItem =
+        this.book.readingOrderByID[readingOrderItemID]
+
+      if (readingOrderItem == null) {
+        this.log.warn("opSeekTo:  No reading order item for ID {}", readingOrderItemID)
+        return@runOnUIThread
+      }
+
+      val offset =
+        PlayerMillisecondsReadingOrderItem((milliseconds - readingOrderItem.interval.lower).value)
+
+      this.engineAdapter.movePlayheadToLocation(
+        PlayerPosition(
+          readingOrderID = readingOrderItemID,
+          offsetMilliseconds = offset
+        )
+      )
+    }
+  }
+
   override fun movePlayheadToBookStart() {
     this.checkNotClosed()
 
     runOnUIThread {
       this.engineAdapter.movePlayheadToLocation(this.book.readingOrder.first().startingPosition)
-    }
-  }
-
-  override fun seekTo(milliseconds: Long) {
-    this.checkNotClosed()
-
-    runOnUIThread {
-      this.engineAdapter.seekTo(milliseconds)
     }
   }
 

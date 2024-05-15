@@ -42,7 +42,7 @@ interface PlayerReadingOrderItemType {
    * The length of the reading order item, if available.
    */
 
-  val duration: Duration?
+  val duration: Duration
 
   /**
    * The unique identifier for the reading order item.

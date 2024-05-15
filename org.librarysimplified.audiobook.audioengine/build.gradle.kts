@@ -12,6 +12,7 @@ dependencies {
     implementation(libs.irradia.mime.api)
     implementation(libs.irradia.mime.vanilla)
     implementation(libs.joda.time)
+    implementation(libs.kabstand)
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)

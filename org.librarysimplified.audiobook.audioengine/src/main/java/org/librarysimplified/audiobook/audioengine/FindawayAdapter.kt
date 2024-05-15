@@ -22,10 +22,11 @@ import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
-import org.librarysimplified.audiobook.api.PlayerPositionMetadata
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.Logger
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -92,10 +93,10 @@ class FindawayAdapter(
     this.mostRecentPosition =
       FindawayPlayerPosition(
         readingOrderItem = this.book.readingOrder.first(),
-        readingOrderItemOffsetMilliseconds = 0L,
+        readingOrderItemOffsetMilliseconds = PlayerMillisecondsReadingOrderItem(0L),
         part = this.book.readingOrder.first().itemManifest.part,
         chapter = this.book.readingOrder.first().itemManifest.sequence,
-        tocItem = this.tocItemFor(this.book.readingOrder.first().id, 0L),
+        tocItem = this.tocItemFor(this.book.readingOrder.first().id, PlayerMillisecondsReadingOrderItem(0L)),
         totalBookDurationRemaining = Duration.millis(0L)
       )
 
@@ -124,7 +125,7 @@ class FindawayAdapter(
 
   private fun tocItemFor(
     readingOrderID: PlayerManifestReadingOrderID,
-    offsetMilliseconds: Long
+    offsetMilliseconds: PlayerMillisecondsReadingOrderItem
   ): PlayerManifestTOCItem {
     val toc =
       this.book.tableOfContents
@@ -356,24 +357,31 @@ class FindawayAdapter(
 
   private fun positionMetadataFor(
     position: FindawayPlayerPosition
-  ): PlayerPositionMetadata {
+  ): PlayerManifestPositionMetadata {
     val bookProgressEstimate =
       position.readingOrderItem.index.toDouble() / this.book.readingOrder.size.toDouble()
 
+    val itemPosition =
+      Duration.millis(position.readingOrderItemOffsetMilliseconds.value)
     val chapterDuration =
       position.readingOrderItem.duration
+    val itemRemaining =
+      chapterDuration.minus(itemPosition)
+
     val chapterProgressEstimate =
       if (chapterDuration != null) {
-        position.readingOrderItemOffsetMilliseconds.toDouble() / chapterDuration.millis.toDouble()
+        position.readingOrderItemOffsetMilliseconds.value.toDouble() / chapterDuration.millis.toDouble()
       } else {
         0.0
       }
 
-    return PlayerPositionMetadata(
+    return PlayerManifestPositionMetadata(
       tocItem = position.tocItem,
       totalRemainingBookTime = position.totalBookDurationRemaining,
       chapterProgressEstimate = chapterProgressEstimate,
-      bookProgressEstimate = bookProgressEstimate
+      bookProgressEstimate = bookProgressEstimate,
+      tocItemPosition = itemPosition,
+      tocItemRemaining = itemRemaining
     )
   }
 
@@ -506,7 +514,7 @@ class FindawayAdapter(
     val chapter =
       this.engine.playbackEngine.chapter ?: return
     val offsetMilliseconds =
-      this.engine.playbackEngine.position
+      PlayerMillisecondsReadingOrderItem(this.engine.playbackEngine.position)
 
     this.logger.debug(
       "[{}]: saveLocation: {} {} {} {}",
@@ -540,9 +548,10 @@ class FindawayAdapter(
 
     val tocItem =
       this.tocItemFor(readingOrderItem.id, offsetMilliseconds)
+
     val totalRemaining =
       this.book.tableOfContents.totalDurationRemaining(
-        tocItem = tocItem,
+        readingOrderItemID = readingOrderItem.id,
         readingOrderItemOffsetMilliseconds = offsetMilliseconds
       )
 
@@ -592,7 +601,7 @@ class FindawayAdapter(
         contentId = this.book.findawayManifest.fulfillmentId,
         part = item.itemManifest.part,
         chapter = item.itemManifest.sequence,
-        position = playhead.offsetMilliseconds
+        position = playhead.offsetMilliseconds.value
       )
 
     this.engine.playbackEngine.play(request)
@@ -634,7 +643,7 @@ class FindawayAdapter(
     val position =
       this.mostRecentPosition
     val nextMs =
-      position.readingOrderItemOffsetMilliseconds + milliseconds
+      position.readingOrderItemOffsetMilliseconds.value + milliseconds
 
     /*
      * The target time might be before the start of the current chapter.
@@ -642,7 +651,7 @@ class FindawayAdapter(
 
     if (nextMs < 0) {
       if (position.readingOrderItem.index > 0) {
-        this.skipToPreviousChapter(nextMs)
+        this.skipToPreviousChapter()
         return
       }
 
@@ -650,7 +659,7 @@ class FindawayAdapter(
        * There isn't a "previous" chapter. Just seek to the start of the current one.
        */
 
-      this.seekTo(0L)
+      this.seekTo(PlayerMillisecondsReadingOrderItem(0L))
       return
     }
 
@@ -658,25 +667,15 @@ class FindawayAdapter(
      * The seek location is within the current chapter.
      */
 
-    this.seekTo(nextMs)
+    this.seekTo(PlayerMillisecondsReadingOrderItem(nextMs))
   }
 
-  fun skipToPreviousChapter(
-    milliseconds: Long
-  ) {
-    assert(milliseconds >= 0) { "Milliseconds must not be negative" }
-
+  fun skipToPreviousChapter() {
     this.engine.playbackEngine.previousChapter()
-    this.seekTo(milliseconds)
   }
 
-  fun skipToNextChapter(
-    milliseconds: Long
-  ) {
-    assert(milliseconds >= 0) { "Milliseconds must not be negative" }
-
+  fun skipToNextChapter() {
     this.engine.playbackEngine.nextChapter()
-    this.seekTo(milliseconds)
   }
 
   fun skipForward(
@@ -691,16 +690,10 @@ class FindawayAdapter(
     val position =
       this.mostRecentPosition
     val nextMs =
-      position.readingOrderItemOffsetMilliseconds + milliseconds
-
-    /*
-     * We need to know the duration of the current chapter. This information might not
-     * be available; if it isn't, we pick an absurdly large value so that seeking only
-     * ever happens within the current chapter.
-     */
+      position.readingOrderItemOffsetMilliseconds.value + milliseconds
 
     val duration =
-      position.readingOrderItem.duration ?: Duration.standardDays(365L)
+      position.readingOrderItem.duration
 
     if (nextMs > duration.millis) {
       val nextChapter = position.readingOrderItem.next
@@ -710,7 +703,7 @@ class FindawayAdapter(
        */
 
       if (nextChapter != null) {
-        this.skipToNextChapter(0L)
+        this.skipToNextChapter()
         return
       }
 
@@ -725,14 +718,12 @@ class FindawayAdapter(
      * The seek location is within the current chapter.
      */
 
-    this.seekTo(nextMs)
+    this.seekTo(PlayerMillisecondsReadingOrderItem(nextMs))
   }
 
   fun seekTo(
-    milliseconds: Long
+    milliseconds: PlayerMillisecondsReadingOrderItem
   ) {
-    assert(milliseconds >= 0) { "Milliseconds must not be negative" }
-
     /*
      * The Findaway player will ignore seek requests if it isn't currently playing.
      *
@@ -753,7 +744,7 @@ class FindawayAdapter(
         contentId = this.book.findawayManifest.fulfillmentId,
         part = position.part,
         chapter = position.chapter,
-        position = milliseconds
+        position = milliseconds.value
       )
 
     when (this.intention.invoke()) {
@@ -766,7 +757,7 @@ class FindawayAdapter(
          */
 
         if (this.engine.playbackEngine.isPlaying) {
-          this.engine.playbackEngine.seekTo(milliseconds)
+          this.engine.playbackEngine.seekTo(milliseconds.value)
         } else {
           this.engine.playbackEngine.play(request)
         }
@@ -783,7 +774,7 @@ class FindawayAdapter(
          */
 
         if (this.engine.playbackEngine.isPlaying) {
-          this.engine.playbackEngine.seekTo(milliseconds)
+          this.engine.playbackEngine.seekTo(milliseconds.value)
           this.engine.playbackEngine.pause()
         } else {
           this.engine.playbackEngine.play(request)
@@ -819,7 +810,7 @@ class FindawayAdapter(
         contentId = this.book.findawayManifest.fulfillmentId,
         part = item.itemManifest.part,
         chapter = item.itemManifest.sequence,
-        position = location.offsetMilliseconds
+        position = location.offsetMilliseconds.value
       )
 
     this.engine.playbackEngine.play(request)

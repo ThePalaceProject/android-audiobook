@@ -15,7 +15,6 @@ import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
@@ -207,8 +206,8 @@ class FindawayAudioBook private constructor(
       var spineItemPrevious: FindawayReadingOrderItem? = null
 
       manifest.readingOrderItems.forEach { spineItem ->
-        val duration =
-          Duration.standardSeconds(Math.floor(spineItem.duration).toLong())
+        val interval =
+          manifest.toc.readingOrderIntervals[spineItem.id]!!
 
         val element =
           FindawayReadingOrderItem(
@@ -217,7 +216,7 @@ class FindawayAudioBook private constructor(
             index = index,
             nextElement = null,
             prevElement = spineItemPrevious,
-            duration = duration
+            interval = interval
           )
 
         val downloadTask = FindawayChapterDownloadTask(

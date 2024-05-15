@@ -1,0 +1,53 @@
+{
+  "@context": [
+    "http://readium.org/webpub/default.jsonld"
+  ],
+
+  "readingOrder": [
+    {
+      "title": "Track 0",
+      "href": "https://ataxia.io7m.com/2024/05/15/book2/item01.ogg",
+      "duration": 10.0,
+      "type": "audio/ogg"
+    },
+    {
+      "title": "Track 1",
+      "href": "https://ataxia.io7m.com/2024/05/15/book2/item02.ogg",
+      "duration": 10.0,
+      "type": "audio/ogg"
+    },
+    {
+      "title": "Track 2",
+      "href": "https://ataxia.io7m.com/2024/05/15/book2/item03.ogg",
+      "duration": 10.0,
+      "type": "audio/ogg"
+    },
+    {
+      "title": "Track 3",
+      "href": "https://ataxia.io7m.com/2024/05/15/book2/item04.ogg",
+      "duration": 5.0,
+      "type": "audio/ogg"
+    }
+  ],
+
+  "toc": [
+    {
+      "href": "https://ataxia.io7m.com/2024/05/15/book2/item01.ogg#t=0",
+      "title": "Shadow Dancer + Crackdown"
+    },
+    {
+      "href": "https://ataxia.io7m.com/2024/05/15/book2/item02.ogg#t=5",
+      "title": "Crackdown + Alisia Dragoon"
+    },
+    {
+      "href": "https://ataxia.io7m.com/2024/05/15/book2/item03.ogg#t=5",
+      "title": "Alisia Dragoon + Gunstar Heroes"
+    }
+  ],
+
+  "metadata": {
+    "title": "Random Game Audio 2",
+    "identifier": "urn:uuid:0691e31f-d692-4abb-a732-c1cabe124a7d"
+  }
+}
+

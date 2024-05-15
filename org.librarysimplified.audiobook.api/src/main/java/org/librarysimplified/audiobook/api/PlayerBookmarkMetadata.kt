@@ -2,6 +2,7 @@ package org.librarysimplified.audiobook.api
 
 import org.joda.time.DateTime
 import org.joda.time.Duration
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
 
 /**
  * Informative, non-critical information included with a bookmark for display purposes.
@@ -47,7 +48,7 @@ data class PlayerBookmarkMetadata(
      */
 
     fun fromPositionMetadata(
-      positionMetadata: PlayerPositionMetadata,
+      positionMetadata: PlayerManifestPositionMetadata,
       creationTime: DateTime,
     ): PlayerBookmarkMetadata {
       return PlayerBookmarkMetadata(
@@ -64,7 +65,7 @@ data class PlayerBookmarkMetadata(
      */
 
     fun fromPositionMetadata(
-      positionMetadata: PlayerPositionMetadata
+      positionMetadata: PlayerManifestPositionMetadata
     ): PlayerBookmarkMetadata {
       return this.fromPositionMetadata(positionMetadata, DateTime.now())
     }

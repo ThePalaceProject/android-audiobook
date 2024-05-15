@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.api
 
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 
 /**
  * A bookmark.
@@ -9,7 +10,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 data class PlayerBookmark(
   val kind: PlayerBookmarkKind,
   val readingOrderID: PlayerManifestReadingOrderID,
-  val offsetMilliseconds: Long,
+  val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
   val metadata: PlayerBookmarkMetadata
 ) {
   val position: PlayerPosition =

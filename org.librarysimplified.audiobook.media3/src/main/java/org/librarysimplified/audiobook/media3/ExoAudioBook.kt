@@ -20,7 +20,6 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.lang.StringBuilder
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
@@ -206,7 +205,7 @@ class ExoAudioBook private constructor(
             itemManifest = manifestItem,
             previousElement = handlePrevious,
             nextElement = null,
-            duration = null
+            interval = manifest.toc.readingOrderIntervals[manifestItem.item.id]!!
           )
 
         handles.add(handle)
