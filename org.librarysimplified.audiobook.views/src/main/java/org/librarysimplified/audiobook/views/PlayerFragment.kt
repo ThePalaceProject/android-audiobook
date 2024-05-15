@@ -648,14 +648,6 @@ class PlayerFragment : PlayerBaseFragment() {
     val progress =
       positionMetadata.tocItemPosition.millis.toInt()
 
-    run {
-      val log = LoggerFactory.getLogger(PlayerFragment::class.java)
-      log.debug("LOWER:          {}", lower)
-      log.debug("UPPER RELATIVE: {}", upperRelative)
-      log.debug("PROGRESS:       {}", progress)
-      log.debug("--")
-    }
-
     this.playerPositionMin = lower
     this.playerPosition.max = upperRelative
     this.playerPosition.isEnabled = true
