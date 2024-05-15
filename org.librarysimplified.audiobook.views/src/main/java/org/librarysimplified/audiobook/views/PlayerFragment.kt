@@ -53,7 +53,6 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
-import org.slf4j.LoggerFactory
 
 class PlayerFragment : PlayerBaseFragment() {
 
