@@ -2,56 +2,28 @@
 
 <Presets xmlns="urn:org.librarysimplified.audiobook.demo.presets:xml:1">
     <Preset
-        name="Archive.org (The Word Of An Engineer)"
-        location="https://api.archivelab.org/books/wordofengineer_1403.poem_librivox/opds_audio_manifest">
+        name="Reading Order Items / Chapters 1:1"
+        location="https://io7m.github.io/audiobooks/rc11/manifest.json">
         <AuthenticationNone />
     </Preset>
-
     <Preset
-        name="Flatland"
-        location="https://raw.githubusercontent.com/HadrienGardeur/audiobook-manifest/gh-pages/examples/flatland.audiobook-manifest">
+        name="Reading Order Items / Chapters 1:N"
+        location="https://io7m.github.io/audiobooks/rc1N/manifest.json">
         <AuthenticationNone />
     </Preset>
-
     <Preset
-        name="Flatland TOC"
-        location="https://raw.githubusercontent.com/readium/webpub-manifest/master/examples/Flatland/manifest.json">
+        name="Reading Order Items / Chapters N:1"
+        location="https://io7m.github.io/audiobooks/rcN1/manifest.json">
         <AuthenticationNone />
     </Preset>
-
     <Preset
-        name="Archive.org (Tom Sawyer)"
-        location="https://api.archivelab.org/books/tom_sawyer_librivox/opds_audio_manifest">
+        name="Reading Order Items / Chapters N:M"
+        location="https://io7m.github.io/audiobooks/rcNM/manifest.json">
         <AuthenticationNone />
     </Preset>
-
     <Preset
-        name="io7m Demo"
-        location="https://ataxia.io7m.com/2018/08/02/open_access_0.json">
-        <AuthenticationNone />
-    </Preset>
-
-    <Preset
-        name="Random Game Audio"
-        location="https://ataxia.io7m.com/2024/05/13/book.json">
-        <AuthenticationNone />
-    </Preset>
-
-    <Preset
-        name="Random Game Audio 2"
-        location="https://ataxia.io7m.com/2024/05/15/book2/book.json">
-        <AuthenticationNone />
-    </Preset>
-
-    <Preset
-        name="Arc7 Demo"
-        location="https://outland.iw.int.arc7.info/2020/11/30/engineer/open_access_0.json">
-        <AuthenticationNone />
-    </Preset>
-
-    <Preset
-        name="Findaway 0"
-        location="https://outland.iw.int.arc7.info/2024/04/10/audiobook-manifest.json">
+        name="Corrupted Audio"
+        location="https://io7m.github.io/audiobooks/corrupt/manifest.json">
         <AuthenticationNone />
     </Preset>
 </Presets>

@@ -10,6 +10,7 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.slf4j.LoggerFactory
+import java.net.URI
 
 /**
  * A download task capable of fetching an entire book.
@@ -17,7 +18,8 @@ import org.slf4j.LoggerFactory
 
 class FindawayDownloadWholeBookTask(
   private val audioBook: FindawayAudioBook,
-  private val downloadEngine: FindawayDownloadEngineType
+  private val downloadEngine: FindawayDownloadEngineType,
+  override val playbackURI: URI
 ) : PlayerDownloadWholeBookTaskType {
 
   private val log =

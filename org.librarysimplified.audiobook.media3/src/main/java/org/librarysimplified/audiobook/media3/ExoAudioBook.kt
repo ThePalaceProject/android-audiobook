@@ -7,6 +7,7 @@ import io.reactivex.subjects.PublishSubject
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
@@ -30,8 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class ExoAudioBook private constructor(
   private val exoManifest: ExoManifest,
-  override val downloadTasks: List<ExoDownloadTask>,
-  override val downloadTasksByID: Map<PlayerManifestReadingOrderID, ExoDownloadTask>,
+  override val downloadTasks: List<PlayerDownloadTaskType>,
+  override val downloadTasksByID: Map<PlayerManifestReadingOrderID, PlayerDownloadTaskType>,
   private val context: Application,
   private val engineExecutor: ScheduledExecutorService,
   private val contentProtections: List<ContentProtection>,
@@ -40,6 +41,7 @@ class ExoAudioBook private constructor(
   override val readingOrderByID: Map<PlayerManifestReadingOrderID, ExoReadingOrderItemHandle>,
   override val readingOrderElementDownloadStatus: PublishSubject<PlayerReadingOrderItemDownloadStatus>,
   private val missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
+  private val supportsDownloads: Boolean
 ) : PlayerAudioBookType {
 
   private val logger =
@@ -47,12 +49,13 @@ class ExoAudioBook private constructor(
 
   private val isClosedNow =
     AtomicBoolean(false)
-  private val wholeBookTask =
-    ExoDownloadWholeBookTask(this)
 
   private val manifestUpdates =
     PublishSubject.create<Unit>()
       .toSerialized()
+
+  override val wholeBookDownloadTask: PlayerDownloadWholeBookTaskType =
+    ExoDownloadWholeBookTask(this)
 
   override fun createPlayer(): PlayerType {
     check(!this.isClosed) { "Audio book has been closed" }
@@ -65,17 +68,14 @@ class ExoAudioBook private constructor(
     )
   }
 
-  override val supportsStreaming: Boolean
-    get() = false
+  override val supportsStreaming: Boolean =
+    true
 
-  override val supportsIndividualChapterDeletion: Boolean
-    get() = true
+  override val supportsIndividualChapterDeletion: Boolean =
+    this.supportsDownloads
 
-  override val supportsIndividualChapterDownload: Boolean
-    get() = true
-
-  override val wholeBookDownloadTask: PlayerDownloadWholeBookTaskType
-    get() = this.wholeBookTask
+  override val supportsIndividualChapterDownload: Boolean =
+    this.supportsDownloads
 
   override fun replaceManifest(
     manifest: PlayerManifest
@@ -171,7 +171,8 @@ class ExoAudioBook private constructor(
       userAgent: PlayerUserAgent,
       contentProtections: List<ContentProtection>,
       dataSourceFactory: DataSource.Factory,
-      missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType
+      missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
+      supportsDownloads: Boolean
     ): PlayerAudioBookType {
       val directory = this.findDirectoryFor(context, manifest.bookID)
       this.log.debug("Book directory: {}", directory)
@@ -187,9 +188,9 @@ class ExoAudioBook private constructor(
       val handlesById =
         HashMap<PlayerManifestReadingOrderID, ExoReadingOrderItemHandle>()
       val downloadTasksById =
-        HashMap<PlayerManifestReadingOrderID, ExoDownloadTask>()
+        HashMap<PlayerManifestReadingOrderID, PlayerDownloadTaskType>()
       val downloadTasks =
-        ArrayList<ExoDownloadTask>()
+        ArrayList<PlayerDownloadTaskType>()
 
       var handlePrevious: ExoReadingOrderItemHandle? = null
 
@@ -218,17 +219,26 @@ class ExoAudioBook private constructor(
 
         val partFile =
           File(directory, "${manifestItem.index}.part")
+
         val task =
-          ExoDownloadTask(
-            downloadProvider = downloadProvider,
-            downloadStatusExecutor = engineExecutor,
-            extensions = extensions,
-            originalLink = manifestItem.item.link,
-            partFile = partFile,
-            readingOrderItem = handle,
-            userAgent = userAgent,
-            index = manifestItem.index
-          )
+          if (supportsDownloads) {
+            ExoDownloadTask(
+              downloadProvider = downloadProvider,
+              downloadStatusExecutor = engineExecutor,
+              extensions = extensions,
+              originalLink = manifestItem.item.link,
+              partFile = partFile,
+              readingOrderItem = handle,
+              userAgent = userAgent,
+              index = manifestItem.index
+            )
+          } else {
+            ExoDownloadAlwaysSucceededTask(
+              index = manifestItem.index,
+              readingOrderItem = handle,
+              playbackURI = manifestItem.item.link.hrefURI!!
+            )
+          }
 
         downloadTasksById.put(manifestItem.item.id, task)
         downloadTasks.add(task)
@@ -246,7 +256,8 @@ class ExoAudioBook private constructor(
           readingOrderElementDownloadStatus = statusEvents,
           contentProtections = contentProtections,
           dataSourceFactory = dataSourceFactory,
-          missingTrackNameGenerator = missingTrackNameGenerator
+          missingTrackNameGenerator = missingTrackNameGenerator,
+          supportsDownloads = supportsDownloads
         )
 
       for (e in handles) {
@@ -263,7 +274,7 @@ class ExoAudioBook private constructor(
         this.logger.debug("Closing audio book")
 
         try {
-          this.wholeBookTask.cancel()
+          this.wholeBookDownloadTask.cancel()
         } catch (e: Exception) {
           this.logger.error("Failed to cancel download task: ", e)
         }

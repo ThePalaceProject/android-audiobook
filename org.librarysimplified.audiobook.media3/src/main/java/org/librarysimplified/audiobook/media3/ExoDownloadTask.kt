@@ -235,6 +235,14 @@ class ExoDownloadTask(
     }
   }
 
+  override val playbackURI: URI
+    get() = when (this.stateGetCurrent()) {
+      Downloaded -> this.partFile.toURI()
+      is Downloading -> this.originalLink.hrefURI!!
+      is Failed -> this.originalLink.hrefURI!!
+      Initial -> this.originalLink.hrefURI!!
+    }
+
   override val status: PlayerDownloadTaskStatus
     get() = when (this.stateGetCurrent()) {
       Downloaded -> PlayerDownloadTaskStatus.IdleDownloaded

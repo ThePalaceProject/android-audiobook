@@ -21,6 +21,7 @@ import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.concurrent.ScheduledExecutorService
 
@@ -33,6 +34,9 @@ class ExoAudioBookProvider(
   private val engineExecutor: ScheduledExecutorService,
   private val manifest: PlayerManifest,
 ) : PlayerAudioBookProviderType {
+
+  private val logger =
+    LoggerFactory.getLogger(ExoAudioBookProvider::class.java)
 
   private var missingTrackGenerator: PlayerMissingTrackNameGeneratorType? = null
 
@@ -47,26 +51,29 @@ class ExoAudioBookProvider(
     extensions: List<PlayerExtensionType>
   ): PlayerResult<PlayerAudioBookType, Exception> {
     try {
-      val scheme =
-        this.manifest.metadata.encrypted?.scheme
+      /*
+       * LCP does not support direct downloads. More accurately, downloads are either expected
+       * to have happened before opening the book, or the LCP data source is expected to stream
+       * reading order items from an external server.
+       */
+
+      val isLCP =
+        ExoLCP.isLCP(this.request.manifest)
+      val supportsDownloads =
+        !isLCP
+
+      this.logger.debug("isLCP: {}", isLCP)
+      this.logger.debug("supportsDownloads: {}", supportsDownloads)
 
       val dataSourceFactory: DataSource.Factory =
-        when (scheme) {
-          LCP_SCHEME -> {
-            createLCPDataSource(
-              context = context,
-              file = this.request.file!!,
-              contentProtections = this.request.contentProtections
-            )
-          }
-
-          null -> {
-            DefaultDataSource.Factory(context)
-          }
-
-          else -> {
-            throw IllegalStateException("Unrecognized scheme: $scheme")
-          }
+        if (isLCP) {
+          createLCPDataSource(
+            context = context,
+            file = this.request.bookFile!!,
+            contentProtections = this.request.contentProtections
+          )
+        } else {
+          DefaultDataSource.Factory(context)
         }
 
       val id =
@@ -95,7 +102,8 @@ class ExoAudioBookProvider(
               userAgent = this.request.userAgent,
               contentProtections = this.request.contentProtections,
               dataSourceFactory = dataSourceFactory,
-              missingTrackNameGenerator = missingTrackNameGenerator
+              missingTrackNameGenerator = missingTrackNameGenerator,
+              supportsDownloads = supportsDownloads
             )
           )
 

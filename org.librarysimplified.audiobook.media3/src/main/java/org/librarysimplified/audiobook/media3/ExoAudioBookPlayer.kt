@@ -512,16 +512,23 @@ class ExoAudioBookPlayer private constructor(
       }
     }
 
-    val partFile =
-      this.book.downloadTasksByID[target.readingOrderItem.id]!!.partFile
+    val playbackURI =
+      this.book.downloadTasksByID[target.readingOrderItem.id]!!.playbackURI
 
     val targetURI: Uri =
-      if (partFile.isFile) {
-        this.isStreamingNow = false
-        Uri.fromFile(partFile)
-      } else {
-        this.isStreamingNow = true
-        Uri.parse(target.readingOrderItem.itemManifest.item.link.hrefURI!!.toString())
+      when (playbackURI.scheme) {
+        null -> {
+          this.isStreamingNow = false
+          Uri.parse(playbackURI.toString())
+        }
+        "file" -> {
+          this.isStreamingNow = false
+          Uri.parse(playbackURI.toString())
+        }
+        else -> {
+          this.isStreamingNow = true
+          Uri.parse(playbackURI.toString())
+        }
       }
 
     this.exoAdapter.prepare(

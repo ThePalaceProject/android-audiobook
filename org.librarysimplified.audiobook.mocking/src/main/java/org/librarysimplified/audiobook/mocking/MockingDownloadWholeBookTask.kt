@@ -3,13 +3,15 @@ package org.librarysimplified.audiobook.mocking
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
+import java.net.URI
 
 /**
  * A fake download task.
  */
 
 class MockingDownloadWholeBookTask(
-  private val audioBook: MockingAudioBook
+  private val audioBook: MockingAudioBook,
+  override val playbackURI: URI
 ) : PlayerDownloadWholeBookTaskType {
 
   override fun fetch() {

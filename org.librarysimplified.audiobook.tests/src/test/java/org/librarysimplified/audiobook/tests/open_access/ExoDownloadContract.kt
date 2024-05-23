@@ -58,7 +58,8 @@ abstract class ExoDownloadContract {
             },
             uriDownloadTimes = urisDownloadMap
           ),
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          bookFile = null,
         )
       )
 

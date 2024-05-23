@@ -16,6 +16,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCs
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
+import org.librarysimplified.audiobook.media3.ExoLCP
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -997,5 +998,27 @@ class PlayerManifestTest {
     assertEquals(30000, tocItems.tocItemsInOrder[3].intervalAbsoluteMilliseconds.lower.value)
 
     this.checkTOCInvariants(tocItems, manifest)
+  }
+
+  /**
+   * I-Strahd
+   */
+
+  @Test
+  fun testIStrahd() {
+    val result =
+      ManifestParsers.parse(
+        uri = URI.create("i_strahd.json"),
+        streams = this.resource("audible/i_strahd.json"),
+        extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
+      )
+    this.log().debug("result: {}", result)
+    assertTrue(result is ParseResult.Success, "Result is success")
+
+    val success: ParseResult.Success<PlayerManifest> =
+      result as ParseResult.Success<PlayerManifest>
+
+    val manifest = success.result
+    assertTrue(ExoLCP.isLCP(manifest), "Manifest is inferred as LCP")
   }
 }

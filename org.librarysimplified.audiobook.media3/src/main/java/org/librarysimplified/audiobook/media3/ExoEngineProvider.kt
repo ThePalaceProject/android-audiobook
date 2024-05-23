@@ -9,9 +9,6 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 
-const val LCP_SCHEME =
-  "http://readium.org/2014/01/lcp"
-
 /**
  * An audio engine provider based on ExoPlayer.
  *
@@ -22,6 +19,20 @@ const val LCP_SCHEME =
 class ExoEngineProvider(
   private val threadFactory: (Runnable) -> ExoEngineThread
 ) : PlayerAudioEngineProviderType {
+
+  companion object {
+    val LCP_SCHEME =
+      "http://readium.org/2014/01/lcp"
+
+    val FEEDBOOKS_SCHEME_0 =
+      "http://www.feedbooks.com/audiobooks/access-restriction"
+
+    val FEEDBOOKS_SCHEME_1 =
+      "https://www.feedbooks.com/audiobooks/access-restriction"
+
+    val ACCEPTED_SCHEMES =
+      setOf(LCP_SCHEME, FEEDBOOKS_SCHEME_0, FEEDBOOKS_SCHEME_1)
+  }
 
   constructor() : this({ runnable -> ExoEngineThread.create(runnable) })
 
@@ -40,34 +51,38 @@ class ExoEngineProvider(
     request: PlayerAudioEngineRequest
   ): PlayerAudioBookProviderType? {
     val manifest = request.manifest
-    val acceptedEncryptionSchemes =
-      hashSetOf(
-        "http://www.feedbooks.com/audiobooks/access-restriction",
-        "https://www.feedbooks.com/audiobooks/access-restriction",
-        LCP_SCHEME
-      )
-
-    if (manifest.readingOrder.any { item ->
-        val link = item.link
-        link.properties.encrypted != null &&
-          !acceptedEncryptionSchemes.contains(link.properties.encrypted!!.scheme)
-      }) {
-      this.log.debug(
-        "Cannot support a book in which any item in the reading order has encryption scheme not in [{}]",
-        acceptedEncryptionSchemes.joinToString()
-      )
-      return null
+    for (item in manifest.readingOrder) {
+      val link = item.link
+      val encrypted = link.properties.encrypted
+      if (encrypted != null) {
+        val scheme = encrypted.scheme
+        if (!ACCEPTED_SCHEMES.contains(scheme)) {
+          this.log.debug(
+            "Reading order item contains encryption scheme {}, which is not in the supported set {}",
+            scheme,
+            ACCEPTED_SCHEMES
+          )
+          return null
+        }
+      }
     }
 
     val encrypted = manifest.metadata.encrypted
     if (encrypted != null) {
-      if (encrypted.scheme == LCP_SCHEME) {
-        if (request.file == null) {
-          this.log.debug("Cannot support LCP books that have not been downloaded.")
-          return null
-        }
-      } else {
-        this.log.debug("Cannot support encrypted books with scheme {}.", encrypted.scheme)
+      val scheme = encrypted.scheme
+      if (!ACCEPTED_SCHEMES.contains(scheme)) {
+        this.log.debug(
+          "Book is encrypted with scheme {}, which is not in the supported set {}",
+          encrypted.scheme,
+          ACCEPTED_SCHEMES
+        )
+        return null
+      }
+    }
+
+    if (ExoLCP.isLCP(manifest)) {
+      if (request.bookFile == null) {
+        this.log.debug("Cannot support LCP books that have not been downloaded.")
         return null
       }
     }

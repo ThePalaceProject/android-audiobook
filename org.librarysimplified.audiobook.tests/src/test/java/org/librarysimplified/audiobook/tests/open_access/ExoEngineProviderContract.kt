@@ -110,6 +110,7 @@ abstract class ExoEngineProviderContract {
       manifest = manifest,
       filter = { true },
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
+      bookFile = null,
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
     )
     val engine_provider = ExoEngineProvider()
@@ -132,6 +133,7 @@ abstract class ExoEngineProviderContract {
       manifest = manifest,
       filter = { true },
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
+      bookFile = null,
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
     )
     val engine_provider = ExoEngineProvider()
@@ -154,6 +156,7 @@ abstract class ExoEngineProviderContract {
       manifest = manifest,
       filter = { true },
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
+      bookFile = null,
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
     )
     val engine_provider = ExoEngineProvider()
@@ -172,7 +175,7 @@ abstract class ExoEngineProviderContract {
   @Test
   fun testPlayNoStreaming() {
     val book = this.createBook("ok_minimal_0.json")
-    Assertions.assertFalse(book.supportsStreaming, "Player does not support streaming")
+    Assertions.assertTrue(book.supportsStreaming, "Player supports streaming")
   }
 
   /**
@@ -741,6 +744,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest,
         filter = { true },
         downloadProvider = downloadProvider,
+        bookFile = null,
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
     val engine_provider = ExoEngineProvider()
@@ -783,6 +787,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
+        bookFile = null,
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 
@@ -844,6 +849,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
+        bookFile = null,
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 
@@ -882,6 +888,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
+        bookFile = null,
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 
@@ -942,6 +949,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.FailingDownloadProvider(),
+        bookFile = null,
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 
@@ -1020,6 +1028,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.FailingDownloadProvider(),
+        bookFile = null,
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
       )
 

@@ -1,11 +1,22 @@
 package org.librarysimplified.audiobook.api
 
+import java.net.URI
+
 /**
  * A download in progress. If the part of the book to which this download task refers is already
  * downloaded, the task completes instantly.
  */
 
 interface PlayerDownloadTaskType {
+
+  /**
+   * The URI that must be passed to the player to play the content associated with this download
+   * item. This might refer to a remote resource, or it might be a file:// URI, or even something
+   * more abstract. The underlying player engine is guaranteed to be configured such that it will
+   * understand any kind of URI that can be returned by this method.
+   */
+
+  val playbackURI: URI
 
   /**
    * The index of the download task (or `0` for "whole book" tasks).

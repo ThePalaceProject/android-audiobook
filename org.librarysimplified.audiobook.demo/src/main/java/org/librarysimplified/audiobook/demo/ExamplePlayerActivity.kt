@@ -226,7 +226,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           userAgent = PlayerUserAgent("AudioBookDemo"),
           manifest = state.manifest,
           fetchAll = true,
-          initialPosition = initialPosition
+          initialPosition = initialPosition,
+          bookFile = null
         )
       }
 

@@ -26,6 +26,7 @@ abstract class PlayerAudioEnginesContract {
       manifest = manifest,
       filter = { true },
       downloadProvider = DishonestDownloadProvider(),
+      bookFile = null,
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
     )
     val providers = PlayerAudioEngines.findAllFor(request)
@@ -39,6 +40,7 @@ abstract class PlayerAudioEnginesContract {
       manifest = manifest,
       filter = { false },
       downloadProvider = DishonestDownloadProvider(),
+      bookFile = null,
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
     )
     val providers = PlayerAudioEngines.findAllFor(request)

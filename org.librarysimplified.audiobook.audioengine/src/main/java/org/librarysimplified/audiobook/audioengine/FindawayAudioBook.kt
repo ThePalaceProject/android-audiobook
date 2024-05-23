@@ -28,6 +28,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.slf4j.LoggerFactory
+import java.net.URI
 import java.util.SortedMap
 import java.util.TreeMap
 import java.util.concurrent.CompletableFuture
@@ -60,7 +61,7 @@ class FindawayAudioBook private constructor(
     AtomicBoolean(false)
 
   private val wholeDownloadTask =
-    FindawayDownloadWholeBookTask(this, this.downloadEngine)
+    FindawayDownloadWholeBookTask(this, this.downloadEngine, URI.create("urn:unsupported"))
 
   override val tableOfContents: PlayerManifestTOC =
     this.findawayManifest.toc
@@ -225,7 +226,8 @@ class FindawayAudioBook private constructor(
           spineElements = listOf(element),
           chapter = spineItem.sequence,
           part = spineItem.part,
-          index = index
+          index = index,
+          playbackURI = URI.create(element.id.text)
         )
 
         downloadTasks.add(downloadTask)

@@ -2,10 +2,8 @@ package org.librarysimplified.audiobook.mocking
 
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
-import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerBookID
-import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
@@ -13,8 +11,8 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
+import java.net.URI
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -23,28 +21,16 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class MockingAudioBook(
   override val id: PlayerBookID,
-  val downloadStatusExecutor: ExecutorService,
-  val downloadProvider: PlayerDownloadProviderType,
   val players: (MockingAudioBook) -> MockingPlayer
 ) : PlayerAudioBookType {
 
   val statusEvents: BehaviorSubject<PlayerReadingOrderItemDownloadStatus> = BehaviorSubject.create()
   val spineItems: MutableList<MockingReadingOrderItem> = mutableListOf()
 
-  private val isClosedNow = AtomicBoolean(false)
-  private val wholeTask = MockingDownloadWholeBookTask(this)
-
-  fun createSpineElement(id: PlayerManifestReadingOrderID, duration: Duration): MockingReadingOrderItem {
-    val element = MockingReadingOrderItem(
-      bookMocking = this,
-      downloadStatusEvents = this.statusEvents,
-      index = spineItems.size,
-      duration = duration,
-      id = id
-    )
-    this.spineItems.add(element)
-    return element
-  }
+  private val isClosedNow =
+    AtomicBoolean(false)
+  private val wholeTask =
+    MockingDownloadWholeBookTask(this, URI.create("urn:unsupported"))
 
   override var supportsStreaming: Boolean = false
 

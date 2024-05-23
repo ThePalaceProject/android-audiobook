@@ -424,7 +424,8 @@ object PlayerModel {
     userAgent: PlayerUserAgent,
     manifest: PlayerManifest,
     fetchAll: Boolean,
-    initialPosition: PlayerPosition?
+    initialPosition: PlayerPosition?,
+    bookFile: File?
   ): CompletableFuture<Unit> {
     this.logger.debug("openPlayerForManifest")
 
@@ -446,7 +447,8 @@ object PlayerModel {
         context = context,
         extensions = this.playerExtensions,
         fetchAll = fetchAll,
-        initialPosition = initialPosition
+        initialPosition = initialPosition,
+        bookFile = bookFile
       )
     }
   }
@@ -457,7 +459,8 @@ object PlayerModel {
     context: Application,
     extensions: List<PlayerExtensionType>,
     fetchAll: Boolean,
-    initialPosition: PlayerPosition?
+    initialPosition: PlayerPosition?,
+    bookFile: File?
   ) {
     this.logger.debug("opOpenPlayerForManifest")
 
@@ -471,7 +474,8 @@ object PlayerModel {
           manifest = manifest,
           filter = { true },
           downloadProvider = DownloadProvider.create(this.downloadExecutor),
-          userAgent = userAgent
+          userAgent = userAgent,
+          bookFile = bookFile
         )
       )
 

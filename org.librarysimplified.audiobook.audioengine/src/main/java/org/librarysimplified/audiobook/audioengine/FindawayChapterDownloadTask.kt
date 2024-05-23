@@ -4,6 +4,7 @@ import io.audioengine.mobile.DownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
+import java.net.URI
 
 /**
  * A class for performing downloads for a single chapter.
@@ -15,7 +16,8 @@ class FindawayChapterDownloadTask(
   private val spineElements: List<FindawayReadingOrderItem>,
   val chapter: Int,
   val part: Int,
-  override val index: Int
+  override val index: Int,
+  override val playbackURI: URI
 ) : PlayerDownloadTaskType {
 
   @Volatile

@@ -44,7 +44,7 @@ data class PlayerAudioEngineRequest(
    * for unpackaged audio books.
    */
 
-  val file: File? = null,
+  val bookFile: File?,
 
   /**
    * Content protections available to unlock the audio book, if it is protected.
