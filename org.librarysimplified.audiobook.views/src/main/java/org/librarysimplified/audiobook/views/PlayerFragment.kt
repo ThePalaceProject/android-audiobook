@@ -69,16 +69,18 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var playerBusy: ProgressBar
   private lateinit var playerChapterTitle: TextView
   private lateinit var playerCommands: ViewGroup
+  private lateinit var playerDebugStatus: TextView
   private lateinit var playerDownloadMessage: TextView
   private lateinit var playerDownloadProgress: ProgressBar
   private lateinit var playerPosition: SeekBar
   private lateinit var playerRemainingBookTime: TextView
   private lateinit var playerSkipBackwardButton: ImageView
   private lateinit var playerSkipForwardButton: ImageView
-  private lateinit var playerStatus: TextView
+  private lateinit var playerStatusArea: View
+  private lateinit var playerStatusText: TextView
+  private lateinit var playerStatusIcon: ImageView
   private lateinit var playerTimeCurrent: TextView
   private lateinit var playerTimeRemaining: TextView
-  private lateinit var playerWaiting: TextView
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
   private lateinit var toolbar: Toolbar
 
@@ -129,8 +131,6 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.player_jump_forwards)
     this.playerSkipBackwardButton =
       view.findViewById(R.id.player_jump_backwards)
-    this.playerWaiting =
-      view.findViewById(R.id.playerMustBeDownloaded)
     this.playerTimeCurrent =
       view.findViewById(R.id.player_time)!!
     this.playerTimeRemaining =
@@ -141,8 +141,15 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.playerChapterTitle)!!
     this.playerPosition =
       view.findViewById(R.id.player_progress)!!
-    this.playerStatus =
-      view.findViewById(R.id.player_status)
+    this.playerDebugStatus =
+      view.findViewById(R.id.playerDebugStatus)
+
+    this.playerStatusArea =
+      view.findViewById(R.id.playerStatusArea)
+    this.playerStatusIcon =
+      view.findViewById(R.id.playerStatusIcon)
+    this.playerStatusText =
+      view.findViewById(R.id.playerStatusText)
 
     this.playerDownloadMessage =
       view.findViewById(R.id.playerDownloadMessage)
@@ -167,6 +174,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerPosition.setOnTouchListener { _, event -> this.handleTouchOnSeekbar(event) }
 
+    this.playerStatusArea.alpha = 0.0f
     this.coverView.setImageBitmap(PlayerModel.coverImage)
     return view
   }
@@ -440,7 +448,7 @@ class PlayerFragment : PlayerBaseFragment() {
       }
 
       is PlayerEventError -> {
-        // Nothing to do
+        this.showError(event)
       }
 
       PlayerEventManifestUpdated -> {
@@ -497,6 +505,26 @@ class PlayerFragment : PlayerBaseFragment() {
     }
   }
 
+  private fun showError(
+    event: PlayerEventError
+  ) {
+    this.playerStatusIcon.setImageResource(R.drawable.player_status_error)
+    this.publishStatusAreaMessage(
+      this.resources.getString(R.string.audiobook_player_error, event.errorCode)
+    )
+  }
+
+  private fun publishStatusAreaMessage(
+    message: String
+  ) {
+    this.playerStatusText.text = message
+    this.playerStatusArea.alpha = 1.0f
+    this.playerStatusArea.animate()
+      .alpha(0.0f)
+      .setDuration(30000L)
+      .start()
+  }
+
   private fun onPlayerEventPlaybackRateChanged(
     event: PlayerEventPlaybackRateChanged
   ) {
@@ -515,14 +543,12 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onPlayerEventPlaybackStarted(
     event: PlayerEventPlaybackStarted
   ) {
-    this.playerStatus.text = "Started"
+    this.playerDebugStatus.text = "Started"
 
-    this.playerWaiting.visibility = INVISIBLE
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
 
     this.setButtonToShowPause()
-
     this.playerPosition.isEnabled = true
 
     this.onEventUpdateTimeRelatedUI(event.positionMetadata)
@@ -532,9 +558,11 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onPlayerEventPlaybackChapterWaiting(
     event: PlayerEventChapterWaiting
   ) {
-    this.playerStatus.text = "Waiting for chapter to download…"
+    this.playerDebugStatus.text = "Waiting for chapter to download…"
 
-    this.playerWaiting.visibility = VISIBLE
+    this.playerStatusIcon.setImageResource(R.drawable.player_status_download)
+    this.publishStatusAreaMessage(this.resources.getString(R.string.audiobook_player_waiting))
+
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
@@ -545,9 +573,8 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onPlayerEventPlaybackBuffering(
     event: PlayerEventPlaybackBuffering
   ) {
-    this.playerStatus.text = "Buffering…"
+    this.playerDebugStatus.text = "Buffering…"
 
-    this.playerWaiting.visibility = INVISIBLE
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
@@ -558,9 +585,8 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onPlayerEventPlaybackPreparing(
     event: PlayerEventPlaybackPreparing
   ) {
-    this.playerStatus.text = "Preparing…"
+    this.playerDebugStatus.text = "Preparing…"
 
-    this.playerWaiting.visibility = INVISIBLE
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
@@ -571,9 +597,8 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onPlayerEventPlaybackStopped(
     event: PlayerEventPlaybackStopped
   ) {
-    this.playerStatus.text = "Stopped"
+    this.playerDebugStatus.text = "Stopped"
 
-    this.playerWaiting.visibility = INVISIBLE
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
 
@@ -586,7 +611,7 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onPlayerEventPlaybackPaused(
     event: PlayerEventPlaybackPaused
   ) {
-    this.playerStatus.text = "Paused"
+    this.playerDebugStatus.text = "Paused"
 
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE

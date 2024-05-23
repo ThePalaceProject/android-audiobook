@@ -115,7 +115,7 @@ class PlayerTOCBookmarkAdapter(
 
     fun bind(bookmark: PlayerBookmark) {
       val offset =
-        Duration(bookmark.offsetMilliseconds)
+        Duration(bookmark.offsetMilliseconds.value)
       val bookmarkDateStr =
         bookmark.metadata.creationTime.toString("MMMM dd, yyyy", Locale.ROOT)
 

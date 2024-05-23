@@ -13,10 +13,12 @@ import io.reactivex.subjects.Subject
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
+import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.Logger
+import org.slf4j.MDC
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -29,6 +31,7 @@ class ExoAdapter(
   private val events: Subject<PlayerEvent>,
   private val exoPlayer: ExoPlayer,
   private val currentReadingOrderItem: () -> ExoReadingOrderItemHandle,
+  private val manifest: PlayerManifest,
   private val toc: PlayerManifestTOC,
   private val isStreamingNow: () -> Boolean,
 ) : Player.Listener, AutoCloseable {
@@ -88,6 +91,15 @@ class ExoAdapter(
   @Volatile
   private var tocItemTracked: PlayerManifestTOCItem? = null
 
+  /**
+   * The underlying ExoPlayer implementation is extremely vulnerable to corrupted audio data.
+   * It might publish a [PlaybackException] once, or it might not. Once it has published one,
+   * it may not ever publish another, but it'll fail to play audio until a new file is prepared.
+   * Therefore, we save the exception so that we know the player was broken at some point.
+   */
+
+  private var savedError: PlaybackException? = null
+
   val state: ExoPlayerPlaybackStatus
     get() = this.stateLatest
 
@@ -110,13 +122,15 @@ class ExoAdapter(
   }
 
   override fun onPlayerError(error: PlaybackException) {
+    this.setupMDC()
     this.logger.error("onPlayerError: ", error)
 
+    this.savedError = error
     this.events.onNext(
       PlayerEvent.PlayerEventError(
         readingOrderItem = this.currentReadingOrderItem.invoke(),
         exception = error,
-        errorCode = -1,
+        errorCode = error.errorCode,
         offsetMilliseconds = this.currentTrackOffsetMilliseconds()
       )
     )
@@ -142,6 +156,7 @@ class ExoAdapter(
       }
 
       ExoPlayer.STATE_IDLE -> {
+        this.isBufferingNow = false
         this.newState(ExoPlayerPlaybackStatus.INITIAL)
       }
 
@@ -163,6 +178,8 @@ class ExoAdapter(
   private fun newState(new: ExoPlayerPlaybackStatus) {
     val old = this.state
     val transition = ExoPlayerPlaybackStatusTransition(old, new)
+
+    this.logger.debug("newState: {} -> {}", old, new)
     this.stateLatest = new
     this.stateSubject.onNext(transition)
   }
@@ -274,31 +291,50 @@ class ExoAdapter(
     targetURI: Uri,
     offset: PlayerMillisecondsReadingOrderItem
   ) {
+    this.setupMDC()
+    MDC.put("PrepareURI", targetURI.toString())
+
     this.logger.debug(
       "prepare: [{}] Setting media source and preparing player now.",
       targetURI
     )
 
     if (this.preparedURI == targetURI) {
-      this.logger.debug(
-        "prepare: [{}] A media source with this URI is already prepared; skipping preparation.",
-        targetURI
-      )
-      return
+      if (!isPlayerBroken()) {
+        this.logger.debug(
+          "prepare: [{}] A media source with this URI is already prepared; skipping preparation.",
+          targetURI
+        )
+        return
+      }
     }
 
     this.preparedURI = targetURI
     this.fakeBufferingPosition = offset
+    this.savedError = null
 
-    val mediaSource =
+    val newSource =
       ProgressiveMediaSource.Factory(dataSourceFactory)
         .createMediaSource(MediaItem.fromUri(targetURI))
-    this.exoPlayer.setMediaSource(mediaSource)
+
+    this.exoPlayer.setMediaSource(newSource)
     this.exoPlayer.prepare()
 
     this.logger.debug(
       "prepare: [{}] Scheduled prepare on ExoPlayer.",
       targetURI
     )
+  }
+
+  private fun isPlayerBroken(): Boolean {
+    return this.savedError != null
+  }
+
+  private fun setupMDC() {
+    MDC.put("BookTitle", this.manifest.metadata.title)
+    MDC.put("BookID", this.manifest.metadata.identifier)
+    this.manifest.metadata.encrypted?.let {
+      MDC.put("BookDRMScheme", it.scheme)
+    }
   }
 }

@@ -183,22 +183,34 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:visibility="visible" />
 
-    <TextView
-        android:id="@+id/playerMustBeDownloaded"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:id="@+id/playerStatusArea"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:orientation="horizontal"
         android:layout_marginBottom="16dp"
-        android:gravity="center"
-        android:text="@string/audiobook_player_waiting"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:visibility="invisible"
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
         app:layout_constraintBottom_toTopOf="@id/playerDownloadStatusArea"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:visibility="visible" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/playerStatusIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/player_status_error" />
+
+        <TextView
+            android:id="@+id/playerStatusText"
+            android:layout_width="256dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="Very, very, very, very, very, very, very, very, very, very, very, very, very long placeholder text that should never be seen in practice." />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/playerDownloadStatusArea"
@@ -238,13 +250,13 @@
         android:contentDescription="@string/audiobook_accessibility_book_cover"
         android:scaleType="fitCenter"
         android:src="@drawable/baseline_work_24"
-        app:layout_constraintBottom_toTopOf="@id/playerMustBeDownloaded"
+        app:layout_constraintBottom_toTopOf="@id/playerStatusArea"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/playerChapterTitle" />
 
     <TextView
-        android:id="@+id/player_status"
+        android:id="@+id/playerDebugStatus"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
