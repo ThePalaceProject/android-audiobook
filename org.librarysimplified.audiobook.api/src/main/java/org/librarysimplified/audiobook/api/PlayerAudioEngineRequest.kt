@@ -53,7 +53,8 @@ data class PlayerAudioEngineRequest(
   val contentProtections: List<ContentProtection> = listOf(),
 
   /**
-   * A passphrase, if needed, will be manually inserted.
+   * The credentials required to open the book.
    */
-  val manualPassphrase: Boolean = false
+
+  val bookCredentials: PlayerBookCredentialsType
 )

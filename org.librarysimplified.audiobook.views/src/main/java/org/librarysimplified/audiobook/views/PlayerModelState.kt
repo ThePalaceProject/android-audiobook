@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.views
 
+import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorType
 import org.librarysimplified.audiobook.parser.api.ParseError
@@ -24,7 +25,8 @@ sealed class PlayerModelState {
 
   data class PlayerManifestOK(
     val manifest: PlayerManifest,
-    val bookFile: File?
+    val bookFile: File?,
+    val bookCredentials: PlayerBookCredentialsType
   ) : PlayerModelState()
 
   data class PlayerBookOpenFailed(

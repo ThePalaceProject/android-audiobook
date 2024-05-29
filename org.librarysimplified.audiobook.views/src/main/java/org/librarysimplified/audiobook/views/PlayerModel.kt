@@ -13,6 +13,7 @@ import io.reactivex.subjects.PublishSubject
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
+import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
@@ -346,18 +347,20 @@ object PlayerModel {
     cacheDir: File,
     licenseChecks: List<SingleLicenseCheckProviderType>,
     strategy: ManifestFulfillmentStrategyType,
-    parserExtensions: List<ManifestParserExtensionType>
+    parserExtensions: List<ManifestParserExtensionType>,
+    bookCredentials: PlayerBookCredentialsType
   ): CompletableFuture<Unit> {
     this.logger.debug("downloadParseAndCheckManifest")
 
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseManifest(
-        strategy,
-        sourceURI,
-        parserExtensions,
-        userAgent,
-        licenseChecks,
-        cacheDir
+        strategy = strategy,
+        sourceURI = sourceURI,
+        parserExtensions = parserExtensions,
+        userAgent = userAgent,
+        licenseChecks = licenseChecks,
+        cacheDir = cacheDir,
+        bookCredentials = bookCredentials
       )
     }
   }
@@ -373,19 +376,21 @@ object PlayerModel {
     licenseParameters: ManifestFulfillmentBasicParameters,
     parserExtensions: List<ManifestParserExtensionType>,
     bookFile: File,
-    bookFileTemp: File
+    bookFileTemp: File,
+    bookCredentials: PlayerBookCredentialsType
   ): CompletableFuture<Unit> {
     this.logger.debug("downloadParseAndCheckLCPLicense")
 
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseLCPLicense(
-        cacheDir = cacheDir,
         licenseParameters = licenseParameters,
         parserExtensions = parserExtensions,
         userAgent = userAgent,
         licenseChecks = licenseChecks,
+        cacheDir = cacheDir,
         bookFile = bookFile,
-        bookFileTemp = bookFileTemp
+        bookFileTemp = bookFileTemp,
+        bookCredentials = bookCredentials
       )
     }
   }
@@ -397,7 +402,8 @@ object PlayerModel {
     licenseChecks: List<SingleLicenseCheckProviderType>,
     cacheDir: File,
     bookFile: File,
-    bookFileTemp: File
+    bookFileTemp: File,
+    bookCredentials: PlayerBookCredentialsType
   ) {
     this.setNewState(PlayerManifestInProgress)
 
@@ -473,7 +479,8 @@ object PlayerModel {
     this.setNewState(
       PlayerManifestOK(
         manifest = parsedManifest,
-        bookFile = bookFile
+        bookFile = bookFile,
+        bookCredentials = bookCredentials
       )
     )
   }
@@ -484,7 +491,8 @@ object PlayerModel {
     parserExtensions: List<ManifestParserExtensionType>,
     userAgent: PlayerUserAgent,
     licenseChecks: List<SingleLicenseCheckProviderType>,
-    cacheDir: File
+    cacheDir: File,
+    bookCredentials: PlayerBookCredentialsType
   ) {
     this.manifestDownloadLogField = listOf()
     this.singleLicenseCheckLogField = listOf()
@@ -529,7 +537,8 @@ object PlayerModel {
     this.setNewState(
       PlayerManifestOK(
         manifest = parsedManifest,
-        bookFile = null
+        bookFile = null,
+        bookCredentials = bookCredentials
       )
     )
   }
@@ -551,7 +560,8 @@ object PlayerModel {
     manifest: PlayerManifest,
     fetchAll: Boolean,
     initialPosition: PlayerPosition?,
-    bookFile: File?
+    bookFile: File?,
+    bookCredentials: PlayerBookCredentialsType
   ): CompletableFuture<Unit> {
     this.logger.debug("openPlayerForManifest")
 
@@ -574,7 +584,8 @@ object PlayerModel {
         extensions = this.playerExtensions,
         fetchAll = fetchAll,
         initialPosition = initialPosition,
-        bookFile = bookFile
+        bookFile = bookFile,
+        bookCredentials = bookCredentials
       )
     }
   }
@@ -586,7 +597,8 @@ object PlayerModel {
     extensions: List<PlayerExtensionType>,
     fetchAll: Boolean,
     initialPosition: PlayerPosition?,
-    bookFile: File?
+    bookFile: File?,
+    bookCredentials: PlayerBookCredentialsType
   ) {
     this.logger.debug("opOpenPlayerForManifest")
 
@@ -601,7 +613,8 @@ object PlayerModel {
           filter = { true },
           downloadProvider = DownloadProvider.create(this.downloadExecutor),
           userAgent = userAgent,
-          bookFile = bookFile
+          bookFile = bookFile,
+          bookCredentials = bookCredentials
         )
       )
 

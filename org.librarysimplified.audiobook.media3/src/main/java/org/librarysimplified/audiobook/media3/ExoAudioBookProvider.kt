@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
+import org.librarysimplified.audiobook.api.PlayerBookCredentialsLCP
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerResult
@@ -135,6 +136,13 @@ class ExoAudioBookProvider(
     contentProtections: List<ContentProtection>
   ): Publication {
     val log = this.logger
+
+    val credentialsText =
+      when (val c = this.request.bookCredentials) {
+        is PlayerBookCredentialsLCP -> c.passphrase
+        else -> null
+      }
+
     return runBlocking {
       val httpClient =
         DefaultHttpClient()
@@ -165,13 +173,14 @@ class ExoAudioBookProvider(
 
           when (val pubR = publicationOpener.open(
             asset = assetR.value,
-            credentials = null,
+            credentials = credentialsText,
             allowUserInteraction = false,
           )) {
             is Try.Failure -> {
               log.error("Failed to open publication: {}", pubR.value)
               throw ErrorException(pubR.value)
             }
+
             is Try.Success -> {
               log.debug("Opened publication.")
               pubR.value

@@ -7,9 +7,13 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import org.librarysimplified.audiobook.api.PlayerBookCredentialsLCP
+import org.librarysimplified.audiobook.api.PlayerBookCredentialsNone
+import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
 import org.librarysimplified.audiobook.json_web_token.JSONBase64String
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
 import org.librarysimplified.audiobook.manifest_fulfill.api.ManifestFulfillmentStrategies
@@ -49,6 +53,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   private lateinit var authenticationOverdrivePassword: TextView
   private lateinit var authenticationOverdriveUser: TextView
   private lateinit var authenticationSelected: String
+  private lateinit var lcpPassphrase: EditText
   private lateinit var location: TextView
   private lateinit var play: Button
   private lateinit var presets: Spinner
@@ -136,6 +141,8 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       layout.findViewById(R.id.exLocation)
     this.presets =
       layout.findViewById(R.id.exPresets)
+    this.lcpPassphrase =
+      layout.findViewById(R.id.exLCPPassphrase)
 
     this.onSelectedAuthentication(this.authNone)
     this.onSelectedType(this.typeManifest)
@@ -157,7 +164,11 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           position: Int,
           id: Long
         ) {
-          onSelectedAuthentication(authentication.getItemAtPosition(position) as String)
+          this@ExampleFragmentSelectBook.onSelectedAuthentication(
+            this@ExampleFragmentSelectBook.authentication.getItemAtPosition(
+              position
+            ) as String
+          )
         }
       }
 
@@ -173,7 +184,11 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           position: Int,
           id: Long
         ) {
-          onSelectedType(typeSelect.getItemAtPosition(position) as String)
+          this@ExampleFragmentSelectBook.onSelectedType(
+            this@ExampleFragmentSelectBook.typeSelect.getItemAtPosition(
+              position
+            ) as String
+          )
         }
       }
 
@@ -197,7 +212,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
         position: Int,
         id: Long
       ) {
-        onSelectedPreset(presetList[position])
+        this@ExampleFragmentSelectBook.onSelectedPreset(presetList[position])
       }
     }
 
@@ -256,10 +271,11 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           cacheDir = ExampleApplication.application.cacheDir,
           userAgent = ExampleApplication.userAgent,
           licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
-          licenseParameters = basicParametersForLCPLicense(sourceURI, credentials),
+          licenseParameters = this.basicParametersForLCPLicense(sourceURI, credentials),
           parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
           bookFile = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook"),
           bookFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook.tmp"),
+          bookCredentials = this.bookCredentials()
         )
       }
 
@@ -269,10 +285,18 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           cacheDir = ExampleApplication.application.cacheDir,
           userAgent = ExampleApplication.userAgent,
           licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
-          strategy = downloadStrategyForCredentials(sourceURI, credentials),
-          parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
+          strategy = this.downloadStrategyForCredentials(sourceURI, credentials),
+          parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
+          bookCredentials = this.bookCredentials()
         )
       }
+    }
+  }
+
+  private fun bookCredentials(): PlayerBookCredentialsType {
+    return when (val text = this.lcpPassphrase.text.trim().toString()) {
+      "" -> PlayerBookCredentialsNone
+      else -> PlayerBookCredentialsLCP(text)
     }
   }
 

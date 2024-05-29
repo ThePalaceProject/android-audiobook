@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
+import org.librarysimplified.audiobook.api.PlayerBookCredentialsNone
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerUserAgent
@@ -60,6 +61,7 @@ abstract class ExoDownloadContract {
           ),
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           bookFile = null,
+          bookCredentials = PlayerBookCredentialsNone
         )
       )
 
