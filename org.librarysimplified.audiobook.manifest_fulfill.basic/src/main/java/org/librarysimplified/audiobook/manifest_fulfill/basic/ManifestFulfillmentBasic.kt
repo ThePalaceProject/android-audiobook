@@ -4,6 +4,7 @@ import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import one.irradia.mime.vanilla.MIMEParser
 import org.librarysimplified.audiobook.api.PlayerResult
+import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorHTTPRequestFailed
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorType
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
@@ -85,7 +86,7 @@ class ManifestFulfillmentBasic(
       }
       is LSHTTPResponseStatus.Responded.Error -> {
         PlayerResult.Failure(
-          HTTPRequestFailed(
+          ManifestFulfillmentErrorHTTPRequestFailed(
             message = responseMessage,
             serverData = ManifestFulfillmentErrorType.ServerData(
               uri = this.configuration.uri,
@@ -98,7 +99,7 @@ class ManifestFulfillmentBasic(
       }
       is LSHTTPResponseStatus.Failed -> {
         PlayerResult.Failure(
-          HTTPRequestFailed(
+          ManifestFulfillmentErrorHTTPRequestFailed(
             message = responseMessage,
             serverData = ManifestFulfillmentErrorType.ServerData(
               uri = this.configuration.uri,

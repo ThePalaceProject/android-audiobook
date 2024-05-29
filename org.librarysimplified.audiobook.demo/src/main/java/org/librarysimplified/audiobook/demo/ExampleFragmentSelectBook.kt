@@ -23,19 +23,19 @@ import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAPassword
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.views.PlayerModel
+import java.io.File
 import java.net.URI
 import java.util.ServiceLoader
 
 class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
   private lateinit var authBasic: String
+  private lateinit var authFeedbooks: String
+  private lateinit var authItems: Array<String>
+  private lateinit var authNone: String
+  private lateinit var authOverdrive: String
   private lateinit var authentication: Spinner
   private lateinit var authenticationBasic: ViewGroup
-  private lateinit var authenticationOverdrive: ViewGroup
-  private lateinit var authenticationOverdrivePassword: TextView
-  private lateinit var authenticationOverdriveUser: TextView
-  private lateinit var authenticationOverdriveClientKey: TextView
-  private lateinit var authenticationOverdriveClientSecret: TextView
   private lateinit var authenticationBasicPassword: TextView
   private lateinit var authenticationBasicUser: TextView
   private lateinit var authenticationFeedbooks: ViewGroup
@@ -43,14 +43,20 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   private lateinit var authenticationFeedbooksPassword: TextView
   private lateinit var authenticationFeedbooksSecret: TextView
   private lateinit var authenticationFeedbooksUser: TextView
+  private lateinit var authenticationOverdrive: ViewGroup
+  private lateinit var authenticationOverdriveClientKey: TextView
+  private lateinit var authenticationOverdriveClientSecret: TextView
+  private lateinit var authenticationOverdrivePassword: TextView
+  private lateinit var authenticationOverdriveUser: TextView
   private lateinit var authenticationSelected: String
-  private lateinit var authFeedbooks: String
-  private lateinit var authItems: Array<String>
-  private lateinit var authNone: String
-  private lateinit var authOverdrive: String
   private lateinit var location: TextView
   private lateinit var play: Button
   private lateinit var presets: Spinner
+  private lateinit var typeLCP: String
+  private lateinit var typeManifest: String
+  private lateinit var typeSelect: Spinner
+  private lateinit var typeSelected: String
+  private lateinit var types: Array<String>
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -59,6 +65,11 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   ): View? {
     val layout =
       inflater.inflate(R.layout.example_config_screen, container, false)
+
+    this.typeManifest =
+      this.getString(R.string.exManifest)
+    this.typeLCP =
+      this.getString(R.string.exLCPLicense)
 
     this.authNone =
       this.getString(R.string.exAuthNone)
@@ -70,6 +81,8 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       this.getString(R.string.exAuthBasicOverdrive)
     this.authItems =
       this.resources.getStringArray(R.array.exAuthenticationTypes)
+    this.types =
+      this.resources.getStringArray(R.array.exTargetTypes)
 
     this.authenticationBasic =
       layout.findViewById(R.id.exAuthenticationBasicParameters)
@@ -100,12 +113,22 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     this.authenticationOverdriveClientSecret =
       this.authenticationOverdrive.findViewById(R.id.exAuthenticationOverdriveClientSecret)
 
+    this.typeSelect =
+      layout.findViewById(R.id.exTypeSelection)
     this.authentication =
       layout.findViewById(R.id.exAuthenticationSelection)
+
     this.authentication.adapter =
       ArrayAdapter.createFromResource(
-        ExampleApplication.application, R.array.exAuthenticationTypes, android.R.layout.simple_list_item_1
+        ExampleApplication.application,
+        R.array.exAuthenticationTypes,
+        android.R.layout.simple_list_item_1
       )
+    this.typeSelect.adapter =
+      ArrayAdapter.createFromResource(
+        ExampleApplication.application, R.array.exTargetTypes, android.R.layout.simple_list_item_1
+      )
+
     this.play =
       layout.findViewById(R.id.exPlay)
 
@@ -115,6 +138,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       layout.findViewById(R.id.exPresets)
 
     this.onSelectedAuthentication(this.authNone)
+    this.onSelectedType(this.typeManifest)
     return layout
   }
 
@@ -134,6 +158,22 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           id: Long
         ) {
           onSelectedAuthentication(authentication.getItemAtPosition(position) as String)
+        }
+      }
+
+    this.typeSelect.onItemSelectedListener =
+      object : AdapterView.OnItemSelectedListener {
+        override fun onNothingSelected(parent: AdapterView<*>?) {
+          // Nothing to do
+        }
+
+        override fun onItemSelected(
+          parent: AdapterView<*>?,
+          view: View?,
+          position: Int,
+          id: Long
+        ) {
+          onSelectedType(typeSelect.getItemAtPosition(position) as String)
         }
       }
 
@@ -175,9 +215,11 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
             password = this.authenticationBasicPassword.text.toString()
           )
         }
+
         this.authNone -> {
           ExamplePlayerCredentials.None(0)
         }
+
         this.authFeedbooks -> {
           val secretText =
             this.authenticationFeedbooksSecret.text.toString()
@@ -207,14 +249,72 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       }
 
     val sourceURI = URI.create(this.location.text.toString())
-    PlayerModel.downloadParseAndCheckManifest(
-      sourceURI = sourceURI,
-      cacheDir = ExampleApplication.application.cacheDir,
-      userAgent = ExampleApplication.userAgent,
-      licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
-      strategy = downloadStrategyForCredentials(sourceURI, credentials),
-      parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
-    )
+
+    when (this.typeSelected) {
+      this.typeLCP -> {
+        PlayerModel.downloadParseAndCheckLCPLicense(
+          cacheDir = ExampleApplication.application.cacheDir,
+          userAgent = ExampleApplication.userAgent,
+          licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
+          licenseParameters = basicParametersForLCPLicense(sourceURI, credentials),
+          parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
+          bookFile = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook"),
+          bookFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook.tmp"),
+        )
+      }
+
+      this.typeManifest -> {
+        PlayerModel.downloadParseAndCheckManifest(
+          sourceURI = sourceURI,
+          cacheDir = ExampleApplication.application.cacheDir,
+          userAgent = ExampleApplication.userAgent,
+          licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
+          strategy = downloadStrategyForCredentials(sourceURI, credentials),
+          parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
+        )
+      }
+    }
+  }
+
+  private fun basicParametersForLCPLicense(
+    sourceURI: URI,
+    credentials: ExamplePlayerCredentials
+  ): ManifestFulfillmentBasicParameters {
+    return when (credentials) {
+      is ExamplePlayerCredentials.Basic -> {
+        ManifestFulfillmentBasicParameters(
+          uri = sourceURI,
+          credentials = ManifestFulfillmentBasicCredentials(
+            userName = credentials.userName,
+            password = credentials.password
+          ),
+          httpClient = ExampleApplication.httpClient,
+          userAgent = ExampleApplication.userAgent
+        )
+      }
+
+      is ExamplePlayerCredentials.Feedbooks -> {
+        throw IllegalStateException()
+      }
+
+      is ExamplePlayerCredentials.None -> {
+        ManifestFulfillmentBasicParameters(
+          uri = sourceURI,
+          credentials = null,
+          httpClient = ExampleApplication.httpClient,
+          userAgent = ExampleApplication.userAgent
+        )
+      }
+
+      is ExamplePlayerCredentials.Overdrive -> {
+        throw IllegalStateException()
+      }
+    }
+  }
+
+  private fun onSelectedType(type: String) {
+    this.typeSelected = type
+    this.typeSelect.setSelection(this.types.indexOf(type))
   }
 
   private fun onSelectedAuthentication(authentication: String) {
@@ -227,21 +327,25 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
         this.authenticationOverdrive.visibility = View.GONE
         this.authenticationFeedbooks.visibility = View.VISIBLE
       }
+
       this.authBasic -> {
         this.authenticationBasic.visibility = View.VISIBLE
         this.authenticationOverdrive.visibility = View.GONE
         this.authenticationFeedbooks.visibility = View.GONE
       }
+
       this.authNone -> {
         this.authenticationBasic.visibility = View.GONE
         this.authenticationOverdrive.visibility = View.GONE
         this.authenticationFeedbooks.visibility = View.GONE
       }
+
       this.authOverdrive -> {
         this.authenticationBasic.visibility = View.GONE
         this.authenticationOverdrive.visibility = View.VISIBLE
         this.authenticationFeedbooks.visibility = View.GONE
       }
+
       else -> {
         throw UnsupportedOperationException()
       }
@@ -250,6 +354,16 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
   private fun onSelectedPreset(preset: ExamplePreset) {
     this.location.text = preset.uri.toString()
+
+    when (preset.type) {
+      ExampleTargetType.MANIFEST -> {
+        this.onSelectedType(this.typeManifest)
+      }
+
+      ExampleTargetType.LCP_LICENSE -> {
+        this.onSelectedType(this.typeLCP)
+      }
+    }
 
     return when (val credentials = preset.credentials) {
       is ExamplePlayerCredentials.None -> {

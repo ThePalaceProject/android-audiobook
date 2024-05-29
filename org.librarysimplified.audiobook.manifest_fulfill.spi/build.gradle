@@ -7,6 +7,7 @@ dependencies {
   implementation(libs.kotlin.reflect)
   implementation(libs.kotlin.stdlib)
   implementation(libs.palace.http.api)
+  implementation(libs.palace.http.downloads)
   implementation(libs.rxjava2)
 
   compileOnly(libs.jcip)

@@ -1,3 +1,8 @@
+val lcpDRM =
+    project.findProperty("org.thepalaceproject.lcp.enabled") == "true"
+val findawayDRM =
+    project.findProperty("org.thepalaceproject.findaway.enabled") == "true"
+
 dependencies {
     implementation(project(":org.librarysimplified.audiobook.api"))
     implementation(project(":org.librarysimplified.audiobook.downloads"))
@@ -5,6 +10,7 @@ dependencies {
     implementation(project(":org.librarysimplified.audiobook.http"))
     implementation(project(":org.librarysimplified.audiobook.json_canon"))
     implementation(project(":org.librarysimplified.audiobook.json_web_token"))
+    implementation(project(":org.librarysimplified.audiobook.lcp.downloads"))
     implementation(project(":org.librarysimplified.audiobook.lcp.license_status"))
     implementation(project(":org.librarysimplified.audiobook.license_check.api"))
     implementation(project(":org.librarysimplified.audiobook.license_check.spi"))
@@ -131,44 +137,51 @@ dependencies {
     implementation(libs.palace.theme)
     implementation(libs.r2.shared)
     implementation(libs.r2.streamer)
+    implementation(libs.r2.lcp)
     implementation(libs.reactive.streams)
     implementation(libs.rxandroid2)
     implementation(libs.rxjava2)
     implementation(libs.slf4j)
 
-    if (project.hasProperty("org.thepalaceproject.findaway.enabled")) {
-        if (project.property("org.thepalaceproject.findaway.enabled") == "true") {
-            implementation(project(":org.librarysimplified.audiobook.audioengine"))
-
-            implementation(libs.dagger)
-            implementation(libs.exoplayer2.core)
-            implementation(libs.findaway)
-            implementation(libs.findaway.common)
-            implementation(libs.findaway.listening)
-            implementation(libs.findaway.persistence)
-            implementation(libs.findaway.play.android)
-            implementation(libs.google.gson)
-            implementation(libs.javax.inject)
-            implementation(libs.koin.android)
-            implementation(libs.koin.core)
-            implementation(libs.koin.core.jvm)
-            implementation(libs.moshi)
-            implementation(libs.moshi.adapters)
-            implementation(libs.moshi.kotlin)
-            implementation(libs.okhttp3)
-            implementation(libs.okhttp3.logging.interceptor)
-            implementation(libs.retrofit2)
-            implementation(libs.retrofit2.adapter.rxjava)
-            implementation(libs.retrofit2.converter.gson)
-            implementation(libs.retrofit2.converter.moshi)
-            implementation(libs.rxandroid)
-            implementation(libs.rxjava)
-            implementation(libs.rxrelay)
-            implementation(libs.sqlbrite)
-            implementation(libs.stately.common)
-            implementation(libs.stately.concurrency)
-            implementation(libs.timber)
+    if (lcpDRM) {
+        implementation(libs.readium.lcp) {
+            artifact {
+                type = "aar"
+            }
         }
+    }
+
+    if (findawayDRM) {
+        implementation(project(":org.librarysimplified.audiobook.audioengine"))
+
+        implementation(libs.dagger)
+        implementation(libs.exoplayer2.core)
+        implementation(libs.findaway)
+        implementation(libs.findaway.common)
+        implementation(libs.findaway.listening)
+        implementation(libs.findaway.persistence)
+        implementation(libs.findaway.play.android)
+        implementation(libs.google.gson)
+        implementation(libs.javax.inject)
+        implementation(libs.koin.android)
+        implementation(libs.koin.core)
+        implementation(libs.koin.core.jvm)
+        implementation(libs.moshi)
+        implementation(libs.moshi.adapters)
+        implementation(libs.moshi.kotlin)
+        implementation(libs.okhttp3)
+        implementation(libs.okhttp3.logging.interceptor)
+        implementation(libs.retrofit2)
+        implementation(libs.retrofit2.adapter.rxjava)
+        implementation(libs.retrofit2.converter.gson)
+        implementation(libs.retrofit2.converter.moshi)
+        implementation(libs.rxandroid)
+        implementation(libs.rxjava)
+        implementation(libs.rxrelay)
+        implementation(libs.sqlbrite)
+        implementation(libs.stately.common)
+        implementation(libs.stately.concurrency)
+        implementation(libs.timber)
     }
 
     compileOnly(libs.jcip)

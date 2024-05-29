@@ -29,14 +29,18 @@ import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.downloads.DownloadProvider
+import org.librarysimplified.audiobook.lcp.downloads.LCPDownloads
+import org.librarysimplified.audiobook.lcp.downloads.LCPLicenseAndBytes
 import org.librarysimplified.audiobook.license_check.api.LicenseCheckParameters
 import org.librarysimplified.audiobook.license_check.api.LicenseChecks
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckStatus
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
+import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorType
+import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrors
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
@@ -52,6 +56,7 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestPars
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.lang.UnsupportedOperationException
 import java.net.URI
 import java.util.ServiceLoader
 import java.util.concurrent.CompletableFuture
@@ -343,7 +348,7 @@ object PlayerModel {
     strategy: ManifestFulfillmentStrategyType,
     parserExtensions: List<ManifestParserExtensionType>
   ): CompletableFuture<Unit> {
-    this.logger.debug("downloadAndParseManifestShowingErrors")
+    this.logger.debug("downloadParseAndCheckManifest")
 
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseManifest(
@@ -355,6 +360,122 @@ object PlayerModel {
         cacheDir
       )
     }
+  }
+
+  /**
+   * Attempt to download and parse an LCP license and, from there, a manifest.
+   */
+
+  fun downloadParseAndCheckLCPLicense(
+    cacheDir: File,
+    userAgent: PlayerUserAgent,
+    licenseChecks: List<SingleLicenseCheckProviderType>,
+    licenseParameters: ManifestFulfillmentBasicParameters,
+    parserExtensions: List<ManifestParserExtensionType>,
+    bookFile: File,
+    bookFileTemp: File
+  ): CompletableFuture<Unit> {
+    this.logger.debug("downloadParseAndCheckLCPLicense")
+
+    return this.executeTaskCancellingExisting {
+      this.opDownloadAndParseLCPLicense(
+        cacheDir = cacheDir,
+        licenseParameters = licenseParameters,
+        parserExtensions = parserExtensions,
+        userAgent = userAgent,
+        licenseChecks = licenseChecks,
+        bookFile = bookFile,
+        bookFileTemp = bookFileTemp
+      )
+    }
+  }
+
+  private fun opDownloadAndParseLCPLicense(
+    licenseParameters: ManifestFulfillmentBasicParameters,
+    parserExtensions: List<ManifestParserExtensionType>,
+    userAgent: PlayerUserAgent,
+    licenseChecks: List<SingleLicenseCheckProviderType>,
+    cacheDir: File,
+    bookFile: File,
+    bookFileTemp: File
+  ) {
+    this.setNewState(PlayerManifestInProgress)
+
+    val receiver: (ManifestFulfillmentEvent) -> Unit = { event ->
+      this.manifestDownloadLogField = this.manifestDownloadLogField.plus(event)
+      this.manifestDownloadEventSubject.onNext(event)
+    }
+
+    val licenseAndBytes: LCPLicenseAndBytes =
+      when (val result = LCPDownloads.downloadLicense(licenseParameters, receiver)) {
+        is PlayerResult.Failure -> {
+          this.setNewState(PlayerManifestDownloadFailed(result.failure))
+          throw OperationFailedException()
+        }
+
+        is PlayerResult.Success -> result.result
+      }
+
+    when (val result = LCPDownloads.downloadPublication(
+      parameters = licenseParameters,
+      license = licenseAndBytes.license,
+      outputFile = bookFile,
+      isCancelled = { false },
+      receiver = receiver
+    )) {
+      is PlayerResult.Failure -> {
+        this.setNewState(
+          PlayerManifestDownloadFailed(
+            ManifestFulfillmentErrors.ofDownloadResult(
+              licenseParameters.uri,
+              result.failure
+            )
+          )
+        )
+        throw OperationFailedException()
+      }
+
+      is PlayerResult.Success -> Unit
+    }
+
+    val manifestBytes: ManifestFulfilled =
+      LCPDownloads.repackagePublication(
+        licenseAndBytes = licenseAndBytes,
+        file = bookFile,
+        fileTemp = bookFileTemp
+      )
+
+    val parseResult =
+      this.parseManifest(
+        source = bookFile.toURI(),
+        extensions = parserExtensions,
+        data = manifestBytes.data
+      )
+
+    if (parseResult is ParseResult.Failure) {
+      this.manifestParseErrorLogField = parseResult.errors.toList()
+      this.setNewState(PlayerManifestParseFailed(parseResult.errors))
+      throw OperationFailedException()
+    }
+
+    val (_, parsedManifest) = parseResult as ParseResult.Success
+    if (!this.checkManifest(
+        manifest = parsedManifest,
+        userAgent = userAgent,
+        licenseChecks = licenseChecks,
+        cacheDir = cacheDir
+      )
+    ) {
+      this.setNewState(PlayerManifestLicenseChecksFailed)
+      throw OperationFailedException()
+    }
+
+    this.setNewState(
+      PlayerManifestOK(
+        manifest = parsedManifest,
+        bookFile = bookFile
+      )
+    )
   }
 
   private fun opDownloadAndParseManifest(
@@ -405,7 +526,12 @@ object PlayerModel {
       throw OperationFailedException()
     }
 
-    this.setNewState(PlayerManifestOK(parsedManifest))
+    this.setNewState(
+      PlayerManifestOK(
+        manifest = parsedManifest,
+        bookFile = null
+      )
+    )
   }
 
   private fun configurePlayerExtensions(
@@ -480,7 +606,10 @@ object PlayerModel {
       )
 
     if (engine == null) {
-      this.setNewState(PlayerBookOpenFailed("No suitable audio engine for manifest."))
+      this.setNewState(PlayerBookOpenFailed(
+        message = "No suitable audio engine for manifest.",
+        exception = UnsupportedOperationException()
+      ))
       throw OperationFailedException()
     }
 
@@ -501,7 +630,11 @@ object PlayerModel {
       )
 
     if (bookResult is PlayerResult.Failure) {
-      this.setNewState(PlayerBookOpenFailed("Failed to open audio book."))
+      this.logger.error("Book failed to open: ", bookResult.failure)
+      this.setNewState(PlayerBookOpenFailed(
+        message = "Failed to open audio book.",
+        exception = bookResult.failure
+      ))
       throw OperationFailedException()
     }
 
@@ -556,12 +689,14 @@ object PlayerModel {
             this.logger.debug("Chapter finished; completing sleep timer now.")
             PlayerSleepTimer.finish()
           }
+
           PlayerSleepTimerConfiguration.Off,
           is PlayerSleepTimerConfiguration.WithDuration -> {
             // Nothing to do.
           }
         }
       }
+
       else -> {
         // Nothing to do.
       }
@@ -651,6 +786,7 @@ object PlayerModel {
           this.playerAndBookField?.player?.pause()
           Unit
         }
+
         is PlayerSleepTimerEvent.PlayerSleepTimerStatusChanged -> {
           // Nothing to do
         }

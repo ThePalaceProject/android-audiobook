@@ -26,4 +26,10 @@
         location="https://io7m.github.io/audiobooks/corrupt/manifest.json">
         <AuthenticationNone />
     </Preset>
+    <Preset
+        name="LCP Test 0"
+        location="https://io7m.github.io/audiobooks/lcp0/book.lcpl"
+        type="lcpLicense">
+        <AuthenticationNone />
+    </Preset>
 </Presets>

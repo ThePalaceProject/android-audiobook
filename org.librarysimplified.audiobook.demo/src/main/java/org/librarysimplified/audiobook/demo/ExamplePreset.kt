@@ -5,6 +5,7 @@ import org.librarysimplified.audiobook.json_web_token.JSONBase64String
 import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAPassword
 import org.xmlpull.v1.XmlPullParser
 import java.net.URI
+import java.text.ParseException
 
 /**
  * Bundled presets for testing various audio books.
@@ -13,6 +14,7 @@ import java.net.URI
 data class ExamplePreset(
   val name: String,
   val uri: URI,
+  val type: ExampleTargetType,
   val credentials: ExamplePlayerCredentials
 ) {
 
@@ -35,6 +37,7 @@ data class ExamplePreset(
     ): List<ExamplePreset> {
       var name = ""
       var location = ""
+      var type = ExampleTargetType.MANIFEST
       var credentials = ExamplePlayerCredentials.None(0) as ExamplePlayerCredentials
       val presets = mutableListOf<ExamplePreset>()
 
@@ -51,6 +54,7 @@ data class ExamplePreset(
               "Preset" -> {
                 name = parser.getAttributeValue(null, "name")
                 location = parser.getAttributeValue(null, "location")
+                type = parseType(parser.getAttributeValue(null, "type"))
               }
 
               "AuthenticationBasic" -> {
@@ -97,7 +101,8 @@ data class ExamplePreset(
                   ExamplePreset(
                     name = name,
                     uri = URI.create(location),
-                    credentials = credentials
+                    credentials = credentials,
+                    type = type
                   )
                 )
               }
@@ -107,6 +112,25 @@ data class ExamplePreset(
           }
 
           else -> Unit
+        }
+      }
+    }
+
+    private fun parseType(
+      value: String?
+    ): ExampleTargetType {
+      return when (value) {
+        null -> {
+          ExampleTargetType.MANIFEST
+        }
+        "manifest" -> {
+          ExampleTargetType.MANIFEST
+        }
+        "lcpLicense" -> {
+          ExampleTargetType.LCP_LICENSE
+        }
+        else -> {
+          throw ParseException("Unrecognized preset type: $value", 0)
         }
       }
     }

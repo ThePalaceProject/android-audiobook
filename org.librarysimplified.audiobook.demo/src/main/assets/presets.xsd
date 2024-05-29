@@ -5,6 +5,13 @@
   elementFormDefault="qualified"
   targetNamespace="urn:org.librarysimplified.audiobook.demo.presets:xml:1">
 
+  <xsd:simpleType name="TargetType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="manifest"/>
+      <xsd:enumeration value="lcpLicense"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
   <xsd:element name="Preset">
     <xsd:complexType>
       <xsd:choice>
@@ -22,6 +29,11 @@
         name="location"
         type="xsd:anyURI"
         use="required" />
+      <xsd:attribute
+        name="type"
+        type="pr:TargetType"
+        use="optional"
+        default="manifest"/>
     </xsd:complexType>
   </xsd:element>
 

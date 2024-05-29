@@ -67,7 +67,7 @@ class ExoAudioBookProvider(
 
       val dataSourceFactory: DataSource.Factory =
         if (isLCP) {
-          createLCPDataSource(
+          this.createLCPDataSource(
             context = context,
             file = this.request.bookFile!!,
             contentProtections = this.request.contentProtections
@@ -121,7 +121,7 @@ class ExoAudioBookProvider(
     contentProtections: List<ContentProtection>
   ): DataSource.Factory {
     return LCPDataSource.Factory(
-      openPublication(
+      this.openPublication(
         context = context,
         file = file,
         contentProtections = contentProtections
@@ -134,6 +134,7 @@ class ExoAudioBookProvider(
     file: File,
     contentProtections: List<ContentProtection>
   ): Publication {
+    val log = this.logger
     return runBlocking {
       val httpClient =
         DefaultHttpClient()
@@ -143,6 +144,7 @@ class ExoAudioBookProvider(
       when (val assetR = assetRetriever.retrieve(file)) {
         is Try.Failure -> throw ErrorException(assetR.value)
         is Try.Success -> {
+          log.debug("Creating publication parser...")
           val publicationParser =
             DefaultPublicationParser(
               context = context,
@@ -150,11 +152,14 @@ class ExoAudioBookProvider(
               assetRetriever = assetRetriever,
               pdfFactory = LCPNoPDFFactory,
             )
+
+          log.debug("Creating publication opener...")
           val publicationOpener =
             PublicationOpener(
               publicationParser = publicationParser,
               contentProtections = contentProtections,
               onCreatePublication = {
+                log.debug("onCreatePublication")
               },
             )
 
@@ -163,8 +168,14 @@ class ExoAudioBookProvider(
             credentials = null,
             allowUserInteraction = false,
           )) {
-            is Try.Failure -> throw ErrorException(pubR.value)
-            is Try.Success -> pubR.value
+            is Try.Failure -> {
+              log.error("Failed to open publication: {}", pubR.value)
+              throw ErrorException(pubR.value)
+            }
+            is Try.Success -> {
+              log.debug("Opened publication.")
+              pubR.value
+            }
           }
         }
       }
