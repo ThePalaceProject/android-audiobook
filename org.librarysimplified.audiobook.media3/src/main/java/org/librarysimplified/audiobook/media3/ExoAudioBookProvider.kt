@@ -14,10 +14,16 @@ import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerResult.Failure
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.readium.r2.lcp.LcpAuthenticating
+import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.publication.services.protectionError
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.ErrorException
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.streamer.PublicationOpener
@@ -70,8 +76,7 @@ class ExoAudioBookProvider(
         if (isLCP) {
           this.createLCPDataSource(
             context = context,
-            file = this.request.bookFile!!,
-            contentProtections = this.request.contentProtections
+            file = this.request.bookFile!!
           )
         } else {
           DefaultDataSource.Factory(context)
@@ -101,7 +106,6 @@ class ExoAudioBookProvider(
               downloadProvider = this.request.downloadProvider,
               extensions = extensions,
               userAgent = this.request.userAgent,
-              contentProtections = this.request.contentProtections,
               dataSourceFactory = dataSourceFactory,
               missingTrackNameGenerator = missingTrackNameGenerator,
               supportsDownloads = supportsDownloads
@@ -118,75 +122,139 @@ class ExoAudioBookProvider(
 
   private fun createLCPDataSource(
     context: Application,
-    file: File,
-    contentProtections: List<ContentProtection>
+    file: File
   ): DataSource.Factory {
     return LCPDataSource.Factory(
-      this.openPublication(
+      this.openLCPPublication(
         context = context,
-        file = file,
-        contentProtections = contentProtections
+        file = file
       )
     )
   }
 
-  private fun openPublication(
-    context: Application,
-    file: File,
-    contentProtections: List<ContentProtection>
-  ): Publication {
-    val log = this.logger
+  private data class ExoPublicationOpenError(
+    override val message: String
+  ) : Error {
+    override val cause: Error? = null
+  }
 
+  private fun openLCPPublication(
+    context: Application,
+    file: File
+  ): Publication {
+    this.logger.debug("Determining passphrase...")
     val credentialsText =
       when (val c = this.request.bookCredentials) {
         is PlayerBookCredentialsLCP -> c.passphrase
         else -> null
       }
 
-    return runBlocking {
-      val httpClient =
-        DefaultHttpClient()
-      val assetRetriever =
-        AssetRetriever(context.contentResolver, httpClient)
+    if (credentialsText == null) {
+      this.logger.warn("No passphrase was specified. This is likely to fail.")
+    }
 
+    this.logger.debug("Creating LCP service.")
+    val httpClient =
+      DefaultHttpClient()
+    val assetRetriever =
+      AssetRetriever(context.contentResolver, httpClient)
+
+    val lcpService =
+      LcpService(
+        context = context,
+        assetRetriever = assetRetriever
+      )
+
+    if (lcpService == null) {
+      this.logger.error("LCP service is unavailable")
+      throw ErrorException(ExoPublicationOpenError("LCP service is unavailable."))
+    }
+
+    this.logger.debug("Creating LCP content protection.")
+    val contentProtection = lcpService.contentProtection(
+      object : LcpAuthenticating {
+        override suspend fun retrievePassphrase(
+          license: LcpAuthenticating.AuthenticatedLicense,
+          reason: LcpAuthenticating.AuthenticationReason,
+          allowUserInteraction: Boolean
+        ): String? {
+          return credentialsText
+        }
+      }
+    )
+
+    this.logger.debug("Created LCP content protection.")
+    return runBlocking {
       when (val assetR = assetRetriever.retrieve(file)) {
         is Try.Failure -> throw ErrorException(assetR.value)
         is Try.Success -> {
-          log.debug("Creating publication parser...")
-          val publicationParser =
-            DefaultPublicationParser(
-              context = context,
-              httpClient = httpClient,
-              assetRetriever = assetRetriever,
-              pdfFactory = LCPNoPDFFactory,
-            )
-
-          log.debug("Creating publication opener...")
-          val publicationOpener =
-            PublicationOpener(
-              publicationParser = publicationParser,
-              contentProtections = contentProtections,
-              onCreatePublication = {
-                log.debug("onCreatePublication")
-              },
-            )
-
-          when (val pubR = publicationOpener.open(
-            asset = assetR.value,
-            credentials = credentialsText,
-            allowUserInteraction = false,
-          )) {
-            is Try.Failure -> {
-              log.error("Failed to open publication: {}", pubR.value)
-              throw ErrorException(pubR.value)
-            }
-
-            is Try.Success -> {
-              log.debug("Opened publication.")
-              pubR.value
-            }
-          }
+          this@ExoAudioBookProvider.openPublicationFromAsset(
+            context,
+            httpClient,
+            assetRetriever,
+            contentProtection,
+            assetR.value,
+            credentialsText
+          )
         }
+      }
+    }
+  }
+
+  private suspend fun openPublicationFromAsset(
+    context: Application,
+    httpClient: DefaultHttpClient,
+    assetRetriever: AssetRetriever,
+    contentProtection: ContentProtection,
+    asset: Asset,
+    credentialsText: String?
+  ): Publication {
+    this.logger.debug("Creating publication parser...")
+    val publicationParser =
+      DefaultPublicationParser(
+        context = context,
+        httpClient = httpClient,
+        assetRetriever = assetRetriever,
+        pdfFactory = LCPNoPDFFactory,
+      )
+
+    this.logger.debug("Creating publication opener...")
+    val publicationOpener =
+      PublicationOpener(
+        publicationParser = publicationParser,
+        contentProtections = listOf(contentProtection),
+        onCreatePublication = {
+          this@ExoAudioBookProvider.logger.debug("onCreatePublication")
+        },
+      )
+
+    return when (val pubR = publicationOpener.open(
+      asset = asset,
+      credentials = credentialsText,
+      allowUserInteraction = false,
+    )) {
+      is Try.Failure -> {
+        this.logger.error("Failed to open publication: {}", pubR.value)
+        throw ErrorException(pubR.value)
+      }
+
+      is Try.Success -> {
+        this.logger.debug("Opened publication.")
+        val publication = pubR.value
+        if (publication.isRestricted) {
+          this.logger.error("Publication is restricted!")
+          val error = publication.protectionError
+          if (error != null) {
+            this.logger.error("Protection error: {}", error.message)
+            throw ErrorException(error)
+          }
+
+          this.logger.error("Missing a required passphrase or other credentials.")
+          throw ErrorException(
+            ExoPublicationOpenError("Missing a required passphrase or other credentials.")
+          )
+        }
+        publication
       }
     }
   }

@@ -18,7 +18,6 @@ import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
-import org.readium.r2.shared.publication.protection.ContentProtection
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.concurrent.CompletableFuture
@@ -35,7 +34,6 @@ class ExoAudioBook private constructor(
   override val downloadTasksByID: Map<PlayerManifestReadingOrderID, PlayerDownloadTaskType>,
   private val context: Application,
   private val engineExecutor: ScheduledExecutorService,
-  private val contentProtections: List<ContentProtection>,
   private val dataSourceFactory: DataSource.Factory,
   override val readingOrder: List<ExoReadingOrderItemHandle>,
   override val readingOrderByID: Map<PlayerManifestReadingOrderID, ExoReadingOrderItemHandle>,
@@ -169,7 +167,6 @@ class ExoAudioBook private constructor(
       downloadProvider: PlayerDownloadProviderType,
       extensions: List<PlayerExtensionType>,
       userAgent: PlayerUserAgent,
-      contentProtections: List<ContentProtection>,
       dataSourceFactory: DataSource.Factory,
       missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
       supportsDownloads: Boolean
@@ -246,16 +243,15 @@ class ExoAudioBook private constructor(
 
       val book =
         ExoAudioBook(
-          context = context,
+          exoManifest = manifest,
           downloadTasks = downloadTasks.toList(),
           downloadTasksByID = downloadTasksById.toMap(),
+          context = context,
           engineExecutor = engineExecutor,
-          exoManifest = manifest,
+          dataSourceFactory = dataSourceFactory,
           readingOrder = handles.toList(),
           readingOrderByID = handlesById.toMap(),
           readingOrderElementDownloadStatus = statusEvents,
-          contentProtections = contentProtections,
-          dataSourceFactory = dataSourceFactory,
           missingTrackNameGenerator = missingTrackNameGenerator,
           supportsDownloads = supportsDownloads
         )

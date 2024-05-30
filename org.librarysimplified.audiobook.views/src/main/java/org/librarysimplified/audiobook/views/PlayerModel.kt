@@ -57,7 +57,6 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestPars
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.lang.UnsupportedOperationException
 import java.net.URI
 import java.util.ServiceLoader
 import java.util.concurrent.CompletableFuture
@@ -614,7 +613,7 @@ object PlayerModel {
           downloadProvider = DownloadProvider.create(this.downloadExecutor),
           userAgent = userAgent,
           bookFile = bookFile,
-          bookCredentials = bookCredentials
+          bookCredentials = bookCredentials,
         )
       )
 

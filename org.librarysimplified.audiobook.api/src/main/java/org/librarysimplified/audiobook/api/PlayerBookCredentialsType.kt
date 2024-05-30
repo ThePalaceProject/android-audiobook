@@ -5,4 +5,4 @@ package org.librarysimplified.audiobook.api
  * such as LCP.
  */
 
-interface PlayerBookCredentialsType
+sealed interface PlayerBookCredentialsType

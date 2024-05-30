@@ -6,6 +6,9 @@ dependencies {
     implementation(project(":org.librarysimplified.audiobook.api"))
     implementation(project(":org.librarysimplified.audiobook.manifest.api"))
 
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.constraintlayout.core)
+    implementation(libs.androidx.constraintlayout.solver)
     implementation(libs.google.failureaccess)
     implementation(libs.google.guava)
     implementation(libs.irradia.mime.api)
@@ -21,6 +24,7 @@ dependencies {
     implementation(libs.media3.extractor)
     implementation(libs.media3.session)
     implementation(libs.palace.http.api)
+    implementation(libs.r2.lcp)
     implementation(libs.r2.shared)
     implementation(libs.r2.streamer)
     implementation(libs.rxjava2)

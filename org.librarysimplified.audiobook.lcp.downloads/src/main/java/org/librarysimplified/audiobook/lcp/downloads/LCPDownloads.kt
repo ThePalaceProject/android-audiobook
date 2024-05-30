@@ -178,7 +178,7 @@ object LCPDownloads {
 
     val manifestBytes =
       ZipOutputStream(FileOutputStream(fileTemp)).use { zipOut ->
-        val lcpEntry = ZipEntry("META-INF/license.lcpl")
+        val lcpEntry = ZipEntry("license.lcpl")
         zipOut.putNextEntry(lcpEntry)
         zipOut.write(licenseAndBytes.licenseBytes)
         zipOut.closeEntry()
