@@ -1,8 +1,12 @@
 package org.librarysimplified.audiobook.demo
 
+import android.Manifest
 import android.graphics.BitmapFactory
+import android.os.Build
+import android.os.Bundle
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
@@ -52,6 +56,21 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
   private var fragmentNow: Fragment = ExampleFragmentError()
   private var subscriptions: CompositeDisposable = CompositeDisposable()
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    this.askForNotificationsPermission()
+  }
+
+  private fun askForNotificationsPermission() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      ActivityCompat.requestPermissions(
+        this,
+        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+        100
+      )
+    }
+  }
 
   override fun onStart() {
     super.onStart()

@@ -689,6 +689,12 @@ object PlayerModel {
         "No initial position was specified. Playback will begin at the start of the book."
       )
     }
+
+    PlayerUIThread.runOnUIThread(this::startServiceIfNecessary)
+  }
+
+  private fun startServiceIfNecessary() {
+
   }
 
   private fun onHandleChapterCompletionForSleepTimer(
