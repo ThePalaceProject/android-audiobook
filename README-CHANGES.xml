@@ -365,9 +365,9 @@
     <c:release date="2024-06-05T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0010">
       <c:changes/>
     </c:release>
-    <c:release date="2024-06-05T16:20:29+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="13.0.0-beta0011">
+    <c:release date="2024-06-05T17:09:04+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0011">
       <c:changes>
-        <c:change date="2024-06-05T16:20:29+00:00" summary="Reimplement audiobooks TOC."/>
+        <c:change date="2024-06-05T00:00:00+00:00" summary="Reimplement audiobooks TOC."/>
       </c:changes>
     </c:release>
   </c:releases>
