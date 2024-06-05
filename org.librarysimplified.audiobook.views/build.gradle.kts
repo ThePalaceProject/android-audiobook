@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.customview)
+    implementation(libs.androidx.customview.poolingcontainer)
     implementation(libs.androidx.drawerlayout)
     implementation(libs.androidx.emoji2)
     implementation(libs.androidx.emoji2.views)

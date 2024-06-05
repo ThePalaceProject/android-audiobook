@@ -15,6 +15,7 @@ import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
 import org.librarysimplified.audiobook.api.PlayerBookmark
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
@@ -694,7 +695,7 @@ object PlayerModel {
   }
 
   private fun startServiceIfNecessary() {
-
+    // Not implemented yet
   }
 
   private fun onHandleChapterCompletionForSleepTimer(
@@ -937,5 +938,61 @@ object PlayerModel {
   fun setCoverImage(image: Bitmap?) {
     this.coverImageField = image
     this.submitViewCommand(PlayerViewCommand.PlayerViewCoverImageChanged)
+  }
+
+  fun isDownloading(): Boolean {
+    return try {
+      val book = this.playerAndBookField?.audioBook
+      if (book != null) {
+        return book.downloadTasks.any { t -> t.status is PlayerDownloadTaskStatus.Downloading }
+      } else {
+        false
+      }
+    } catch (e: Exception) {
+      this.logger.error("isDownloading: ", e)
+      false
+    }
+  }
+
+  fun isDownloadingCompleted(): Boolean {
+    return try {
+      val book = this.playerAndBookField?.audioBook
+      if (book != null) {
+        return book.downloadTasks.all { t -> t.status is PlayerDownloadTaskStatus.IdleDownloaded }
+      } else {
+        false
+      }
+    } catch (e: Exception) {
+      this.logger.error("isDownloadingCompleted: ", e)
+      false
+    }
+  }
+
+  fun isAnyDownloadingFailed(): Boolean {
+    return try {
+      val book = this.playerAndBookField?.audioBook
+      if (book != null) {
+        return book.downloadTasks.any { t -> t.status is PlayerDownloadTaskStatus.Failed }
+      } else {
+        false
+      }
+    } catch (e: Exception) {
+      this.logger.error("isAnyDownloadingFailed: ", e)
+      false
+    }
+  }
+
+  fun isStreamingSupportedAndPermitted(): Boolean {
+    return try {
+      val playerAndBook = this.playerAndBookField
+      if (playerAndBook != null) {
+        return playerAndBook.audioBook.supportsStreaming && playerAndBook.player.isStreamingPermitted
+      } else {
+        false
+      }
+    } catch (e: Exception) {
+      this.logger.error("isStreamingSupportedAndPermitted: ", e)
+      false
+    }
   }
 }

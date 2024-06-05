@@ -31,6 +31,7 @@ class ExampleFragmentProgress : Fragment() {
     this.statusMessage =
       layout.findViewById(R.id.progressMessage)
 
+    this.progressLog.setHorizontallyScrolling(true)
     return layout
   }
 

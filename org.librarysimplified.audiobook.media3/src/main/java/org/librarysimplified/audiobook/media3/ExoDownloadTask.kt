@@ -59,7 +59,10 @@ class ExoDownloadTask(
 
   private sealed class State {
     data object Initial : State()
-    data class Failed(val exception: Exception) : State()
+    data class Failed(
+      val message: String,
+      val exception: Exception
+    ) : State()
     data object Downloaded : State()
     data class Downloading(val future: CompletableFuture<Unit>) : State()
   }
@@ -189,12 +192,16 @@ class ExoDownloadTask(
 
   private fun onDownloadFailed(exception: Exception) {
     this.log.error("[{}] onDownloadFailed: ", this.readingOrderItem.id, exception)
-    this.stateSetCurrent(Failed(exception))
+    this.stateSetCurrent(Failed(exceptionMessage(exception), exception))
     this.readingOrderItem.setDownloadStatus(
       PlayerReadingOrderItemDownloadFailed(
         this.readingOrderItem, exception, exception.message ?: "Missing exception message"
       )
     )
+  }
+
+  private fun exceptionMessage(exception: Exception): String {
+    return exception.message ?: return exception.javaClass.simpleName
   }
 
   private fun onDownloadCompleted() {
@@ -244,7 +251,7 @@ class ExoDownloadTask(
     }
 
   override val status: PlayerDownloadTaskStatus
-    get() = when (this.stateGetCurrent()) {
+    get() = when (val s = this.stateGetCurrent()) {
       Downloaded -> PlayerDownloadTaskStatus.IdleDownloaded
       is Downloading -> PlayerDownloadTaskStatus.Downloading(
         if (this.progress == 0.0) {
@@ -255,7 +262,7 @@ class ExoDownloadTask(
       )
 
       Initial -> PlayerDownloadTaskStatus.IdleNotDownloaded
-      is Failed -> PlayerDownloadTaskStatus.Failed
+      is Failed -> PlayerDownloadTaskStatus.Failed(s.message, s.exception)
     }
 
   override fun fetch() {

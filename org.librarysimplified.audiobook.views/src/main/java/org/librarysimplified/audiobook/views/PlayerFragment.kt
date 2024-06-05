@@ -48,6 +48,7 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Stopped
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewErrorsDownloadOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
@@ -245,7 +246,9 @@ class PlayerFragment : PlayerBaseFragment() {
           }
         }
 
-        PlayerDownloadTaskStatus.Failed,
+        is PlayerDownloadTaskStatus.Failed -> {
+          // Nothing important to say here.
+        }
         PlayerDownloadTaskStatus.IdleDownloaded,
         PlayerDownloadTaskStatus.IdleNotDownloaded -> {
           // Nothing important to say here.
@@ -273,7 +276,9 @@ class PlayerFragment : PlayerBaseFragment() {
           }
         }
 
-        PlayerDownloadTaskStatus.Failed,
+        is PlayerDownloadTaskStatus.Failed -> {
+          // Nothing important to say here.
+        }
         PlayerDownloadTaskStatus.IdleDownloaded,
         PlayerDownloadTaskStatus.IdleNotDownloaded -> {
           // Nothing important to say here.
@@ -294,7 +299,7 @@ class PlayerFragment : PlayerBaseFragment() {
           // Nothing important to say here.
         }
 
-        PlayerDownloadTaskStatus.Failed -> {
+        is PlayerDownloadTaskStatus.Failed -> {
           this.playerDownloadMessage.text =
             this.resources.getString(R.string.audiobook_player_downloading_failed, task.index + 1)
           this.playerDownloadProgress.visibility = INVISIBLE
@@ -312,6 +317,7 @@ class PlayerFragment : PlayerBaseFragment() {
         this.coverView.setImageBitmap(PlayerModel.coverImage)
       }
 
+      PlayerViewErrorsDownloadOpen,
       PlayerViewNavigationCloseAll,
       PlayerViewNavigationPlaybackRateMenuOpen,
       PlayerViewNavigationSleepMenuOpen,

@@ -4,17 +4,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/player_toc_menu_error"
+        android:contentDescription="@string/audiobook_accessibility_toc_error"
+        android:icon="@drawable/toolbar_menu_error"
+        android:title="@string/audiobook_player_toc_menu_errors"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/player_toc_menu_refresh_all"
         android:contentDescription="@string/audiobook_accessibility_toc_refresh_all"
-        android:icon="@drawable/round_replay_24"
+        android:icon="@drawable/toolbar_menu_download"
         android:title="@string/audiobook_player_toc_menu_refresh_all"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/player_toc_menu_stop_all"
         android:contentDescription="@string/audiobook_accessibility_toc_stop_all"
-        android:icon="@drawable/outline_cancel_24"
+        android:icon="@drawable/toolbar_menu_download_stop"
         android:title="@string/audiobook_player_toc_menu_stop_all"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
 </menu>

@@ -43,6 +43,8 @@ import org.librarysimplified.audiobook.views.PlayerSleepTimerFragment
 import org.librarysimplified.audiobook.views.PlayerTOCFragment
 import org.librarysimplified.audiobook.views.PlayerViewCommand
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewErrorsDownloadOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
@@ -110,6 +112,10 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
     return when (val f = this.fragmentNow) {
       is ExampleFragmentError -> {
         this.close()
+      }
+
+      is ExampleFragmentErrorDownload -> {
+        this.switchFragment(PlayerTOCFragment())
       }
 
       is ExampleFragmentProgress -> {
@@ -290,9 +296,13 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         // Nothing to do
       }
 
-      PlayerViewCommand.PlayerViewNavigationCloseAll -> {
+      PlayerViewNavigationCloseAll -> {
         this.close()
         this.switchFragment(ExampleFragmentSelectBook())
+      }
+
+      PlayerViewErrorsDownloadOpen -> {
+        this.switchFragment(ExampleFragmentErrorDownload())
       }
     }
   }

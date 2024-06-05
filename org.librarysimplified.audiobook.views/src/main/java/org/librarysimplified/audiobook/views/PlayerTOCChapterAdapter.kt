@@ -1,24 +1,19 @@
 package org.librarysimplified.audiobook.views
 
 import android.content.Context
-import android.content.DialogInterface
 import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.joda.time.Duration
-import org.joda.time.format.PeriodFormatter
-import org.joda.time.format.PeriodFormatterBuilder
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 
@@ -34,17 +29,6 @@ class PlayerTOCChapterAdapter(
     View.OnClickListener { v -> this.onSelect(v.tag as PlayerManifestTOCItem) }
   private val timeStrings: PlayerTimeStrings.SpokenTranslations =
     PlayerTimeStrings.SpokenTranslations.createFromResources(this.context.resources)
-
-  private val periodFormatter: PeriodFormatter =
-    PeriodFormatterBuilder()
-      .printZeroAlways()
-      .minimumPrintedDigits(2)
-      .appendHours()
-      .appendLiteral(":")
-      .appendMinutes()
-      .appendLiteral(":")
-      .appendSeconds()
-      .toFormatter()
 
   override fun onCreateViewHolder(
     parent: ViewGroup,
@@ -75,14 +59,26 @@ class PlayerTOCChapterAdapter(
     holder.titleText.text =
       tocItem.title
 
-    var requiresDownload = false
-    var failedDownload = false
-    var downloading = false
+    /*
+     * If streaming isn't possible, a TOC item can only be played if all the reading order items
+     * that overlap its interval have been downloaded.
+     */
 
-    holder.buttons.visibility = GONE
+    val okToPlay =
+      if (PlayerModel.isStreamingSupportedAndPermitted()) {
+        true
+      } else {
+        this.book.tableOfContents.readingOrderItemTree
+          .overlapping(tocItem.intervalAbsoluteMilliseconds)
+          .mapNotNull { interval -> this.book.tableOfContents.readingOrderItemsByInterval[interval] }
+          .mapNotNull { id -> this.book.readingOrderByID[id] }
+          .all { item -> item.downloadStatus is PlayerReadingOrderItemDownloaded }
+      }
 
     val view = holder.view
     view.tag = tocItem
+    view.isEnabled = okToPlay
+    holder.titleText.isEnabled = view.isEnabled
     view.setOnClickListener(this.listener)
     view.contentDescription =
       contentDescriptionOf(
@@ -90,9 +86,7 @@ class PlayerTOCChapterAdapter(
         title = tocItem.title,
         duration = tocItem.duration,
         playing = position == this.currentTOCIndex,
-        requiresDownload = requiresDownload,
-        failedDownload = failedDownload,
-        downloading = downloading
+        requiresDownload = !okToPlay
       )
 
     if (position == this.currentTOCIndex) {
@@ -102,33 +96,12 @@ class PlayerTOCChapterAdapter(
     }
   }
 
-  private fun onConfirmCancelDownloading(
-    readingOrderItem: PlayerReadingOrderItemType
-  ) {
-    val dialog =
-      MaterialAlertDialogBuilder(this.context)
-        .setCancelable(true)
-        .setMessage(R.string.audiobook_part_download_stop_confirm)
-        .setPositiveButton(
-          R.string.audiobook_part_download_stop
-        ) { _: DialogInterface, _: Int ->
-          this.book.downloadTasksByID[readingOrderItem.id]?.cancel()
-        }
-        .setNegativeButton(
-          R.string.audiobook_part_download_continue
-        ) { _: DialogInterface, _: Int -> }
-        .create()
-    dialog.show()
-  }
-
   private fun contentDescriptionOf(
     resources: Resources,
     title: String,
     duration: Duration?,
     playing: Boolean,
-    requiresDownload: Boolean,
-    failedDownload: Boolean,
-    downloading: Boolean
+    requiresDownload: Boolean
   ): String {
     val builder = StringBuilder(128)
 
@@ -151,16 +124,6 @@ class PlayerTOCChapterAdapter(
 
     if (requiresDownload) {
       builder.append(resources.getString(R.string.audiobook_accessibility_toc_chapter_requires_download))
-      builder.append(".")
-    }
-
-    if (failedDownload) {
-      builder.append(resources.getString(R.string.audiobook_accessibility_toc_chapter_failed_download))
-      builder.append(".")
-    }
-
-    if (downloading) {
-      builder.append(resources.getString(R.string.audiobook_accessibility_toc_chapter_downloading))
       builder.append(".")
     }
 
@@ -195,11 +158,9 @@ class PlayerTOCChapterAdapter(
     return null
   }
 
-  inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-
-    val buttons: ViewGroup =
-      this.view.findViewById(R.id.player_toc_chapter_end_controls)
-
+  inner class ViewHolder(
+    val view: View
+  ) : RecyclerView.ViewHolder(view) {
     val titleText: TextView =
       this.view.findViewById(R.id.player_toc_chapter_item_view_title)
     val isCurrent: ImageView =

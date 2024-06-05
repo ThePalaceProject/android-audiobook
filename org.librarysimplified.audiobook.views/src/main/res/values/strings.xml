@@ -36,6 +36,7 @@
     <string name="audiobook_player_toc_menu_refresh_all">Refresh All</string>
     <string name="audiobook_player_toc_menu_stop_all">Stop All Downloads</string>
     <string name="audiobook_player_toc_menu_stop_all_confirm">Stop all downloads?</string>
+    <string name="audiobook_player_toc_menu_errors">Display download errors</string>
 
     <string name="audiobook_player_toc_bookmarks_empty">There are no bookmarks for this book</string>
     <string name="audiobook_player_toc_bookmarks_dialog_title_delete">Delete</string>
@@ -110,6 +111,7 @@
     <string name="audiobook_accessibility_toc_bookmark_delete">Delete</string>
     <string name="audiobook_accessibility_toc_bookmark_offset_is">Offset</string>
 
+    <string name="audiobook_accessibility_toc_error">Show Download Error Details</string>
     <string name="audiobook_accessibility_toc_refresh_all">Download All Files</string>
     <string name="audiobook_accessibility_toc_stop_all">Stop All File Downloads</string>
     <string name="audiobook_accessibility_toc_download">Download File %1$d</string>

@@ -41,4 +41,11 @@ sealed class PlayerViewCommand {
    */
 
   data object PlayerViewCoverImageChanged : PlayerViewCommand()
+
+  /**
+   * The user performed an action that means the application should open a screen that displays
+   * download errors.
+   */
+
+  data object PlayerViewErrorsDownloadOpen : PlayerViewCommand()
 }

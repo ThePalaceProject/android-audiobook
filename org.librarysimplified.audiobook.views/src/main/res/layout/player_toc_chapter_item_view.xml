@@ -50,32 +50,4 @@
         android:visibility="visible"
         tools:text="00:00:00" />
 
-    <FrameLayout
-        android:id="@+id/player_toc_chapter_end_controls"
-        android:layout_width="wrap_content"
-        android:layout_height="80dp"
-        android:layout_marginEnd="16dp"
-        android:minWidth="80dp">
-
-        <include
-            android:id="@+id/player_toc_chapter_item_buttons_error"
-            layout="@layout/player_toc_chapter_item_buttons_download_failed"
-            android:visibility="gone" />
-
-        <include
-            android:id="@+id/player_toc_chapter_item_buttons_not_downloaded_not_streamable"
-            layout="@layout/player_toc_chapter_item_buttons_not_downloaded_not_streamable"
-            android:visibility="gone" />
-
-        <include
-            android:id="@+id/player_toc_chapter_item_buttons_not_downloaded_streamable"
-            layout="@layout/player_toc_chapter_item_buttons_not_downloaded_streamable"
-            android:visibility="gone" />
-
-        <include
-            android:id="@+id/player_toc_chapter_item_buttons_downloading"
-            layout="@layout/player_toc_chapter_item_buttons_downloading"
-            android:visibility="gone" />
-    </FrameLayout>
-
 </LinearLayout>
