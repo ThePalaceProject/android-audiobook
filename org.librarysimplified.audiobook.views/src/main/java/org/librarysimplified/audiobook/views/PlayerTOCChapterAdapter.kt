@@ -56,6 +56,8 @@ class PlayerTOCChapterAdapter(
     val tocItem =
       this.book.tableOfContents.tocItemsInOrder[position]
 
+    holder.durationText.text =
+      PlayerTimeStrings.durationText(tocItem.duration)
     holder.titleText.text =
       tocItem.title
 
@@ -79,6 +81,8 @@ class PlayerTOCChapterAdapter(
     view.tag = tocItem
     view.isEnabled = okToPlay
     holder.titleText.isEnabled = view.isEnabled
+    holder.durationText.isEnabled = view.isEnabled
+
     view.setOnClickListener(this.listener)
     view.contentDescription =
       contentDescriptionOf(
@@ -165,5 +169,7 @@ class PlayerTOCChapterAdapter(
       this.view.findViewById(R.id.player_toc_chapter_item_view_title)
     val isCurrent: ImageView =
       this.view.findViewById(R.id.player_toc_chapter_item_is_current)
+    val durationText: TextView =
+      this.view.findViewById(R.id.player_toc_chapter_item_duration)
   }
 }
