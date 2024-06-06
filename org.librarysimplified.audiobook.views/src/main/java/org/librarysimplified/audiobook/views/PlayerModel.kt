@@ -760,34 +760,13 @@ object PlayerModel {
       this.setCoverImage(null)
     }
 
-    when (val current = this.stateField) {
-      is PlayerBookOpenFailed ->
-        this.setNewState(PlayerModelState.PlayerClosed)
-
-      PlayerModelState.PlayerClosed ->
-        Unit
-
-      is PlayerManifestDownloadFailed ->
-        this.setNewState(PlayerModelState.PlayerClosed)
-
-      PlayerManifestLicenseChecksFailed ->
-        this.setNewState(PlayerModelState.PlayerClosed)
-
-      is PlayerManifestOK ->
-        this.setNewState(PlayerModelState.PlayerClosed)
-
-      is PlayerManifestParseFailed ->
-        this.setNewState(PlayerModelState.PlayerClosed)
-
-      is PlayerModelState.PlayerOpen -> {
-        current.player.close()
-        this.setNewState(PlayerModelState.PlayerClosed)
-      }
-
-      PlayerManifestInProgress -> {
-        this.setNewState(PlayerModelState.PlayerClosed)
-      }
+    try {
+      this.playerAndBookField?.close()
+    } catch (e: Exception) {
+      this.logger.error("Failed to close player: ", e)
     }
+
+    this.setNewState(PlayerModelState.PlayerClosed)
   }
 
   private fun setNewState(newState: PlayerModelState) {
