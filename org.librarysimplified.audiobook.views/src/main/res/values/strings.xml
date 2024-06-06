@@ -43,8 +43,8 @@
     <string name="audiobook_player_toc_bookmarks_dialog_message_delete">Are you sure you want to delete this bookmark?</string>
     <string name="audiobook_player_toc_bookmarks_error_deleting">There was an error deleting the bookmark</string>
 
-    <string name="audiobook_player_downloading">Downloading track %1$d…</string>
-    <string name="audiobook_player_downloading_failed">Downloading track %1$d (and possibly others) failed.</string>
+    <string name="audiobook_player_downloading">Downloading part %1$d…</string>
+    <string name="audiobook_player_downloading_failed">Downloading part %1$d (and possibly others) failed.</string>
 
     <!--
       Accessibility strings.

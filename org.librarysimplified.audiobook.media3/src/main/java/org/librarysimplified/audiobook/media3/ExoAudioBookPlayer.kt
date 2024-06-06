@@ -133,7 +133,7 @@ class ExoAudioBookPlayer private constructor(
 
   @Volatile
   private var intention: PlayerPlaybackIntention =
-    SHOULD_BE_STOPPED
+    SHOULD_BE_PLAYING
 
   private val exoAdapter: ExoAdapter =
     ExoAdapter(

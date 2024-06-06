@@ -228,16 +228,28 @@
             android:layout_height="wrap_content"
             android:alpha="0.5"
             android:gravity="center"
+            android:layout_marginBottom="16dp"
             tools:text="A very very very very very very very very very very long download message."
+            tools:visibility="visible" />
+
+        <ProgressBar
+            android:id="@+id/playerDownloadProgressTotal"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            tools:progress="50"
+            android:visibility="invisible"
             tools:visibility="visible" />
 
         <ProgressBar
             android:id="@+id/playerDownloadProgress"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="32dp"
+            android:layout_height="8dp"
+            tools:progress="25"
             android:visibility="invisible"
             tools:visibility="visible" />
+
     </LinearLayout>
 
     <ImageView

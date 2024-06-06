@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar
 import io.reactivex.disposables.CompositeDisposable
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventDeleteBookmark
@@ -73,6 +74,7 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var playerDebugStatus: TextView
   private lateinit var playerDownloadMessage: TextView
   private lateinit var playerDownloadProgress: ProgressBar
+  private lateinit var playerDownloadProgressTotal: ProgressBar
   private lateinit var playerPosition: SeekBar
   private lateinit var playerRemainingBookTime: TextView
   private lateinit var playerSkipBackwardButton: ImageView
@@ -156,6 +158,10 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.playerDownloadMessage)
     this.playerDownloadProgress =
       view.findViewById(R.id.playerDownloadProgress)
+    this.playerDownloadProgressTotal =
+      view.findViewById(R.id.playerDownloadProgressTotal)
+
+    this.playerDownloadProgressTotal.isIndeterminate = false
 
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
     this.toolbarConfigureAllActions()
@@ -231,6 +237,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerDownloadMessage.text = ""
     this.playerDownloadProgress.visibility = INVISIBLE
+    this.playerDownloadProgressTotal.visibility = INVISIBLE
 
     for (task in tasks) {
       when (val st = task.status) {
@@ -242,6 +249,8 @@ class PlayerFragment : PlayerBaseFragment() {
             this.playerDownloadProgress.visibility = VISIBLE
             this.playerDownloadProgress.isIndeterminate = false
             this.playerDownloadProgress.progress = progress.toInt()
+            this.playerDownloadProgressTotal.visibility = VISIBLE
+            this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).toInt()
             return
           }
         }
@@ -249,6 +258,7 @@ class PlayerFragment : PlayerBaseFragment() {
         is PlayerDownloadTaskStatus.Failed -> {
           // Nothing important to say here.
         }
+
         PlayerDownloadTaskStatus.IdleDownloaded,
         PlayerDownloadTaskStatus.IdleNotDownloaded -> {
           // Nothing important to say here.
@@ -272,6 +282,8 @@ class PlayerFragment : PlayerBaseFragment() {
               this.resources.getString(R.string.audiobook_player_downloading, task.index + 1)
             this.playerDownloadProgress.visibility = VISIBLE
             this.playerDownloadProgress.isIndeterminate = true
+            this.playerDownloadProgressTotal.visibility = VISIBLE
+            this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).toInt()
             return
           }
         }
@@ -279,6 +291,7 @@ class PlayerFragment : PlayerBaseFragment() {
         is PlayerDownloadTaskStatus.Failed -> {
           // Nothing important to say here.
         }
+
         PlayerDownloadTaskStatus.IdleDownloaded,
         PlayerDownloadTaskStatus.IdleNotDownloaded -> {
           // Nothing important to say here.
@@ -304,10 +317,29 @@ class PlayerFragment : PlayerBaseFragment() {
             this.resources.getString(R.string.audiobook_player_downloading_failed, task.index + 1)
           this.playerDownloadProgress.visibility = INVISIBLE
           this.playerDownloadProgress.isIndeterminate = false
+          this.playerDownloadProgressTotal.visibility = INVISIBLE
           return
         }
       }
     }
+  }
+
+  private fun downloadProgressTotal(
+    tasks: List<PlayerDownloadTaskType>
+  ): Double {
+    val totalPossible =
+      tasks.foldRight(0.0) { task, acc -> acc + 100.0 }
+
+    val totalAchieved = tasks.foldRight(0.0) { task, acc ->
+      when (val status = task.status) {
+        is PlayerDownloadTaskStatus.Downloading -> acc + (status.progress ?: 0.0)
+        is PlayerDownloadTaskStatus.Failed -> acc
+        PlayerDownloadTaskStatus.IdleDownloaded -> acc + 100.0
+        PlayerDownloadTaskStatus.IdleNotDownloaded -> acc
+      }
+    }
+
+    return (totalAchieved / totalPossible) * 100.0
   }
 
   @UiThread
@@ -554,6 +586,9 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
 
+    this.playerStatusIcon.setImageBitmap(null)
+    this.publishStatusAreaMessage("")
+
     this.setButtonToShowPause()
     this.playerPosition.isEnabled = true
 
@@ -700,7 +735,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerTimeRemaining.contentDescription =
       PlayerTimeStrings.remainingTOCItemTimeSpoken(
-        translations = timeStrings,
+        translations = this.timeStrings,
         time = positionMetadata.tocItemRemaining
       )
 
@@ -711,7 +746,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerTimeCurrent.contentDescription =
       PlayerTimeStrings.elapsedTOCItemTimeSpoken(
-        translations = timeStrings,
+        translations = this.timeStrings,
         time = positionMetadata.tocItemPosition
       )
   }
