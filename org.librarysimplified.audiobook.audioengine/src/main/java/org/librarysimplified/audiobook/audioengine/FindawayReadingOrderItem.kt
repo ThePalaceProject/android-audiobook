@@ -44,6 +44,10 @@ class FindawayReadingOrderItem(
   private var statusNow: PlayerReadingOrderItemDownloadStatus =
     PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded(this)
 
+  @GuardedBy("statusLock")
+  private var statusPrevious: PlayerReadingOrderItemDownloadStatus =
+    PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded(this)
+
   private lateinit var bookActual: FindawayAudioBook
 
   override val book: PlayerAudioBookType
@@ -67,6 +71,7 @@ class FindawayReadingOrderItem(
 
   fun setDownloadStatus(status: PlayerReadingOrderItemDownloadStatus) {
     synchronized(this.statusLock) {
+      this.statusPrevious = this.statusNow
       this.statusNow = status
     }
     this.downloadStatusEvents.onNext(status)
@@ -83,4 +88,7 @@ class FindawayReadingOrderItem(
 
   override val downloadStatus: PlayerReadingOrderItemDownloadStatus
     get() = synchronized(this.statusLock) { this.statusNow }
+
+  override val downloadStatusPrevious: PlayerReadingOrderItemDownloadStatus
+    get() = synchronized(this.statusLock) { this.statusPrevious }
 }

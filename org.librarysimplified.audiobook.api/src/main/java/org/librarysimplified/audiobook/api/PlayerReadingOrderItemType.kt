@@ -57,6 +57,12 @@ interface PlayerReadingOrderItemType {
   val downloadStatus: PlayerReadingOrderItemDownloadStatus
 
   /**
+   * The previously published download status for the reading order item.
+   */
+
+  val downloadStatusPrevious: PlayerReadingOrderItemDownloadStatus
+
+  /**
    * `true` if downloading individual chapters is supported by the underlying engine.
    */
 

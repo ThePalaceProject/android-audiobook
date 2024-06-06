@@ -34,6 +34,10 @@ class ExoReadingOrderItemHandle(
   private var statusNow: PlayerReadingOrderItemDownloadStatus =
     PlayerReadingOrderItemNotDownloaded(this)
 
+  @GuardedBy("statusLock")
+  private var statusPrevious: PlayerReadingOrderItemDownloadStatus =
+    PlayerReadingOrderItemNotDownloaded(this)
+
   private lateinit var bookActual: ExoAudioBook
 
   override val book: PlayerAudioBookType
@@ -53,7 +57,10 @@ class ExoReadingOrderItemHandle(
   }
 
   fun setDownloadStatus(status: PlayerReadingOrderItemDownloadStatus) {
-    synchronized(this.statusLock, { this.statusNow = status })
+    synchronized(this.statusLock) {
+      this.statusPrevious = this.statusNow
+      this.statusNow = status
+    }
     this.downloadStatusEvents.onNext(status)
   }
 
@@ -61,7 +68,10 @@ class ExoReadingOrderItemHandle(
     get() = true
 
   override val downloadStatus: PlayerReadingOrderItemDownloadStatus
-    get() = synchronized(this.statusLock, { this.statusNow })
+    get() = synchronized(this.statusLock) { this.statusNow }
+
+  override val downloadStatusPrevious: PlayerReadingOrderItemDownloadStatus
+    get() = synchronized(this.statusLock) { this.statusPrevious }
 
   override val id: PlayerManifestReadingOrderID =
     this.itemManifest.item.id

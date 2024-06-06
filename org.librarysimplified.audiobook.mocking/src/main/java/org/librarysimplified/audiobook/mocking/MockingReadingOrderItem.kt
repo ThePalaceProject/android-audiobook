@@ -51,11 +51,11 @@ class MockingReadingOrderItem(
   private var downloadStatusValue: PlayerReadingOrderItemDownloadStatus =
     PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded(this)
 
-  fun setDownloadStatus(status: PlayerReadingOrderItemDownloadStatus) {
-    this.downloadStatusValue = status
-    this.downloadStatusEvents.onNext(status)
-  }
+  private var downloadStatusValuePrevious: PlayerReadingOrderItemDownloadStatus =
+    PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded(this)
 
   override val downloadStatus: PlayerReadingOrderItemDownloadStatus
     get() = this.downloadStatusValue
+  override val downloadStatusPrevious: PlayerReadingOrderItemDownloadStatus
+    get() = this.downloadStatusValuePrevious
 }
