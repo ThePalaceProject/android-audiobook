@@ -347,11 +347,13 @@ class FindawayPlayer(
 
   override fun close() {
     if (this.closed.compareAndSet(false, true)) {
-      this.log.debug("[{}]: close", this.id)
-      this.opEngineStop()
-      this.eventSource.onComplete()
-      this.bookmarkObserver.close()
-      this.resources.dispose()
+      runOnUIThread {
+        this.log.debug("[{}]: close", this.id)
+        this.opEngineStop()
+        this.eventSource.onComplete()
+        this.bookmarkObserver.close()
+        this.resources.dispose()
+      }
     }
   }
 
