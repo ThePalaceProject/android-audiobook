@@ -380,10 +380,10 @@
         <c:change date="2024-06-06T00:00:00+00:00" summary="Player UI tweaks."/>
       </c:changes>
     </c:release>
-    <c:release date="2024-06-06T16:24:51+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="13.0.0-beta0014">
+    <c:release date="2024-06-06T16:25:02+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0014">
       <c:changes>
         <c:change date="2024-06-06T00:00:00+00:00" summary="Aggressively close books."/>
-        <c:change date="2024-06-06T16:24:51+00:00" summary="Track the previous state of downloads for reading order items."/>
+        <c:change date="2024-06-06T00:00:00+00:00" summary="Track the previous state of downloads for reading order items."/>
       </c:changes>
     </c:release>
   </c:releases>
