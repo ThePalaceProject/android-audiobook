@@ -375,9 +375,9 @@
         <c:change date="2024-06-05T00:00:00+00:00" summary="Ensure durations are shown."/>
       </c:changes>
     </c:release>
-    <c:release date="2024-06-06T09:52:37+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="13.0.0-beta0013">
+    <c:release date="2024-06-06T10:24:19+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0013">
       <c:changes>
-        <c:change date="2024-06-06T09:52:37+00:00" summary="Player UI tweaks."/>
+        <c:change date="2024-06-06T00:00:00+00:00" summary="Player UI tweaks."/>
       </c:changes>
     </c:release>
   </c:releases>
