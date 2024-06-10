@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <resources>
+    <string name="audiobook_toc_downloading_all_chapters">Downloading all chapters…</string>
+    <string name="audiobook_toc_cancelling_all_chapters">Cancelling all downloads.</string>
 
     <string name="audiobook_player_remaining_time">%1$d hours %2$d minutes remaining in book</string>
     <string name="audiobook_player_remaining_time_minutes_only">%d minutes remaining in book</string>

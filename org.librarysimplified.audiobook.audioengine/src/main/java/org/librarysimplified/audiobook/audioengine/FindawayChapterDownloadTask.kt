@@ -1,72 +1,84 @@
 package org.librarysimplified.audiobook.audioengine
 
-import io.audioengine.mobile.DownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import java.net.URI
 
-/**
- * A class for performing downloads for a single chapter.
- */
-
 class FindawayChapterDownloadTask(
-  private val downloadEngine: FindawayDownloadEngineType,
-  private val manifest: FindawayManifest,
-  private val spineElements: List<FindawayReadingOrderItem>,
-  val chapter: Int,
-  val part: Int,
   override val index: Int,
-  override val playbackURI: URI
+  override val playbackURI: URI,
+  private val readingOrderItem: FindawayReadingOrderItem
 ) : PlayerDownloadTaskType {
 
-  @Volatile
-  private var stateField: PlayerDownloadTaskStatus =
-    PlayerDownloadTaskStatus.IdleNotDownloaded
-
-  private val request: DownloadRequest =
-    DownloadRequest(
-      chapter = this.chapter,
-      contentId = this.manifest.fulfillmentId,
-      licenseId = this.manifest.licenseId,
-      part = this.part,
-      type = DownloadRequest.Type.SINGLE
-    )
-
-  @Volatile
-  private var progressValue = 0.0
-
-  override val progress: Double
-    get() = this.progressValue
+  override fun fetch() {
+    // Nothing
+  }
 
   override fun cancel() {
-    this.stateField = PlayerDownloadTaskStatus.IdleNotDownloaded
-    this.downloadEngine.delete(this.request)
+    // Nothing
   }
 
   override fun delete() {
-    this.stateField = PlayerDownloadTaskStatus.IdleNotDownloaded
-    this.downloadEngine.delete(this.request)
+    // Nothing
+  }
+
+  fun setStatus(status: PlayerDownloadTaskStatus) {
+    this.readingOrderItem.setDownloadStatus(
+      when (status) {
+        is PlayerDownloadTaskStatus.Downloading ->
+          PlayerReadingOrderItemDownloading(
+            readingOrderItem = this.readingOrderItem,
+            percent = (status.progress ?: 0).toInt()
+          )
+
+        is PlayerDownloadTaskStatus.Failed ->
+          PlayerReadingOrderItemDownloadFailed(
+            readingOrderItem = this.readingOrderItem,
+            exception = status.exception,
+            message = status.message
+          )
+
+        PlayerDownloadTaskStatus.IdleDownloaded ->
+          PlayerReadingOrderItemDownloaded(this.readingOrderItem)
+
+        PlayerDownloadTaskStatus.IdleNotDownloaded ->
+          PlayerReadingOrderItemNotDownloaded(this.readingOrderItem)
+      }
+    )
   }
 
   override val status: PlayerDownloadTaskStatus
-    get() = this.stateField
+    get() = when (val s = this.readingOrderItem.downloadStatus) {
+      is PlayerReadingOrderItemDownloadExpired ->
+        PlayerDownloadTaskStatus.IdleNotDownloaded
 
-  override fun fetch() {
-    this.stateField = PlayerDownloadTaskStatus.Downloading(
-      if (this.progressValue == 0.0) {
-        null
-      } else {
-        this.progressValue
-      }
-    )
-    this.downloadEngine.download(this.request)
-  }
+      is PlayerReadingOrderItemDownloadFailed ->
+        PlayerDownloadTaskStatus.Failed(s.message, s.exception)
 
-  internal fun setProgress(percent: Double) {
-    this.progressValue = percent
-  }
+      is PlayerReadingOrderItemDownloaded ->
+        PlayerDownloadTaskStatus.IdleDownloaded
+
+      is PlayerReadingOrderItemDownloading ->
+        PlayerDownloadTaskStatus.Downloading(s.percent.toDouble())
+
+      is PlayerReadingOrderItemNotDownloaded ->
+        PlayerDownloadTaskStatus.IdleNotDownloaded
+    }
+
+  override val progress: Double
+    get() = when (val s = this.status) {
+      is PlayerDownloadTaskStatus.Downloading -> s.progress ?: 0.0
+      is PlayerDownloadTaskStatus.Failed -> 0.0
+      PlayerDownloadTaskStatus.IdleDownloaded -> 100.0
+      PlayerDownloadTaskStatus.IdleNotDownloaded -> 0.0
+    }
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>
-    get() = this.spineElements
+    get() = listOf(this.readingOrderItem)
 }

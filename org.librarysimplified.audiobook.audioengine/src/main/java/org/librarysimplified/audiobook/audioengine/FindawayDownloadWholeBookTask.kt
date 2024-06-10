@@ -1,14 +1,20 @@
 package org.librarysimplified.audiobook.audioengine
 
 import io.audioengine.mobile.DownloadEvent
+import io.audioengine.mobile.DownloadRequest
 import io.reactivex.disposables.Disposable
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus.Downloading
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus.IdleDownloaded
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus.IdleNotDownloaded
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
+import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.slf4j.LoggerFactory
 import java.net.URI
 
@@ -27,9 +33,14 @@ class FindawayDownloadWholeBookTask(
 
   private var downloadEventsSubscription: Disposable? = null
 
-  private var currentDownloadTaskIndex = 0
-  private var currentChapter = 0
-  private var currentPart = 0
+  private val downloadRequest =
+    DownloadRequest(
+      contentId = this.audioBook.findawayManifest.fulfillmentId,
+      licenseId = this.audioBook.findawayManifest.licenseId,
+      chapter = this.audioBook.readingOrder[0].itemManifest.sequence,
+      part = this.audioBook.readingOrder[0].itemManifest.part,
+      type = DownloadRequest.Type.TO_END
+    )
 
   init {
     this.downloadEventsSubscription =
@@ -45,11 +56,7 @@ class FindawayDownloadWholeBookTask(
     get() = 0
 
   override val status: PlayerDownloadTaskStatus
-    get() = run {
-      val task = this.audioBook.downloadTasks[this.currentDownloadTaskIndex]
-        as FindawayChapterDownloadTask
-      return task.status
-    }
+    get() = IdleNotDownloaded
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = this.audioBook.readingOrder
@@ -63,61 +70,78 @@ class FindawayDownloadWholeBookTask(
   override fun cancel() {
     this.log.debug("cancel")
 
-    this.audioBook.downloadTasks.forEach { task ->
+    /*
+     * The Findaway player will frequently just lose requests. We maximize the chances of any
+     * request actually being processed by submitting it multiple times, and then trying again
+     * a second or so later.
+     */
+
+    for (i in 0 until 3) {
+      val delay = i * 250L
+      PlayerUIThread.runOnUIThreadDelayed({
+        this.downloadEngine.pause(this.downloadRequest)
+        this.setAllCancelled()
+      }, delay)
+    }
+  }
+
+  private fun setAllCancelled() {
+    this.audioBook.downloadTasks.forEach { task: PlayerDownloadTaskType ->
       if (task is FindawayChapterDownloadTask) {
-        if (task.readingOrderItems.filterIsInstance<FindawayReadingOrderItem>().any { item ->
-            item.downloadStatus !is PlayerReadingOrderItemDownloaded
-          }) {
-          task.setProgress(0.0)
-          task.cancel()
+        when (val s = task.status) {
+          is Downloading -> {
+            task.setStatus(IdleNotDownloaded)
+          }
+
+          is PlayerDownloadTaskStatus.Failed -> {
+            task.setStatus(s)
+          }
+
+          IdleDownloaded -> {
+            task.setStatus(IdleDownloaded)
+          }
+
+          IdleNotDownloaded -> {
+            task.setStatus(IdleNotDownloaded)
+          }
         }
+      } else {
+        throw IllegalStateException("Task is of an unexpected type.")
       }
     }
-
-    this.downloadEventsSubscription?.dispose()
   }
 
   override fun delete() {
     this.log.debug("delete")
 
-    this.audioBook.downloadTasks.forEach { task ->
-      (task as FindawayChapterDownloadTask).setProgress(0.0)
-      task.readingOrderItems.forEach { item ->
-        (item as FindawayReadingOrderItem).setDownloadStatus(
-          PlayerReadingOrderItemNotDownloaded(item)
-        )
-      }
-      task.delete()
-    }
+    /*
+     * The Findaway player will frequently just lose requests. We maximize the chances of any
+     * request actually being processed by submitting it multiple times, and then trying again
+     * a second or so later.
+     */
 
-    this.downloadEventsSubscription?.dispose()
+    for (i in 0 until 3) {
+      val delay = i * 250L
+      PlayerUIThread.runOnUIThreadDelayed({
+        this.downloadEngine.delete(this.downloadRequest)
+        this.setAllDeleted()
+      }, delay)
+    }
+  }
+
+  private fun setAllDeleted() {
+    this.audioBook.downloadTasks.forEach { task: PlayerDownloadTaskType ->
+      if (task is FindawayChapterDownloadTask) {
+        task.setStatus(IdleNotDownloaded)
+      } else {
+        throw IllegalStateException("Task is of an unexpected type.")
+      }
+    }
   }
 
   override fun fetch() {
     this.log.debug("fetch")
-
-    this.currentDownloadTaskIndex = 0
-    this.fetchCurrentDownloadTask()
-  }
-
-  private fun fetchCurrentDownloadTask() {
-    if (this.currentDownloadTaskIndex >= this.audioBook.downloadTasks.size) {
-      return
-    }
-
-    this.log.debug("fetch task number {}", this.currentDownloadTaskIndex)
-
-    val task = this.audioBook.downloadTasks[this.currentDownloadTaskIndex] as FindawayChapterDownloadTask
-    this.currentChapter = task.chapter
-    this.currentPart = task.part
-
-    if (!task.readingOrderItems.all { item -> item.downloadStatus is PlayerReadingOrderItemDownloaded }) {
-      task.setProgress(0.0)
-      task.fetch()
-    } else {
-      this.currentDownloadTaskIndex++
-      this.fetchCurrentDownloadTask()
-    }
+    this.downloadEngine.download(this.downloadRequest)
   }
 
   private fun onDownloadError(error: Throwable) {
@@ -153,7 +177,12 @@ class FindawayDownloadWholeBookTask(
       }
 
       if (event.isError) {
-        downloadTaskWithElement.setProgress(0.0)
+        downloadTaskWithElement.setStatus(
+          PlayerDownloadTaskStatus.Failed(
+            message = event.message ?: "Download failed.",
+            exception = null
+          )
+        )
         downloadTaskWithElement.readingOrderItems.forEach { spineElement ->
           val findawayElement = spineElement as FindawayReadingOrderItem
           findawayElement.setDownloadStatus(
@@ -166,7 +195,7 @@ class FindawayDownloadWholeBookTask(
       when (event.code) {
         DownloadEvent.CHAPTER_ALREADY_DOWNLOADED,
         DownloadEvent.CHAPTER_DOWNLOAD_COMPLETED -> {
-          downloadTaskWithElement.setProgress(100.0)
+          downloadTaskWithElement.setStatus(IdleDownloaded)
           downloadTaskWithElement.readingOrderItems.forEach { spineElement ->
             val findawayElement = spineElement as FindawayReadingOrderItem
             findawayElement.setDownloadStatus(PlayerReadingOrderItemDownloaded(findawayElement))
@@ -176,7 +205,7 @@ class FindawayDownloadWholeBookTask(
 
         DownloadEvent.DOWNLOAD_PAUSED,
         DownloadEvent.DOWNLOAD_CANCELLED -> {
-          downloadTaskWithElement.setProgress(0.0)
+          downloadTaskWithElement.setStatus(IdleNotDownloaded)
           downloadTaskWithElement.readingOrderItems.forEach { spineElement ->
             val findawayElement = spineElement as FindawayReadingOrderItem
             findawayElement.setDownloadStatus(
@@ -189,7 +218,7 @@ class FindawayDownloadWholeBookTask(
         }
 
         DownloadEvent.DOWNLOAD_STARTED -> {
-          downloadTaskWithElement.setProgress(0.0)
+          downloadTaskWithElement.setStatus(Downloading(0.0))
           downloadTaskWithElement.readingOrderItems.forEach { spineElement ->
             val findawayElement = spineElement as FindawayReadingOrderItem
             findawayElement.setDownloadStatus(
@@ -217,7 +246,7 @@ class FindawayDownloadWholeBookTask(
             return
           }
 
-          downloadTaskWithElement.setProgress(percentage.toDouble())
+          downloadTaskWithElement.setStatus(Downloading(percentage.toDouble()))
           downloadTaskWithElement.readingOrderItems.forEach { spineElement ->
             val findawayElement = spineElement as FindawayReadingOrderItem
             findawayElement.setDownloadStatus(

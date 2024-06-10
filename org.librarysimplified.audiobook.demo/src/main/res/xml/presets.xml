@@ -37,4 +37,9 @@
         type="lcpLicense">
         <AuthenticationNone />
     </Preset>
+    <Preset
+        name="Findaway Test 0"
+        location="http://outland.iw.int.arc7.info/2024/06/10/speculation.json">
+        <AuthenticationNone />
+    </Preset>
 </Presets>

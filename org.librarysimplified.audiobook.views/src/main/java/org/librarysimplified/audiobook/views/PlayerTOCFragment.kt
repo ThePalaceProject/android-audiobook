@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
@@ -100,6 +101,12 @@ class PlayerTOCFragment : PlayerBaseFragment() {
   }
 
   private fun onMenuRefreshAllSelected() {
+    Toast.makeText(
+      this.requireContext(),
+      R.string.audiobook_toc_downloading_all_chapters,
+      Toast.LENGTH_SHORT
+    ).show()
+
     try {
       val book = PlayerModel.book()
       book.wholeBookDownloadTask.fetch()
@@ -109,6 +116,12 @@ class PlayerTOCFragment : PlayerBaseFragment() {
   }
 
   private fun onMenuCancelAllSelected() {
+    Toast.makeText(
+      this.requireContext(),
+      R.string.audiobook_toc_cancelling_all_chapters,
+      Toast.LENGTH_SHORT
+    ).show()
+
     try {
       val book = PlayerModel.book()
       book.wholeBookDownloadTask.cancel()

@@ -4,14 +4,7 @@ import android.content.Context
 import com.google.common.base.Preconditions
 import io.audioengine.mobile.AudioEngine
 import io.audioengine.mobile.AudioEngineException
-import io.audioengine.mobile.DownloadStatus
-import io.audioengine.mobile.DownloadStatus.DOWNLOADED
-import io.audioengine.mobile.DownloadStatus.DOWNLOADING
-import io.audioengine.mobile.DownloadStatus.NOT_DOWNLOADED
-import io.audioengine.mobile.DownloadStatus.PAUSED
-import io.audioengine.mobile.DownloadStatus.QUEUED
 import io.audioengine.mobile.LogLevel
-import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
@@ -20,9 +13,6 @@ import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
-import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
@@ -97,69 +87,6 @@ class FindawayAudioBook private constructor(
         "Spine size " + this.readingOrder.size + " must match spineByID size " + this.readingOrderByID.size
       )
     }
-
-    this.downloadTasks.map { task ->
-      val findawayTask =
-        task as FindawayChapterDownloadTask
-
-      val statusObservable: Observable<DownloadStatus> =
-        this.downloadEngine.status(
-          contentId = this.findawayManifest.fulfillmentId,
-          part = findawayTask.part,
-          chapter = findawayTask.chapter
-        )
-
-      val subscription =
-        statusObservable.subscribe(
-          { status -> onDownloadStatus(findawayTask, status) },
-          { error -> onDownloadError(error) },
-          { })
-
-      this.subscriptions.add(subscription)
-    }
-  }
-
-  private fun onDownloadError(error: Throwable?) {
-    log.error("onDownloadError: ", error)
-  }
-
-  private fun onDownloadStatus(
-    task: FindawayChapterDownloadTask,
-    status: DownloadStatus
-  ) {
-    when (status) {
-      NOT_DOWNLOADED -> {
-        task.readingOrderItems.forEach { element ->
-          task.setProgress(0.0)
-          val findawayElement = element as FindawayReadingOrderItem
-          findawayElement.setDownloadStatus(PlayerReadingOrderItemNotDownloaded(findawayElement))
-        }
-      }
-
-      QUEUED,
-      DOWNLOADING,
-      PAUSED -> {
-        task.readingOrderItems.forEach { element ->
-          val findawayElement = element as FindawayReadingOrderItem
-          if (findawayElement.downloadStatus is PlayerReadingOrderItemDownloading) {
-            // Ignore
-          } else {
-            findawayElement.setDownloadStatus(
-              PlayerReadingOrderItemDownloading(findawayElement, 0)
-            )
-            task.setProgress(0.0)
-          }
-        }
-      }
-
-      DOWNLOADED -> {
-        task.readingOrderItems.forEach { element ->
-          val findawayElement = element as FindawayReadingOrderItem
-          findawayElement.setDownloadStatus(PlayerReadingOrderItemDownloaded(findawayElement))
-          task.setProgress(100.0)
-        }
-      }
-    }
   }
 
   companion object {
@@ -220,15 +147,12 @@ class FindawayAudioBook private constructor(
             interval = interval
           )
 
-        val downloadTask = FindawayChapterDownloadTask(
-          downloadEngine = directDownloader,
-          manifest = manifest,
-          spineElements = listOf(element),
-          chapter = spineItem.sequence,
-          part = spineItem.part,
-          index = index,
-          playbackURI = URI.create(element.id.text)
-        )
+        val downloadTask =
+          FindawayChapterDownloadTask(
+            readingOrderItem = element,
+            index = index,
+            playbackURI = URI.create(element.id.text)
+          )
 
         downloadTasks.add(downloadTask)
         downloadTasksById[spineItem.id] = downloadTask
