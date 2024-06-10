@@ -391,9 +391,9 @@
         <c:change date="2024-06-06T00:00:00+00:00" summary="Allow Findaway player close() method to be called on any thread."/>
       </c:changes>
     </c:release>
-    <c:release date="2024-06-10T16:02:10+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="13.0.0-beta0016">
+    <c:release date="2024-06-10T16:10:50+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0016">
       <c:changes>
-        <c:change date="2024-06-10T16:02:10+00:00" summary="Refactor Findaway download event publication."/>
+        <c:change date="2024-06-10T00:00:00+00:00" summary="Refactor Findaway download event publication."/>
       </c:changes>
     </c:release>
   </c:releases>
