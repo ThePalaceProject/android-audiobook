@@ -201,7 +201,15 @@ class PlayerFragment : PlayerBaseFragment() {
       )
     })
     this.subscriptions.add(PlayerModel.downloadEvents.subscribe { event -> this.onDownloadEvent() })
+    this.setPlayPauseButtonAppropriately()
+  }
 
+  /**
+   * Set the play/pause button to the appropriate action, but don't change anything with regard
+   * to whether the button is visible or not.
+   */
+
+  private fun setPlayPauseButtonAppropriately() {
     if (PlayerModel.isPlaying) {
       this.setButtonToShowPause()
     } else {
@@ -209,13 +217,27 @@ class PlayerFragment : PlayerBaseFragment() {
     }
   }
 
+  /**
+   * Set the play/pause button to "pause", but don't change anything with regard to whether
+   * the button is visible or not.
+   */
+
   @UiThread
   private fun setButtonToShowPause() {
     this.playPauseButton.setImageResource(R.drawable.round_pause_24)
     this.playPauseButton.setOnClickListener { PlayerModel.pause() }
     this.playPauseButton.contentDescription =
       this.getString(R.string.audiobook_accessibility_pause)
+
+    check(this.playerDebugStatus.text != "Paused") {
+      "Player must be playing to set pause button!"
+    }
   }
+
+  /**
+   * Set the play/pause button to "play", but don't change anything with regard to whether
+   * the button is visible or not.
+   */
 
   @UiThread
   private fun setButtonToShowPlay() {
@@ -589,9 +611,8 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerStatusIcon.setImageBitmap(null)
     this.publishStatusAreaMessage("")
 
-    this.setButtonToShowPause()
     this.playerPosition.isEnabled = true
-
+    this.setButtonToShowPause()
     this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
@@ -619,6 +640,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
+    this.setButtonToShowPause()
     this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
@@ -631,6 +653,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE
 
+    this.setButtonToShowPause()
     this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
@@ -644,7 +667,6 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerCommands.visibility = VISIBLE
 
     this.setButtonToShowPlay()
-
     this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
@@ -658,7 +680,6 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerCommands.visibility = VISIBLE
 
     this.setButtonToShowPlay()
-
     this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
