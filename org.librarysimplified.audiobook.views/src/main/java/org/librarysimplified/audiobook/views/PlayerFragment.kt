@@ -228,10 +228,6 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playPauseButton.setOnClickListener { PlayerModel.pause() }
     this.playPauseButton.contentDescription =
       this.getString(R.string.audiobook_accessibility_pause)
-
-    check(this.playerDebugStatus.text != "Paused") {
-      "Player must be playing to set pause button!"
-    }
   }
 
   /**

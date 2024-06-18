@@ -20,6 +20,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
+import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerResult
@@ -912,12 +913,15 @@ object PlayerModel {
   }
 
   val isPlaying: Boolean
-    get() = this.playerAndBookField?.player?.playbackIntention == PlayerPlaybackIntention.SHOULD_BE_PLAYING
+    get() = this.playerAndBookField?.player?.playbackStatus != PlayerPlaybackStatus.PAUSED
 
   fun setCoverImage(image: Bitmap?) {
     this.coverImageField = image
     this.submitViewCommand(PlayerViewCommand.PlayerViewCoverImageChanged)
   }
+
+  val isBuffering: Boolean
+    get() = this.playerAndBookField?.player?.playbackStatus == PlayerPlaybackStatus.BUFFERING
 
   fun isDownloading(): Boolean {
     return try {
