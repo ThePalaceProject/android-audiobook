@@ -167,9 +167,20 @@ object PlayerMediaFacade : Player {
       }
 
       is PlayerEventPlaybackProgressUpdate -> {
+        val bookTitle =
+          PlayerModel.bookTitle
+        val chapterTitle =
+          event.positionMetadata.tocItem.title
+        val title =
+          if (bookTitle.isNotBlank()) {
+            "$bookTitle: $chapterTitle"
+          } else {
+            chapterTitle
+          }
+
         this.mediaMetadataLatest =
           MediaMetadata.Builder()
-            .setTitle(event.positionMetadata.tocItem.title)
+            .setTitle(title)
             .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
             .build()
 
