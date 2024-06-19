@@ -56,6 +56,7 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestInPr
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLicenseChecksFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
+import org.librarysimplified.audiobook.views.mediacontrols.PlayerMediaController
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -74,9 +75,6 @@ object PlayerModel {
   @Volatile
   private var intentForPlayerServiceField: Intent? = null
 
-  val notificationIntentForPlayerService: Intent?
-    get() = this.intentForPlayerServiceField
-
   @Volatile
   var bookTitle: String = ""
 
@@ -85,6 +83,9 @@ object PlayerModel {
 
   @Volatile
   private var coverImageField: Bitmap? = null
+
+  @Volatile
+  private lateinit var application: Application
 
   /**
    * The cover image for the audio book.
@@ -691,12 +692,6 @@ object PlayerModel {
         "No initial position was specified. Playback will begin at the start of the book."
       )
     }
-
-    PlayerUIThread.runOnUIThread(this::startServiceIfNecessary)
-  }
-
-  private fun startServiceIfNecessary() {
-    // Not implemented yet
   }
 
   private fun onHandleChapterCompletionForSleepTimer(
@@ -976,6 +971,16 @@ object PlayerModel {
     } catch (e: Exception) {
       this.logger.error("isStreamingSupportedAndPermitted: ", e)
       false
+    }
+  }
+
+  fun start(
+    application: Application
+  ) {
+    this.application = application
+
+    PlayerUIThread.runOnUIThread {
+      PlayerMediaController.start(this.application)
     }
   }
 }

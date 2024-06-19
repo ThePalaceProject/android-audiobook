@@ -2,7 +2,7 @@ package org.librarysimplified.audiobook.demo
 
 import android.app.Application
 import org.librarysimplified.audiobook.api.PlayerUserAgent
-import org.librarysimplified.audiobook.views.mediacontrols.PlayerMediaController
+import org.librarysimplified.audiobook.views.PlayerModel
 import org.librarysimplified.http.api.LSHTTPClientConfiguration
 import org.librarysimplified.http.api.LSHTTPClientType
 import org.librarysimplified.http.vanilla.LSHTTPClients
@@ -34,6 +34,6 @@ class ExampleApplication : Application() {
     INSTANCE = this
     this.databaseField = ExampleBookmarkDatabase(this)
 
-    PlayerMediaController.start(this)
+    PlayerModel.start(this)
   }
 }

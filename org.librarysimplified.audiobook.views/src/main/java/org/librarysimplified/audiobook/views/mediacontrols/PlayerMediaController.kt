@@ -19,6 +19,8 @@ object PlayerMediaController {
   fun start(context: Application) {
     this.logger.debug("Starting media controller...")
 
+    PlayerMediaFacade.start(context)
+
     val future =
       MediaController.Builder(
         context,
@@ -37,5 +39,11 @@ object PlayerMediaController {
     } catch (e: Throwable) {
       this.logger.error("Media controller startup failed: ", e)
     }
+  }
+
+  fun stop() {
+    this.logger.debug("Stopping media controller...")
+    this.controller?.stop()
+    this.controller = null
   }
 }

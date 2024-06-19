@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <resources>
+    <string name="audiobook_not_open">No audiobook is currently open.</string>
+
     <string name="audiobook_toc_downloading_all_chapters">Downloading all chapters…</string>
     <string name="audiobook_toc_cancelling_all_chapters">Cancelling all downloads.</string>
 

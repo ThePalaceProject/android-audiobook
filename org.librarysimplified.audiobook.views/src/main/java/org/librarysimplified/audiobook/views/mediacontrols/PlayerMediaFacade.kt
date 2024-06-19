@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.views.mediacontrols
 
+import android.app.Application
 import android.os.Looper
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -45,6 +46,7 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLice
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerOpen
+import org.librarysimplified.audiobook.views.R
 import org.slf4j.LoggerFactory
 
 /**
@@ -69,10 +71,14 @@ object PlayerMediaFacade : Player {
       .build()
 
   @Volatile
-  private var mediaMetadataLatest: MediaMetadata = MediaMetadata.EMPTY
+  private var mediaMetadataFake =
+    MediaMetadata.Builder()
+      .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
+      .setTitle("No audiobook is currently open.")
+      .build()
 
   @Volatile
-  private var mediaItemLatest: MediaItem = MediaItem.EMPTY
+  private var mediaMetadataLatest: MediaMetadata = mediaMetadataFake
 
   @Volatile
   private var latestException: PlaybackException? = null
@@ -91,6 +97,18 @@ object PlayerMediaFacade : Player {
     PlayerModel.stateEvents.subscribe(this::onStateEvent)
   }
 
+  fun start(
+    application: Application
+  ) {
+    this.mediaMetadataFake =
+      MediaMetadata.Builder()
+        .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
+        .setTitle(application.getString(R.string.audiobook_not_open))
+        .build()
+
+    this.mediaMetadataLatest = this.mediaMetadataFake
+  }
+
   private fun onStateEvent(
     event: PlayerModelState
   ) {
@@ -104,8 +122,7 @@ object PlayerMediaFacade : Player {
       is PlayerManifestOK,
       is PlayerManifestParseFailed,
       is PlayerOpen -> {
-        this.mediaMetadataLatest = MediaMetadata.EMPTY
-        this.mediaItemLatest = MediaItem.EMPTY
+        this.mediaMetadataLatest = mediaMetadataFake
         this.latestChapterDuration = 0L
         this.latestChapterPosition = 0L
       }
@@ -196,7 +213,7 @@ object PlayerMediaFacade : Player {
 
       is PlayerEventPlaybackStarted -> {
         this.listeners.forEach { listener ->
-          listener.onIsPlayingChanged(true)
+          listener.onIsPlayingChanged(PlayerModel.isPlaying)
           listener.onPlaybackStateChanged(Player.STATE_READY)
         }
       }
@@ -204,7 +221,7 @@ object PlayerMediaFacade : Player {
       is PlayerEventPlaybackPaused,
       is PlayerEventPlaybackStopped -> {
         this.listeners.forEach { listener ->
-          listener.onIsPlayingChanged(false)
+          listener.onIsPlayingChanged(PlayerModel.isPlaying)
           listener.onPlaybackStateChanged(Player.STATE_IDLE)
         }
       }
@@ -231,6 +248,8 @@ object PlayerMediaFacade : Player {
     this.logger.debug("addListener: {}", listener)
     this.listeners = this.listeners.plus(listener)
     this.logger.debug("addListener: {} listeners now", this.listeners.size)
+
+    listener.onIsPlayingChanged(PlayerModel.isPlaying)
   }
 
   override fun removeListener(
@@ -669,7 +688,7 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getCurrentMediaItem(): MediaItem {
-    return this.mediaItemLatest
+    return MediaItem.EMPTY
   }
 
   override fun getMediaItemCount(): Int {
@@ -679,7 +698,7 @@ object PlayerMediaFacade : Player {
   override fun getMediaItemAt(
     index: Int
   ): MediaItem {
-    return this.mediaItemLatest
+    return MediaItem.EMPTY
   }
 
   override fun getDuration(): Long {
