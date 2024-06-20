@@ -404,7 +404,6 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getPlaybackSuppressionReason(): Int {
-    this.warnNotImplemented("getPlaybackSuppressionReason")
     return Player.PLAYBACK_SUPPRESSION_REASON_NONE
   }
 
