@@ -68,6 +68,8 @@ object PlayerMediaFacade : Player {
       .add(Player.COMMAND_PLAY_PAUSE)
       .add(Player.COMMAND_GET_METADATA)
       .add(Player.COMMAND_GET_CURRENT_MEDIA_ITEM)
+      .add(Player.COMMAND_SEEK_FORWARD)
+      .add(Player.COMMAND_SEEK_BACK)
       .build()
 
   @Volatile
@@ -78,7 +80,7 @@ object PlayerMediaFacade : Player {
       .build()
 
   @Volatile
-  private var mediaMetadataLatest: MediaMetadata = mediaMetadataFake
+  private var mediaMetadataLatest: MediaMetadata = this.mediaMetadataFake
 
   @Volatile
   private var latestException: PlaybackException? = null
@@ -122,7 +124,7 @@ object PlayerMediaFacade : Player {
       is PlayerManifestOK,
       is PlayerManifestParseFailed,
       is PlayerOpen -> {
-        this.mediaMetadataLatest = mediaMetadataFake
+        this.mediaMetadataLatest = this.mediaMetadataFake
         this.latestChapterDuration = 0L
         this.latestChapterPosition = 0L
       }
@@ -130,6 +132,38 @@ object PlayerMediaFacade : Player {
   }
 
   private fun onPlayerEvent(event: PlayerEvent) {
+    if (event is PlayerEvent.PlayerEventWithPosition) {
+      this.latestChapterDuration =
+        event.positionMetadata.tocItem.durationMilliseconds
+      this.latestChapterPosition =
+        event.positionMetadata.tocItemPosition.millis
+
+      val bookTitle =
+        PlayerModel.bookTitle
+      val chapterTitle =
+        event.positionMetadata.tocItem.title
+      val title =
+        if (bookTitle.isNotBlank()) {
+          "$bookTitle: $chapterTitle"
+        } else {
+          chapterTitle
+        }
+
+      this.mediaMetadataLatest =
+        MediaMetadata.Builder()
+          .setAlbumTitle(title)
+          .setAlbumArtist(PlayerModel.bookAuthor)
+          .setArtist(PlayerModel.bookAuthor)
+          .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
+          .setTitle(title)
+          .setWriter(PlayerModel.bookAuthor)
+          .build()
+
+      this.listeners.forEach { listener ->
+        listener.onMediaMetadataChanged(this.mediaMetadataLatest)
+      }
+    }
+
     return when (event) {
       is PlayerAccessibilityEvent -> {
         // Nothing to do
@@ -184,31 +218,7 @@ object PlayerMediaFacade : Player {
       }
 
       is PlayerEventPlaybackProgressUpdate -> {
-        val bookTitle =
-          PlayerModel.bookTitle
-        val chapterTitle =
-          event.positionMetadata.tocItem.title
-        val title =
-          if (bookTitle.isNotBlank()) {
-            "$bookTitle: $chapterTitle"
-          } else {
-            chapterTitle
-          }
-
-        this.mediaMetadataLatest =
-          MediaMetadata.Builder()
-            .setTitle(title)
-            .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
-            .build()
-
-        this.latestChapterDuration =
-          event.positionMetadata.tocItem.durationMilliseconds
-        this.latestChapterPosition =
-          event.positionMetadata.tocItemPosition.millis
-
-        this.listeners.forEach { listener ->
-          listener.onMediaMetadataChanged(this.mediaMetadataLatest)
-        }
+        // Nothing to do
       }
 
       is PlayerEventPlaybackStarted -> {
@@ -222,7 +232,7 @@ object PlayerMediaFacade : Player {
       is PlayerEventPlaybackStopped -> {
         this.listeners.forEach { listener ->
           listener.onIsPlayingChanged(PlayerModel.isPlaying)
-          listener.onPlaybackStateChanged(Player.STATE_IDLE)
+          listener.onPlaybackStateChanged(Player.STATE_READY)
         }
       }
 
@@ -495,7 +505,7 @@ object PlayerMediaFacade : Player {
   }
 
   override fun seekBack() {
-    this.warnNotImplemented("seekBack")
+    PlayerModel.skipBack()
   }
 
   override fun getSeekForwardIncrement(): Long {
@@ -504,7 +514,7 @@ object PlayerMediaFacade : Player {
   }
 
   override fun seekForward() {
-    this.warnNotImplemented("seekForward")
+    PlayerModel.skipForward()
   }
 
   @Deprecated("Deprecated in Java")
@@ -598,7 +608,7 @@ object PlayerMediaFacade : Player {
     PlaybackParameters(1.0f, 1.0f)
 
   override fun getPlaybackParameters(): PlaybackParameters {
-    return playbackParameters
+    return this.playbackParameters
   }
 
   override fun stop() {
