@@ -401,9 +401,9 @@
         <c:change date="2024-06-20T00:00:00+00:00" summary="Add media controls service."/>
       </c:changes>
     </c:release>
-    <c:release date="2024-07-10T13:01:48+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="13.0.0-beta0018">
+    <c:release date="2024-07-10T13:03:52+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0018">
       <c:changes>
-        <c:change date="2024-07-10T13:01:48+00:00" summary="Improve lock screen media controls.">
+        <c:change date="2024-07-10T00:00:00+00:00" summary="Improve lock screen media controls.">
           <c:tickets>
             <c:ticket id="PP-1404"/>
           </c:tickets>
