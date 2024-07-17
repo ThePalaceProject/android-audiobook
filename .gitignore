@@ -1,4 +1,5 @@
 *.iml
+*.dia~
 .gradle
 .idea
 app.properties
