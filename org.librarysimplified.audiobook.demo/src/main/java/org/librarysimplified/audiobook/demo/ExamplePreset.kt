@@ -15,7 +15,8 @@ data class ExamplePreset(
   val name: String,
   val uri: URI,
   val type: ExampleTargetType,
-  val credentials: ExamplePlayerCredentials
+  val credentials: ExamplePlayerCredentials,
+  val lcpPassphrase: String?
 ) {
 
   companion object {
@@ -37,6 +38,7 @@ data class ExamplePreset(
     ): List<ExamplePreset> {
       var name = ""
       var location = ""
+      var lcpPassphrase: String? = null
       var type = ExampleTargetType.MANIFEST
       var credentials = ExamplePlayerCredentials.None(0) as ExamplePlayerCredentials
       val presets = mutableListOf<ExamplePreset>()
@@ -51,7 +53,12 @@ data class ExamplePreset(
               "Presets" -> {
               }
 
+              "LCPPassphrase" -> {
+                lcpPassphrase = parser.getAttributeValue(null, "value")
+              }
+
               "Preset" -> {
+                lcpPassphrase = null
                 name = parser.getAttributeValue(null, "name")
                 location = parser.getAttributeValue(null, "location")
                 type = parseType(parser.getAttributeValue(null, "type"))
@@ -102,7 +109,8 @@ data class ExamplePreset(
                     name = name,
                     uri = URI.create(location),
                     credentials = credentials,
-                    type = type
+                    type = type,
+                    lcpPassphrase = lcpPassphrase
                   )
                 )
               }

@@ -14,12 +14,15 @@
 
   <xsd:element name="Preset">
     <xsd:complexType>
-      <xsd:choice>
-        <xsd:element ref="pr:AuthenticationNone" />
-        <xsd:element ref="pr:AuthenticationBasic" />
-        <xsd:element ref="pr:Feedbooks" />
-        <xsd:element ref="pr:Overdrive" />
-      </xsd:choice>
+      <xsd:sequence>
+        <xsd:choice>
+          <xsd:element ref="pr:AuthenticationNone" />
+          <xsd:element ref="pr:AuthenticationBasic" />
+          <xsd:element ref="pr:Feedbooks" />
+          <xsd:element ref="pr:Overdrive" />
+        </xsd:choice>
+        <xsd:element ref="pr:LCPPassphrase" minOccurs="0" maxOccurs="1"/>
+      </xsd:sequence>
 
       <xsd:attribute
         name="name"
@@ -44,6 +47,15 @@
         minOccurs="0">
         <xsd:element ref="pr:Preset" />
       </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="LCPPassphrase">
+    <xsd:complexType>
+      <xsd:attribute
+          name="value"
+          type="xsd:string"
+          use="required" />
     </xsd:complexType>
   </xsd:element>
 

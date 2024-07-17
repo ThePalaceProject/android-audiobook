@@ -68,6 +68,9 @@ import java.util.concurrent.Executors
 object PlayerModel {
 
   @Volatile
+  private var isStreamingPermitted: Boolean = false
+
+  @Volatile
   var playerExtensions: List<PlayerExtensionType> =
     ServiceLoader.load(PlayerExtensionType::class.java)
       .toList()
@@ -95,6 +98,7 @@ object PlayerModel {
     get() = this.coverImageField
 
   private var audioManagerService: AudioManager? = null
+
   val playbackRate: PlayerPlaybackRate
     get() = this.playerAndBookField?.player?.playbackRate ?: PlayerPlaybackRate.NORMAL_TIME
 
@@ -379,7 +383,7 @@ object PlayerModel {
     parserExtensions: List<ManifestParserExtensionType>,
     bookFile: File,
     bookFileTemp: File,
-    bookCredentials: PlayerBookCredentialsType
+    bookCredentials: PlayerBookCredentialsType,
   ): CompletableFuture<Unit> {
     this.logger.debug("downloadParseAndCheckLCPLicense")
 
@@ -424,34 +428,68 @@ object PlayerModel {
         is PlayerResult.Success -> result.result
       }
 
-    when (val result = LCPDownloads.downloadPublication(
-      parameters = licenseParameters,
-      license = licenseAndBytes.license,
-      outputFile = bookFile,
-      isCancelled = { false },
-      receiver = receiver
-    )) {
-      is PlayerResult.Failure -> {
-        this.setNewState(
-          PlayerManifestDownloadFailed(
-            ManifestFulfillmentErrors.ofDownloadResult(
-              licenseParameters.uri,
-              result.failure
-            )
-          )
-        )
-        throw OperationFailedException()
-      }
-
-      is PlayerResult.Success -> Unit
-    }
+    /*
+     * If streaming is permitted, then we need to download the manifest by extracting the link
+     * to the manifest from the license file. Otherwise, if streaming is not permitted, then we
+     * need to download the entire LCP publication file and repackage it.
+     */
 
     val manifestBytes: ManifestFulfilled =
-      LCPDownloads.repackagePublication(
-        licenseAndBytes = licenseAndBytes,
-        file = bookFile,
-        fileTemp = bookFileTemp
-      )
+      if (!this.isStreamingPermitted) {
+        this.logger.debug("Streaming is not permitted. Downloading entire LCP publication.")
+
+        when (val result = LCPDownloads.downloadPublication(
+          parameters = licenseParameters,
+          license = licenseAndBytes.license,
+          outputFile = bookFile,
+          isCancelled = { false },
+          receiver = receiver
+        )) {
+          is PlayerResult.Failure -> {
+            this.setNewState(
+              PlayerManifestDownloadFailed(
+                ManifestFulfillmentErrors.ofDownloadResult(
+                  licenseParameters.uri,
+                  result.failure
+                )
+              )
+            )
+            throw OperationFailedException()
+          }
+
+          is PlayerResult.Success -> Unit
+        }
+
+        LCPDownloads.repackagePublication(
+          licenseAndBytes = licenseAndBytes,
+          file = bookFile,
+          fileTemp = bookFileTemp
+        )
+      } else {
+        this.logger.debug("Streaming is permitted. Attempting to extract manifest from remote LCP publication.")
+
+        when (val result = LCPDownloads.downloadManifestFromPublication(
+          parameters = licenseParameters,
+          license = licenseAndBytes.license,
+          outputFile = bookFile,
+          isCancelled = { false },
+          receiver = receiver
+        )) {
+          is PlayerResult.Failure -> {
+            this.setNewState(
+              PlayerManifestDownloadFailed(
+                ManifestFulfillmentErrors.ofDownloadResult(
+                  licenseParameters.uri,
+                  result.failure
+                )
+              )
+            )
+            throw OperationFailedException()
+          }
+
+          is PlayerResult.Success -> Unit
+        }
+      }
 
     val parseResult =
       this.parseManifest(
@@ -563,7 +601,8 @@ object PlayerModel {
     fetchAll: Boolean,
     initialPosition: PlayerPosition?,
     bookFile: File?,
-    bookCredentials: PlayerBookCredentialsType
+    bookCredentials: PlayerBookCredentialsType,
+    licenseFile: File?
   ): CompletableFuture<Unit> {
     this.logger.debug("openPlayerForManifest")
 
@@ -587,7 +626,8 @@ object PlayerModel {
         fetchAll = fetchAll,
         initialPosition = initialPosition,
         bookFile = bookFile,
-        bookCredentials = bookCredentials
+        bookCredentials = bookCredentials,
+        licenseFile = licenseFile
       )
     }
   }
@@ -600,7 +640,8 @@ object PlayerModel {
     fetchAll: Boolean,
     initialPosition: PlayerPosition?,
     bookFile: File?,
-    bookCredentials: PlayerBookCredentialsType
+    bookCredentials: PlayerBookCredentialsType,
+    licenseFile: File?
   ) {
     this.logger.debug("opOpenPlayerForManifest")
 
@@ -617,14 +658,17 @@ object PlayerModel {
           userAgent = userAgent,
           bookFile = bookFile,
           bookCredentials = bookCredentials,
+          licenseFile = licenseFile
         )
       )
 
     if (engine == null) {
-      this.setNewState(PlayerBookOpenFailed(
-        message = "No suitable audio engine for manifest.",
-        exception = UnsupportedOperationException()
-      ))
+      this.setNewState(
+        PlayerBookOpenFailed(
+          message = "No suitable audio engine for manifest.",
+          exception = UnsupportedOperationException()
+        )
+      )
       throw OperationFailedException()
     }
 
@@ -646,10 +690,12 @@ object PlayerModel {
 
     if (bookResult is PlayerResult.Failure) {
       this.logger.error("Book failed to open: ", bookResult.failure)
-      this.setNewState(PlayerBookOpenFailed(
-        message = "Failed to open audio book.",
-        exception = bookResult.failure
-      ))
+      this.setNewState(
+        PlayerBookOpenFailed(
+          message = "Failed to open audio book.",
+          exception = bookResult.failure
+        )
+      )
       throw OperationFailedException()
     }
 
@@ -660,6 +706,7 @@ object PlayerModel {
     val newPair =
       PlayerBookAndPlayer(newBook, newPlayer)
 
+    newPlayer.isStreamingPermitted = this.isStreamingPermitted
     this.playerAndBookField?.close()
     this.playerAndBookField = newPair
 
@@ -981,6 +1028,24 @@ object PlayerModel {
 
     PlayerUIThread.runOnUIThread {
       PlayerMediaController.start(this.application)
+    }
+  }
+
+  fun setStreamingPermitted(
+    permitted: Boolean
+  ) {
+    return try {
+      this.logger.debug("setStreamingPermitted: {}", permitted)
+      this.isStreamingPermitted = permitted
+
+      val playerAndBook = this.playerAndBookField
+      if (playerAndBook != null) {
+        playerAndBook.player.isStreamingPermitted = permitted
+      } else {
+        Unit
+      }
+    } catch (e: Exception) {
+      this.logger.error("setStreamingPermitted: ", e)
     }
   }
 }

@@ -76,7 +76,8 @@ class ExoAudioBookProvider(
         if (isLCP) {
           this.createLCPDataSource(
             context = context,
-            file = this.request.bookFile!!
+            bookFile = this.request.bookFile,
+            licenseFile = this.request.licenseFile
           )
         } else {
           DefaultDataSource.Factory(context)
@@ -122,14 +123,30 @@ class ExoAudioBookProvider(
 
   private fun createLCPDataSource(
     context: Application,
-    file: File
+    bookFile: File?,
+    licenseFile: File?
   ): DataSource.Factory {
-    return LCPDataSource.Factory(
-      this.openLCPPublication(
-        context = context,
-        file = file
+    return if (bookFile != null) {
+      LCPDataSource.Factory(
+        this.openLCPPublication(
+          context = context,
+          file = bookFile,
+          type = "AudioBook File"
+        )
       )
-    )
+    } else if (licenseFile != null) {
+      LCPDataSource.Factory(
+        this.openLCPPublication(
+          context = context,
+          file = licenseFile,
+          type = "License File"
+        )
+      )
+    } else {
+      throw IllegalArgumentException(
+        "For LCP audiobooks, either a book file or a license file is required."
+      )
+    }
   }
 
   private data class ExoPublicationOpenError(
@@ -140,8 +157,10 @@ class ExoAudioBookProvider(
 
   private fun openLCPPublication(
     context: Application,
-    file: File
+    file: File,
+    type: String
   ): Publication {
+    this.logger.debug("Opening an LCP publication of type: {}", type)
     this.logger.debug("Determining passphrase...")
     val credentialsText =
       when (val c = this.request.bookCredentials) {

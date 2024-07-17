@@ -46,6 +46,12 @@ data class PlayerAudioEngineRequest(
   val bookFile: File?,
 
   /**
+   * The license file, if this book uses a DRM scheme that has a license file.
+   */
+
+  val licenseFile: File?,
+
+  /**
    * The credentials required to open the book.
    */
 

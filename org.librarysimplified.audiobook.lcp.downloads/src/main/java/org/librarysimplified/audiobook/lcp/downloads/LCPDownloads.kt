@@ -223,4 +223,28 @@ object LCPDownloads {
       data = manifestBytes!!
     )
   }
+
+  fun downloadManifestFromPublication(
+    parameters: ManifestFulfillmentBasicParameters,
+    license: LicenseDocument,
+    outputFile: File,
+    isCancelled: () -> Boolean,
+    receiver: (ManifestFulfillmentEvent) -> Unit
+  ): ManifestFulfilled {
+    val request: LSHTTPRequestType =
+      parameters.httpClient.newRequest(URI.create(license.publicationLink.href.toString()))
+        .apply {
+          val credentials = parameters.credentials
+          if (credentials != null) {
+            setAuthorization(
+              LSHTTPAuthorizationBasic.ofUsernamePassword(
+                credentials.userName,
+                credentials.password
+              )
+            )
+          }
+        }
+        .addHeader("User-Agent", parameters.userAgent.userAgent)
+        .build()
+  }
 }

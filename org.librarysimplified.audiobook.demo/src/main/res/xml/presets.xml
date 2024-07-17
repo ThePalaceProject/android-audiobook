@@ -36,6 +36,7 @@
         location="https://io7m.github.io/audiobooks/lcp0/book.lcpl"
         type="lcpLicense">
         <AuthenticationNone />
+        <LCPPassphrase value="n6RwtMR3CTwfrg4Y8TuUDg=="/>
     </Preset>
     <Preset
         name="Findaway Test 0"
