@@ -11,6 +11,7 @@ data class PlayerDownloadRequest(
   val uri: URI,
   val userAgent: PlayerUserAgent,
   val outputFile: File,
+  val outputFileTemp: File,
   val credentials: PlayerDownloadRequestCredentials?,
   val onProgress: (Int) -> Unit
 )

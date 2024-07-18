@@ -37,6 +37,7 @@ class ExoDownloadTask(
   private val userAgent: PlayerUserAgent,
   private val extensions: List<PlayerExtensionType>,
   val partFile: File,
+  val partFileTemp: File,
   override val index: Int
 ) : PlayerDownloadTaskType {
 
@@ -142,6 +143,7 @@ class ExoDownloadTask(
         uri = this.originalLink.hrefURI ?: URI.create("urn:missing"),
         credentials = null,
         outputFile = this.partFile,
+        outputFileTemp = this.partFileTemp,
         userAgent = this.userAgent,
         onProgress = { percent -> this.onDownloading(percent) }
       )

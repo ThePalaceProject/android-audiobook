@@ -19,7 +19,7 @@ sealed class PlayerBookSource {
 
   /**
    * The book data is taken from a license file. This is the usual situation for streamed LCP
-   * audiobooks, where the underyling player is responsible for streaming encrypted audiobook
+   * audiobooks, where the underlying player is responsible for streaming encrypted audiobook
    * chapters from a remote zip file.
    */
 

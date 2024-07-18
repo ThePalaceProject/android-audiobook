@@ -1,7 +1,5 @@
 package org.librarysimplified.audiobook.tests
 
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import org.junit.jupiter.api.AfterEach
@@ -64,13 +62,20 @@ abstract class FeedbooksExtensionContract {
   @Test
   fun testNotApplicable() {
     val extension = FeedbooksPlayerExtension()
-    val file = File(TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     val request =
       PlayerDownloadRequest(
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
@@ -98,13 +103,20 @@ abstract class FeedbooksExtensionContract {
   @Test
   fun testNotConfigured() {
     val extension = FeedbooksPlayerExtension()
-    val file = File(TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     val request =
       PlayerDownloadRequest(
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
@@ -144,7 +156,13 @@ abstract class FeedbooksExtensionContract {
   @Test
   fun testBearerTokenSent() {
     val extension = FeedbooksPlayerExtension()
-    val file = File(TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     extension.configuration =
       FeedbooksPlayerExtensionConfiguration(
@@ -157,6 +175,7 @@ abstract class FeedbooksExtensionContract {
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },

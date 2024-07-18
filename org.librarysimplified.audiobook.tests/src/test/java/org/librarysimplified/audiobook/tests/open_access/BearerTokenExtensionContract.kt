@@ -1,7 +1,5 @@
 package org.librarysimplified.audiobook.tests.open_access
 
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import org.junit.jupiter.api.AfterEach
@@ -16,6 +14,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestEncrypted
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLinkProperties
 import org.librarysimplified.audiobook.media3.BearerTokenExtension
+import org.librarysimplified.audiobook.tests.TestDirectories
 import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
 import org.librarysimplified.http.api.LSHTTPAuthorizationBearerToken
 import org.slf4j.LoggerFactory
@@ -63,13 +62,20 @@ abstract class BearerTokenExtensionContract {
   @Test
   fun notUsedWhenAuthorizationIsNotBearerToken() {
     val extension = BearerTokenExtension()
-    val file = File(org.librarysimplified.audiobook.tests.TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     val request =
       PlayerDownloadRequest(
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
@@ -99,13 +105,20 @@ abstract class BearerTokenExtensionContract {
   @Test
   fun notUsedWhenAuthorizationIsNull() {
     val extension = BearerTokenExtension()
-    val file = File(org.librarysimplified.audiobook.tests.TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     val request =
       PlayerDownloadRequest(
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
@@ -137,7 +150,13 @@ abstract class BearerTokenExtensionContract {
   @Test
   fun notUsedWhenOriginalRequestHasCredentials() {
     val extension = BearerTokenExtension()
-    val file = File(org.librarysimplified.audiobook.tests.TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     val request =
       PlayerDownloadRequest(
@@ -147,6 +166,7 @@ abstract class BearerTokenExtensionContract {
           password = "pw"
         ),
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
@@ -175,13 +195,20 @@ abstract class BearerTokenExtensionContract {
   @Test
   fun notUsedWhenLinkHasEncryptionScheme() {
     val extension = BearerTokenExtension()
-    val file = File(org.librarysimplified.audiobook.tests.TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     val request =
       PlayerDownloadRequest(
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
@@ -215,13 +242,20 @@ abstract class BearerTokenExtensionContract {
   @Test
   fun testBearerTokenSent() {
     val extension = BearerTokenExtension()
-    val file = File(org.librarysimplified.audiobook.tests.TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     val request =
       PlayerDownloadRequest(
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },

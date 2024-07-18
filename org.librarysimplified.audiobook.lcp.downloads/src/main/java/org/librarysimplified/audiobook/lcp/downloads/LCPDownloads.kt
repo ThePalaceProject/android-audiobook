@@ -90,7 +90,11 @@ object LCPDownloads {
     }
   }
 
-  private fun parseLicense(
+  /**
+   * Parse a license file.
+   */
+
+  fun parseLicense(
     data: ByteArray
   ): PlayerResult<LCPLicenseAndBytes, ManifestFulfillmentErrorType> {
     return when (val result = LicenseDocument.fromBytes(data)) {

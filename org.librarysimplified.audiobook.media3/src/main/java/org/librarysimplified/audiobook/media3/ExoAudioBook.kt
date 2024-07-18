@@ -18,6 +18,9 @@ import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
+import org.librarysimplified.audiobook.media3.ExoDownloadSupport.DownloadEntireBookAsFile
+import org.librarysimplified.audiobook.media3.ExoDownloadSupport.DownloadIndividualChaptersAsFiles
+import org.librarysimplified.audiobook.media3.ExoDownloadSupport.DownloadUnsupported
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.concurrent.CompletableFuture
@@ -39,7 +42,7 @@ class ExoAudioBook private constructor(
   override val readingOrderByID: Map<PlayerManifestReadingOrderID, ExoReadingOrderItemHandle>,
   override val readingOrderElementDownloadStatus: PublishSubject<PlayerReadingOrderItemDownloadStatus>,
   private val missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
-  private val supportsDownloads: Boolean
+  private val supportsDownloads: ExoDownloadSupport
 ) : PlayerAudioBookType {
 
   private val logger =
@@ -70,10 +73,10 @@ class ExoAudioBook private constructor(
     true
 
   override val supportsIndividualChapterDeletion: Boolean =
-    this.supportsDownloads
+    this.supportsDownloads == DownloadIndividualChaptersAsFiles
 
   override val supportsIndividualChapterDownload: Boolean =
-    this.supportsDownloads
+    this.supportsDownloads == DownloadIndividualChaptersAsFiles
 
   override fun replaceManifest(
     manifest: PlayerManifest
@@ -169,7 +172,7 @@ class ExoAudioBook private constructor(
       userAgent: PlayerUserAgent,
       dataSourceFactory: DataSource.Factory,
       missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
-      supportsDownloads: Boolean
+      supportsDownloads: ExoDownloadSupport
     ): PlayerAudioBookType {
       val directory = this.findDirectoryFor(context, manifest.bookID)
       this.log.debug("Book directory: {}", directory)
@@ -188,6 +191,12 @@ class ExoAudioBook private constructor(
         HashMap<PlayerManifestReadingOrderID, PlayerDownloadTaskType>()
       val downloadTasks =
         ArrayList<PlayerDownloadTaskType>()
+      val bookFile =
+        File(directory, "book.zip")
+      val bookFileTemp =
+        File(directory, "book.zip.tmp")
+
+      var wholeBookDownloadSharedState: ExoDownloadWholeBookSingleFileTask.SharedState? = null
 
       var handlePrevious: ExoReadingOrderItemHandle? = null
 
@@ -216,25 +225,53 @@ class ExoAudioBook private constructor(
 
         val partFile =
           File(directory, "${manifestItem.index}.part")
+        val partFileTemp =
+          File(directory, "${manifestItem.index}.part.tmp")
 
         val task =
-          if (supportsDownloads) {
-            ExoDownloadTask(
-              downloadProvider = downloadProvider,
-              downloadStatusExecutor = engineExecutor,
-              extensions = extensions,
-              originalLink = manifestItem.item.link,
-              partFile = partFile,
-              readingOrderItem = handle,
-              userAgent = userAgent,
-              index = manifestItem.index
-            )
-          } else {
-            ExoDownloadAlwaysSucceededTask(
-              index = manifestItem.index,
-              readingOrderItem = handle,
-              playbackURI = manifestItem.item.link.hrefURI!!
-            )
+          when (supportsDownloads) {
+            is DownloadEntireBookAsFile -> {
+              if (wholeBookDownloadSharedState == null) {
+                wholeBookDownloadSharedState =
+                  ExoDownloadWholeBookSingleFileTask.SharedState(
+                    bookDownloadURI = supportsDownloads.targetURI,
+                    bookFile = bookFile,
+                    bookFileTemp = bookFileTemp,
+                    downloadProvider = downloadProvider,
+                    downloadStatusExecutor = engineExecutor,
+                    userAgent = userAgent,
+                  )
+              }
+
+              ExoDownloadWholeBookSingleFileTask(
+                index = manifestItem.index,
+                playbackURI = manifestItem.item.link.hrefURI!!,
+                readingOrderItem = handle,
+                sharedState = wholeBookDownloadSharedState,
+              )
+            }
+
+            DownloadIndividualChaptersAsFiles -> {
+              ExoDownloadTask(
+                downloadProvider = downloadProvider,
+                downloadStatusExecutor = engineExecutor,
+                extensions = extensions,
+                index = manifestItem.index,
+                originalLink = manifestItem.item.link,
+                partFile = partFile,
+                partFileTemp = partFileTemp,
+                readingOrderItem = handle,
+                userAgent = userAgent,
+              )
+            }
+
+            DownloadUnsupported -> {
+              ExoDownloadAlwaysSucceededTask(
+                index = manifestItem.index,
+                playbackURI = manifestItem.item.link.hrefURI!!,
+                readingOrderItem = handle,
+              )
+            }
           }
 
         downloadTasksById.put(manifestItem.item.id, task)
