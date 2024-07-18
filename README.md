@@ -111,3 +111,40 @@ The `audiobook-android` package provides a set of stateless `Fragments` that are
 provide a basic user interface. Applications are expected to instantiate the various subclasses
 of the `PlayerBaseFragment` as needed. As mentioned, the fragments are stateless and therefore
 do not require any kind of fragile, error-prone Android backstack management.
+
+#### LCP
+
+The `audiobook-android` package provides extensive support for [LCP](https://www.edrlab.org/readium-lcp/).
+
+LCP audiobooks are distributed in _packaged_. A _packaged_ audiobook is a zip file containing the
+unencrypted _manifest_ and the encrypted audio files that make up the chapters of the book. A
+severe downside to _packaged_ audiobooks is that, lacking more advanced software support, the
+entire book must be downloaded before the user can listen to it. The `audiobook-android` package
+delegates streaming functionality to the [Readium 2](https://readium.org/technical/r2-toc/)
+package, and is capable of streaming LCP audiobooks without having to completely download them.
+Streaming is optional, and the package can either download the entire book and play it from
+a local file, or stream the book from a remote server.
+
+For downloads, the following steps are taken:
+
+  * An `.lcpl` LCP license file is provided to the `audiobook-android` API.
+  * The `.lcpl` LCP license file is parsed, and a link is extracted to the publication `.zip` file
+    on the remote server.
+  * The publication `.zip` file is downloaded.
+  * The manifest for the audiobook is extracted from the `.zip` file by reading the
+    `manifest.json` zip entry.
+  * The `.lcpl` LCP license file is inserted into the `.zip` file.
+  * The manifest and the `.zip` file are passed to the audiobook player, which then begins
+    playback as normal.
+
+For streaming, the following steps are taken:
+
+  * An `.lcpl` LCP license file is provided to the `audiobook-android` API.
+  * The `.lcpl` LCP license file is parsed, and a link is extracted to the publication `.zip` file
+    on the remote server.
+  * A Readium 2 `AssetRetriever` is instantiated using the link to the remote publication `.zip` file.
+  * The `AssetRetriever` is used to extract the `manifest.json` data from the `.zip` file by
+    streaming just the relevant parts of the `.zip` file from the remote server.
+  * The `.lcpl` LCP license file and the manifest are passed to the audiobook player, which then 
+    begins playback as normal. Book chapter audio is streamed from the remote server in the same
+    manner as the initial manifest file.

@@ -27,9 +27,9 @@ abstract class PlayerAudioEnginesContract {
       manifest = manifest,
       filter = { true },
       downloadProvider = DishonestDownloadProvider(),
-      bookFile = null,
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
-      bookCredentials = PlayerBookCredentialsNone
+      bookCredentials = PlayerBookCredentialsNone,
+      bookSource = null
     )
     val providers = PlayerAudioEngines.findAllFor(request)
     Assertions.assertEquals(1, providers.size, "Exactly one open access provider should be present")
@@ -42,9 +42,9 @@ abstract class PlayerAudioEnginesContract {
       manifest = manifest,
       filter = { false },
       downloadProvider = DishonestDownloadProvider(),
-      bookFile = null,
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
-      bookCredentials = PlayerBookCredentialsNone
+      bookCredentials = PlayerBookCredentialsNone,
+      bookSource = null
     )
     val providers = PlayerAudioEngines.findAllFor(request)
     Assertions.assertEquals(0, providers.size, "No providers should be present")

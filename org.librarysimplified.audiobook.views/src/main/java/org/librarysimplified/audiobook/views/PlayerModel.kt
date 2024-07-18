@@ -14,6 +14,7 @@ import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
+import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerEvent
@@ -376,6 +377,7 @@ object PlayerModel {
    */
 
   fun downloadParseAndCheckLCPLicense(
+    context: Application,
     cacheDir: File,
     userAgent: PlayerUserAgent,
     licenseChecks: List<SingleLicenseCheckProviderType>,
@@ -383,12 +385,15 @@ object PlayerModel {
     parserExtensions: List<ManifestParserExtensionType>,
     bookFile: File,
     bookFileTemp: File,
+    licenseFile: File,
+    licenseFileTemp: File,
     bookCredentials: PlayerBookCredentialsType,
   ): CompletableFuture<Unit> {
     this.logger.debug("downloadParseAndCheckLCPLicense")
 
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseLCPLicense(
+        context = context,
         licenseParameters = licenseParameters,
         parserExtensions = parserExtensions,
         userAgent = userAgent,
@@ -396,12 +401,15 @@ object PlayerModel {
         cacheDir = cacheDir,
         bookFile = bookFile,
         bookFileTemp = bookFileTemp,
-        bookCredentials = bookCredentials
+        bookCredentials = bookCredentials,
+        licenseFile = licenseFile,
+        licenseFileTemp = licenseFileTemp
       )
     }
   }
 
   private fun opDownloadAndParseLCPLicense(
+    context: Application,
     licenseParameters: ManifestFulfillmentBasicParameters,
     parserExtensions: List<ManifestParserExtensionType>,
     userAgent: PlayerUserAgent,
@@ -409,6 +417,8 @@ object PlayerModel {
     cacheDir: File,
     bookFile: File,
     bookFileTemp: File,
+    licenseFile: File,
+    licenseFileTemp: File,
     bookCredentials: PlayerBookCredentialsType
   ) {
     this.setNewState(PlayerManifestInProgress)
@@ -427,6 +437,12 @@ object PlayerModel {
 
         is PlayerResult.Success -> result.result
       }
+
+    licenseFileTemp.outputStream().use { output ->
+      output.write(licenseAndBytes.licenseBytes)
+      output.flush()
+    }
+    licenseFileTemp.renameTo(licenseFile)
 
     /*
      * If streaming is permitted, then we need to download the manifest by extracting the link
@@ -466,28 +482,21 @@ object PlayerModel {
           fileTemp = bookFileTemp
         )
       } else {
-        this.logger.debug("Streaming is permitted. Attempting to extract manifest from remote LCP publication.")
+        this.logger.debug(
+          "Streaming is permitted. Attempting to extract manifest from remote LCP publication.")
 
         when (val result = LCPDownloads.downloadManifestFromPublication(
+          context = context,
           parameters = licenseParameters,
           license = licenseAndBytes.license,
-          outputFile = bookFile,
-          isCancelled = { false },
           receiver = receiver
         )) {
           is PlayerResult.Failure -> {
-            this.setNewState(
-              PlayerManifestDownloadFailed(
-                ManifestFulfillmentErrors.ofDownloadResult(
-                  licenseParameters.uri,
-                  result.failure
-                )
-              )
-            )
+            this.setNewState(PlayerManifestDownloadFailed(result.failure))
             throw OperationFailedException()
           }
 
-          is PlayerResult.Success -> Unit
+          is PlayerResult.Success -> result.result
         }
       }
 
@@ -516,13 +525,23 @@ object PlayerModel {
       throw OperationFailedException()
     }
 
-    this.setNewState(
-      PlayerManifestOK(
-        manifest = parsedManifest,
-        bookFile = bookFile,
-        bookCredentials = bookCredentials
+    if (this.isStreamingPermitted) {
+      this.setNewState(
+        PlayerManifestOK(
+          manifest = parsedManifest,
+          bookSource = PlayerBookSource.PlayerBookSourceLicenseFile(licenseFile),
+          bookCredentials = bookCredentials
+        )
       )
-    )
+    } else {
+      this.setNewState(
+        PlayerManifestOK(
+          manifest = parsedManifest,
+          bookCredentials = bookCredentials,
+          bookSource = PlayerBookSource.PlayerBookSourceFile(bookFile)
+        )
+      )
+    }
   }
 
   private fun opDownloadAndParseManifest(
@@ -577,7 +596,7 @@ object PlayerModel {
     this.setNewState(
       PlayerManifestOK(
         manifest = parsedManifest,
-        bookFile = null,
+        bookSource = null,
         bookCredentials = bookCredentials
       )
     )
@@ -600,9 +619,8 @@ object PlayerModel {
     manifest: PlayerManifest,
     fetchAll: Boolean,
     initialPosition: PlayerPosition?,
-    bookFile: File?,
     bookCredentials: PlayerBookCredentialsType,
-    licenseFile: File?
+    bookSource: PlayerBookSource?
   ): CompletableFuture<Unit> {
     this.logger.debug("openPlayerForManifest")
 
@@ -625,9 +643,8 @@ object PlayerModel {
         extensions = this.playerExtensions,
         fetchAll = fetchAll,
         initialPosition = initialPosition,
-        bookFile = bookFile,
         bookCredentials = bookCredentials,
-        licenseFile = licenseFile
+        bookSource = bookSource
       )
     }
   }
@@ -639,9 +656,8 @@ object PlayerModel {
     extensions: List<PlayerExtensionType>,
     fetchAll: Boolean,
     initialPosition: PlayerPosition?,
-    bookFile: File?,
     bookCredentials: PlayerBookCredentialsType,
-    licenseFile: File?
+    bookSource: PlayerBookSource?
   ) {
     this.logger.debug("opOpenPlayerForManifest")
 
@@ -656,9 +672,8 @@ object PlayerModel {
           filter = { true },
           downloadProvider = DownloadProvider.create(this.downloadExecutor),
           userAgent = userAgent,
-          bookFile = bookFile,
           bookCredentials = bookCredentials,
-          licenseFile = licenseFile
+          bookSource = bookSource
         )
       )
 

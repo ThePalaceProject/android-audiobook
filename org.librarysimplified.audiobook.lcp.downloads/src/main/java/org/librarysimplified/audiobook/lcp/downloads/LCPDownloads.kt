@@ -1,5 +1,7 @@
 package org.librarysimplified.audiobook.lcp.downloads
 
+import android.app.Application
+import kotlinx.coroutines.runBlocking
 import one.irradia.mime.api.MIMEType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
@@ -19,7 +21,18 @@ import org.librarysimplified.http.downloads.LSHTTPDownloadState.LSHTTPDownloadRe
 import org.librarysimplified.http.downloads.LSHTTPDownloadState.LSHTTPDownloadResult.DownloadFailed.DownloadFailedUnacceptableMIME
 import org.librarysimplified.http.downloads.LSHTTPDownloads
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.asset.Asset
+import org.readium.r2.shared.util.asset.AssetRetriever
+import org.readium.r2.shared.util.asset.ContainerAsset
+import org.readium.r2.shared.util.asset.DefaultArchiveOpener
+import org.readium.r2.shared.util.asset.DefaultFormatSniffer
+import org.readium.r2.shared.util.asset.DefaultResourceFactory
+import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.HttpTry
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileOutputStream
@@ -116,7 +129,7 @@ object LCPDownloads {
         .apply {
           val credentials = parameters.credentials
           if (credentials != null) {
-            setAuthorization(
+            this.setAuthorization(
               LSHTTPAuthorizationBasic.ofUsernamePassword(
                 credentials.userName,
                 credentials.password
@@ -224,27 +237,138 @@ object LCPDownloads {
     )
   }
 
+  private data class LicenseError(
+    override val message: String
+  ) : ManifestFulfillmentErrorType {
+    override val serverData: ManifestFulfillmentErrorType.ServerData? =
+      null
+  }
+
+  /**
+   * Download a manifest from an LCP license publication.
+   *
+   * This uses R2 internally to stream the contents of a remote zip file without having to
+   * download the entire file. This allows for extracting the manifest from a remote publication
+   * without having to wait for the entire publication to be downloaded.
+   */
+
   fun downloadManifestFromPublication(
+    context: Application,
     parameters: ManifestFulfillmentBasicParameters,
     license: LicenseDocument,
-    outputFile: File,
-    isCancelled: () -> Boolean,
     receiver: (ManifestFulfillmentEvent) -> Unit
-  ): ManifestFulfilled {
-    val request: LSHTTPRequestType =
-      parameters.httpClient.newRequest(URI.create(license.publicationLink.href.toString()))
-        .apply {
-          val credentials = parameters.credentials
-          if (credentials != null) {
-            setAuthorization(
-              LSHTTPAuthorizationBasic.ofUsernamePassword(
-                credentials.userName,
-                credentials.password
-              )
+  ): PlayerResult<ManifestFulfilled, ManifestFulfillmentErrorType> {
+    return runBlocking {
+      when (val r = downloadManifestTextFromLicenseFile(context, license, parameters, receiver)) {
+        is PlayerResult.Failure -> PlayerResult.Failure(r.failure)
+        is PlayerResult.Success -> {
+          PlayerResult.Success(
+            ManifestFulfilled(
+              contentType = MIMEType("text", "json", mapOf()),
+              authorization = null,
+              data = r.result
             )
-          }
+          )
         }
-        .addHeader("User-Agent", parameters.userAgent.userAgent)
-        .build()
+      }
+    }
+  }
+
+  private suspend fun downloadManifestTextFromLicenseFile(
+    context: Application,
+    license: LicenseDocument,
+    parameters: ManifestFulfillmentBasicParameters,
+    receiver: (ManifestFulfillmentEvent) -> Unit
+  ): PlayerResult<ByteArray, ManifestFulfillmentErrorType> {
+    this.logger.debug("Downloading manifest text from LCP license file.")
+
+    val absoluteUrl = AbsoluteUrl.invoke(license.publicationLink.href.toString())
+    if (absoluteUrl == null) {
+      this.logger.debug(
+        "Could not parse publication link {} as an absolute URL", license.publicationLink.href
+      )
+      return PlayerResult.Failure(LicenseError("Publication link cannot be resolved."))
+    }
+
+    val inputCredentials =
+      parameters.credentials
+    val credentials =
+      if (inputCredentials != null) {
+        LSHTTPAuthorizationBasic.ofUsernamePassword(
+          userName = inputCredentials.userName,
+          password = inputCredentials.password
+        )
+      } else {
+        null
+      }
+
+    val httpClient =
+      DefaultHttpClient(callback = object : DefaultHttpClient.Callback {
+        override suspend fun onStartRequest(
+          request: HttpRequest
+        ): HttpTry<HttpRequest> {
+          val newRequest: HttpRequest = request.copy {
+            if (credentials != null) {
+              this.headers.put("Authorization", mutableListOf(credentials.toHeaderValue()))
+            }
+          }
+          return super.onStartRequest(newRequest)
+        }
+      })
+
+    val assetRetriever =
+      AssetRetriever(
+        DefaultResourceFactory(context.contentResolver, httpClient),
+        DefaultArchiveOpener(),
+        DefaultFormatSniffer()
+      )
+
+    receiver.invoke(ManifestFulfillmentEvent("Retrieving $absoluteUrl"))
+    return when (val result = assetRetriever.retrieve(absoluteUrl)) {
+      is Try.Failure -> {
+        this.logger.error("Failed to retrieve URL: {}", result.value.message)
+        PlayerResult.Failure(
+          LicenseError(message = result.value.message)
+        )
+      }
+
+      is Try.Success -> {
+        this.logger.debug("Extracting manifest...")
+        this@LCPDownloads.extractManifest(result.value, receiver)
+      }
+    }
+  }
+
+  private suspend fun extractManifest(
+    asset: Asset,
+    receiver: (ManifestFulfillmentEvent) -> Unit
+  ): PlayerResult<ByteArray, ManifestFulfillmentErrorType> {
+    if (asset !is ContainerAsset) {
+      this.logger.debug("Retrieved asset is not a container asset ({})", asset.javaClass)
+      return PlayerResult.Failure(
+        LicenseError(message = "Asset is not a container asset.")
+      )
+    }
+
+    receiver.invoke(ManifestFulfillmentEvent("Attempting to extract manifest..."))
+    val manifestURL = Url("manifest.json")!!
+    val resource = asset.container[manifestURL]
+    if (resource == null) {
+      this.logger.debug("Container does not contain '{}'", manifestURL)
+      return PlayerResult.Failure(
+        LicenseError(message = "Container does not appear to contain manifest.json")
+      )
+    }
+
+    receiver.invoke(ManifestFulfillmentEvent("Reading manifest bytes..."))
+    return when (val r = resource.read()) {
+      is Try.Failure -> {
+        this.logger.error("Reading resource failed: {}", r.value)
+        PlayerResult.Failure(LicenseError(message = r.value.message))
+      }
+      is Try.Success -> {
+        PlayerResult.Success(r.value)
+      }
+    }
   }
 }

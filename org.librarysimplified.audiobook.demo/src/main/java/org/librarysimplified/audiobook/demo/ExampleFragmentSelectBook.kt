@@ -276,6 +276,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     when (this.typeSelected) {
       this.typeLCP -> {
         PlayerModel.downloadParseAndCheckLCPLicense(
+          context = ExampleApplication.application,
           cacheDir = ExampleApplication.application.cacheDir,
           userAgent = ExampleApplication.userAgent,
           licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
@@ -283,6 +284,8 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
           bookFile = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook"),
           bookFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook.tmp"),
+          licenseFile = File(ExampleApplication.application.cacheDir, "lcpBook.lcpl"),
+          licenseFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.lcpl.tmp"),
           bookCredentials = this.bookCredentials()
         )
       }

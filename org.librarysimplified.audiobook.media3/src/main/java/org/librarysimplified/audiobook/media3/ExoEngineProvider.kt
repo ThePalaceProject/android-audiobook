@@ -3,6 +3,7 @@ package org.librarysimplified.audiobook.media3
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
+import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerVersion
 import org.librarysimplified.audiobook.api.PlayerVersions
 import org.slf4j.LoggerFactory
@@ -81,9 +82,14 @@ class ExoEngineProvider(
     }
 
     if (ExoLCP.isLCP(manifest)) {
-      if (request.bookFile == null) {
-        this.log.debug("Cannot support LCP books that have not been downloaded.")
-        return null
+      when (request.bookSource) {
+        is PlayerBookSource.PlayerBookSourceFile,
+        is PlayerBookSource.PlayerBookSourceLicenseFile -> {
+          // At least one of these is required.
+        }
+        null -> {
+          this.log.debug("LCP audiobooks must either have a book file, or a license file.")
+        }
       }
     }
 

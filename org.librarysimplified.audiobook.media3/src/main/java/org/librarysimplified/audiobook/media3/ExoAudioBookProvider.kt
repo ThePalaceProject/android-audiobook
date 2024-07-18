@@ -9,6 +9,7 @@ import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsLCP
 import org.librarysimplified.audiobook.api.PlayerBookID
+import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerResult.Failure
@@ -76,8 +77,7 @@ class ExoAudioBookProvider(
         if (isLCP) {
           this.createLCPDataSource(
             context = context,
-            bookFile = this.request.bookFile,
-            licenseFile = this.request.licenseFile
+            bookSource = request.bookSource
           )
         } else {
           DefaultDataSource.Factory(context)
@@ -123,29 +123,34 @@ class ExoAudioBookProvider(
 
   private fun createLCPDataSource(
     context: Application,
-    bookFile: File?,
-    licenseFile: File?
+    bookSource: PlayerBookSource?
   ): DataSource.Factory {
-    return if (bookFile != null) {
-      LCPDataSource.Factory(
-        this.openLCPPublication(
-          context = context,
-          file = bookFile,
-          type = "AudioBook File"
+    return when (bookSource) {
+      is PlayerBookSource.PlayerBookSourceFile -> {
+        LCPDataSource.Factory(
+          this.openLCPPublication(
+            context = context,
+            file = bookSource.file,
+            type = "Packaged audiobook file"
+          )
         )
-      )
-    } else if (licenseFile != null) {
-      LCPDataSource.Factory(
-        this.openLCPPublication(
-          context = context,
-          file = licenseFile,
-          type = "License File"
+      }
+
+      is PlayerBookSource.PlayerBookSourceLicenseFile -> {
+        LCPDataSource.Factory(
+          this.openLCPPublication(
+            context = context,
+            file = bookSource.file,
+            type = "License file"
+          )
         )
-      )
-    } else {
-      throw IllegalArgumentException(
-        "For LCP audiobooks, either a book file or a license file is required."
-      )
+      }
+
+      null -> {
+        throw IllegalArgumentException(
+          "For LCP audiobooks, either a book file or a license file is required."
+        )
+      }
     }
   }
 
