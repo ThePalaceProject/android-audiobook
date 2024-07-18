@@ -159,6 +159,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     this.stream.setOnCheckedChangeListener { _, isChecked ->
       PlayerModel.setStreamingPermitted(isChecked)
     }
+    PlayerModel.setStreamingPermitted(this.stream.isChecked)
 
     this.authentication.onItemSelectedListener =
       object : AdapterView.OnItemSelectedListener {
