@@ -13,5 +13,6 @@ data class PlayerDownloadRequest(
   val outputFile: File,
   val outputFileTemp: File,
   val credentials: PlayerDownloadRequestCredentials?,
-  val onProgress: (Int) -> Unit
+  val onProgress: (Int) -> Unit,
+  val onCompletion: (File) -> Unit
 )

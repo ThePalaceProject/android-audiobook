@@ -198,6 +198,8 @@ class DownloadProvider private constructor(
           .toString()
       )
     }
+
+    request.onCompletion.invoke(request.outputFile)
   }
 
   private fun copyStream(

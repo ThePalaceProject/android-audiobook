@@ -187,7 +187,7 @@ object LCPDownloads {
    */
 
   fun repackagePublication(
-    licenseAndBytes: LCPLicenseAndBytes,
+    licenseBytes: ByteArray,
     file: File,
     fileTemp: File
   ): ManifestFulfilled {
@@ -197,7 +197,7 @@ object LCPDownloads {
       ZipOutputStream(FileOutputStream(fileTemp)).use { zipOut ->
         val lcpEntry = ZipEntry("license.lcpl")
         zipOut.putNextEntry(lcpEntry)
-        zipOut.write(licenseAndBytes.licenseBytes)
+        zipOut.write(licenseBytes)
         zipOut.closeEntry()
 
         ZipFile(file).use { zipIn ->

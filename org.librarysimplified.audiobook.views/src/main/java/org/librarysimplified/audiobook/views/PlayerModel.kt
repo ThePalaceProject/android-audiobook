@@ -477,7 +477,7 @@ object PlayerModel {
         }
 
         LCPDownloads.repackagePublication(
-          licenseAndBytes = licenseAndBytes,
+          licenseBytes = licenseAndBytes.licenseBytes,
           file = bookFile,
           fileTemp = bookFileTemp
         )

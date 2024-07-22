@@ -79,7 +79,8 @@ abstract class FeedbooksExtensionContract {
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     val future =
@@ -120,7 +121,8 @@ abstract class FeedbooksExtensionContract {
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     val future =
@@ -179,7 +181,8 @@ abstract class FeedbooksExtensionContract {
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     val future =

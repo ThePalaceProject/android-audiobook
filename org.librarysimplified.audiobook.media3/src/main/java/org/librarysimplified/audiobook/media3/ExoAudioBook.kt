@@ -240,6 +240,7 @@ class ExoAudioBook private constructor(
                     downloadProvider = downloadProvider,
                     downloadStatusExecutor = engineExecutor,
                     userAgent = userAgent,
+                    licenseBytes = supportsDownloads.licenseBytes
                   )
               }
 

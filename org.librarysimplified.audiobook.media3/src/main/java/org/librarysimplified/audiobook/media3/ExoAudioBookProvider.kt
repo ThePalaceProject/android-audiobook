@@ -100,7 +100,8 @@ class ExoAudioBookProvider(
                   "Successfully parsed license: Downloading entire books is supported."
                 )
                 ExoDownloadSupport.DownloadEntireBookAsFile(
-                  targetURI = URI.create(license.result.license.publicationLink.href.toString())
+                  targetURI = URI.create(license.result.license.publicationLink.href.toString()),
+                  licenseBytes = licenseBytes
                 )
               }
             }

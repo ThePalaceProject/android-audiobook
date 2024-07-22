@@ -145,7 +145,8 @@ class ExoDownloadTask(
         outputFile = this.partFile,
         outputFileTemp = this.partFileTemp,
         userAgent = this.userAgent,
-        onProgress = { percent -> this.onDownloading(percent) }
+        onProgress = { percent -> this.onDownloading(percent) },
+        onCompletion = { }
       )
 
     val future =

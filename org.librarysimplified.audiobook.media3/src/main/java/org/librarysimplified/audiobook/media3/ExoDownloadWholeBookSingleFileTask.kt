@@ -8,6 +8,7 @@ import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
+import org.librarysimplified.audiobook.lcp.downloads.LCPDownloads
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
@@ -42,7 +43,8 @@ internal class ExoDownloadWholeBookSingleFileTask(
     internal val userAgent: PlayerUserAgent,
     internal val bookDownloadURI: URI,
     internal val bookFile: File,
-    internal val bookFileTemp: File
+    internal val bookFileTemp: File,
+    internal val licenseBytes: ByteArray
   ) {
     private val stateLock: Any = Object()
     private val progressValue = AtomicDouble(0.0)
@@ -207,7 +209,14 @@ internal class ExoDownloadWholeBookSingleFileTask(
         outputFile = this.sharedState.bookFile,
         outputFileTemp = this.sharedState.bookFileTemp,
         userAgent = this.sharedState.userAgent,
-        onProgress = { percent -> this.onDownloading(percent) }
+        onProgress = { percent -> this.onDownloading(percent) },
+        onCompletion = {
+          LCPDownloads.repackagePublication(
+            licenseBytes = this.sharedState.licenseBytes,
+            file = this.sharedState.bookFile,
+            fileTemp = this.sharedState.bookFileTemp
+          )
+        }
       )
 
     val future = this.sharedState.downloadProvider.download(request)

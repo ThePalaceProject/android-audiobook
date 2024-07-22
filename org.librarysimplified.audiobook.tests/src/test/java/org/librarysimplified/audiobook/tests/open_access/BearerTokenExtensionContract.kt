@@ -79,7 +79,8 @@ abstract class BearerTokenExtensionContract {
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     extension.setAuthorization(null)
@@ -122,7 +123,8 @@ abstract class BearerTokenExtensionContract {
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     extension.setAuthorization(LSHTTPAuthorizationBasic.ofUsernamePassword(
@@ -170,7 +172,8 @@ abstract class BearerTokenExtensionContract {
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     extension.setAuthorization(LSHTTPAuthorizationBearerToken.ofToken("abcd"))
@@ -212,7 +215,8 @@ abstract class BearerTokenExtensionContract {
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     extension.setAuthorization(LSHTTPAuthorizationBearerToken.ofToken("abcd"))
@@ -259,7 +263,8 @@ abstract class BearerTokenExtensionContract {
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     extension.setAuthorization(LSHTTPAuthorizationBearerToken.ofToken("abcd"))
