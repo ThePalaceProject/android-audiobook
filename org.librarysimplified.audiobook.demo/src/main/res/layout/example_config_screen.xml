@@ -61,18 +61,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/exTypeSelection" />
 
-    <CheckBox
-        android:id="@+id/exStream"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="Attempt streaming"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/exLCPPassphrase" />
-
     <TextView
         android:id="@+id/exAuthentication"
         android:layout_width="0dp"
@@ -87,7 +75,7 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/exStream" />
+        app:layout_constraintTop_toBottomOf="@id/exLCPPassphrase" />
 
     <Spinner
         android:id="@+id/exAuthenticationSelection"

@@ -24,7 +24,7 @@ sealed class PlayerModelState {
 
   data class PlayerManifestOK(
     val manifest: PlayerManifest,
-    val bookSource: PlayerBookSource?,
+    val bookSource: PlayerBookSource,
     val bookCredentials: PlayerBookCredentialsType
   ) : PlayerModelState()
 

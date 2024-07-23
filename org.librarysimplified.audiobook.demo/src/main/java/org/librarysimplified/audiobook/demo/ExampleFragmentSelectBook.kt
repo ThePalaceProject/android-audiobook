@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
@@ -58,7 +57,6 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   private lateinit var location: TextView
   private lateinit var play: Button
   private lateinit var presets: Spinner
-  private lateinit var stream: CheckBox
   private lateinit var typeLCP: String
   private lateinit var typeManifest: String
   private lateinit var typeSelect: Spinner
@@ -120,8 +118,6 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     this.authenticationOverdriveClientSecret =
       this.authenticationOverdrive.findViewById(R.id.exAuthenticationOverdriveClientSecret)
 
-    this.stream =
-      layout.findViewById(R.id.exStream)
     this.typeSelect =
       layout.findViewById(R.id.exTypeSelection)
     this.authentication =
@@ -156,10 +152,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   override fun onStart() {
     super.onStart()
 
-    this.stream.setOnCheckedChangeListener { _, isChecked ->
-      PlayerModel.setStreamingPermitted(isChecked)
-    }
-    PlayerModel.setStreamingPermitted(this.stream.isChecked)
+    PlayerModel.setStreamingPermitted(true)
 
     this.authentication.onItemSelectedListener =
       object : AdapterView.OnItemSelectedListener {

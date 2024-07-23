@@ -83,11 +83,11 @@ class ExoEngineProvider(
 
     if (ExoLCP.isLCP(manifest)) {
       when (request.bookSource) {
-        is PlayerBookSource.PlayerBookSourceFile,
+        is PlayerBookSource.PlayerBookSourcePackagedBook,
         is PlayerBookSource.PlayerBookSourceLicenseFile -> {
           // At least one of these is required.
         }
-        null -> {
+        PlayerBookSource.PlayerBookSourceManifestOnly -> {
           this.log.debug("LCP audiobooks must either have a book file, or a license file.")
         }
       }

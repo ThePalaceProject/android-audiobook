@@ -44,7 +44,6 @@ import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorType
-import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrors
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
@@ -444,60 +443,18 @@ object PlayerModel {
     }
     licenseFileTemp.renameTo(licenseFile)
 
-    /*
-     * If streaming is permitted, then we need to download the manifest by extracting the link
-     * to the manifest from the license file. Otherwise, if streaming is not permitted, then we
-     * need to download the entire LCP publication file and repackage it.
-     */
-
     val manifestBytes: ManifestFulfilled =
-      if (!this.isStreamingPermitted) {
-        this.logger.debug("Streaming is not permitted. Downloading entire LCP publication.")
-
-        when (val result = LCPDownloads.downloadPublication(
-          parameters = licenseParameters,
-          license = licenseAndBytes.license,
-          outputFile = bookFile,
-          isCancelled = { false },
-          receiver = receiver
-        )) {
-          is PlayerResult.Failure -> {
-            this.setNewState(
-              PlayerManifestDownloadFailed(
-                ManifestFulfillmentErrors.ofDownloadResult(
-                  licenseParameters.uri,
-                  result.failure
-                )
-              )
-            )
-            throw OperationFailedException()
-          }
-
-          is PlayerResult.Success -> Unit
+      when (val result = LCPDownloads.downloadManifestFromPublication(
+        context = context,
+        parameters = licenseParameters,
+        license = licenseAndBytes.license,
+        receiver = receiver
+      )) {
+        is PlayerResult.Failure -> {
+          this.setNewState(PlayerManifestDownloadFailed(result.failure))
+          throw OperationFailedException()
         }
-
-        LCPDownloads.repackagePublication(
-          licenseBytes = licenseAndBytes.licenseBytes,
-          file = bookFile,
-          fileTemp = bookFileTemp
-        )
-      } else {
-        this.logger.debug(
-          "Streaming is permitted. Attempting to extract manifest from remote LCP publication.")
-
-        when (val result = LCPDownloads.downloadManifestFromPublication(
-          context = context,
-          parameters = licenseParameters,
-          license = licenseAndBytes.license,
-          receiver = receiver
-        )) {
-          is PlayerResult.Failure -> {
-            this.setNewState(PlayerManifestDownloadFailed(result.failure))
-            throw OperationFailedException()
-          }
-
-          is PlayerResult.Success -> result.result
-        }
+        is PlayerResult.Success -> result.result
       }
 
     val parseResult =
@@ -525,23 +482,13 @@ object PlayerModel {
       throw OperationFailedException()
     }
 
-    if (this.isStreamingPermitted) {
-      this.setNewState(
-        PlayerManifestOK(
-          manifest = parsedManifest,
-          bookSource = PlayerBookSource.PlayerBookSourceLicenseFile(licenseFile),
-          bookCredentials = bookCredentials
-        )
+    this.setNewState(
+      PlayerManifestOK(
+        manifest = parsedManifest,
+        bookSource = PlayerBookSource.PlayerBookSourceLicenseFile(licenseFile),
+        bookCredentials = bookCredentials
       )
-    } else {
-      this.setNewState(
-        PlayerManifestOK(
-          manifest = parsedManifest,
-          bookCredentials = bookCredentials,
-          bookSource = PlayerBookSource.PlayerBookSourceFile(bookFile)
-        )
-      )
-    }
+    )
   }
 
   private fun opDownloadAndParseManifest(
@@ -596,7 +543,7 @@ object PlayerModel {
     this.setNewState(
       PlayerManifestOK(
         manifest = parsedManifest,
-        bookSource = null,
+        bookSource = PlayerBookSource.PlayerBookSourceManifestOnly,
         bookCredentials = bookCredentials
       )
     )
@@ -620,7 +567,7 @@ object PlayerModel {
     fetchAll: Boolean,
     initialPosition: PlayerPosition?,
     bookCredentials: PlayerBookCredentialsType,
-    bookSource: PlayerBookSource?
+    bookSource: PlayerBookSource
   ): CompletableFuture<Unit> {
     this.logger.debug("openPlayerForManifest")
 
@@ -657,7 +604,7 @@ object PlayerModel {
     fetchAll: Boolean,
     initialPosition: PlayerPosition?,
     bookCredentials: PlayerBookCredentialsType,
-    bookSource: PlayerBookSource?
+    bookSource: PlayerBookSource
   ) {
     this.logger.debug("opOpenPlayerForManifest")
 

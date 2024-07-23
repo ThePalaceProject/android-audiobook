@@ -38,14 +38,10 @@ data class PlayerAudioEngineRequest(
   val downloadProvider: PlayerDownloadProviderType,
 
   /**
-   * The source of the book data. This may be one of:
-   *
-   * * A book file, if the audiobook is a packaged book that has been downloaded (typically a zip file).
-   * * A license file, if the audiobook is an LCP audiobook that will be streamed from a remote server.
-   * * Nothing, if the audiobook is of a format that can work from a manifest alone.
+   * The source of the book data.
    */
 
-  val bookSource: PlayerBookSource?,
+  val bookSource: PlayerBookSource,
 
   /**
    * The credentials required to open the book.

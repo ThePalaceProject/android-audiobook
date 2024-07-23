@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Timeout
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsNone
+import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerEvent
@@ -113,7 +114,7 @@ abstract class ExoEngineProviderContract {
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
       bookCredentials = PlayerBookCredentialsNone,
-      bookSource = null
+      bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
     )
     val engine_provider = ExoEngineProvider()
     val book_provider = engine_provider.tryRequest(request)
@@ -137,7 +138,7 @@ abstract class ExoEngineProviderContract {
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
       bookCredentials = PlayerBookCredentialsNone,
-      bookSource = null
+      bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
     )
     val engine_provider = ExoEngineProvider()
     val book_provider = engine_provider.tryRequest(request)
@@ -161,7 +162,7 @@ abstract class ExoEngineProviderContract {
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
       bookCredentials = PlayerBookCredentialsNone,
-      bookSource = null
+      bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
     )
     val engine_provider = ExoEngineProvider()
     val book_provider = engine_provider.tryRequest(request)
@@ -750,7 +751,7 @@ abstract class ExoEngineProviderContract {
         downloadProvider = downloadProvider,
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
         bookCredentials = PlayerBookCredentialsNone,
-        bookSource = null
+        bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
     val engine_provider = ExoEngineProvider()
     val book_provider = engine_provider.tryRequest(request)
@@ -794,7 +795,7 @@ abstract class ExoEngineProviderContract {
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
         bookCredentials = PlayerBookCredentialsNone,
-        bookSource = null
+        bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
 
     val engineProvider =
@@ -857,7 +858,7 @@ abstract class ExoEngineProviderContract {
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
         bookCredentials = PlayerBookCredentialsNone,
-        bookSource = null
+        bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
 
     val engineProvider =
@@ -897,7 +898,7 @@ abstract class ExoEngineProviderContract {
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
         bookCredentials = PlayerBookCredentialsNone,
-        bookSource = null
+        bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
 
     val engineProvider =
@@ -959,7 +960,7 @@ abstract class ExoEngineProviderContract {
         downloadProvider = org.librarysimplified.audiobook.tests.FailingDownloadProvider(),
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
         bookCredentials = PlayerBookCredentialsNone,
-        bookSource = null
+        bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
 
     val engineProvider =
@@ -1039,7 +1040,7 @@ abstract class ExoEngineProviderContract {
         downloadProvider = org.librarysimplified.audiobook.tests.FailingDownloadProvider(),
         userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
         bookCredentials = PlayerBookCredentialsNone,
-        bookSource = null
+        bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
 
     val engineProvider =

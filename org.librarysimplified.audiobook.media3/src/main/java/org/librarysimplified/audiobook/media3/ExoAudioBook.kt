@@ -157,7 +157,10 @@ class ExoAudioBook private constructor(
 
     private val log = LoggerFactory.getLogger(ExoAudioBook::class.java)
 
-    private fun findDirectoryFor(context: Context, id: PlayerBookID): File {
+    fun findDirectoryFor(
+      context: Context,
+      id: PlayerBookID
+    ): File {
       val base = context.filesDir
       val all = File(base, "exoplayer_audio")
       return File(all, id.value)

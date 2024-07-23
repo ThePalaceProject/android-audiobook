@@ -9,11 +9,11 @@ import java.io.File
 sealed class PlayerBookSource {
 
   /**
-   * The book data is taken from a file. This is the usual situation for a "packaged" audiobook,
-   * where book chapters are packaged into a zip file.
+   * The book source is a packaged audiobook file.
    */
 
-  data class PlayerBookSourceFile(
+  @Deprecated(message = "This is a compatibility option to ease migration for old apps.")
+  data class PlayerBookSourcePackagedBook(
     val file: File
   ) : PlayerBookSource()
 
@@ -26,4 +26,10 @@ sealed class PlayerBookSource {
   data class PlayerBookSourceLicenseFile(
     val file: File
   ) : PlayerBookSource()
+
+  /**
+   * The book data is accessed from the manifest alone.
+   */
+
+  data object PlayerBookSourceManifestOnly : PlayerBookSource()
 }

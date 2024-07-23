@@ -3,6 +3,7 @@ package org.librarysimplified.audiobook.media3
 import android.app.Application
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
+import com.google.common.io.Files
 import kotlinx.coroutines.runBlocking
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
@@ -10,6 +11,9 @@ import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsLCP
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerBookSource
+import org.librarysimplified.audiobook.api.PlayerBookSource.PlayerBookSourceLicenseFile
+import org.librarysimplified.audiobook.api.PlayerBookSource.PlayerBookSourceManifestOnly
+import org.librarysimplified.audiobook.api.PlayerBookSource.PlayerBookSourcePackagedBook
 import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerResult.Failure
@@ -65,49 +69,69 @@ class ExoAudioBookProvider(
         ExoLCP.isLCP(this.request.manifest)
 
       /*
-       * We need to decide what "downloading" means for a given book.
+       * We need to decide what level of download support is available for a given book.
        *
-       * If the book source is provided as a file, then we effectively disable downloading;
-       * the user already has the book.
+       * If the book source is a license file, then this implies that the book is an LCP
+       * book. If we have the book fully downloaded, then downloads are unsupported. Otherwise,
+       * downloading the entire book as a single file is supported.
        *
-       * If the book source is a license file, then this currently implies that the book is
-       * LCP protected and is streamed. We offer the ability to download the entire book as
-       * a file.
+       * If the book source is a packaged book, then this implies that the book is an LCP book.
+       * We copy the book into internal storage and ensure that the license is present in the
+       * book.
        *
-       * Otherwise, if no book source is provided, we assume the audiobook is an unprotected
-       * audiobook where individual chapters can be streamed and/or downloaded as needed.
+       * If the book source is only a manifest, then this implies that the book is not an LCP
+       * book. Downloading individual chapters is supported.
        */
+
+      val bookID =
+        PlayerBookID.transform(this.manifest.metadata.identifier)
+      val bookDirectory =
+        ExoAudioBook.findDirectoryFor(context, bookID)
+      val bookInternalFile =
+        File(bookDirectory, "book.zip")
 
       val downloadSupport =
         when (val source = this.request.bookSource) {
-          is PlayerBookSource.PlayerBookSourceFile -> {
-            this.logger.debug("Book source is a file: Downloads are unsupported.")
-            ExoDownloadSupport.DownloadUnsupported
-          }
-          is PlayerBookSource.PlayerBookSourceLicenseFile -> {
+          is PlayerBookSourceLicenseFile -> {
             this.logger.debug("Book source is a license file.")
-            val licenseBytes = source.file.readBytes()
-            when (val license = LCPDownloads.parseLicense(licenseBytes)) {
-              is Failure -> {
-                this.logger.debug(
-                  "Failed to parse license ({}): Downloads are unsupported.",
-                  license.failure.message
-                )
-                ExoDownloadSupport.DownloadUnsupported
-              }
-              is PlayerResult.Success -> {
-                this.logger.debug(
-                  "Successfully parsed license: Downloading entire books is supported."
-                )
-                ExoDownloadSupport.DownloadEntireBookAsFile(
-                  targetURI = URI.create(license.result.license.publicationLink.href.toString()),
-                  licenseBytes = licenseBytes
-                )
+            check(isLCP) { "A book with a license file must be an LCP book." }
+
+            if (bookInternalFile.isFile) {
+              this.logger.debug("Book is entirely downloaded; downloads are unsupported.")
+              ExoDownloadSupport.DownloadUnsupported
+            } else {
+              val licenseBytes = source.file.readBytes()
+              when (val license = LCPDownloads.parseLicense(licenseBytes)) {
+                is Failure -> {
+                  this.logger.debug(
+                    "Failed to parse license ({}): Downloads are unsupported.",
+                    license.failure.message
+                  )
+                  ExoDownloadSupport.DownloadUnsupported
+                }
+                is PlayerResult.Success -> {
+                  this.logger.debug(
+                    "Successfully parsed license: Downloading entire books is supported."
+                  )
+                  ExoDownloadSupport.DownloadEntireBookAsFile(
+                    targetURI = URI.create(license.result.license.publicationLink.href.toString()),
+                    licenseBytes = licenseBytes
+                  )
+                }
               }
             }
           }
-          null -> {
-            this.logger.debug("No book source: Downloading individual chapters is supported.")
+
+          is PlayerBookSourcePackagedBook -> {
+            this.logger.debug("Book source is a packaged file: Downloads are unsupported.")
+            check(isLCP) { "A book with a license file must be an LCP book." }
+            this.logger.debug("Copying book into internal storage.")
+            Files.copy(source.file, bookInternalFile)
+            ExoDownloadSupport.DownloadUnsupported
+          }
+
+          PlayerBookSourceManifestOnly -> {
+            this.logger.debug("Manifest book source: Downloading individual chapters is supported.")
             ExoDownloadSupport.DownloadIndividualChaptersAsFiles
           }
         }
@@ -119,7 +143,8 @@ class ExoAudioBookProvider(
         if (isLCP) {
           this.createLCPDataSource(
             context = context,
-            bookSource = request.bookSource
+            bookSource = request.bookSource,
+            bookFile = bookInternalFile
           )
         } else {
           DefaultDataSource.Factory(context)
@@ -165,32 +190,46 @@ class ExoAudioBookProvider(
 
   private fun createLCPDataSource(
     context: Application,
-    bookSource: PlayerBookSource?
+    bookSource: PlayerBookSource,
+    bookFile: File
   ): DataSource.Factory {
     return when (bookSource) {
-      is PlayerBookSource.PlayerBookSourceFile -> {
-        LCPDataSource.Factory(
-          this.openLCPPublication(
-            context = context,
-            file = bookSource.file,
-            type = "Packaged audiobook file"
+      is PlayerBookSourceLicenseFile -> {
+        if (bookFile.isFile) {
+          this.logger.debug("Creating LCP datasource from packaged book file {}", bookFile)
+          LCPDataSource.Factory(
+            this.openLCPPublication(
+              context = context,
+              file = bookFile,
+              type = "Packaged audiobook file"
+            )
           )
-        )
+        } else {
+          this.logger.debug("Creating LCP datasource from license {}", bookSource.file)
+          LCPDataSource.Factory(
+            this.openLCPPublication(
+              context = context,
+              file = bookSource.file,
+              type = "License file"
+            )
+          )
+        }
       }
 
-      is PlayerBookSource.PlayerBookSourceLicenseFile -> {
-        LCPDataSource.Factory(
-          this.openLCPPublication(
-            context = context,
-            file = bookSource.file,
-            type = "License file"
-          )
-        )
-      }
-
-      null -> {
+      PlayerBookSourceManifestOnly -> {
         throw IllegalArgumentException(
           "For LCP audiobooks, either a book file or a license file is required."
+        )
+      }
+
+      is PlayerBookSourcePackagedBook -> {
+        this.logger.debug("Creating LCP datasource from packaged book file {}", bookFile)
+        LCPDataSource.Factory(
+          this.openLCPPublication(
+            context = context,
+            file = bookFile,
+            type = "Packaged audiobook file"
+          )
         )
       }
     }
