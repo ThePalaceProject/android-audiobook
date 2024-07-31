@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.media3
 
 import net.jcip.annotations.GuardedBy
+import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
@@ -44,7 +45,7 @@ class ExoDownloadTask(
   private val log =
     LoggerFactory.getLogger(ExoDownloadTask::class.java)
 
-  private var percent: Int = 0
+  private var progressValue: PlayerDownloadProgress = PlayerDownloadProgress(0.0)
   private val stateLock: Any = Object()
 
   @GuardedBy("stateLock")
@@ -64,6 +65,7 @@ class ExoDownloadTask(
       val message: String,
       val exception: Exception
     ) : State()
+
     data object Downloaded : State()
     data class Downloading(val future: CompletableFuture<Unit>) : State()
   }
@@ -78,7 +80,7 @@ class ExoDownloadTask(
     when (val s = this.stateGetCurrent()) {
       Initial -> this.onNotDownloaded()
       Downloaded -> this.onDownloaded()
-      is Downloading -> this.onDownloading(this.percent)
+      is Downloading -> this.onDownloading(this.progressValue)
       is Failed -> this.onDownloadFailed(s.exception)
     }
   }
@@ -90,17 +92,19 @@ class ExoDownloadTask(
     )
   }
 
-  private fun onDownloading(percent: Int) {
-    this.log.debug("[{}] onDownloading {}", this.readingOrderItem.id, percent)
+  private fun onDownloading(
+    progress: PlayerDownloadProgress
+  ) {
+    this.log.debug("[{}] onDownloading {}", this.readingOrderItem.id, progress)
 
-    this.percent = percent
+    this.progressValue = progress
     this.readingOrderItem.setDownloadStatus(
-      PlayerReadingOrderItemDownloading(this.readingOrderItem, percent)
+      PlayerReadingOrderItemDownloading(this.readingOrderItem, progress)
     )
   }
 
   private fun onDownloaded() {
-    this.log.debug("[{}] onDownloaded {}", this.readingOrderItem.id, this.percent)
+    this.log.debug("[{}] onDownloaded {}", this.readingOrderItem.id, this.progress)
     this.readingOrderItem.setDownloadStatus(PlayerReadingOrderItemDownloaded(this.readingOrderItem))
   }
 
@@ -145,7 +149,9 @@ class ExoDownloadTask(
         outputFile = this.partFile,
         outputFileTemp = this.partFileTemp,
         userAgent = this.userAgent,
-        onProgress = { percent -> this.onDownloading(percent) },
+        onProgress = { percent ->
+          this.onDownloading(PlayerDownloadProgress.percentClamp(percent))
+        },
         onCompletion = { }
       )
 
@@ -257,7 +263,7 @@ class ExoDownloadTask(
     get() = when (val s = this.stateGetCurrent()) {
       Downloaded -> PlayerDownloadTaskStatus.IdleDownloaded
       is Downloading -> PlayerDownloadTaskStatus.Downloading(
-        if (this.progress == 0.0) {
+        if (this.progress.value == 0.0) {
           null
         } else {
           this.progress
@@ -281,7 +287,7 @@ class ExoDownloadTask(
       }
 
       is Downloading -> {
-        this.onDownloading(this.percent)
+        this.onDownloading(this.progress)
       }
 
       is Failed -> {
@@ -301,8 +307,8 @@ class ExoDownloadTask(
     }
   }
 
-  override val progress: Double
-    get() = this.percent.toDouble()
+  override val progress: PlayerDownloadProgress
+    get() = this.progressValue
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = listOf(this.readingOrderItem)

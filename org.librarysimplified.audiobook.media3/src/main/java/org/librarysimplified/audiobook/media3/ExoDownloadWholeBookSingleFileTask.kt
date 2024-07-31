@@ -1,11 +1,12 @@
 package org.librarysimplified.audiobook.media3
 
-import com.google.common.util.concurrent.AtomicDouble
 import net.jcip.annotations.GuardedBy
+import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.lcp.downloads.LCPDownloads
@@ -15,6 +16,7 @@ import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.atomic.AtomicReference
 
 internal class ExoDownloadWholeBookSingleFileTask(
   override val index: Int,
@@ -46,24 +48,25 @@ internal class ExoDownloadWholeBookSingleFileTask(
     internal val bookFileTemp: File,
     internal val licenseBytes: ByteArray
   ) {
+    var downloading: CompletableFuture<Unit>? = null
     private val stateLock: Any = Object()
-    private val progressValue = AtomicDouble(0.0)
+    private val progressValue = AtomicReference(PlayerDownloadProgress(0.0))
 
     @GuardedBy("stateLock")
     private var state: State =
       when (this.bookFile.isFile) {
         true -> {
-          this.progressValue.set(1.0)
+          this.progressValue.set(PlayerDownloadProgress(1.0))
           State.Downloaded
         }
 
         false -> {
-          this.progressValue.set(0.0)
+          this.progressValue.set(PlayerDownloadProgress(0.0))
           State.Initial
         }
       }
 
-    internal fun progress(): Double {
+    internal fun progress(): PlayerDownloadProgress {
       return this.progressValue.get()
     }
 
@@ -71,10 +74,14 @@ internal class ExoDownloadWholeBookSingleFileTask(
       return synchronized(this.stateLock) { this.state }
     }
 
-    fun stateSet(newState: State) {
+    internal fun stateSet(newState: State) {
       synchronized(this.stateLock) {
         this.state = newState
       }
+    }
+
+    internal fun progressSet(progress: PlayerDownloadProgress) {
+      this.progressValue.set(progress)
     }
   }
 
@@ -86,7 +93,7 @@ internal class ExoDownloadWholeBookSingleFileTask(
     get() = when (val s = this.stateGetCurrent()) {
       State.Downloaded -> PlayerDownloadTaskStatus.IdleDownloaded
       is State.Downloading -> PlayerDownloadTaskStatus.Downloading(
-        if (this.progress == 0.0) {
+        if (this.progress.value == 0.0) {
           null
         } else {
           this.progress
@@ -97,14 +104,15 @@ internal class ExoDownloadWholeBookSingleFileTask(
       is State.Failed -> PlayerDownloadTaskStatus.Failed(s.message, s.exception)
     }
 
-  private fun stateGetCurrent() = this.sharedState.stateCurrent()
+  private fun stateGetCurrent() =
+    this.sharedState.stateCurrent()
 
   override fun fetch() {
     this.logger.debug("[{}] fetch", this.readingOrderItem.id)
 
     when (this.stateGetCurrent()) {
       State.Initial -> {
-        this.onStartDownload()
+        this.sharedState.downloading = this.onStartDownload()
       }
 
       State.Downloaded -> {
@@ -112,17 +120,18 @@ internal class ExoDownloadWholeBookSingleFileTask(
       }
 
       is State.Downloading -> {
-        this.onDownloading(this.percent())
+        this.onDownloading(this.progress)
       }
 
       is State.Failed -> {
-        this.onStartDownload()
+        this.sharedState.downloading = this.onStartDownload()
       }
     }
   }
 
   override fun cancel() {
     this.logger.debug("[{}] cancel", this.readingOrderItem.id)
+    this.sharedState.downloading?.cancel(true)
   }
 
   override fun delete() {
@@ -136,7 +145,7 @@ internal class ExoDownloadWholeBookSingleFileTask(
     }
   }
 
-  override val progress: Double
+  override val progress: PlayerDownloadProgress
     get() = this.sharedState.progress()
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>
@@ -146,13 +155,9 @@ internal class ExoDownloadWholeBookSingleFileTask(
     when (val s = this.stateGetCurrent()) {
       State.Initial -> this.onNotDownloaded()
       State.Downloaded -> this.onDownloaded()
-      is State.Downloading -> this.onDownloading(this.percent())
+      is State.Downloading -> this.onDownloading(this.progress)
       is State.Failed -> this.onDownloadFailed(s.exception)
     }
-  }
-
-  private fun percent(): Int {
-    return (this.sharedState.progress() * 100.0).toInt()
   }
 
   private fun onDeleteDownloaded() {
@@ -183,20 +188,42 @@ internal class ExoDownloadWholeBookSingleFileTask(
     exception: Exception
   ) {
     this.logger.debug("onDownloadFailed: ", exception)
+    this.readingOrderItem.setDownloadStatus(
+      PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed(
+        readingOrderItem = this.readingOrderItem,
+        exception = exception,
+        message = exception.message ?: exception.javaClass.name
+      )
+    )
   }
 
   private fun onDownloading(
-    percent: Int
+    progress: PlayerDownloadProgress
   ) {
-    this.logger.debug("onDownloading: {}", percent)
+    this.logger.debug("onDownloading: {}", progress)
+    this.sharedState.progressSet(progress)
+    this.readingOrderItem.setDownloadStatus(
+      PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading(
+        readingOrderItem = this.readingOrderItem,
+        progress = progress
+      )
+    )
   }
 
   private fun onNotDownloaded() {
-    // Nothing to do
+    this.readingOrderItem.setDownloadStatus(
+      PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded(
+        readingOrderItem = this.readingOrderItem
+      )
+    )
   }
 
   private fun onDownloaded() {
-    // Nothing to do
+    this.readingOrderItem.setDownloadStatus(
+      PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded(
+        readingOrderItem = this.readingOrderItem
+      )
+    )
   }
 
   private fun onStartDownload(): CompletableFuture<Unit> {
@@ -209,9 +236,12 @@ internal class ExoDownloadWholeBookSingleFileTask(
         outputFile = this.sharedState.bookFile,
         outputFileTemp = this.sharedState.bookFileTemp,
         userAgent = this.sharedState.userAgent,
-        onProgress = { percent -> this.onDownloading(percent) },
+        onProgress = { percent ->
+          this.onDownloading(PlayerDownloadProgress.percentClamp(percent))
+        },
         onCompletion = {
           LCPDownloads.repackagePublication(
+            source = this.sharedState.bookDownloadURI,
             licenseBytes = this.sharedState.licenseBytes,
             file = this.sharedState.bookFile,
             fileTemp = this.sharedState.bookFileTemp

@@ -28,7 +28,7 @@ sealed class PlayerReadingOrderItemDownloadStatus {
 
   data class PlayerReadingOrderItemDownloading(
     override val readingOrderItem: PlayerReadingOrderItemType,
-    val percent: Int
+    val progress: PlayerDownloadProgress
   ) : PlayerReadingOrderItemDownloadStatus()
 
   /**

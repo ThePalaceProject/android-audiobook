@@ -120,7 +120,7 @@ abstract class ExoEngineProviderContract {
     val book_provider = engine_provider.tryRequest(request)
     Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
-    val result = book_provider_nn.create(this.context())
+    val result = book_provider_nn.create(this.context(), listOf())
     this.log().debug("testAudioEnginesTrivial:result: {}", result)
     Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
   }
@@ -144,7 +144,7 @@ abstract class ExoEngineProviderContract {
     val book_provider = engine_provider.tryRequest(request)
     Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
-    val result = book_provider_nn.create(this.context())
+    val result = book_provider_nn.create(this.context(), listOf())
     this.log().debug("testAudioEnginesFlatland:result: {}", result)
     Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
   }
@@ -168,7 +168,7 @@ abstract class ExoEngineProviderContract {
     val book_provider = engine_provider.tryRequest(request)
     Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
-    val result = book_provider_nn.create(this.context())
+    val result = book_provider_nn.create(this.context(), listOf())
     this.log().debug("testAudioEnginesFeedbooks:result: {}", result)
     Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
   }
@@ -757,7 +757,7 @@ abstract class ExoEngineProviderContract {
     val book_provider = engine_provider.tryRequest(request)
     Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
-    val result = book_provider_nn.create(this.context())
+    val result = book_provider_nn.create(this.context(), listOf())
     this.log().debug("testAudioEnginesTrivial:result: {}", result)
 
     val book = (result as PlayerResult.Success).result
@@ -803,7 +803,7 @@ abstract class ExoEngineProviderContract {
     val bookProvider =
       engineProvider.tryRequest(request)!!
     val audioBook =
-      (bookProvider.create(this.context()) as PlayerResult.Success).result
+      (bookProvider.create(this.context(), listOf()) as PlayerResult.Success).result
 
     Assertions.assertEquals(
       URI.create("http://www.example.com/0.mp3"),
@@ -866,7 +866,7 @@ abstract class ExoEngineProviderContract {
     val bookProvider =
       engineProvider.tryRequest(request)!!
     val audioBook =
-      (bookProvider.create(this.context()) as PlayerResult.Success).result
+      (bookProvider.create(this.context(), listOf()) as PlayerResult.Success).result
 
     val exception = Assertions.assertThrows(ExecutionException::class.java) {
       audioBook.replaceManifest(manifest2).get()
@@ -906,7 +906,7 @@ abstract class ExoEngineProviderContract {
     val bookProvider =
       engineProvider.tryRequest(request)!!
     val audioBook =
-      (bookProvider.create(this.context()) as PlayerResult.Success).result
+      (bookProvider.create(this.context(), listOf()) as PlayerResult.Success).result
 
     val exception = Assertions.assertThrows(ExecutionException::class.java) {
       audioBook.replaceManifest(manifest2).get()
@@ -974,7 +974,7 @@ abstract class ExoEngineProviderContract {
       }
     })
 
-    val result = bookProvider.create(this.context())
+    val result = bookProvider.create(this.context(), listOf())
     dumpResult(result)
     val audioBook = (result as PlayerResult.Success).result
 
@@ -995,6 +995,7 @@ abstract class ExoEngineProviderContract {
       is PlayerResult.Failure -> {
         log().debug("FAILURE: ", result.failure)
       }
+
       is PlayerResult.Success -> {
         log().debug("SUCCESS: {}", result.result)
       }
@@ -1048,7 +1049,7 @@ abstract class ExoEngineProviderContract {
     val bookProvider =
       engineProvider.tryRequest(request)!!
     val result =
-      bookProvider.create(this.context())
+      bookProvider.create(this.context(), listOf())
     val audioBook =
       (result as PlayerResult.Success).result
     val player =

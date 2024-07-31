@@ -34,5 +34,5 @@ interface PlayerDownloadWholeBookTaskType : PlayerDownloadTaskType {
    * The current download progress in the range [0, 1]
    */
 
-  override val progress: Double
+  override val progress: PlayerDownloadProgress
 }

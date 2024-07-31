@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.audioengine
 
+import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
@@ -34,7 +35,7 @@ class FindawayChapterDownloadTask(
         is PlayerDownloadTaskStatus.Downloading ->
           PlayerReadingOrderItemDownloading(
             readingOrderItem = this.readingOrderItem,
-            percent = (status.progress ?: 0).toInt()
+            progress = status.progress ?: PlayerDownloadProgress(0.0)
           )
 
         is PlayerDownloadTaskStatus.Failed ->
@@ -65,18 +66,18 @@ class FindawayChapterDownloadTask(
         PlayerDownloadTaskStatus.IdleDownloaded
 
       is PlayerReadingOrderItemDownloading ->
-        PlayerDownloadTaskStatus.Downloading(s.percent.toDouble())
+        PlayerDownloadTaskStatus.Downloading(s.progress)
 
       is PlayerReadingOrderItemNotDownloaded ->
         PlayerDownloadTaskStatus.IdleNotDownloaded
     }
 
-  override val progress: Double
+  override val progress: PlayerDownloadProgress
     get() = when (val s = this.status) {
-      is PlayerDownloadTaskStatus.Downloading -> s.progress ?: 0.0
-      is PlayerDownloadTaskStatus.Failed -> 0.0
-      PlayerDownloadTaskStatus.IdleDownloaded -> 100.0
-      PlayerDownloadTaskStatus.IdleNotDownloaded -> 0.0
+      is PlayerDownloadTaskStatus.Downloading -> s.progress ?: PlayerDownloadProgress(0.0)
+      is PlayerDownloadTaskStatus.Failed -> PlayerDownloadProgress(0.0)
+      PlayerDownloadTaskStatus.IdleDownloaded -> PlayerDownloadProgress(1.0)
+      PlayerDownloadTaskStatus.IdleNotDownloaded -> PlayerDownloadProgress(0.0)
     }
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>

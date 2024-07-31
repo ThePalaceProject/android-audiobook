@@ -188,6 +188,24 @@ class ExoAudioBookProvider(
     }
   }
 
+  override fun deleteBookData(
+    context: Application,
+    extensions: List<PlayerExtensionType>
+  ): Boolean {
+    this.logger.debug("deleteBookData")
+
+    val bookID =
+      PlayerBookID.transform(this.manifest.metadata.identifier)
+    val bookDirectory =
+      ExoAudioBook.findDirectoryFor(context, bookID)
+
+    if (bookDirectory.isDirectory) {
+      bookDirectory.deleteRecursively()
+      return true
+    }
+    return false
+  }
+
   private fun createLCPDataSource(
     context: Application,
     bookSource: PlayerBookSource,

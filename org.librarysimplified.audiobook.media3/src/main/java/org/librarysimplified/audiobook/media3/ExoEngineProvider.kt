@@ -1,11 +1,13 @@
 package org.librarysimplified.audiobook.media3
 
+import android.app.Application
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerVersion
 import org.librarysimplified.audiobook.api.PlayerVersions
+import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -98,6 +100,19 @@ class ExoEngineProvider(
       engineExecutor = this.engineExecutor,
       manifest = manifest
     )
+  }
+
+  override fun tryDeleteRequest(
+    context: Application,
+    extensions: List<PlayerExtensionType>,
+    request: PlayerAudioEngineRequest
+  ): Boolean {
+    val manifest = request.manifest
+    return ExoAudioBookProvider(
+      request = request,
+      engineExecutor = this.engineExecutor,
+      manifest = manifest
+    ).deleteBookData(context, extensions)
   }
 
   override fun name(): String {

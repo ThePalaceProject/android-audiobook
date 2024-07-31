@@ -7,6 +7,7 @@ import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.slf4j.LoggerFactory
 
 /**
  * The Findaway implementation of the {@link PlayerAudioBookProviderType} interface.
@@ -15,6 +16,9 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 class FindawayAudioBookProvider(
   private val manifest: PlayerManifest
 ) : PlayerAudioBookProviderType {
+
+  private val logger =
+    LoggerFactory.getLogger(FindawayAudioBookProvider::class.java)
 
   override fun create(
     context: Application,
@@ -44,6 +48,22 @@ class FindawayAudioBookProvider(
 
       is PlayerResult.Failure ->
         PlayerResult.Failure(parsed.failure)
+    }
+  }
+
+  override fun deleteBookData(
+    context: Application,
+    extensions: List<PlayerExtensionType>
+  ): Boolean {
+    this.logger.debug("deleteBookData")
+    return when (val book = create(context, extensions)) {
+      is PlayerResult.Failure -> {
+        false
+      }
+      is PlayerResult.Success -> {
+        book.result.wholeBookDownloadTask.delete()
+        return true
+      }
     }
   }
 }

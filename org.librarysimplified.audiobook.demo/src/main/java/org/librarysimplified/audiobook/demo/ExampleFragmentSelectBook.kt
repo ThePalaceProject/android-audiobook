@@ -53,6 +53,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   private lateinit var authenticationOverdrivePassword: TextView
   private lateinit var authenticationOverdriveUser: TextView
   private lateinit var authenticationSelected: String
+  private lateinit var delete: Button
   private lateinit var lcpPassphrase: EditText
   private lateinit var location: TextView
   private lateinit var play: Button
@@ -136,6 +137,8 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
     this.play =
       layout.findViewById(R.id.exPlay)
+    this.delete =
+      layout.findViewById(R.id.exDelete)
 
     this.location =
       layout.findViewById(R.id.exLocation)
@@ -221,6 +224,13 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     this.play.setOnClickListener {
       this.onSelectedPlay()
     }
+    this.delete.setOnClickListener {
+      this.onSelectedDelete()
+    }
+  }
+
+  private fun onSelectedDelete() {
+    // Not implemented yet
   }
 
   private fun onSelectedPlay() {
@@ -276,8 +286,6 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
           licenseParameters = this.basicParametersForLCPLicense(sourceURI, credentials),
           parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
-          bookFile = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook"),
-          bookFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook.tmp"),
           licenseFile = File(ExampleApplication.application.cacheDir, "lcpBook.lcpl"),
           licenseFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.lcpl.tmp"),
           bookCredentials = this.bookCredentials()
@@ -455,7 +463,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
             ?: throw UnsupportedOperationException()
 
-        val credentials =
+        val basicCredentials =
           ManifestFulfillmentBasicCredentials(
             userName = credentials.userName,
             password = credentials.password
@@ -464,7 +472,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
         strategies.create(
           ManifestFulfillmentBasicParameters(
             uri = source,
-            credentials = credentials,
+            credentials = basicCredentials,
             httpClient = ExampleApplication.httpClient,
             userAgent = ExampleApplication.userAgent
           )
@@ -476,7 +484,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
             ?: throw UnsupportedOperationException()
 
-        val credentials =
+        val basicCredentials =
           ManifestFulfillmentBasicCredentials(
             userName = credentials.userName,
             password = credentials.password
@@ -485,7 +493,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
         strategies.create(
           ManifestFulfillmentBasicParameters(
             uri = source,
-            credentials = credentials,
+            credentials = basicCredentials,
             httpClient = ExampleApplication.httpClient,
             userAgent = ExampleApplication.userAgent
           )

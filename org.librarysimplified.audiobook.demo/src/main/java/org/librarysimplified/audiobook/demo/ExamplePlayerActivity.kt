@@ -222,7 +222,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         this.switchFragment(ExampleFragmentError())
       }
 
-      PlayerManifestLicenseChecksFailed -> {
+      is PlayerManifestLicenseChecksFailed -> {
         this.switchFragment(ExampleFragmentError())
       }
 

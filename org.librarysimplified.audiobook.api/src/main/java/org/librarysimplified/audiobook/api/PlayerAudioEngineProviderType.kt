@@ -1,5 +1,8 @@
 package org.librarysimplified.audiobook.api
 
+import android.app.Application
+import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
+
 /**
  * The interface exposed by audio engine providers.
  */
@@ -27,4 +30,18 @@ interface PlayerAudioEngineProviderType {
    */
 
   fun tryRequest(request: PlayerAudioEngineRequest): PlayerAudioBookProviderType?
+
+  /**
+   * Run through the same steps as [tryRequest], but do not attempt to actually open an
+   * audio engine for playback. Instead, instruct whichever audio engine can respond to the
+   * request to delete any data it has for the book described by the request.
+   *
+   * @return `true` if book data was deleted by an engine
+   */
+
+  fun tryDeleteRequest(
+    context: Application,
+    extensions: List<PlayerExtensionType>,
+    request: PlayerAudioEngineRequest
+  ): Boolean
 }

@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.mocking
 
+import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
@@ -32,7 +33,7 @@ class MockingDownloadWholeBookTask(
     }
   }
 
-  override val progress: Double
+  override val progress: PlayerDownloadProgress
     get() = calculateProgress()
   override val index: Int
     get() = 0
@@ -42,7 +43,9 @@ class MockingDownloadWholeBookTask(
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = this.audioBook.readingOrder
 
-  private fun calculateProgress(): Double {
-    return this.audioBook.downloadTasks.sumOf { task -> task.progress } / this.audioBook.downloadTasks.size
+  private fun calculateProgress(): PlayerDownloadProgress {
+    val progressTotal =
+      this.audioBook.downloadTasks.sumOf { task -> task.progress.value }
+    return PlayerDownloadProgress.normalClamp(progressTotal / this.audioBook.downloadTasks.size)
   }
 }

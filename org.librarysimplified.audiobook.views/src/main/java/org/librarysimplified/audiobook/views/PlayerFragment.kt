@@ -18,6 +18,7 @@ import androidx.annotation.UiThread
 import androidx.appcompat.widget.Toolbar
 import io.reactivex.disposables.CompositeDisposable
 import org.joda.time.Duration
+import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerEvent
@@ -193,14 +194,18 @@ class PlayerFragment : PlayerBaseFragment() {
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
 
     this.subscriptions = CompositeDisposable()
-    this.subscriptions.add(PlayerModel.playerEvents.subscribe { event -> this.onPlayerEvent(event) })
-    this.subscriptions.add(PlayerSleepTimer.events.subscribe { event -> this.onSleepTimerEvent(event) })
-    this.subscriptions.add(PlayerModel.viewCommands.subscribe { event ->
-      this.onPlayerViewCommand(
-        event
-      )
+    this.subscriptions.add(PlayerModel.playerEvents.subscribe { event ->
+      this.onPlayerEvent(event)
     })
-    this.subscriptions.add(PlayerModel.downloadEvents.subscribe { event -> this.onDownloadEvent() })
+    this.subscriptions.add(PlayerSleepTimer.events.subscribe { event ->
+      this.onSleepTimerEvent(event)
+    })
+    this.subscriptions.add(PlayerModel.viewCommands.subscribe { event ->
+      this.onPlayerViewCommand(event)
+    })
+    this.subscriptions.add(PlayerModel.downloadEvents.subscribe { event ->
+      this.onDownloadEvent()
+    })
     this.setPlayPauseButtonAppropriately()
   }
 
@@ -266,9 +271,9 @@ class PlayerFragment : PlayerBaseFragment() {
               this.resources.getString(R.string.audiobook_player_downloading, task.index + 1)
             this.playerDownloadProgress.visibility = VISIBLE
             this.playerDownloadProgress.isIndeterminate = false
-            this.playerDownloadProgress.progress = progress.toInt()
+            this.playerDownloadProgress.progress = progress.asPercent()
             this.playerDownloadProgressTotal.visibility = VISIBLE
-            this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).toInt()
+            this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).asPercent()
             return
           }
         }
@@ -301,7 +306,7 @@ class PlayerFragment : PlayerBaseFragment() {
             this.playerDownloadProgress.visibility = VISIBLE
             this.playerDownloadProgress.isIndeterminate = true
             this.playerDownloadProgressTotal.visibility = VISIBLE
-            this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).toInt()
+            this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).asPercent()
             return
           }
         }
@@ -344,20 +349,13 @@ class PlayerFragment : PlayerBaseFragment() {
 
   private fun downloadProgressTotal(
     tasks: List<PlayerDownloadTaskType>
-  ): Double {
+  ): PlayerDownloadProgress {
     val totalPossible =
-      tasks.foldRight(0.0) { task, acc -> acc + 100.0 }
+      tasks.sumOf { task -> 1.0 }
+    val totalAchieved =
+      tasks.sumOf { task -> task.progress.value }
 
-    val totalAchieved = tasks.foldRight(0.0) { task, acc ->
-      when (val status = task.status) {
-        is PlayerDownloadTaskStatus.Downloading -> acc + (status.progress ?: 0.0)
-        is PlayerDownloadTaskStatus.Failed -> acc
-        PlayerDownloadTaskStatus.IdleDownloaded -> acc + 100.0
-        PlayerDownloadTaskStatus.IdleNotDownloaded -> acc
-      }
-    }
-
-    return (totalAchieved / totalPossible) * 100.0
+    return PlayerDownloadProgress.normalClamp(totalAchieved / totalPossible)
   }
 
   @UiThread
