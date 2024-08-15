@@ -67,6 +67,8 @@ import java.util.concurrent.Executors
 
 object PlayerModel {
 
+  private var isStreamingPermitted: Boolean = false
+
   @Volatile
   var playerExtensions: List<PlayerExtensionType> =
     ServiceLoader.load(PlayerExtensionType::class.java)
@@ -843,7 +845,7 @@ object PlayerModel {
 
   fun skipForward() {
     try {
-      this.playerAndBookField?.player?.skipPlayhead(30_000L)
+      this.playerAndBookField?.player?.skipPlayhead(seekIncrement())
     } catch (e: Exception) {
       this.logger.error("skipForward: ", e)
     }
@@ -851,7 +853,7 @@ object PlayerModel {
 
   fun skipBack() {
     try {
-      this.playerAndBookField?.player?.skipPlayhead(-30_000L)
+      this.playerAndBookField?.player?.skipPlayhead(-seekIncrement())
     } catch (e: Exception) {
       this.logger.error("skipBack: ", e)
     }
@@ -982,5 +984,27 @@ object PlayerModel {
     PlayerUIThread.runOnUIThread {
       PlayerMediaController.start(this.application)
     }
+  }
+
+  fun setStreamingPermitted(
+    permitted: Boolean
+  ) {
+    return try {
+      this.logger.debug("setStreamingPermitted: {}", permitted)
+      this.isStreamingPermitted = permitted
+
+      val playerAndBook = this.playerAndBookField
+      if (playerAndBook != null) {
+        playerAndBook.player.isStreamingPermitted = permitted
+      } else {
+        Unit
+      }
+    } catch (e: Exception) {
+      this.logger.error("setStreamingPermitted: ", e)
+    }
+  }
+
+  fun seekIncrement(): Long {
+    return 30_000L
   }
 }
