@@ -1155,7 +1155,7 @@ object PlayerModel {
 
   fun skipForward() {
     try {
-      this.playerAndBookField?.player?.skipPlayhead(30_000L)
+      this.playerAndBookField?.player?.skipPlayhead(seekIncrement())
     } catch (e: Exception) {
       this.logger.error("skipForward: ", e)
     }
@@ -1163,7 +1163,7 @@ object PlayerModel {
 
   fun skipBack() {
     try {
-      this.playerAndBookField?.player?.skipPlayhead(-30_000L)
+      this.playerAndBookField?.player?.skipPlayhead(-seekIncrement())
     } catch (e: Exception) {
       this.logger.error("skipBack: ", e)
     }
@@ -1312,5 +1312,9 @@ object PlayerModel {
     } catch (e: Exception) {
       this.logger.error("setStreamingPermitted: ", e)
     }
+  }
+
+  fun seekIncrement(): Long {
+    return 30_000L
   }
 }

@@ -65,11 +65,12 @@ object PlayerMediaFacade : Player {
 
   private val supportedCommands =
     Player.Commands.Builder()
-      .add(Player.COMMAND_PLAY_PAUSE)
-      .add(Player.COMMAND_GET_METADATA)
       .add(Player.COMMAND_GET_CURRENT_MEDIA_ITEM)
-      .add(Player.COMMAND_SEEK_FORWARD)
+      .add(Player.COMMAND_GET_METADATA)
+      .add(Player.COMMAND_PLAY_PAUSE)
       .add(Player.COMMAND_SEEK_BACK)
+      .add(Player.COMMAND_SEEK_FORWARD)
+      .add(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
       .build()
 
   @Volatile
@@ -500,8 +501,7 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getSeekBackIncrement(): Long {
-    this.warnNotImplemented("getSeekBackIncrement")
-    return 0
+    return PlayerModel.seekIncrement()
   }
 
   override fun seekBack() {
@@ -509,8 +509,7 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getSeekForwardIncrement(): Long {
-    this.warnNotImplemented("getSeekForwardIncrement")
-    return 0
+    return PlayerModel.seekIncrement()
   }
 
   override fun seekForward() {
