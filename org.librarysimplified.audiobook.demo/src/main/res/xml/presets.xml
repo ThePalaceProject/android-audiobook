@@ -2,6 +2,16 @@
 
 <Presets xmlns="urn:org.librarysimplified.audiobook.demo.presets:xml:1">
     <Preset
+        name="Manifest Understates Durations"
+        location="https://io7m.github.io/audiobooks/wrongDurationsUnder/manifest.json">
+        <AuthenticationNone />
+    </Preset>
+    <Preset
+        name="Manifest Overstates Durations"
+        location="https://io7m.github.io/audiobooks/wrongDurationsOver/manifest.json">
+        <AuthenticationNone />
+    </Preset>
+    <Preset
         name="Reading Order Items / Chapters 1:1"
         location="https://io7m.github.io/audiobooks/rc11/manifest.json">
         <AuthenticationNone />

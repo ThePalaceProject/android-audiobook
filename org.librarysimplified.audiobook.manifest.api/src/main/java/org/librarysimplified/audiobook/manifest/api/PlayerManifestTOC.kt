@@ -70,8 +70,6 @@ data class PlayerManifestTOC(
     readingOrderItemOffset: PlayerMillisecondsReadingOrderItem,
     readingOrderItemInterval: PlayerMillisecondsAbsoluteInterval
   ): PlayerManifestPositionMetadata {
-    val tocItem = this.lookupTOCItem(readingOrderItemID, readingOrderItemOffset)
-
     /*
      * In order to determine how far along the current TOC item we are, we need to:
      *
@@ -85,23 +83,56 @@ data class PlayerManifestTOC(
      *    the current TOC item.
      * 5. Our position within the TOC item as a real value is then just the
      *    TOC-relative position divided by the TOC length.
+     *
+     * Additionally, we have to take into account the fact that manifests are frequently off
+     * by a few seconds; manifests may say that reading order items are longer or shorter than
+     * they really are. There are obviously only two cases to handle here:
+     *
+     * 1. The manifest says the reading order item is longer than the audio file actually is.
+     * 2. The manifest says the reading order item is shorter than the audio file actually is.
+     *
+     * We can handle both cases by implicitly trusting that the reading order item ID the user
+     * passed in is actually the one that is playing. Therefore, any TOC items returned _must_
+     * overlap that reading order item. If we look up a TOC item, and then check the TOC item
+     * and determine that it doesn't overlap the reading order item that the user says is
+     * currently playing, then this indicates a manifest inconsistency. We handle the inconsistency
+     * by returning the closest TOC item to the absolute player position that _does_ overlap the
+     * reading order item.
      */
 
-    val tocItemInterval: PlayerMillisecondsAbsoluteInterval =
-      tocItem.intervalAbsoluteMilliseconds
+    var tocItem =
+      this.lookupTOCItem(readingOrderItemID, readingOrderItemOffset)
+
     val offsetAbsolute: PlayerMillisecondsAbsolute =
       readingOrderItemInterval.lower + readingOrderItemOffset
 
-    val tocItemOffset: PlayerMillisecondsTOC =
-      PlayerMillisecondsTOC((offsetAbsolute - tocItemInterval.lower).value)
+    tocItem = this.adjustTOCItemForManifestInconsistency(
+      tocItem = tocItem,
+      readingOrderItemInterval = readingOrderItemInterval,
+      offsetAbsolute = offsetAbsolute
+    )
+
+    val tocItemOffset =
+      PlayerMillisecondsTOC(
+        Math.max(0L, (offsetAbsolute - tocItem.intervalAbsoluteMilliseconds.lower).value)
+      )
     val tocItemDuration =
-      tocItem.durationMilliseconds
+      Math.max(0L, tocItem.durationMilliseconds)
     val tocItemPosition =
       Duration.millis(tocItemOffset.value)
     val tocItemRemaining =
-      Duration.millis(tocItemDuration).minus(tocItemPosition)
+      maxOf(
+        Duration.ZERO,
+        Duration.millis(tocItemDuration)
+          .minus(tocItemPosition)
+      )
+
     val tocItemProgress =
-      tocItemOffset.value.toDouble() / tocItemDuration.toDouble()
+      clamp(
+        value = tocItemOffset.value.toDouble() / tocItemDuration.toDouble(),
+        lower = 0.0,
+        upper = 1.0
+      )
 
     /*
      * The current progress throughout the entire book is simply the absolute offset we
@@ -111,9 +142,17 @@ data class PlayerManifestTOC(
      */
 
     val bookProgress =
-      offsetAbsolute.value.toDouble() / this.totalDuration.millis.toDouble()
+      clamp(
+        value = offsetAbsolute.value.toDouble() / this.totalDuration.millis.toDouble(),
+        lower = 0.0,
+        upper = 1.0
+      )
+
     val durationRemaining =
-      this.totalDuration.minus(Duration.millis(offsetAbsolute.value))
+      maxOf(
+        Duration.ZERO,
+        this.totalDuration.minus(Duration.millis(offsetAbsolute.value))
+      )
 
     return PlayerManifestPositionMetadata(
       tocItem = tocItem,
@@ -123,6 +162,33 @@ data class PlayerManifestTOC(
       chapterProgressEstimate = tocItemProgress,
       bookProgressEstimate = bookProgress
     )
+  }
+
+  private fun adjustTOCItemForManifestInconsistency(
+    tocItem: PlayerManifestTOCItem,
+    readingOrderItemInterval: PlayerMillisecondsAbsoluteInterval,
+    offsetAbsolute: PlayerMillisecondsAbsolute
+  ): PlayerManifestTOCItem {
+    if (!tocItem.intervalAbsoluteMilliseconds.overlaps(readingOrderItemInterval)) {
+      val overlapping = this.tocItemTree.overlapping(readingOrderItemInterval)
+      for (item in overlapping) {
+        if (item.lower() >= offsetAbsolute && item.upper() <= offsetAbsolute) {
+          return this.tocItemsByInterval[item]!!
+        }
+      }
+      if (!overlapping.isEmpty()) {
+        return this.tocItemsByInterval[overlapping.last()]!!
+      }
+    }
+    return tocItem
+  }
+
+  private fun clamp(
+    value: Double,
+    lower: Double,
+    upper: Double
+  ): Double {
+    return Math.max(lower, Math.min(value, upper))
   }
 
   /**
