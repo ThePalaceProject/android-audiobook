@@ -61,6 +61,7 @@ class PlayerTOCBookmarkAdapter(
 
   fun setBookmarks(bookmarksList: List<PlayerBookmark>) {
     this.bookmarks = bookmarksList
+    this.notifyDataSetChanged()
   }
 
   inner class BookmarkViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
