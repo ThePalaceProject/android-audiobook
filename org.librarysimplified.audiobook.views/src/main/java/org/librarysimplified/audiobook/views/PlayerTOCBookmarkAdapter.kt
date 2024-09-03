@@ -23,6 +23,7 @@ import java.util.Locale
 class PlayerTOCBookmarkAdapter(
   private val context: Context,
   private var bookmarks: List<PlayerBookmark>,
+  private val onTitleLookup: (PlayerPosition) -> String,
   private val onSelect: (PlayerPosition) -> Unit,
   private val onDelete: (Int, PlayerBookmark) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -115,22 +116,26 @@ class PlayerTOCBookmarkAdapter(
     }
 
     fun bind(bookmark: PlayerBookmark) {
+      val realChapterTitle =
+        onTitleLookup.invoke(bookmark.position)
       val offset =
         Duration(bookmark.offsetMilliseconds.value)
       val bookmarkDateStr =
         bookmark.metadata.creationTime.toString("MMMM dd, yyyy", Locale.ROOT)
 
-      this.bookmarkTitle.text = bookmark.metadata.chapterTitle
+      this.bookmarkTitle.text =
+        realChapterTitle
       this.bookmarkOffset.text =
         this@PlayerTOCBookmarkAdapter.periodFormatter.print(offset.toPeriod())
-      this.bookmarkDate.text = bookmarkDateStr
+      this.bookmarkDate.text =
+        bookmarkDateStr
 
       this.bookmarkDelete.visibility = View.VISIBLE
       this.bookmarkLoading.visibility = View.GONE
 
       this.itemView.contentDescription =
         this.contentDescriptionOf(
-          title = this.bookmarkTitle.text.toString(),
+          title = realChapterTitle,
           offset = offset,
           date = bookmarkDateStr
         )

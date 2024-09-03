@@ -1007,4 +1007,25 @@ object PlayerModel {
   fun seekIncrement(): Long {
     return 30_000L
   }
+
+  fun chapterTitleFor(
+    position: PlayerPosition
+  ): String {
+    return try {
+      val book = this.playerAndBookField?.audioBook
+      if (book != null) {
+        val item =
+          book.tableOfContents.lookupTOCItem(
+            id = position.readingOrderID,
+            offset = position.offsetMilliseconds
+          )
+        return item.title
+      } else {
+        ""
+      }
+    } catch (e: Exception) {
+      this.logger.error("chapterTitleFor: ", e)
+      ""
+    }
+  }
 }
