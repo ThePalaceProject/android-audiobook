@@ -428,11 +428,20 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2024-08-28T12:52:17+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0021">
+    <c:release date="2024-08-28T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0021">
       <c:changes>
         <c:change date="2024-08-28T00:00:00+00:00" summary="Ensure the bookmark adapter notifies for state changes.">
           <c:tickets>
             <c:ticket id="PP-1614"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2024-09-03T12:18:21+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="13.0.0-beta0022">
+      <c:changes>
+        <c:change date="2024-09-03T12:18:21+00:00" summary="Look up bookmark chapter titles in the TOC instead of using whatever was in the bookmark.">
+          <c:tickets>
+            <c:ticket id="PP-1616"/>
           </c:tickets>
         </c:change>
       </c:changes>
