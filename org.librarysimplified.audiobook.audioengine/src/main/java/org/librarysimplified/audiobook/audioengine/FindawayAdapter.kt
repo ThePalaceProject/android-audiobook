@@ -304,6 +304,8 @@ class FindawayAdapter(
           this.id,
           event.speed
         )
+        this.currentPlaybackRateField = playbackRateFromSpeed(event.speed)
+        this.events.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(this.currentPlaybackRate))
       }
 
       PlaybackEvent.SEEK_COMPLETE -> {
@@ -349,6 +351,33 @@ class FindawayAdapter(
         }
       }
     }
+  }
+
+  private fun playbackRateFromSpeed(
+    speed: Float?
+  ): PlayerPlaybackRate {
+    fun almostEqual(
+      value: Float,
+      other: Float
+    ): Boolean {
+      return Math.abs(value - other) < 0.1
+    }
+
+    if (speed != null) {
+      if (almostEqual(speed, 0.75f)) {
+        return PlayerPlaybackRate.THREE_QUARTERS_TIME
+      }
+      if (almostEqual(speed, 1.25f)) {
+        return PlayerPlaybackRate.ONE_AND_A_QUARTER_TIME
+      }
+      if (almostEqual(speed, 1.5f)) {
+        return PlayerPlaybackRate.ONE_AND_A_HALF_TIME
+      }
+      if (almostEqual(speed, 2.0f)) {
+        return PlayerPlaybackRate.DOUBLE_TIME
+      }
+    }
+    return PlayerPlaybackRate.NORMAL_TIME
   }
 
   private fun onPlaybackEventBufferingEnded() {
