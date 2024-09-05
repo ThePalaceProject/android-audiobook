@@ -52,4 +52,9 @@
         location="http://outland.iw.int.arc7.info/2024/06/10/speculation.json">
         <AuthenticationNone />
     </Preset>
+    <Preset
+        name="Longer Audio"
+        location="https://io7m.github.io/audiobooks/longer/manifest.json">
+        <AuthenticationNone />
+    </Preset>
 </Presets>
