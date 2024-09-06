@@ -714,12 +714,29 @@ class ExoAudioBookPlayer private constructor(
 
     /*
      * Now add the skip offset to find a new position on the absolute timeline. Then, look up
-     * the reading order item that overlaps that new position.
+     * the reading order item that overlaps that new position. If the absolute time is negative,
+     * then this means that the user tried to seek backwards to a point _before_ the first reading
+     * order item. In this case, we simply snap to the start of the first item in the book.
      */
 
-    val targetAbsolutePosition =
-      PlayerMillisecondsAbsolute(currentAbsolutePosition.value + milliseconds)
+    val targetAbsoluteMS = currentAbsolutePosition.value + milliseconds
+    if (targetAbsoluteMS < 0) {
+      val target = this.book.readingOrder.firstOrNull()
+      if (target == null) {
+        this.log.warn("No first reading order item.")
+        return false
+      }
+      this.preparePlayer(
+        CurrentPlaybackTarget(
+          readingOrderItem = target,
+          readingOrderItemTargetOffsetMilliseconds = PlayerMillisecondsReadingOrderItem(0L)
+        )
+      )
+      return true
+    }
 
+    val targetAbsolutePosition =
+      PlayerMillisecondsAbsolute(targetAbsoluteMS)
     val overlapping =
       this.book.tableOfContents.readingOrderItemTree.overlapping(
         PlayerMillisecondsAbsoluteInterval(
