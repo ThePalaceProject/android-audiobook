@@ -57,7 +57,7 @@ class FindawayAdapter(
     PlayerPlaybackRate.NORMAL_TIME
 
   val currentPlaybackRate: PlayerPlaybackRate
-    get() = currentPlaybackRateField
+    get() = this.currentPlaybackRateField
 
   @Volatile
   private var playbackStatusField: PlayerPlaybackStatus =
@@ -267,6 +267,7 @@ class FindawayAdapter(
 
     return when (event.code) {
       PlaybackEvent.PLAYBACK_STARTED -> {
+        this.engine.playbackEngine.speed = this.currentPlaybackRate.speed.toFloat()
         this.onPlaybackEventPlaybackStarted()
       }
 
@@ -634,6 +635,7 @@ class FindawayAdapter(
       )
 
     this.engine.playbackEngine.play(request)
+    this.engine.playbackEngine.speed = this.currentPlaybackRate.speed.toFloat()
   }
 
   fun playFromCurrentPosition() {
@@ -823,6 +825,7 @@ class FindawayAdapter(
   fun setPlaybackRate(
     value: PlayerPlaybackRate
   ) {
+    this.currentPlaybackRateField = value
     this.engine.playbackEngine.speed = value.speed.toFloat()
     this.events.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(value))
   }
