@@ -267,7 +267,6 @@ class FindawayAdapter(
 
     return when (event.code) {
       PlaybackEvent.PLAYBACK_STARTED -> {
-        this.engine.playbackEngine.speed = this.currentPlaybackRate.speed.toFloat()
         this.onPlaybackEventPlaybackStarted()
       }
 
@@ -418,6 +417,8 @@ class FindawayAdapter(
   private fun onPlaybackEventBufferingStarted() {
     this.logger.debug("[{}]: onPlaybackEvent: playback buffering started", this.id)
 
+    this.playbackStatusField =
+      PlayerPlaybackStatus.BUFFERING
     val position =
       this.mostRecentPosition
     val positionMetadata =
@@ -454,6 +455,8 @@ class FindawayAdapter(
   private fun onPlaybackEventPlaybackPaused() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackPaused", this.id)
 
+    this.playbackStatusField =
+      PlayerPlaybackStatus.PAUSED
     val position =
       this.mostRecentPosition
     val positionMetadata =
@@ -472,6 +475,8 @@ class FindawayAdapter(
   private fun onPlaybackEventPlaybackStopped() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackStopped", this.id)
 
+    this.playbackStatusField =
+      PlayerPlaybackStatus.PAUSED
     val position =
       this.mostRecentPosition
     val positionMetadata =
@@ -506,6 +511,11 @@ class FindawayAdapter(
 
   private fun onPlaybackEventPlaybackStarted() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackStarted", this.id)
+
+    this.engine.playbackEngine.speed =
+      this.currentPlaybackRate.speed.toFloat()
+    this.playbackStatusField =
+      PlayerPlaybackStatus.PLAYING
 
     val position =
       this.mostRecentPosition

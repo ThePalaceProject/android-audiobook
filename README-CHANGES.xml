@@ -469,11 +469,20 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2024-09-11T16:43:18+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0025">
+    <c:release date="2024-09-11T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="13.0.0-beta0025">
       <c:changes>
         <c:change date="2024-09-11T00:00:00+00:00" summary="Redundantly set playback rate for Findaway.">
           <c:tickets>
             <c:ticket id="PP-1710"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2024-09-13T10:22:15+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="13.0.0-beta0026">
+      <c:changes>
+        <c:change date="2024-09-13T10:22:15+00:00" summary="The Findaway adapter was not correctly publishing paused/playing status to the media controls.">
+          <c:tickets>
+            <c:ticket id="PP-1711"/>
           </c:tickets>
         </c:change>
       </c:changes>
