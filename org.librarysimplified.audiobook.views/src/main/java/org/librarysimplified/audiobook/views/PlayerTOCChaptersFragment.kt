@@ -19,8 +19,13 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
+import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 
 class PlayerTOCChaptersFragment : Fragment() {
+
+  private val logger =
+    LoggerFactory.getLogger(PlayerTOCChaptersFragment::class.java)
 
   private lateinit var adapter: PlayerTOCChapterAdapter
   private lateinit var list: RecyclerView
@@ -92,9 +97,27 @@ class PlayerTOCChaptersFragment : Fragment() {
 
   private fun onTOCItemSelected(item: PlayerManifestTOCItem) {
     PlayerModel.movePlayheadToAbsoluteTime(item.intervalAbsoluteMilliseconds.lower)
+    PlayerModel.play()
+
     PlayerUIThread.runOnUIThreadDelayed({
       PlayerModel.submitViewCommand(PlayerViewCommand.PlayerViewNavigationTOCClose)
     }, 250L)
+
+    /*
+     * On some devices, selecting a chapter doesn't seem to start the player playing. Schedule
+     * a task to log a warning if we detect that this has happened.
+     */
+
+    PlayerUIThread.runOnUIThreadDelayed({
+      if (!PlayerModel.isPlaying) {
+        MDC.put("Ticket", "PP-1703")
+        try {
+          this.logger.warn("Player appears not to be playing.")
+        } finally {
+          MDC.remove("Ticket")
+        }
+      }
+    }, 2000L)
   }
 
   override fun onStop() {
