@@ -155,7 +155,7 @@ internal class LCPDataSource(
   override fun close() {
     this.openedResource?.run {
       try {
-        runBlocking { this@run.resource.close() }
+        this@run.resource.close()
       } catch (e: Exception) {
         if (e !is InterruptedException) {
           throw e
