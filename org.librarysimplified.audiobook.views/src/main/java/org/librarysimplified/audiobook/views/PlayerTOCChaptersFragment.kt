@@ -97,11 +97,14 @@ class PlayerTOCChaptersFragment : Fragment() {
 
   private fun onTOCItemSelected(item: PlayerManifestTOCItem) {
     PlayerModel.movePlayheadToAbsoluteTime(item.intervalAbsoluteMilliseconds.lower)
-    PlayerModel.play()
 
     PlayerUIThread.runOnUIThreadDelayed({
       PlayerModel.submitViewCommand(PlayerViewCommand.PlayerViewNavigationTOCClose)
     }, 250L)
+
+    PlayerUIThread.runOnUIThreadDelayed({
+      PlayerModel.play()
+    }, 1000L)
 
     /*
      * On some devices, selecting a chapter doesn't seem to start the player playing. Schedule
