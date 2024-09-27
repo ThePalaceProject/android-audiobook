@@ -58,6 +58,9 @@ class PlayerTOCBookmarksFragment : Fragment() {
         },
         onDelete = { index, bookmark ->
           this.onBookmarkDelete(index, bookmark)
+        },
+        onTitleLookup = { position ->
+          this.onTitleLookup(position)
         }
       )
     this.list.adapter = this.adapter
@@ -92,5 +95,11 @@ class PlayerTOCBookmarksFragment : Fragment() {
     PlayerUIThread.runOnUIThreadDelayed({
       PlayerModel.submitViewCommand(PlayerViewNavigationTOCClose)
     }, 250L)
+  }
+
+  private fun onTitleLookup(
+    position: PlayerPosition
+  ): String {
+    return PlayerModel.chapterTitleFor(position)
   }
 }

@@ -647,27 +647,14 @@ class ExoAudioBookPlayer private constructor(
 
     /*
      * If the next offset is greater than the current duration, then it means we're trying to seek
-     * forwards such that we'd cross a reading order item boundary. We need to load the next
-     * reading order item, if there is one.
+     * forwards such that we'd cross a reading order item boundary.
      */
 
     val nextMs = this.exoPlayer.currentPosition + milliseconds
     if (nextMs > this.exoPlayer.duration) {
-      val next = this.currentReadingOrderElement.readingOrderItem.nextElement
-      if (next == null) {
-        this.log.warn("opSkipForward: No next reading order item.")
+      if (!handleFarSeek(milliseconds)) {
         return
       }
-
-      val offset =
-        PlayerMillisecondsReadingOrderItem(Math.max(0, nextMs - this.exoPlayer.duration))
-
-      this.preparePlayer(
-        CurrentPlaybackTarget(
-          readingOrderItem = next,
-          readingOrderItemTargetOffsetMilliseconds = offset
-        )
-      )
     } else {
       this.seek(PlayerMillisecondsReadingOrderItem(nextMs))
     }
@@ -687,26 +674,14 @@ class ExoAudioBookPlayer private constructor(
 
     /*
      * If the next offset is negative, then it means we're trying to seek backwards such that
-     * we'd cross a reading order item boundary. We need to load the previous reading order
-     * item, if there is one.
+     * we'd cross a reading order item boundary. We need to find the reading order item that
+     * intersects the new absolute position.
      */
 
     if (nextMs < 0) {
-      val previous = this.currentReadingOrderElement.readingOrderItem.previousElement
-      if (previous == null) {
-        this.log.warn("opSkipBack: No previous reading order item.")
+      if (!this.handleFarSeek(milliseconds)) {
         return
       }
-
-      val offset =
-        PlayerMillisecondsReadingOrderItem(previous.duration.millis - nextMs)
-
-      this.preparePlayer(
-        CurrentPlaybackTarget(
-          readingOrderItem = previous,
-          readingOrderItemTargetOffsetMilliseconds = offset
-        )
-      )
     } else {
       this.seek(PlayerMillisecondsReadingOrderItem(nextMs))
     }
@@ -715,6 +690,94 @@ class ExoAudioBookPlayer private constructor(
       SHOULD_BE_STOPPED -> this.exoPlayer.pause()
       SHOULD_BE_PLAYING -> this.exoAdapter.playIfNotAlreadyPlaying()
     }
+  }
+
+  private fun handleFarSeek(
+    milliseconds: Long
+  ): Boolean {
+    /*
+     * First, get the current playback position as a position on the absolute timeline.
+     */
+
+    val currentReadingOrderItem =
+      this.currentReadingOrderElement.readingOrderItem.id
+    val currentInterval =
+      this.book.tableOfContents.readingOrderIntervals[currentReadingOrderItem]
+    if (currentInterval == null) {
+      this.log.warn("Cannot find the current reading order item interval!")
+      return false
+    }
+    val currentAbsolutePosition =
+      PlayerMillisecondsAbsolute(
+        currentInterval.lower.value.plus(this.exoPlayer.currentPosition)
+      )
+
+    /*
+     * Now add the skip offset to find a new position on the absolute timeline. Then, look up
+     * the reading order item that overlaps that new position. If the absolute time is negative,
+     * then this means that the user tried to seek backwards to a point _before_ the first reading
+     * order item. In this case, we simply snap to the start of the first item in the book.
+     */
+
+    val targetAbsoluteMS = currentAbsolutePosition.value + milliseconds
+    if (targetAbsoluteMS < 0) {
+      val target = this.book.readingOrder.firstOrNull()
+      if (target == null) {
+        this.log.warn("No first reading order item.")
+        return false
+      }
+      this.preparePlayer(
+        CurrentPlaybackTarget(
+          readingOrderItem = target,
+          readingOrderItemTargetOffsetMilliseconds = PlayerMillisecondsReadingOrderItem(0L)
+        )
+      )
+      return true
+    }
+
+    val targetAbsolutePosition =
+      PlayerMillisecondsAbsolute(targetAbsoluteMS)
+    val overlapping =
+      this.book.tableOfContents.readingOrderItemTree.overlapping(
+        PlayerMillisecondsAbsoluteInterval(
+          targetAbsolutePosition,
+          targetAbsolutePosition
+        )
+      )
+    if (overlapping.isEmpty()) {
+      this.log.warn("No reading order items overlap the target interval")
+      return false
+    }
+    val targetReadingOrderItemId =
+      this.book.tableOfContents.readingOrderItemsByInterval[overlapping.first()]
+    if (targetReadingOrderItemId == null) {
+      this.log.warn("Unexpectedly failed to locate a reading order item ID.")
+      return false
+    }
+    val targetReadingOrderItem =
+      this.book.readingOrderByID[targetReadingOrderItemId]
+    if (targetReadingOrderItem == null) {
+      this.log.warn("Unexpectedly failed to locate a reading order item.")
+      return false
+    }
+
+    /*
+     * Now, the relative offset into the new reading order item is simply the
+     * target absolute time minus the absolute time of the start of the new item.
+     */
+
+    val offset =
+      PlayerMillisecondsReadingOrderItem(
+        targetAbsolutePosition.value.minus(targetReadingOrderItem.interval.lower.value)
+      )
+
+    this.preparePlayer(
+      CurrentPlaybackTarget(
+        readingOrderItem = targetReadingOrderItem,
+        readingOrderItemTargetOffsetMilliseconds = offset
+      )
+    )
+    return true
   }
 
   private fun opMovePlayheadToLocation(

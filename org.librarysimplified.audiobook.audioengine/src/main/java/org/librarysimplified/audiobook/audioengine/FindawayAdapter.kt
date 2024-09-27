@@ -57,7 +57,7 @@ class FindawayAdapter(
     PlayerPlaybackRate.NORMAL_TIME
 
   val currentPlaybackRate: PlayerPlaybackRate
-    get() = currentPlaybackRateField
+    get() = this.currentPlaybackRateField
 
   @Volatile
   private var playbackStatusField: PlayerPlaybackStatus =
@@ -304,6 +304,8 @@ class FindawayAdapter(
           this.id,
           event.speed
         )
+        this.currentPlaybackRateField = playbackRateFromSpeed(event.speed)
+        this.events.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(this.currentPlaybackRate))
       }
 
       PlaybackEvent.SEEK_COMPLETE -> {
@@ -351,6 +353,33 @@ class FindawayAdapter(
     }
   }
 
+  private fun playbackRateFromSpeed(
+    speed: Float?
+  ): PlayerPlaybackRate {
+    fun almostEqual(
+      value: Float,
+      other: Float
+    ): Boolean {
+      return Math.abs(value - other) < 0.1
+    }
+
+    if (speed != null) {
+      if (almostEqual(speed, 0.75f)) {
+        return PlayerPlaybackRate.THREE_QUARTERS_TIME
+      }
+      if (almostEqual(speed, 1.25f)) {
+        return PlayerPlaybackRate.ONE_AND_A_QUARTER_TIME
+      }
+      if (almostEqual(speed, 1.5f)) {
+        return PlayerPlaybackRate.ONE_AND_A_HALF_TIME
+      }
+      if (almostEqual(speed, 2.0f)) {
+        return PlayerPlaybackRate.DOUBLE_TIME
+      }
+    }
+    return PlayerPlaybackRate.NORMAL_TIME
+  }
+
   private fun onPlaybackEventBufferingEnded() {
     // Nothing to do
   }
@@ -388,6 +417,8 @@ class FindawayAdapter(
   private fun onPlaybackEventBufferingStarted() {
     this.logger.debug("[{}]: onPlaybackEvent: playback buffering started", this.id)
 
+    this.playbackStatusField =
+      PlayerPlaybackStatus.BUFFERING
     val position =
       this.mostRecentPosition
     val positionMetadata =
@@ -424,6 +455,8 @@ class FindawayAdapter(
   private fun onPlaybackEventPlaybackPaused() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackPaused", this.id)
 
+    this.playbackStatusField =
+      PlayerPlaybackStatus.PAUSED
     val position =
       this.mostRecentPosition
     val positionMetadata =
@@ -442,6 +475,8 @@ class FindawayAdapter(
   private fun onPlaybackEventPlaybackStopped() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackStopped", this.id)
 
+    this.playbackStatusField =
+      PlayerPlaybackStatus.PAUSED
     val position =
       this.mostRecentPosition
     val positionMetadata =
@@ -476,6 +511,11 @@ class FindawayAdapter(
 
   private fun onPlaybackEventPlaybackStarted() {
     this.logger.debug("[{}]: onPlaybackEventPlaybackStarted", this.id)
+
+    this.engine.playbackEngine.speed =
+      this.currentPlaybackRate.speed.toFloat()
+    this.playbackStatusField =
+      PlayerPlaybackStatus.PLAYING
 
     val position =
       this.mostRecentPosition
@@ -605,6 +645,7 @@ class FindawayAdapter(
       )
 
     this.engine.playbackEngine.play(request)
+    this.engine.playbackEngine.speed = this.currentPlaybackRate.speed.toFloat()
   }
 
   fun playFromCurrentPosition() {
@@ -794,6 +835,7 @@ class FindawayAdapter(
   fun setPlaybackRate(
     value: PlayerPlaybackRate
   ) {
+    this.currentPlaybackRateField = value
     this.engine.playbackEngine.speed = value.speed.toFloat()
     this.events.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(value))
   }
