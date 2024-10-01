@@ -108,9 +108,8 @@ class PlayerTOCFragment : PlayerBaseFragment() {
     ).show()
 
     try {
-      val book = PlayerModel.book()
-      book.wholeBookDownloadTask.fetch()
-    } catch (e: Exception) {
+      PlayerModel.book()?.wholeBookDownloadTask?.fetch()
+    } catch (e: Throwable) {
       this.logger.debug("onMenuRefreshAllSelected: ", e)
     }
   }
@@ -123,9 +122,8 @@ class PlayerTOCFragment : PlayerBaseFragment() {
     ).show()
 
     try {
-      val book = PlayerModel.book()
-      book.wholeBookDownloadTask.cancel()
-    } catch (e: Exception) {
+      PlayerModel.book()?.wholeBookDownloadTask?.cancel()
+    } catch (e: Throwable) {
       this.logger.debug("onMenuCancelAllSelected: ", e)
     }
   }

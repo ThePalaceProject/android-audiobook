@@ -40,7 +40,7 @@ class ExampleFragmentErrorDownload : Fragment() {
 
     try {
       val book = PlayerModel.book()
-      for (e in book.downloadTasks) {
+      for (e in book?.downloadTasks ?: listOf()) {
         val status = e.status
         if (status is PlayerDownloadTaskStatus.Failed) {
           this.errorLog.append("Download of item ${e.playbackURI} failed.\n")

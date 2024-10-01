@@ -60,7 +60,16 @@ class PlayerTOCChaptersFragment : Fragment() {
   override fun onStart() {
     super.onStart()
 
+    /*
+     * If there is no book open, then the TOC should not be open.
+     */
+
     val book = PlayerModel.book()
+    if (book == null) {
+      PlayerModel.submitViewCommand(PlayerViewCommand.PlayerViewNavigationTOCClose)
+      return
+    }
+
     this.adapter =
       PlayerTOCChapterAdapter(
         context = this.requireContext(),

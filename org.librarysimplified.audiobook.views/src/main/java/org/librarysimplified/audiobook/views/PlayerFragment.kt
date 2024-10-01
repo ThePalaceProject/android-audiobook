@@ -245,7 +245,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
   @UiThread
   private fun onDownloadEvent() {
-    val tasks = PlayerModel.book().downloadTasks
+    val tasks = PlayerModel.book()?.downloadTasks ?: return
 
     /*
      * First, search for a task that is downloading with an available progress value. This

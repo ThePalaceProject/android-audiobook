@@ -859,9 +859,8 @@ object PlayerModel {
     }
   }
 
-  fun book(): PlayerAudioBookType {
+  fun book(): PlayerAudioBookType? {
     return this.playerAndBookField?.audioBook
-      ?: throw IllegalStateException("Player and book are not open!")
   }
 
   fun movePlayheadTo(playerPosition: PlayerPosition) {
@@ -880,9 +879,8 @@ object PlayerModel {
     }
   }
 
-  fun manifest(): PlayerManifest {
+  fun manifest(): PlayerManifest? {
     return this.playerAndBookField?.audioBook?.manifest
-      ?: throw IllegalStateException("Player and book are not open!")
   }
 
   fun bookmarkCreate() {
