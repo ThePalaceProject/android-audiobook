@@ -250,7 +250,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
   @UiThread
   private fun onDownloadEvent() {
-    val tasks = PlayerModel.book().downloadTasks
+    val tasks = PlayerModel.book()?.downloadTasks ?: return
 
     /*
      * First, search for a task that is downloading with an available progress value. This
@@ -797,6 +797,7 @@ class PlayerFragment : PlayerBaseFragment() {
       this.playbackRateContentDescription()
     this.menuPlaybackRateText =
       this.menuPlaybackRate.actionView?.findViewById(R.id.player_menu_playback_rate_text)
+
     this.menuPlaybackRateText?.text =
       PlayerPlaybackRateAdapter.textOfRate(PlayerModel.playbackRate)
 

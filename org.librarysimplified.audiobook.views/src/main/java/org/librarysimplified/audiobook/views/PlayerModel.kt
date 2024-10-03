@@ -101,7 +101,11 @@ object PlayerModel {
   private var audioManagerService: AudioManager? = null
 
   val playbackRate: PlayerPlaybackRate
-    get() = this.playerAndBookField?.player?.playbackRate ?: PlayerPlaybackRate.NORMAL_TIME
+    get() = try {
+      this.playerAndBookField?.player?.playbackRate ?: PlayerPlaybackRate.NORMAL_TIME
+    } catch (e: Exception) {
+      PlayerPlaybackRate.NORMAL_TIME
+    }
 
   private val logger =
     LoggerFactory.getLogger(PlayerModel::class.java)
@@ -1169,9 +1173,8 @@ object PlayerModel {
     }
   }
 
-  fun book(): PlayerAudioBookType {
+  fun book(): PlayerAudioBookType? {
     return this.playerAndBookField?.audioBook
-      ?: throw IllegalStateException("Player and book are not open!")
   }
 
   fun movePlayheadTo(playerPosition: PlayerPosition) {
@@ -1190,9 +1193,8 @@ object PlayerModel {
     }
   }
 
-  fun manifest(): PlayerManifest {
+  fun manifest(): PlayerManifest? {
     return this.playerAndBookField?.audioBook?.manifest
-      ?: throw IllegalStateException("Player and book are not open!")
   }
 
   fun bookmarkCreate() {

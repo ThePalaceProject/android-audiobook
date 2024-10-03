@@ -153,8 +153,11 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
   private fun onPlayerEvent(event: PlayerEvent) {
     when (event) {
       is PlayerEventCreateBookmark -> {
+        val manifest =
+          PlayerModel.manifest() ?: return
+
         val bookId =
-          PlayerModel.manifest().metadata.identifier
+          manifest.metadata.identifier
         val bookmarkDatabase =
           ExampleApplication.application.bookmarkDatabase
 
@@ -172,8 +175,11 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       is PlayerEvent.PlayerEventDeleteBookmark -> {
+        val manifest =
+          PlayerModel.manifest() ?: return
+
         val bookId =
-          PlayerModel.manifest().metadata.identifier
+          manifest.metadata.identifier
         val bookmarkDatabase =
           ExampleApplication.application.bookmarkDatabase
 
@@ -262,9 +268,12 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       is PlayerOpen -> {
-        PlayerModel.setCoverImage(BitmapFactory.decodeResource(resources, R.drawable.example_cover))
-        PlayerModel.bookTitle = PlayerModel.manifest().metadata.title
-        PlayerModel.bookAuthor = "An Example Author."
+        val manifest = PlayerModel.manifest()
+        if (manifest != null) {
+          PlayerModel.setCoverImage(BitmapFactory.decodeResource(resources, R.drawable.example_cover))
+          PlayerModel.bookTitle = manifest.metadata.title
+          PlayerModel.bookAuthor = "An Example Author."
+        }
         this.switchFragment(PlayerFragment())
       }
 
