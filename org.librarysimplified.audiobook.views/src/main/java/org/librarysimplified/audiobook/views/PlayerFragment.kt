@@ -799,6 +799,7 @@ class PlayerFragment : PlayerBaseFragment() {
       this.playbackRateContentDescription()
     this.menuPlaybackRateText =
       this.menuPlaybackRate.actionView?.findViewById(R.id.player_menu_playback_rate_text)
+
     this.menuPlaybackRateText?.text =
       PlayerPlaybackRateAdapter.textOfRate(PlayerModel.playbackRate)
 

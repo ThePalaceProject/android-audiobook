@@ -97,8 +97,13 @@ object PlayerModel {
     get() = this.coverImageField
 
   private var audioManagerService: AudioManager? = null
+
   val playbackRate: PlayerPlaybackRate
-    get() = this.playerAndBookField?.player?.playbackRate ?: PlayerPlaybackRate.NORMAL_TIME
+    get() = try {
+      this.playerAndBookField?.player?.playbackRate ?: PlayerPlaybackRate.NORMAL_TIME
+    } catch (e: Exception) {
+      PlayerPlaybackRate.NORMAL_TIME
+    }
 
   private val logger =
     LoggerFactory.getLogger(PlayerModel::class.java)
