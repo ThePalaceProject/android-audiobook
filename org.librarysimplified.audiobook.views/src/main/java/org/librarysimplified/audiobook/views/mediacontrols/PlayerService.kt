@@ -2,16 +2,25 @@ package org.librarysimplified.audiobook.views.mediacontrols
 
 import android.content.Intent
 import android.os.IBinder
+import androidx.annotation.UiThread
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import io.reactivex.disposables.Disposable
+import org.librarysimplified.audiobook.views.PlayerModel
 import org.slf4j.LoggerFactory
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * The media session service.
  */
 
 class PlayerService : MediaSessionService() {
+
+  private var subscription: Disposable? = null
+
+  private val closed =
+    AtomicBoolean(false)
 
   private val logger =
     LoggerFactory.getLogger(PlayerService::class.java)
@@ -22,6 +31,46 @@ class PlayerService : MediaSessionService() {
   override fun onCreate() {
     super.onCreate()
     this.logger.debug("onCreate")
+
+    this.subscription =
+      PlayerModel.playerServiceCommands.subscribe(this::onPlayerServiceCommand)
+  }
+
+  @UiThread
+  private fun onPlayerServiceCommand(
+    command: PlayerServiceCommand
+  ) {
+    return when (command) {
+      PlayerServiceCommand.PlayerServiceShutDown -> {
+        this.doShutdownNow()
+      }
+    }
+  }
+
+  private fun doShutdownNow() {
+    if (this.closed.compareAndSet(false, true)) {
+      this.logger.debug("Shutting down service…")
+
+      try {
+        this.releaseAllSessions()
+
+        try {
+          this.stopForeground(STOP_FOREGROUND_REMOVE)
+        } catch (e: Throwable) {
+          this.logger.debug("Call to stopForeground() failed: ", e)
+        }
+
+        try {
+          this.stopSelf()
+        } catch (e: Throwable) {
+          this.logger.debug("Call to stopSelf() failed: ", e)
+        }
+      } finally {
+        this.logger.debug("Service shutdown completed.")
+      }
+    } else {
+      this.logger.debug("Service is already shut down.")
+    }
   }
 
   override fun onBind(
@@ -41,7 +90,7 @@ class PlayerService : MediaSessionService() {
   override fun onDestroy() {
     super.onDestroy()
     this.logger.debug("onDestroy")
-    this.releaseAllSessions()
+    this.doShutdownNow()
   }
 
   private fun releaseAllSessions() {

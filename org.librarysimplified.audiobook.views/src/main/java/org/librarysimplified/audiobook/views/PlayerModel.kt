@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.views
 
 import android.app.Application
-import android.content.Intent
 import android.graphics.Bitmap
 import android.media.AudioManager
 import androidx.annotation.UiThread
@@ -57,6 +56,7 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLice
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
 import org.librarysimplified.audiobook.views.mediacontrols.PlayerMediaController
+import org.librarysimplified.audiobook.views.mediacontrols.PlayerServiceCommand
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -251,6 +251,18 @@ object PlayerModel {
 
   val downloadEvents: Observable<PlayerReadingOrderItemDownloadStatus> =
     this.downloadEventSubject.observeOn(AndroidSchedulers.mainThread())
+
+  /*
+   * A source of player service commands. Note that this is specifically NOT a behavior subject;
+   * if nothing is subscribed at the time a command is published, the command is discarded.
+   */
+
+  private val playerServiceSubject =
+    PublishSubject.create<PlayerServiceCommand>()
+      .toSerialized()
+
+  val playerServiceCommands: Observable<PlayerServiceCommand> =
+    this.playerServiceSubject.observeOn(AndroidSchedulers.mainThread())
 
   /*
    * Subscribe to the sleep timer so that the player can be paused when the timer expires.
@@ -625,10 +637,12 @@ object PlayerModel {
       )
 
     if (engine == null) {
-      this.setNewState(PlayerBookOpenFailed(
-        message = "No suitable audio engine for manifest.",
-        exception = UnsupportedOperationException()
-      ))
+      this.setNewState(
+        PlayerBookOpenFailed(
+          message = "No suitable audio engine for manifest.",
+          exception = UnsupportedOperationException()
+        )
+      )
       throw OperationFailedException()
     }
 
@@ -650,10 +664,12 @@ object PlayerModel {
 
     if (bookResult is PlayerResult.Failure) {
       this.logger.error("Book failed to open: ", bookResult.failure)
-      this.setNewState(PlayerBookOpenFailed(
-        message = "Failed to open audio book.",
-        exception = bookResult.failure
-      ))
+      this.setNewState(
+        PlayerBookOpenFailed(
+          message = "Failed to open audio book.",
+          exception = bookResult.failure
+        )
+      )
       throw OperationFailedException()
     }
 
@@ -696,6 +712,14 @@ object PlayerModel {
         "No initial position was specified. Playback will begin at the start of the book."
       )
     }
+
+    PlayerUIThread.runOnUIThread {
+      try {
+        PlayerMediaController.start(this.application)
+      } catch (e: Throwable) {
+        this.logger.debug("Failed to start media controller: ", e)
+      }
+    }
   }
 
   private fun onHandleChapterCompletionForSleepTimer(
@@ -732,12 +756,34 @@ object PlayerModel {
     this.currentFuture?.cancel(true)
 
     /*
+     * Stop the media controller.
+     */
+
+    PlayerUIThread.runOnUIThread {
+      try {
+        PlayerMediaController.stop()
+      } catch (e: Throwable) {
+        this.logger.debug("Failed to stop media controller: ", e)
+      }
+    }
+
+    /*
+     * Tell any services to shut down.
+     */
+
+    try {
+      this.playerServiceSubject.onNext(PlayerServiceCommand.PlayerServiceShutDown)
+    } catch (e: Throwable) {
+      this.logger.debug("Failed to submit service shutdown command: ", e)
+    }
+
+    /*
      * Cancel the sleep timer.
      */
 
     try {
       PlayerSleepTimer.cancel()
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       this.logger.error("Failed to cancel sleep timer: ", e)
     }
 
@@ -747,7 +793,7 @@ object PlayerModel {
 
     try {
       PlayerBookmarkModel.clearBookmarks()
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       this.logger.error("Failed to clear bookmarks: ", e)
     }
 
@@ -762,7 +808,7 @@ object PlayerModel {
 
     try {
       this.playerAndBookField?.close()
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       this.logger.error("Failed to close player: ", e)
     }
 
@@ -980,10 +1026,6 @@ object PlayerModel {
     application: Application
   ) {
     this.application = application
-
-    PlayerUIThread.runOnUIThread {
-      PlayerMediaController.start(this.application)
-    }
   }
 
   fun setStreamingPermitted(

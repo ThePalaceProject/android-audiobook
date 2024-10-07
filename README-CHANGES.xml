@@ -517,8 +517,14 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2024-10-02T13:55:42+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="14.1.0">
-      <c:changes/>
+    <c:release date="2024-10-07T13:51:53+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="14.1.0">
+      <c:changes>
+        <c:change date="2024-10-07T13:51:53+00:00" summary="Stop the player service when a book is explicitly closed.">
+          <c:tickets>
+            <c:ticket id="PP-1560"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
     </c:release>
   </c:releases>
   <c:ticket-systems>
