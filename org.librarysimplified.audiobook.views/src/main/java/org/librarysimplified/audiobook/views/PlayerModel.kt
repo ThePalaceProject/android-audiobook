@@ -75,9 +75,6 @@ object PlayerModel {
       .toList()
 
   @Volatile
-  private var intentForPlayerServiceField: Intent? = null
-
-  @Volatile
   var bookTitle: String = ""
 
   @Volatile
