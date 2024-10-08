@@ -57,4 +57,9 @@
         location="https://io7m.github.io/audiobooks/longer/manifest.json">
         <AuthenticationNone />
     </Preset>
+    <Preset
+        name="Everything Missing"
+        location="https://io7m.github.io/audiobooks/missing_files/manifest.json">
+        <AuthenticationNone />
+    </Preset>
 </Presets>

@@ -25,7 +25,6 @@ class PlayerTOCFragment : PlayerBaseFragment() {
 
   private lateinit var menuErrors: MenuItem
   private lateinit var toolbarMenu: Menu
-  private lateinit var menuCancelAll: MenuItem
   private lateinit var menuRefreshAll: MenuItem
   private lateinit var tabLayout: TabLayout
   private lateinit var toolbar: Toolbar
@@ -64,19 +63,14 @@ class PlayerTOCFragment : PlayerBaseFragment() {
     }
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
     this.toolbar.setNavigationIcon(R.drawable.back)
-    this.toolbar.inflateMenu(R.menu.player_toc_menu)
-    this.toolbarMenu = this.toolbar.menu
-    this.menuCancelAll =
-      this.toolbarMenu.findItem(R.id.player_toc_menu_stop_all)
+
+    this.toolbarMenu =
+      this.toolbar.menu
     this.menuRefreshAll =
       this.toolbarMenu.findItem(R.id.player_toc_menu_refresh_all)
     this.menuErrors =
       this.toolbarMenu.findItem(R.id.player_toc_menu_error)
 
-    this.menuCancelAll.setOnMenuItemClickListener {
-      this.onMenuCancelAllSelected()
-      true
-    }
     this.menuRefreshAll.setOnMenuItemClickListener {
       this.onMenuRefreshAllSelected()
       true
@@ -86,7 +80,6 @@ class PlayerTOCFragment : PlayerBaseFragment() {
       true
     }
 
-    this.menuCancelAll.setVisible(false)
     this.menuRefreshAll.setVisible(false)
     this.menuErrors.setVisible(false)
 
@@ -114,20 +107,6 @@ class PlayerTOCFragment : PlayerBaseFragment() {
     }
   }
 
-  private fun onMenuCancelAllSelected() {
-    Toast.makeText(
-      this.requireContext(),
-      R.string.audiobook_toc_cancelling_all_chapters,
-      Toast.LENGTH_SHORT
-    ).show()
-
-    try {
-      PlayerModel.book()?.wholeBookDownloadTask?.cancel()
-    } catch (e: Throwable) {
-      this.logger.debug("onMenuCancelAllSelected: ", e)
-    }
-  }
-
   override fun onStart() {
     super.onStart()
 
@@ -148,13 +127,10 @@ class PlayerTOCFragment : PlayerBaseFragment() {
   private fun onDownloadStatusChanged() {
     if (PlayerModel.isDownloading()) {
       this.menuRefreshAll.setVisible(false)
-      this.menuCancelAll.setVisible(true)
     } else if (PlayerModel.isDownloadingCompleted()) {
       this.menuRefreshAll.setVisible(false)
-      this.menuCancelAll.setVisible(false)
     } else {
       this.menuRefreshAll.setVisible(true)
-      this.menuCancelAll.setVisible(false)
     }
 
     if (PlayerModel.isAnyDownloadingFailed()) {

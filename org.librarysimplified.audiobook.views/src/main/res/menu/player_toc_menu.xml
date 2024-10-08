@@ -13,15 +13,8 @@
     <item
         android:id="@+id/player_toc_menu_refresh_all"
         android:contentDescription="@string/audiobook_accessibility_toc_refresh_all"
-        android:icon="@drawable/toolbar_menu_download"
+        android:icon="@drawable/arrow_rotate_right"
         android:title="@string/audiobook_player_toc_menu_refresh_all"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/player_toc_menu_stop_all"
-        android:contentDescription="@string/audiobook_accessibility_toc_stop_all"
-        android:icon="@drawable/toolbar_menu_download_stop"
-        android:title="@string/audiobook_player_toc_menu_stop_all"
         app:showAsAction="always" />
 
 </menu>

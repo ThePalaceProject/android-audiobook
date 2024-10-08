@@ -187,10 +187,10 @@
         android:id="@+id/playerStatusArea"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
+        android:layout_marginBottom="16dp"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/playerDownloadStatusArea"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -224,12 +224,12 @@
 
         <TextView
             android:id="@+id/playerDownloadMessage"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:alpha="0.5"
             android:gravity="center"
-            android:layout_marginBottom="16dp"
-            tools:text="A very very very very very very very very very very long download message."
+            tools:text="@string/audiobook_player_downloading_minimal"
             tools:visibility="visible" />
 
         <ProgressBar
@@ -237,19 +237,9 @@
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="8dp"
+            android:visibility="invisible"
             tools:progress="50"
-            android:visibility="invisible"
             tools:visibility="visible" />
-
-        <ProgressBar
-            android:id="@+id/playerDownloadProgress"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
-            tools:progress="25"
-            android:visibility="invisible"
-            tools:visibility="visible" />
-
     </LinearLayout>
 
     <ImageView
