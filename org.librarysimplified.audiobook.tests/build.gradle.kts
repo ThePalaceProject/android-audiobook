@@ -102,9 +102,10 @@ val dependencyObjects = listOf(
     project(":org.librarysimplified.audiobook.manifest_parser.api"),
     project(":org.librarysimplified.audiobook.manifest_parser.extension_spi"),
     project(":org.librarysimplified.audiobook.manifest_parser.webpub"),
-    project(":org.librarysimplified.audiobook.mocking"),
     project(":org.librarysimplified.audiobook.media3"),
+    project(":org.librarysimplified.audiobook.mocking"),
     project(":org.librarysimplified.audiobook.parser.api"),
+    project(":org.librarysimplified.audiobook.time_tracking"),
     project(":org.librarysimplified.audiobook.views"),
 )
 

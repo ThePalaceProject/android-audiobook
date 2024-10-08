@@ -153,6 +153,7 @@ include(":org.librarysimplified.audiobook.media3")
 include(":org.librarysimplified.audiobook.mocking")
 include(":org.librarysimplified.audiobook.parser.api")
 include(":org.librarysimplified.audiobook.tests")
+include(":org.librarysimplified.audiobook.time_tracking")
 include(":org.librarysimplified.audiobook.views")
 
 if (findawayDRM) {
