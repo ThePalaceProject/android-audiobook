@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
+import org.librarysimplified.audiobook.api.PlayerOPDSID
 import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracked
 import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracker
 import org.librarysimplified.audiobook.time_tracking.PlayerTimeTrackerType
@@ -21,6 +22,9 @@ class PlayerTimeTrackingTests {
 
   private val logger =
     LoggerFactory.getLogger(PlayerTimeTrackingTests::class.java)
+
+  private val trackingId =
+    PlayerOPDSID("XYZ")
 
   private lateinit var tracker: PlayerTimeTrackerType
   private lateinit var timeSegments: ConcurrentLinkedQueue<SegmentReceived>
@@ -92,7 +96,7 @@ class PlayerTimeTrackingTests {
 
   @Test
   fun testNoSegmentsPublished() {
-    this.tracker.bookOpened("ABCD").join()
+    this.tracker.bookOpened(this.trackingId).join()
     this.clock.timeNow = this.clock.timeNow.plusMinutes(2L)
     this.tracker.bookClosed().join()
     this.tracker.close()
@@ -108,10 +112,10 @@ class PlayerTimeTrackingTests {
 
   @Test
   fun testPlaybackPublishSimple() {
-    this.tracker.bookOpened("ABCD").join()
-    this.tracker.bookPlaybackStarted("ABCD", 1.0).join()
+    this.tracker.bookOpened(this.trackingId).join()
+    this.tracker.bookPlaybackStarted(this.trackingId, 1.0).join()
     this.clock.timeNow = this.clock.timeNow.plusSeconds((2 * 60) + 30)
-    this.tracker.bookPlaybackPaused("ABCD", 1.0).join()
+    this.tracker.bookPlaybackPaused(this.trackingId, 1.0).join()
     this.tracker.bookClosed().join()
     this.tracker.close()
 
@@ -129,8 +133,8 @@ class PlayerTimeTrackingTests {
 
   @Test
   fun testPlaybackPublishSimpleWaiting() {
-    this.tracker.bookOpened("ABCD").join()
-    this.tracker.bookPlaybackStarted("ABCD", 1.0).join()
+    this.tracker.bookOpened(this.trackingId).join()
+    this.tracker.bookPlaybackStarted(this.trackingId, 1.0).join()
     this.clock.timeNow = this.clock.timeNow.plusSeconds(60)
     Thread.sleep(1_000L)
     this.clock.timeNow = this.clock.timeNow.plusSeconds(60)
@@ -152,14 +156,14 @@ class PlayerTimeTrackingTests {
 
   @Test
   fun testPlaybackRateChanges() {
-    this.tracker.bookOpened("ABCD").join()
-    this.tracker.bookPlaybackStarted("ABCD", 1.0).join()
+    this.tracker.bookOpened(this.trackingId).join()
+    this.tracker.bookPlaybackStarted(this.trackingId, 1.0).join()
     this.clock.timeNow = this.clock.timeNow.plusSeconds(60)
-    this.tracker.bookPlaybackRateChanged("ABCD", 0.5).join()
+    this.tracker.bookPlaybackRateChanged(this.trackingId, 0.5).join()
     this.clock.timeNow = this.clock.timeNow.plusSeconds(60)
-    this.tracker.bookPlaybackRateChanged("ABCD", 0.5).join()
+    this.tracker.bookPlaybackRateChanged(this.trackingId, 0.5).join()
     this.clock.timeNow = this.clock.timeNow.plusSeconds(30)
-    this.tracker.bookPlaybackRateChanged("ABCD", 0.5).join()
+    this.tracker.bookPlaybackRateChanged(this.trackingId, 0.5).join()
     this.tracker.close()
 
     assertEquals(3, this.timeSegments.size)

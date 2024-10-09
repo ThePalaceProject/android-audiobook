@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.time_tracking
 
+import org.librarysimplified.audiobook.api.PlayerOPDSID
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -10,7 +11,7 @@ import java.util.UUID
 
 data class PlayerTimeTracked(
   val id: UUID,
-  val bookTrackingId: String,
+  val bookTrackingId: PlayerOPDSID,
   val timeStarted: OffsetDateTime,
   val timeEnded: OffsetDateTime,
   val rate: Double
