@@ -127,21 +127,7 @@ class FindawayAdapter(
     readingOrderID: PlayerManifestReadingOrderID,
     offsetMilliseconds: PlayerMillisecondsReadingOrderItem
   ): PlayerManifestTOCItem {
-    val toc =
-      this.book.tableOfContents
-    val item =
-      toc.lookupTOCItem(readingOrderID, offsetMilliseconds)
-    val element =
-      this.book.readingOrderByID[readingOrderID]!!
-
-    return if (item == null) {
-      if (element.nextElement == null) {
-        return toc.tocItemsInOrder.last()
-      }
-      toc.tocItemsInOrder.first()
-    } else {
-      item
-    }
+    return this.book.tableOfContents.lookupTOCItem(readingOrderID, offsetMilliseconds)
   }
 
   private fun publishError(
@@ -157,6 +143,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEvent.PlayerEventError(
+        palaceId = this.book.palaceId,
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
         offsetMilliseconds = this.mostRecentPosition.readingOrderItemOffsetMilliseconds,
         exception = thrown,
@@ -304,8 +291,8 @@ class FindawayAdapter(
           this.id,
           event.speed
         )
-        this.currentPlaybackRateField = playbackRateFromSpeed(event.speed)
-        this.events.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(this.currentPlaybackRate))
+        this.currentPlaybackRateField = this.playbackRateFromSpeed(event.speed)
+        this.events.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(palaceId = this.book.palaceId, this.currentPlaybackRate))
       }
 
       PlaybackEvent.SEEK_COMPLETE -> {
@@ -398,11 +385,7 @@ class FindawayAdapter(
       chapterDuration.minus(itemPosition)
 
     val chapterProgressEstimate =
-      if (chapterDuration != null) {
-        position.readingOrderItemOffsetMilliseconds.value.toDouble() / chapterDuration.millis.toDouble()
-      } else {
-        0.0
-      }
+      position.readingOrderItemOffsetMilliseconds.value.toDouble() / chapterDuration.millis.toDouble()
 
     return PlayerManifestPositionMetadata(
       tocItem = position.tocItem,
@@ -426,6 +409,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEventPlaybackBuffering(
+        palaceId = this.book.palaceId,
         isStreaming = this.isStreamingNow,
         offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
@@ -444,6 +428,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEventPlaybackPreparing(
+        palaceId = this.book.palaceId,
         isStreaming = this.isStreamingNow,
         offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
@@ -464,6 +449,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEventPlaybackPaused(
+        palaceId = this.book.palaceId,
         isStreaming = this.isStreamingNow,
         readingOrderItemOffsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
@@ -484,6 +470,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEventPlaybackStopped(
+        palaceId = this.book.palaceId,
         isStreaming = this.isStreamingNow,
         readingOrderItemOffsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
@@ -502,6 +489,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted(
+        palaceId = this.book.palaceId,
         isStreaming = this.isStreamingNow,
         positionMetadata = positionMetadata,
         readingOrderItem = position.readingOrderItem,
@@ -524,6 +512,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEventPlaybackStarted(
+        palaceId = this.book.palaceId,
         isStreaming = this.isStreamingNow,
         offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
@@ -542,6 +531,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEventPlaybackProgressUpdate(
+        palaceId = this.book.palaceId,
         isStreaming = this.isStreamingNow,
         offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
@@ -621,6 +611,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEventPlaybackProgressUpdate(
+        palaceId = this.book.palaceId,
         isStreaming = this.isStreamingNow,
         offsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
@@ -666,6 +657,7 @@ class FindawayAdapter(
 
     this.events.onNext(
       PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark(
+        palaceId = this.book.palaceId,
         isStreaming = this.isStreamingNow,
         kind = PlayerBookmarkKind.EXPLICIT,
         readingOrderItemOffsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
@@ -820,7 +812,7 @@ class FindawayAdapter(
         } else {
           this.engine.playbackEngine.play(request)
             .takeFirst { event -> event.code == PlaybackEvent.PLAYBACK_STARTED }
-            .subscribe { event ->
+            .subscribe { _ ->
               this.logger.debug(
                 "[{}]: seekTo: Received PLAYBACK_STARTED after play request; pausing!",
                 this.id
@@ -837,7 +829,7 @@ class FindawayAdapter(
   ) {
     this.currentPlaybackRateField = value
     this.engine.playbackEngine.speed = value.speed.toFloat()
-    this.events.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(value))
+    this.events.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(palaceId = this.book.palaceId, value))
   }
 
   fun movePlayheadToLocation(

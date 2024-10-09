@@ -54,7 +54,7 @@ class FindawayBookmarkObserver private constructor(
       is PlayerEvent.PlayerEventDeleteBookmark,
       is PlayerEvent.PlayerAccessibilityEvent,
       is PlayerEventError,
-      PlayerEventManifestUpdated,
+      is PlayerEventManifestUpdated,
       is PlayerEventPlaybackPreparing,
       is PlayerEventPlaybackRateChanged,
       is PlayerEventChapterCompleted,
@@ -90,6 +90,7 @@ class FindawayBookmarkObserver private constructor(
       this.timeLastSaved = timeNow
       this.onBookmarkCreate(
         PlayerEventCreateBookmark(
+          palaceId = event.palaceId,
           readingOrderItem = event.readingOrderItem,
           readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
           kind = PlayerBookmarkKind.LAST_READ,

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
-import org.librarysimplified.audiobook.api.PlayerOPDSID
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracked
 import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracker
 import org.librarysimplified.audiobook.time_tracking.PlayerTimeTrackerType
@@ -24,7 +24,7 @@ class PlayerTimeTrackingTests {
     LoggerFactory.getLogger(PlayerTimeTrackingTests::class.java)
 
   private val trackingId =
-    PlayerOPDSID("XYZ")
+    PlayerPalaceID("XYZ")
 
   private lateinit var tracker: PlayerTimeTrackerType
   private lateinit var timeSegments: ConcurrentLinkedQueue<SegmentReceived>

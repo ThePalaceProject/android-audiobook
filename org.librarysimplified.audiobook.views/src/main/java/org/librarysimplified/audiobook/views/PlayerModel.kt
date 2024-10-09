@@ -16,7 +16,11 @@ import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
@@ -39,6 +43,7 @@ import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProvi
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckStatus
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorType
@@ -46,9 +51,11 @@ import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentE
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseError
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracker
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerBookOpenFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestDownloadFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestInProgress
@@ -68,6 +75,9 @@ import java.util.concurrent.Executors
 object PlayerModel {
 
   private var isStreamingPermitted: Boolean = false
+
+  val timeTracker =
+    PlayerTimeTracker.create()
 
   @Volatile
   var playerExtensions: List<PlayerExtensionType> =
@@ -275,6 +285,41 @@ object PlayerModel {
 
   init {
     this.stateSubject.onNext(this.state)
+
+    this.stateEvents.ofType(PlayerModelState.PlayerOpen::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookOpened(e.player.audioBook.palaceId)
+      }
+
+    this.stateEvents.ofType(PlayerBookOpenFailed::class.java)
+      .subscribe {
+        this.timeTracker.bookClosed()
+      }
+
+    this.stateEvents.ofType(PlayerModelState.PlayerClosed::class.java)
+      .subscribe {
+        this.timeTracker.bookClosed()
+      }
+
+    this.playerEvents.ofType(PlayerEventPlaybackStarted::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookPlaybackStarted(e.palaceId, this.playbackRate.speed)
+      }
+
+    this.playerEvents.ofType(PlayerEventPlaybackPaused::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookPlaybackPaused(e.palaceId, this.playbackRate.speed)
+      }
+
+    this.playerEvents.ofType(PlayerEventPlaybackStopped::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookPlaybackPaused(e.palaceId, this.playbackRate.speed)
+      }
+
+    this.playerEvents.ofType(PlayerEventPlaybackRateChanged::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookPlaybackRateChanged(e.palaceId, e.rate.speed)
+      }
   }
 
   @UiThread
@@ -344,13 +389,13 @@ object PlayerModel {
   private fun parseManifest(
     source: URI,
     extensions: List<ManifestParserExtensionType>,
-    data: ByteArray
+    data: ManifestUnparsed
   ): ParseResult<PlayerManifest> {
     this.logger.debug("parseManifest")
 
     return ManifestParsers.parse(
       uri = source,
-      streams = data,
+      input = data,
       extensions = extensions
     )
   }
@@ -363,6 +408,7 @@ object PlayerModel {
     sourceURI: URI,
     userAgent: PlayerUserAgent,
     cacheDir: File,
+    palaceID: PlayerPalaceID,
     licenseChecks: List<SingleLicenseCheckProviderType>,
     strategy: ManifestFulfillmentStrategyType,
     parserExtensions: List<ManifestParserExtensionType>,
@@ -372,13 +418,14 @@ object PlayerModel {
 
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseManifest(
-        strategy = strategy,
-        sourceURI = sourceURI,
-        parserExtensions = parserExtensions,
-        userAgent = userAgent,
-        licenseChecks = licenseChecks,
+        bookCredentials = bookCredentials,
         cacheDir = cacheDir,
-        bookCredentials = bookCredentials
+        licenseChecks = licenseChecks,
+        palaceID = palaceID,
+        parserExtensions = parserExtensions,
+        sourceURI = sourceURI,
+        strategy = strategy,
+        userAgent = userAgent,
       )
     }
   }
@@ -395,20 +442,22 @@ object PlayerModel {
     parserExtensions: List<ManifestParserExtensionType>,
     bookFile: File,
     bookFileTemp: File,
-    bookCredentials: PlayerBookCredentialsType
+    bookCredentials: PlayerBookCredentialsType,
+    palaceID: PlayerPalaceID,
   ): CompletableFuture<Unit> {
     this.logger.debug("downloadParseAndCheckLCPLicense")
 
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseLCPLicense(
-        licenseParameters = licenseParameters,
-        parserExtensions = parserExtensions,
-        userAgent = userAgent,
-        licenseChecks = licenseChecks,
-        cacheDir = cacheDir,
+        bookCredentials = bookCredentials,
         bookFile = bookFile,
         bookFileTemp = bookFileTemp,
-        bookCredentials = bookCredentials
+        cacheDir = cacheDir,
+        licenseChecks = licenseChecks,
+        licenseParameters = licenseParameters,
+        palaceID = palaceID,
+        parserExtensions = parserExtensions,
+        userAgent = userAgent,
       )
     }
   }
@@ -421,7 +470,8 @@ object PlayerModel {
     cacheDir: File,
     bookFile: File,
     bookFileTemp: File,
-    bookCredentials: PlayerBookCredentialsType
+    bookCredentials: PlayerBookCredentialsType,
+    palaceID: PlayerPalaceID,
   ) {
     this.setNewState(PlayerManifestInProgress)
 
@@ -473,7 +523,7 @@ object PlayerModel {
       this.parseManifest(
         source = bookFile.toURI(),
         extensions = parserExtensions,
-        data = manifestBytes.data
+        data = ManifestUnparsed(palaceID, manifestBytes.data)
       )
 
     if (parseResult is ParseResult.Failure) {
@@ -505,6 +555,7 @@ object PlayerModel {
 
   private fun opDownloadAndParseManifest(
     strategy: ManifestFulfillmentStrategyType,
+    palaceID: PlayerPalaceID,
     sourceURI: URI,
     parserExtensions: List<ManifestParserExtensionType>,
     userAgent: PlayerUserAgent,
@@ -531,7 +582,7 @@ object PlayerModel {
       this.parseManifest(
         source = sourceURI,
         extensions = parserExtensions,
-        data = result.data
+        data = ManifestUnparsed(data = result.data, palaceId = palaceID)
       )
 
     if (parseResult is ParseResult.Failure) {

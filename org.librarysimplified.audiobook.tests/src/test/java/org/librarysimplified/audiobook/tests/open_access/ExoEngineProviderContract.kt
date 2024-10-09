@@ -48,12 +48,15 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderItem
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.media3.ExoAudioBookProvider
 import org.librarysimplified.audiobook.media3.ExoEngineProvider
 import org.librarysimplified.audiobook.media3.ExoEngineThread
 import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.audiobook.tests.ResourceMarker
 import org.slf4j.Logger
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -706,7 +709,7 @@ abstract class ExoEngineProviderContract {
       is PlayerEvent.PlayerEventError ->
         "playbackError ${event.readingOrderItem?.index} ${event.exception?.javaClass?.canonicalName} ${event.errorCode} ${event.offsetMilliseconds}"
 
-      PlayerEvent.PlayerEventManifestUpdated ->
+      is PlayerEvent.PlayerEventManifestUpdated ->
         "playerManifestUpdated"
 
       is PlayerEventCreateBookmark ->
@@ -767,7 +770,7 @@ abstract class ExoEngineProviderContract {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:$file"),
-        streams = this.resource(file),
+        input = this.resource(file),
         extensions = listOf()
       )
     this.log().debug("parseManifest: result: {}", result)
@@ -923,6 +926,7 @@ abstract class ExoEngineProviderContract {
   fun testExpiringLinks() {
     val manifest0 =
       PlayerManifest(
+        palaceId = PlayerPalaceID("e8b38387-154a-4b7f-8124-8c6e0b6d30bb"),
         originalBytes = ByteArray(0),
         readingOrder = listOf(
           PlayerManifestReadingOrderItem(
@@ -1011,6 +1015,7 @@ abstract class ExoEngineProviderContract {
 
     val manifest0 =
       PlayerManifest(
+        palaceId = PlayerPalaceID("e8b38387-154a-4b7f-8124-8c6e0b6d30bb"),
         originalBytes = ByteArray(0),
         readingOrder = listOf(
           PlayerManifestReadingOrderItem(
@@ -1068,12 +1073,15 @@ abstract class ExoEngineProviderContract {
   }
 
   private fun resourceStream(name: String): InputStream {
-    return ByteArrayInputStream(this.resource(name))
+    return ByteArrayInputStream(this.resource(name).data)
   }
 
-  private fun resource(name: String): ByteArray {
+  private fun resource(name: String): ManifestUnparsed {
     val path = "/org/librarysimplified/audiobook/tests/" + name
-    return ExoEngineProviderContract::class.java.getResourceAsStream(path)?.readBytes()
-      ?: throw AssertionError("Missing resource file: " + path)
+    return ManifestUnparsed(
+      palaceId = PlayerPalaceID(path),
+      data = ResourceMarker::class.java.getResourceAsStream(path)?.readBytes()
+        ?: throw AssertionError("Missing resource file: " + path)
+    )
   }
 }

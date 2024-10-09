@@ -16,6 +16,7 @@ import org.librarysimplified.audiobook.api.PlayerBookCredentialsNone
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
 import org.librarysimplified.audiobook.json_web_token.JSONBase64String
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_fulfill.api.ManifestFulfillmentStrategies
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicCredentials
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
@@ -29,7 +30,9 @@ import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestPar
 import org.librarysimplified.audiobook.views.PlayerModel
 import java.io.File
 import java.net.URI
+import java.nio.charset.StandardCharsets
 import java.util.ServiceLoader
+import java.util.UUID
 
 class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
@@ -268,29 +271,39 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     when (this.typeSelected) {
       this.typeLCP -> {
         PlayerModel.downloadParseAndCheckLCPLicense(
-          cacheDir = ExampleApplication.application.cacheDir,
-          userAgent = ExampleApplication.userAgent,
-          licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
-          licenseParameters = this.basicParametersForLCPLicense(sourceURI, credentials),
-          parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
+          bookCredentials = this.bookCredentials(),
           bookFile = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook"),
           bookFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook.tmp"),
-          bookCredentials = this.bookCredentials()
+          cacheDir = ExampleApplication.application.cacheDir,
+          licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
+          licenseParameters = this.basicParametersForLCPLicense(sourceURI, credentials),
+          palaceID = palaceId(sourceURI),
+          parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
+          userAgent = ExampleApplication.userAgent,
         )
       }
 
       this.typeManifest -> {
         PlayerModel.downloadParseAndCheckManifest(
-          sourceURI = sourceURI,
+          bookCredentials = this.bookCredentials(),
           cacheDir = ExampleApplication.application.cacheDir,
-          userAgent = ExampleApplication.userAgent,
           licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
-          strategy = this.downloadStrategyForCredentials(sourceURI, credentials),
+          palaceID = palaceId(sourceURI),
           parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
-          bookCredentials = this.bookCredentials()
+          sourceURI = sourceURI,
+          strategy = this.downloadStrategyForCredentials(sourceURI, credentials),
+          userAgent = ExampleApplication.userAgent,
         )
       }
     }
+  }
+
+  private fun palaceId(
+    any: Any
+  ): PlayerPalaceID {
+    return PlayerPalaceID(
+      UUID.nameUUIDFromBytes(any.toString().toByteArray(StandardCharsets.UTF_8)).toString()
+    )
   }
 
   private fun bookCredentials(): PlayerBookCredentialsType {

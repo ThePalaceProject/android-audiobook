@@ -114,7 +114,7 @@ class ExoDownloadTask(
      * Add a callback to the future that will report download success and failure.
      */
 
-    future.whenComplete { unit, exception ->
+    future.whenComplete { _, exception ->
       when (exception) {
         null -> {
           this@ExoDownloadTask.onDownloadCompleted()

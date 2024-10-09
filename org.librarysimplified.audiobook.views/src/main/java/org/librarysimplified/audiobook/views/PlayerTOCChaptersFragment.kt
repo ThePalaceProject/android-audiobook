@@ -95,10 +95,9 @@ class PlayerTOCChaptersFragment : Fragment() {
 
       is PlayerEventDeleteBookmark,
       is PlayerEventError,
-      PlayerEventManifestUpdated,
       is PlayerEventPlaybackRateChanged,
       is PlayerAccessibilityEvent,
-      PlayerEventManifestUpdated -> {
+      is PlayerEventManifestUpdated -> {
         // Nothing to do.
       }
     }

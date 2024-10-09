@@ -136,9 +136,6 @@ internal class LCPDataSource(
       openedResource.position += data.count()
       return data.count()
     } catch (e: Exception) {
-      if (e is InterruptedException) {
-        return 0
-      }
       throw Exception.ReadFailed(
         uri = openedResource.uri,
         offset = offset,
@@ -157,9 +154,7 @@ internal class LCPDataSource(
       try {
         this@run.resource.close()
       } catch (e: Exception) {
-        if (e !is InterruptedException) {
-          throw e
-        }
+        throw e
       }
     }
     this.openedResource = null

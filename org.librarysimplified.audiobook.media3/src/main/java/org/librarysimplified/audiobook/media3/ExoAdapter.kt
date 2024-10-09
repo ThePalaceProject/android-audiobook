@@ -128,6 +128,7 @@ class ExoAdapter(
     this.savedError = error
     this.events.onNext(
       PlayerEvent.PlayerEventError(
+        palaceId = this.manifest.palaceId,
         readingOrderItem = this.currentReadingOrderItem.invoke(),
         exception = error,
         errorCode = error.errorCode,
@@ -242,6 +243,7 @@ class ExoAdapter(
 
     this.events.onNext(
       PlayerEventPlaybackProgressUpdate(
+        palaceId = this.manifest.palaceId,
         isStreaming = this.isStreamingNow(),
         offsetMilliseconds = offsetMilliseconds,
         positionMetadata = positionMetadata,
@@ -260,6 +262,7 @@ class ExoAdapter(
         if (tocItemPrevious.index != tocItem.index) {
           this.events.onNext(
             PlayerEventChapterCompleted(
+              palaceId = this.manifest.palaceId,
               readingOrderItem = readingOrderItem,
               positionMetadata = positionMetadata,
               isStreaming = this.isStreamingNow(),

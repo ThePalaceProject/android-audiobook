@@ -11,9 +11,12 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.audiobook.tests.ResourceMarker
 import org.slf4j.Logger
 import java.net.URI
 
@@ -28,7 +31,7 @@ abstract class ExoDownloadContract {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:flatland"),
-        streams = resource("flatland_toc.audiobook-manifest.json"),
+        input = resource("flatland_toc.audiobook-manifest.json"),
         extensions = listOf()
       )
 
@@ -102,9 +105,12 @@ abstract class ExoDownloadContract {
     }
   }
 
-  private fun resource(name: String): ByteArray {
+  private fun resource(name: String): ManifestUnparsed {
     val path = "/org/librarysimplified/audiobook/tests/" + name
-    return ExoManifestTest::class.java.getResourceAsStream(path)?.readBytes()
-      ?: throw AssertionError("Missing resource file: " + path)
+    return ManifestUnparsed(
+      palaceId = PlayerPalaceID(path),
+      data = ResourceMarker::class.java.getResourceAsStream(path)?.readBytes()
+        ?: throw AssertionError("Missing resource file: " + path)
+    )
   }
 }

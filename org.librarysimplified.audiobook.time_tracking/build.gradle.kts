@@ -1,5 +1,5 @@
 dependencies {
-    implementation(project(":org.librarysimplified.audiobook.api"))
+    implementation(project(":org.librarysimplified.audiobook.manifest.api"))
 
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)

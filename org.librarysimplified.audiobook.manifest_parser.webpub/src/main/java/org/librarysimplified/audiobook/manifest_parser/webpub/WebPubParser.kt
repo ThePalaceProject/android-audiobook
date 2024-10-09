@@ -5,6 +5,7 @@ import one.irradia.fieldrush.api.FRParseResult.FRParseFailed
 import one.irradia.fieldrush.api.FRParseResult.FRParseSucceeded
 import one.irradia.fieldrush.api.FRParserProviderType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParserType
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseError
@@ -17,6 +18,7 @@ class WebPubParser(
   private val originalBytes: ByteArray,
   private val stream: InputStream,
   private val extensions: List<ManifestParserExtensionType>,
+  private val palaceId: PlayerPalaceID,
   private val uri: URI
 ) : ManifestParserType {
 
@@ -26,6 +28,7 @@ class WebPubParser(
         uri = this.uri,
         stream = this.stream,
         rootParser = WebPubManifestParser(
+          palaceId = this.palaceId,
           extensions = this.extensions,
           originalBytes = this.originalBytes
         )

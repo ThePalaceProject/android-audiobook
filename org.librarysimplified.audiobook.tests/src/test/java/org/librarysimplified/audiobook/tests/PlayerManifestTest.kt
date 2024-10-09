@@ -14,7 +14,9 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestScalar
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCs
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.media3.ExoLCP
 import org.librarysimplified.audiobook.parser.api.ParseResult
@@ -36,7 +38,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:empty"),
-        streams = ByteArray(0),
+        input = ManifestUnparsed(PlayerPalaceID("x"), ByteArray(0)),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -48,7 +50,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:minimal"),
-        streams = this.resource("error_minimal_0.json"),
+        input = this.resource("error_minimal_0.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -60,7 +62,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:minimal"),
-        streams = this.resource("ok_minimal_0.json"),
+        input = this.resource("ok_minimal_0.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -81,7 +83,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:minimal"),
-        streams = this.resource("ok_minimal_0.json"),
+        input = this.resource("ok_minimal_0.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -132,7 +134,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("nulltitles"),
-        streams = this.resource("null_titles.json"),
+        input = this.resource("null_titles.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -163,7 +165,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("null_link_type"),
-        streams = this.resource("null_link_type.json"),
+        input = this.resource("null_link_type.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -194,7 +196,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("flatland"),
-        streams = this.resource("flatland.audiobook-manifest.json"),
+        input = this.resource("flatland.audiobook-manifest.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -215,7 +217,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("flatland"),
-        streams = this.resource("flatland.audiobook-manifest.json"),
+        input = this.resource("flatland.audiobook-manifest.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -400,7 +402,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("feedbooks"),
-        streams = this.resource("feedbooks_0.json"),
+        input = this.resource("feedbooks_0.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -421,7 +423,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("feedbooks"),
-        streams = this.resource("feedbooks_0.json"),
+        input = this.resource("feedbooks_0.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -557,7 +559,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("findaway"),
-        streams = this.resource("findaway.json"),
+        input = this.resource("findaway.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -622,7 +624,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("findaway"),
-        streams = this.resource("findaway-20201015.json"),
+        input = this.resource("findaway-20201015.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -687,7 +689,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("findaway"),
-        streams = this.resource("findaway_leading_0.json"),
+        input = this.resource("findaway_leading_0.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -714,7 +716,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("feedbooks"),
-        streams = this.resource("feedbooks_1.json"),
+        input = this.resource("feedbooks_1.json"),
         extensions = listOf()
       )
     this.log().debug("result: {}", result)
@@ -735,7 +737,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("feedbooks"),
-        streams = this.resource("feedbooks_1.json"),
+        input = this.resource("feedbooks_1.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -756,7 +758,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("igen"),
-        streams = this.resource("igen.json"),
+        input = this.resource("igen.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -795,10 +797,13 @@ class PlayerManifestTest {
     assertEquals(3, manifest.links.size)
   }
 
-  private fun resource(name: String): ByteArray {
+  private fun resource(name: String): ManifestUnparsed {
     val path = "/org/librarysimplified/audiobook/tests/" + name
-    return PlayerManifestTest::class.java.getResourceAsStream(path)?.readBytes()
-      ?: throw AssertionError("Missing resource file: " + path)
+    return ManifestUnparsed(
+      palaceId = PlayerPalaceID(path),
+      data = ResourceMarker::class.java.getResourceAsStream(path)?.readBytes()
+        ?: throw AssertionError("Missing resource file: " + path)
+    )
   }
 
   /**
@@ -812,7 +817,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("demon"),
-        streams = this.resource("audible/demon.json"),
+        input = this.resource("audible/demon.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -897,7 +902,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("quicksilver"),
-        streams = this.resource("audible/quicksilver.json"),
+        input = this.resource("audible/quicksilver.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -925,7 +930,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("weapon"),
-        streams = this.resource("audible/weapon.json"),
+        input = this.resource("audible/weapon.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -951,7 +956,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("yellow_eyes"),
-        streams = this.resource("audible/yellow_eyes.json"),
+        input = this.resource("audible/yellow_eyes.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -977,7 +982,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("random-game-audio.json"),
-        streams = this.resource("random-game-audio.json"),
+        input = this.resource("random-game-audio.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -1009,7 +1014,7 @@ class PlayerManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("i_strahd.json"),
-        streams = this.resource("audible/i_strahd.json"),
+        input = this.resource("audible/i_strahd.json"),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)

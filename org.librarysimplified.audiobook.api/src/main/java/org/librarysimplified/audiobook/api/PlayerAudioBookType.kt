@@ -4,6 +4,7 @@ import io.reactivex.Observable
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import java.io.Closeable
 import java.util.concurrent.CompletableFuture
 
@@ -12,6 +13,13 @@ import java.util.concurrent.CompletableFuture
  */
 
 interface PlayerAudioBookType : Closeable {
+
+  /**
+   * The raw OPDS ID of the book.
+   */
+
+  val palaceId: PlayerPalaceID
+    get() = this.manifest.palaceId
 
   /**
    * `true` if [close] has been called

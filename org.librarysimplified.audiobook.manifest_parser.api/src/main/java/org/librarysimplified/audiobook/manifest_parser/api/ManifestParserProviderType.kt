@@ -11,7 +11,7 @@ import java.net.URI
  */
 
 interface ManifestParserProviderType :
-  ParserProviderType<ByteArray, ManifestParserExtensionType, PlayerManifest> {
+  ParserProviderType<ManifestUnparsed, ManifestParserExtensionType, PlayerManifest> {
 
   /**
    * The base format supported by this parser provider.
@@ -25,7 +25,7 @@ interface ManifestParserProviderType :
 
   fun canParse(
     uri: URI,
-    input: ByteArray
+    input: ManifestUnparsed,
   ): Boolean
 
   /**
@@ -34,7 +34,7 @@ interface ManifestParserProviderType :
 
   override fun createParser(
     uri: URI,
-    input: ByteArray,
+    input: ManifestUnparsed,
     extensions: List<ManifestParserExtensionType>,
     warningsAsErrors: Boolean
   ): ParserType<PlayerManifest>
