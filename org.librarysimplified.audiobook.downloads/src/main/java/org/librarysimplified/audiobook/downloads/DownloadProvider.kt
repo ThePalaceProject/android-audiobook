@@ -169,8 +169,7 @@ class DownloadProvider private constructor(
      * errors, because the actual error will occur when an attempt is made to open the file.
      */
 
-    val directory = request.outputFile.parentFile
-    directory.mkdirs()
+    request.outputFile.parentFile?.mkdirs()
 
     body.byteStream().use { input_stream ->
 

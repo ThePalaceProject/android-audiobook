@@ -197,7 +197,7 @@ class PlayerFragment : PlayerBaseFragment() {
         event
       )
     })
-    this.subscriptions.add(PlayerModel.downloadEvents.subscribe { event -> this.onDownloadEvent() })
+    this.subscriptions.add(PlayerModel.downloadEvents.subscribe { _ -> this.onDownloadEvent() })
     this.setPlayPauseButtonAppropriately()
   }
 
@@ -313,7 +313,7 @@ class PlayerFragment : PlayerBaseFragment() {
     tasks: List<PlayerDownloadTaskType>
   ): Double {
     val totalPossible =
-      tasks.foldRight(0.0) { task, acc -> acc + 100.0 }
+      tasks.foldRight(0.0) { _, acc -> acc + 100.0 }
 
     val totalAchieved = tasks.foldRight(0.0) { task, acc ->
       when (val status = task.status) {
@@ -474,12 +474,12 @@ class PlayerFragment : PlayerBaseFragment() {
         this.showError(event)
       }
 
-      PlayerEventManifestUpdated -> {
+      is PlayerEventManifestUpdated -> {
         // Nothing to do
       }
 
       is PlayerEventPlaybackRateChanged -> {
-        this.onPlayerEventPlaybackRateChanged(event)
+        this.onPlayerEventPlaybackRateChanged()
       }
 
       is PlayerEventChapterCompleted -> {
@@ -548,9 +548,7 @@ class PlayerFragment : PlayerBaseFragment() {
       .start()
   }
 
-  private fun onPlayerEventPlaybackRateChanged(
-    event: PlayerEventPlaybackRateChanged
-  ) {
+  private fun onPlayerEventPlaybackRateChanged() {
     this.menuPlaybackRateText?.text =
       PlayerPlaybackRateAdapter.textOfRate(PlayerModel.playbackRate)
   }

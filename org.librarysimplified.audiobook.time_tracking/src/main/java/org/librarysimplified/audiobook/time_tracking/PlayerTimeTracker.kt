@@ -2,7 +2,7 @@ package org.librarysimplified.audiobook.time_tracking
 
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
-import org.librarysimplified.audiobook.api.PlayerOPDSID
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.OffsetDateTime
@@ -37,7 +37,7 @@ class PlayerTimeTracker private constructor(
 
     data class BookOpened(
       override val future: CompletableFuture<Void>,
-      val trackingId: PlayerOPDSID
+      val trackingId: PlayerPalaceID
     ) : Command()
 
     data class BookClosed(
@@ -46,19 +46,19 @@ class PlayerTimeTracker private constructor(
 
     data class BookPlaybackStarted(
       override val future: CompletableFuture<Void>,
-      val trackingId: PlayerOPDSID,
+      val trackingId: PlayerPalaceID,
       val rate: Double
     ) : Command()
 
     data class BookPlaybackRateChanged(
       override val future: CompletableFuture<Void>,
-      val trackingId: PlayerOPDSID,
+      val trackingId: PlayerPalaceID,
       val rate: Double
     ) : Command()
 
     data class BookPlaybackPaused(
       override val future: CompletableFuture<Void>,
-      val trackingId: PlayerOPDSID,
+      val trackingId: PlayerPalaceID,
       val rate: Double
     ) : Command()
   }
@@ -67,12 +67,12 @@ class PlayerTimeTracker private constructor(
     data object NoBook : State()
 
     data class Paused(
-      val bookTrackingId: PlayerOPDSID,
+      val bookTrackingId: PlayerPalaceID,
       val rate: Double
     ) : State()
 
     data class Playing(
-      val bookTrackingId: PlayerOPDSID,
+      val bookTrackingId: PlayerPalaceID,
       val startedAt: OffsetDateTime,
       val rate: Double
     ) : State()
@@ -310,7 +310,7 @@ class PlayerTimeTracker private constructor(
   override val timeSegments: Observable<PlayerTimeTracked> =
     this.timeTrackedSubject
 
-  override fun bookOpened(bookTrackingId: PlayerOPDSID): CompletableFuture<Void> {
+  override fun bookOpened(bookTrackingId: PlayerPalaceID): CompletableFuture<Void> {
     this.checkNotClosed()
     val future = CompletableFuture<Void>()
     this.commandQueue.add(Command.BookOpened(future, bookTrackingId))
@@ -325,7 +325,7 @@ class PlayerTimeTracker private constructor(
   }
 
   override fun bookPlaybackStarted(
-    bookTrackingId: PlayerOPDSID,
+    bookTrackingId: PlayerPalaceID,
     rate: Double
   ): CompletableFuture<Void> {
     this.checkNotClosed()
@@ -335,7 +335,7 @@ class PlayerTimeTracker private constructor(
   }
 
   override fun bookPlaybackRateChanged(
-    bookTrackingId: PlayerOPDSID,
+    bookTrackingId: PlayerPalaceID,
     rate: Double
   ): CompletableFuture<Void> {
     this.checkNotClosed()
@@ -345,7 +345,7 @@ class PlayerTimeTracker private constructor(
   }
 
   override fun bookPlaybackPaused(
-    bookTrackingId: PlayerOPDSID,
+    bookTrackingId: PlayerPalaceID,
     rate: Double
   ): CompletableFuture<Void> {
     this.checkNotClosed()

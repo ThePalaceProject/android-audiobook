@@ -191,7 +191,10 @@ class FindawayPlayer(
     this.log.debug("[{}]: opBookmarkDelete: {}", this.id, bookmark)
     PlayerUIThread.checkIsUIThread()
 
-    this.eventSource.onNext(PlayerEvent.PlayerEventDeleteBookmark(bookmark))
+    this.eventSource.onNext(PlayerEvent.PlayerEventDeleteBookmark(
+      palaceId = this.book.palaceId,
+      bookmark = bookmark,
+    ))
   }
 
   private fun opBookmark() {

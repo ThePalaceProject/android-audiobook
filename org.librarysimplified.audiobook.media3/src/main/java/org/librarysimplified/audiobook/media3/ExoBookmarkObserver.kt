@@ -62,7 +62,7 @@ class ExoBookmarkObserver private constructor(
       is PlayerEventDeleteBookmark,
       is PlayerAccessibilityEvent,
       is PlayerEventError,
-      PlayerEventManifestUpdated,
+      is PlayerEventManifestUpdated,
       is PlayerEventPlaybackRateChanged,
       is PlayerEventChapterCompleted,
       is PlayerEventChapterWaiting,
@@ -96,6 +96,7 @@ class ExoBookmarkObserver private constructor(
       this.timeLastSaved = timeNow
       this.onBookmarkCreate(
         PlayerEventCreateBookmark(
+          palaceId = event.palaceId,
           readingOrderItem = event.readingOrderItem,
           readingOrderItemOffsetMilliseconds = event.offsetMilliseconds,
           positionMetadata = event.positionMetadata,

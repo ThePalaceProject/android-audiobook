@@ -4,6 +4,7 @@ import android.Manifest
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -25,6 +26,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUserAgent
+import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracked
 import org.librarysimplified.audiobook.views.PlayerBaseFragment
 import org.librarysimplified.audiobook.views.PlayerBookmarkModel
 import org.librarysimplified.audiobook.views.PlayerFragment
@@ -81,6 +83,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
     this.subscriptions.add(PlayerModel.stateEvents.subscribe(this::onModelStateEvent))
     this.subscriptions.add(PlayerModel.viewCommands.subscribe(this::onPlayerViewCommand))
     this.subscriptions.add(PlayerModel.playerEvents.subscribe(this::onPlayerEvent))
+    this.subscriptions.add(PlayerModel.timeTracker.timeSegments.subscribe(this::onTimeTracked))
   }
 
   override fun onStop() {
@@ -190,7 +193,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       is PlayerEvent.PlayerEventError,
-      PlayerEvent.PlayerEventManifestUpdated,
+      is PlayerEvent.PlayerEventManifestUpdated,
       is PlayerEvent.PlayerEventPlaybackRateChanged,
       is PlayerEventChapterCompleted,
       is PlayerEventChapterWaiting,
@@ -270,7 +273,12 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       is PlayerOpen -> {
         val manifest = PlayerModel.manifest()
         if (manifest != null) {
-          PlayerModel.setCoverImage(BitmapFactory.decodeResource(resources, R.drawable.example_cover))
+          PlayerModel.setCoverImage(
+            BitmapFactory.decodeResource(
+              resources,
+              R.drawable.example_cover
+            )
+          )
           PlayerModel.bookTitle = manifest.metadata.title
           PlayerModel.bookAuthor = "An Example Author."
         }
@@ -312,6 +320,21 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
       PlayerViewErrorsDownloadOpen -> {
         this.switchFragment(ExampleFragmentErrorDownload())
+      }
+    }
+  }
+
+  private fun onTimeTracked(
+    time: PlayerTimeTracked
+  ) {
+    this.logger.debug("TimeTracked: {}", time)
+
+    PlayerUIThread.runOnUIThread {
+      try {
+        Toast.makeText(this, "Time tracked: ${time.duration()}", Toast.LENGTH_SHORT)
+          .show()
+      } catch (e: Throwable) {
+        // Don't care
       }
     }
   }

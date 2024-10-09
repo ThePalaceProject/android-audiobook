@@ -1,16 +1,20 @@
 package org.librarysimplified.audiobook.tests.open_access
 
 import android.app.Application
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.media3.ExoManifest
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.audiobook.tests.ResourceMarker
 import org.mockito.Mockito
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -40,7 +44,7 @@ class ExoManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:flatland"),
-        streams = resource("flatland.audiobook-manifest.json"),
+        input = resource("flatland.audiobook-manifest.json"),
         extensions = listOf()
       )
 
@@ -267,7 +271,7 @@ class ExoManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:flatland"),
-        streams = resource("bestnewhorror.audiobook-manifest.json"),
+        input = resource("bestnewhorror.audiobook-manifest.json"),
         extensions = listOf()
       )
 
@@ -395,7 +399,7 @@ class ExoManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:flatland"),
-        streams = resource("flatland_toc.audiobook-manifest.json"),
+        input = resource("flatland_toc.audiobook-manifest.json"),
         extensions = listOf()
       )
 
@@ -515,7 +519,7 @@ class ExoManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:anna_karenina"),
-        streams = resource("anna_karenina_toc.audiobook-manifest.json"),
+        input = resource("anna_karenina_toc.audiobook-manifest.json"),
         extensions = listOf()
       )
 
@@ -536,10 +540,7 @@ class ExoManifestTest {
     dumpResult(exoResult)
     assertTrue(exoResult is PlayerResult.Success, "Result is success")
 
-    val exoSuccess: PlayerResult.Success<ExoManifest, Exception> =
-      exoResult as PlayerResult.Success<ExoManifest, Exception>
-
-    val exo = exoSuccess.result
+    exoResult as PlayerResult.Success<ExoManifest, Exception>
 
     assertNotEquals(
       manifest.readingOrder.size,
@@ -573,10 +574,13 @@ class ExoManifestTest {
     }
   }
 
-  private fun resource(name: String): ByteArray {
+  private fun resource(name: String): ManifestUnparsed {
     val path = "/org/librarysimplified/audiobook/tests/" + name
-    return ExoManifestTest::class.java.getResourceAsStream(path)?.readBytes()
-      ?: throw AssertionError("Missing resource file: " + path)
+    return ManifestUnparsed(
+      palaceId = PlayerPalaceID(path),
+      data = ResourceMarker::class.java.getResourceAsStream(path)?.readBytes()
+        ?: throw AssertionError("Missing resource file: " + path)
+    )
   }
 
   /**
@@ -590,7 +594,7 @@ class ExoManifestTest {
     val result =
       ManifestParsers.parse(
         uri = URI.create("urn:demon"),
-        streams = resource("audible/demon.json"),
+        input = resource("audible/demon.json"),
         extensions = listOf()
       )
 
@@ -602,11 +606,11 @@ class ExoManifestTest {
 
     val manifest =
       success.result
-    val exoManifest =
-      (ExoManifest.transform(
-        bookID = PlayerBookID.transform("x"),
-        manifest = manifest,
-        missingTrackNames = this.missingNames
-      ) as PlayerResult.Success).result
+
+    (ExoManifest.transform(
+      bookID = PlayerBookID.transform("x"),
+      manifest = manifest,
+      missingTrackNames = this.missingNames
+    ) as PlayerResult.Success).result
   }
 }

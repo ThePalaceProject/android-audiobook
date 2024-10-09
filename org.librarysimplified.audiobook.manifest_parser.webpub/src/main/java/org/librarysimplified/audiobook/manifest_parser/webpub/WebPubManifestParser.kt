@@ -13,6 +13,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderItem
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 
 /**
@@ -20,6 +21,7 @@ import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestPar
  */
 
 class WebPubManifestParser(
+  private val palaceId: PlayerPalaceID,
   private val extensions: List<ManifestParserExtensionType>,
   private val originalBytes: ByteArray,
   onReceive: (FRParserContextType, PlayerManifest) -> Unit = FRValueParsers.ignoringReceiverWithContext()
@@ -36,6 +38,7 @@ class WebPubManifestParser(
     return FRParseResult.errorsOr(listOf(), this.errors) {
       FRParseResult.succeed(
         PlayerManifest(
+          palaceId = this.palaceId,
           originalBytes = this.originalBytes,
           readingOrder = this.spineItems.toList(),
           metadata = this.metadata,

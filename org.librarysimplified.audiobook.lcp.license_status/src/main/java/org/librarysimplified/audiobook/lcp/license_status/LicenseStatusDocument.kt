@@ -57,13 +57,13 @@ data class LicenseStatusDocument(
     EXPIRED;
 
     override fun toString(): String =
-      super.name.toLowerCase(Locale.ROOT)
+      super.name.lowercase(Locale.ROOT)
 
     companion object {
 
       fun ofString(text: String): Status? =
         try {
-          valueOf(text.toUpperCase(Locale.ROOT))
+          valueOf(text.uppercase(Locale.ROOT))
         } catch (e: Exception) {
           null
         }
