@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.time_tracking
 
 import io.reactivex.Observable
+import org.librarysimplified.audiobook.api.PlayerOPDSID
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -12,23 +13,23 @@ interface PlayerTimeTrackerType : AutoCloseable {
   val timeSegments: Observable<PlayerTimeTracked>
 
   fun bookOpened(
-    bookTrackingId: String
+    bookTrackingId: PlayerOPDSID
   ): CompletableFuture<Void>
 
   fun bookClosed(): CompletableFuture<Void>
 
   fun bookPlaybackStarted(
-    bookTrackingId: String,
+    bookTrackingId: PlayerOPDSID,
     rate: Double
   ): CompletableFuture<Void>
 
   fun bookPlaybackRateChanged(
-    bookTrackingId: String,
+    bookTrackingId: PlayerOPDSID,
     rate: Double
   ): CompletableFuture<Void>
 
   fun bookPlaybackPaused(
-    bookTrackingId: String,
+    bookTrackingId: PlayerOPDSID,
     rate: Double
   ): CompletableFuture<Void>
 }
