@@ -16,7 +16,8 @@ data class PlayerTimeTracked(
   val timeEnded: OffsetDateTime,
   val rate: Double
 ) {
-  fun duration(): Duration {
-    return Duration.between(this.timeStarted, this.timeEnded)
-  }
+  val duration: Duration
+    get() = Duration.between(this.timeStarted, this.timeEnded)
+  val seconds: Long
+    get() = this.duration.toMillis() / 1000
 }

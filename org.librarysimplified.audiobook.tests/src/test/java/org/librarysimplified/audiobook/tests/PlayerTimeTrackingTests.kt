@@ -120,7 +120,7 @@ class PlayerTimeTrackingTests {
     this.tracker.close()
 
     assertEquals(3, this.timeSegments.size)
-    assertEquals((2 * 60) + 30, this.timeSegments.sumOf { t -> t.segment.duration().toSeconds() })
+    assertEquals((2 * 60) + 30, this.timeSegments.sumOf { t -> t.segment.seconds })
     assertEquals(3, this.timeSegments.map { t -> t.segment.id }.toSet().size)
 
     assertThrows<IllegalStateException> { this.tracker.bookClosed() }
@@ -144,7 +144,7 @@ class PlayerTimeTrackingTests {
     this.tracker.close()
 
     assertEquals(3, this.timeSegments.size)
-    assertEquals((2 * 60) + 30, this.timeSegments.sumOf { t -> t.segment.duration().toSeconds() })
+    assertEquals((2 * 60) + 30, this.timeSegments.sumOf { t -> t.segment.seconds })
     assertEquals(3, this.timeSegments.map { t -> t.segment.id }.toSet().size)
 
     assertThrows<IllegalStateException> { this.tracker.bookClosed() }
@@ -167,7 +167,7 @@ class PlayerTimeTrackingTests {
     this.tracker.close()
 
     assertEquals(3, this.timeSegments.size)
-    assertEquals((2 * 60) + 30, this.timeSegments.sumOf { t -> t.segment.duration().toSeconds() })
+    assertEquals((2 * 60) + 30, this.timeSegments.sumOf { t -> t.segment.seconds })
     assertEquals(3, this.timeSegments.map { t -> t.segment.id }.toSet().size)
 
     assertThrows<IllegalStateException> { this.tracker.bookClosed() }

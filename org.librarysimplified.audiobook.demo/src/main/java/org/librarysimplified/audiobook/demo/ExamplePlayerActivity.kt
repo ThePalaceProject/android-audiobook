@@ -331,7 +331,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
     PlayerUIThread.runOnUIThread {
       try {
-        Toast.makeText(this, "Time tracked: ${time.duration()}", Toast.LENGTH_SHORT)
+        Toast.makeText(this, "Time tracked: ${time.duration}", Toast.LENGTH_SHORT)
           .show()
       } catch (e: Throwable) {
         // Don't care
