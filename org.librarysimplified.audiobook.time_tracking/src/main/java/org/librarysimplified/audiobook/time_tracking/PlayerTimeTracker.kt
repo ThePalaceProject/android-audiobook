@@ -259,7 +259,7 @@ class PlayerTimeTracker private constructor(
         while (Duration.between(timeThen, timeNow).toMillis() >= this.oneMinuteMilliseconds) {
           val timeNext = timeThen.plusMinutes(1L)
           this.publishTimeSegment(
-            PlayerTimeTracked(
+            PlayerTimeTracked.create(
               id = UUID.randomUUID(),
               bookTrackingId = stateNow.bookTrackingId,
               timeStarted = timeThen,
@@ -273,7 +273,7 @@ class PlayerTimeTracker private constructor(
 
         if (timeThen.isBefore(timeNow)) {
           this.publishTimeSegment(
-            PlayerTimeTracked(
+            PlayerTimeTracked.create(
               id = UUID.randomUUID(),
               bookTrackingId = stateNow.bookTrackingId,
               timeStarted = timeThen,
