@@ -147,7 +147,7 @@ dependencies {
     implementation(libs.slf4j)
 
     if (lcpDRM) {
-        implementation(libs.readium.lcp) {
+        implementation(libs.palace.liblcp) {
             artifact {
                 type = "aar"
             }
