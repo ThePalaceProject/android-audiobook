@@ -13,7 +13,9 @@ import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckResul
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckStatus
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.slf4j.Logger
@@ -228,7 +230,7 @@ abstract class LicenseCheckContract {
     val result =
       ManifestParsers.parse(
         uri = URI.create(name),
-        streams = this.resource(name),
+        input = this.resource(name),
         extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
       )
     this.log().debug("result: {}", result)
@@ -240,11 +242,12 @@ abstract class LicenseCheckContract {
     return success.result
   }
 
-  private fun resource(
-    name: String
-  ): ByteArray {
+  private fun resource(name: String): ManifestUnparsed {
     val path = "/org/librarysimplified/audiobook/tests/" + name
-    return LicenseCheckContract::class.java.getResourceAsStream(path)?.readBytes()
-      ?: throw AssertionError("Missing resource file: " + path)
+    return ManifestUnparsed(
+      palaceId = PlayerPalaceID(path),
+      data = ResourceMarker::class.java.getResourceAsStream(path)?.readBytes()
+        ?: throw AssertionError("Missing resource file: " + path)
+    )
   }
 }

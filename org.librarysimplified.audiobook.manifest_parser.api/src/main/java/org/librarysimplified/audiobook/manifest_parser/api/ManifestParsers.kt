@@ -20,18 +20,18 @@ object ManifestParsers : ManifestParsersType {
 
   override fun parse(
     uri: URI,
-    streams: ByteArray
+    input: ManifestUnparsed,
   ): ParseResult<PlayerManifest> {
     return this.parse(
       uri = uri,
-      streams = streams,
+      input = input,
       extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
     )
   }
 
   override fun parse(
     uri: URI,
-    streams: ByteArray,
+    input: ManifestUnparsed,
     extensions: List<ManifestParserExtensionType>
   ): ParseResult<PlayerManifest> {
     try {
@@ -46,11 +46,11 @@ object ManifestParsers : ManifestParsersType {
           uri
         )
 
-        if (provider.canParse(uri, streams)) {
+        if (provider.canParse(uri, input)) {
           this.logger.debug("parsing with provider {}", provider.javaClass.canonicalName)
           return provider.createParser(
             uri = uri,
-            input = streams,
+            input = input,
             extensions = extensions.filter { extension ->
               extension.format == provider.format
             },

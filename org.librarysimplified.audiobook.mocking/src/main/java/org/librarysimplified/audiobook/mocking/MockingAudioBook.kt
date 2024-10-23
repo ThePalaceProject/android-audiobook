@@ -11,6 +11,7 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
@@ -20,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 
 class MockingAudioBook(
+  override val palaceId: PlayerPalaceID,
   override val id: PlayerBookID,
   val players: (MockingAudioBook) -> MockingPlayer
 ) : PlayerAudioBookType {

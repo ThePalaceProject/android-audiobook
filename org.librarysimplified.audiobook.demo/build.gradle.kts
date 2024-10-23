@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":org.librarysimplified.audiobook.manifest_parser.webpub"))
     implementation(project(":org.librarysimplified.audiobook.media3"))
     implementation(project(":org.librarysimplified.audiobook.parser.api"))
+    implementation(project(":org.librarysimplified.audiobook.time_tracking"))
     implementation(project(":org.librarysimplified.audiobook.views"))
 
     implementation(libs.androidx.activity)

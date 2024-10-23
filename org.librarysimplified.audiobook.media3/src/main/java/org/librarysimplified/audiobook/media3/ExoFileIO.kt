@@ -79,16 +79,18 @@ object ExoFileIO {
         )
       }
 
-      val to_parent = to.parentFile
-      if (!to_parent.isDirectory) {
-        throw IOException(
-          String.format(
-            "Could not rename '%s' to '%s' ('%s' is not a directory)",
-            from,
-            to,
-            to_parent
+      val parentDirectory = to.parentFile
+      if (parentDirectory != null) {
+        if (!parentDirectory.isDirectory) {
+          throw IOException(
+            String.format(
+              "Could not rename '%s' to '%s' ('%s' is not a directory)",
+              from,
+              to,
+              parentDirectory
+            )
           )
-        )
+        }
       }
 
       throw IOException(

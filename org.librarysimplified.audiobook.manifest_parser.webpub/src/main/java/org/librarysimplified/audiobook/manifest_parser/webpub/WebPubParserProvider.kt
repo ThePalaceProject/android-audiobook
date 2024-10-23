@@ -4,6 +4,7 @@ import one.irradia.fieldrush.api.FRParseResult
 import one.irradia.fieldrush.vanilla.FRParsers
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParserProviderType
+import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParserType
 import org.slf4j.LoggerFactory
@@ -39,12 +40,12 @@ class WebPubParserProvider : ManifestParserProviderType {
 
   override fun canParse(
     uri: URI,
-    input: ByteArray
+    input: ManifestUnparsed
   ): Boolean {
     val contextParser =
       this.fieldRushParsers.createParser(
         uri = uri,
-        stream = ByteArrayInputStream(input),
+        stream = ByteArrayInputStream(input.data),
         rootParser = WebPubContextFinderParser()
       )
 
@@ -84,16 +85,17 @@ class WebPubParserProvider : ManifestParserProviderType {
 
   override fun createParser(
     uri: URI,
-    input: ByteArray,
+    input: ManifestUnparsed,
     extensions: List<ManifestParserExtensionType>,
     warningsAsErrors: Boolean
   ): ParserType<PlayerManifest> {
     return WebPubParser(
       extensions = extensions,
+      palaceId = input.palaceId,
+      originalBytes = input.data,
       parsers = this.fieldRushParsers,
-      originalBytes = input,
-      stream = ByteArrayInputStream(input),
-      uri = uri
+      stream = ByteArrayInputStream(input.data),
+      uri = uri,
     )
   }
 }

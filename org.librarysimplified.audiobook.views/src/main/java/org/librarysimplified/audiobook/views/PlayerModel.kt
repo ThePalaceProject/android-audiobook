@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.views
 
 import android.app.Application
-import android.content.Intent
 import android.graphics.Bitmap
 import android.media.AudioManager
 import androidx.annotation.UiThread
@@ -18,7 +17,11 @@ import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
@@ -42,15 +45,18 @@ import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProvi
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckStatus
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentError
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
+import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseError
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracker
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerBookOpenFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestDownloadFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestInProgress
@@ -58,6 +64,7 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLice
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
 import org.librarysimplified.audiobook.views.mediacontrols.PlayerMediaController
+import org.librarysimplified.audiobook.views.mediacontrols.PlayerServiceCommand
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -71,13 +78,13 @@ object PlayerModel {
   @Volatile
   private var isStreamingPermitted: Boolean = false
 
+  val timeTracker =
+    PlayerTimeTracker.create()
+
   @Volatile
   var playerExtensions: List<PlayerExtensionType> =
     ServiceLoader.load(PlayerExtensionType::class.java)
       .toList()
-
-  @Volatile
-  private var intentForPlayerServiceField: Intent? = null
 
   @Volatile
   var bookTitle: String = ""
@@ -259,6 +266,18 @@ object PlayerModel {
     this.downloadEventSubject.observeOn(AndroidSchedulers.mainThread())
 
   /*
+   * A source of player service commands. Note that this is specifically NOT a behavior subject;
+   * if nothing is subscribed at the time a command is published, the command is discarded.
+   */
+
+  private val playerServiceSubject =
+    PublishSubject.create<PlayerServiceCommand>()
+      .toSerialized()
+
+  val playerServiceCommands: Observable<PlayerServiceCommand> =
+    this.playerServiceSubject.observeOn(AndroidSchedulers.mainThread())
+
+  /*
    * Subscribe to the sleep timer so that the player can be paused when the timer expires.
    */
 
@@ -269,6 +288,41 @@ object PlayerModel {
 
   init {
     this.stateSubject.onNext(this.state)
+
+    this.stateEvents.ofType(PlayerModelState.PlayerOpen::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookOpened(e.player.audioBook.palaceId)
+      }
+
+    this.stateEvents.ofType(PlayerBookOpenFailed::class.java)
+      .subscribe {
+        this.timeTracker.bookClosed()
+      }
+
+    this.stateEvents.ofType(PlayerModelState.PlayerClosed::class.java)
+      .subscribe {
+        this.timeTracker.bookClosed()
+      }
+
+    this.playerEvents.ofType(PlayerEventPlaybackStarted::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookPlaybackStarted(e.palaceId, this.playbackRate.speed)
+      }
+
+    this.playerEvents.ofType(PlayerEventPlaybackPaused::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookPlaybackPaused(e.palaceId, this.playbackRate.speed)
+      }
+
+    this.playerEvents.ofType(PlayerEventPlaybackStopped::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookPlaybackPaused(e.palaceId, this.playbackRate.speed)
+      }
+
+    this.playerEvents.ofType(PlayerEventPlaybackRateChanged::class.java)
+      .subscribe { e ->
+        this.timeTracker.bookPlaybackRateChanged(e.palaceId, e.rate.speed)
+      }
   }
 
   @UiThread
@@ -337,13 +391,13 @@ object PlayerModel {
   private fun parseManifest(
     source: URI,
     extensions: List<ManifestParserExtensionType>,
-    data: ByteArray
+    data: ManifestUnparsed
   ): ParseResult<PlayerManifest> {
     this.logger.debug("parseManifest")
 
     return ManifestParsers.parse(
       uri = source,
-      streams = data,
+      input = data,
       extensions = extensions
     )
   }
@@ -356,6 +410,7 @@ object PlayerModel {
     sourceURI: URI,
     userAgent: PlayerUserAgent,
     cacheDir: File,
+    palaceID: PlayerPalaceID,
     licenseChecks: List<SingleLicenseCheckProviderType>,
     strategy: ManifestFulfillmentStrategyType,
     parserExtensions: List<ManifestParserExtensionType>,
@@ -365,124 +420,15 @@ object PlayerModel {
 
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseManifest(
-        strategy = strategy,
+        bookCredentials = bookCredentials,
+        cacheDir = cacheDir,
+        licenseChecks = licenseChecks,
+        palaceID = palaceID,
+        parserExtensions = parserExtensions,
         sourceURI = sourceURI,
-        parserExtensions = parserExtensions,
+        strategy = strategy,
         userAgent = userAgent,
-        licenseChecks = licenseChecks,
-        cacheDir = cacheDir,
-        bookCredentials = bookCredentials
       )
-    }
-  }
-
-  /**
-   * Process the given book file: Attempt to extract a manifest and parse it, and take ownership
-   * of the book file.
-   */
-
-  @Deprecated("Packaged audiobooks are deprecated; use streaming.")
-  fun downloadLocalPackagedAudiobook(
-    context: Application,
-    userAgent: PlayerUserAgent,
-    cacheDir: File,
-    licenseChecks: List<SingleLicenseCheckProviderType>,
-    bookFile: File,
-    parserExtensions: List<ManifestParserExtensionType>,
-    bookCredentials: PlayerBookCredentialsType
-  ): CompletableFuture<Unit> {
-    this.logger.debug("downloadParseAndCheckManifest")
-
-    return this.executeTaskCancellingExisting {
-      this.opDownloadLocalPackagedAudiobook(
-        context = context,
-        bookFile = bookFile,
-        parserExtensions = parserExtensions,
-        licenseChecks = licenseChecks,
-        userAgent = userAgent,
-        cacheDir = cacheDir,
-        bookCredentials = bookCredentials
-      )
-    }
-  }
-
-  private fun opDownloadLocalPackagedAudiobook(
-    context: Application,
-    bookFile: File,
-    parserExtensions: List<ManifestParserExtensionType>,
-    licenseChecks: List<SingleLicenseCheckProviderType>,
-    userAgent: PlayerUserAgent,
-    cacheDir: File,
-    bookCredentials: PlayerBookCredentialsType
-  ) {
-    this.logger.debug("opDownloadLocalPackagedAudiobook")
-    this.setNewState(PlayerManifestInProgress)
-
-    try {
-      val receiver: (ManifestFulfillmentEvent) -> Unit = { event ->
-        this.manifestDownloadLogField = this.manifestDownloadLogField.plus(event)
-        this.manifestDownloadEventSubject.onNext(event)
-      }
-
-      when (val manifest = LCPDownloads.extractManifestFromFile(
-        context = context,
-        bookFile = bookFile,
-        receiver = receiver
-      )) {
-        is PlayerResult.Failure -> {
-          this.setNewState(PlayerManifestDownloadFailed(manifest.failure))
-          throw OperationFailedException()
-        }
-
-        is PlayerResult.Success -> {
-          val parseResult =
-            this.parseManifest(
-              source = bookFile.toURI(),
-              extensions = parserExtensions,
-              data = manifest.result.data
-            )
-
-          if (parseResult is ParseResult.Failure) {
-            this.manifestParseErrorLogField = parseResult.errors.toList()
-            this.setNewState(PlayerManifestParseFailed(parseResult.errors))
-            throw OperationFailedException()
-          }
-
-          val (_, parsedManifest) = parseResult as ParseResult.Success
-          val checkResult =
-            this.checkManifest(
-              manifest = parsedManifest,
-              userAgent = userAgent,
-              licenseChecks = licenseChecks,
-              cacheDir = cacheDir
-            )
-
-          if (!checkResult.checkSucceeded()) {
-            this.setNewState(PlayerManifestLicenseChecksFailed(checkResult.summarize()))
-            throw OperationFailedException()
-          }
-
-          this.setNewState(
-            PlayerManifestOK(
-              manifest = parsedManifest,
-              bookSource = PlayerBookSource.PlayerBookSourcePackagedBook(bookFile),
-              bookCredentials = bookCredentials
-            )
-          )
-        }
-      }
-    } catch (e: OperationFailedException) {
-      throw e
-    } catch (e: Throwable) {
-      this.logger.error("Unexpected exception: ", e)
-      this.setNewState(PlayerManifestDownloadFailed(
-        ManifestFulfillmentError(
-          message = e.message ?: e.javaClass.name,
-          extraMessages = listOf(),
-          serverData = null
-        )
-      ))
-      throw e
     }
   }
 
@@ -492,28 +438,30 @@ object PlayerModel {
 
   fun downloadParseAndCheckLCPLicense(
     context: Application,
+    bookCredentials: PlayerBookCredentialsType,
     cacheDir: File,
-    userAgent: PlayerUserAgent,
     licenseChecks: List<SingleLicenseCheckProviderType>,
-    licenseParameters: ManifestFulfillmentBasicParameters,
-    parserExtensions: List<ManifestParserExtensionType>,
     licenseFile: File,
     licenseFileTemp: File,
-    bookCredentials: PlayerBookCredentialsType,
+    licenseParameters: ManifestFulfillmentBasicParameters,
+    palaceID: PlayerPalaceID,
+    parserExtensions: List<ManifestParserExtensionType>,
+    userAgent: PlayerUserAgent,
   ): CompletableFuture<Unit> {
     this.logger.debug("downloadParseAndCheckLCPLicense")
 
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseLCPLicense(
-        context = context,
-        licenseParameters = licenseParameters,
-        parserExtensions = parserExtensions,
-        userAgent = userAgent,
-        licenseChecks = licenseChecks,
+        bookCredentials = bookCredentials,
         cacheDir = cacheDir,
+        context = context,
+        licenseChecks = licenseChecks,
         licenseFile = licenseFile,
         licenseFileTemp = licenseFileTemp,
-        bookCredentials = bookCredentials
+        licenseParameters = licenseParameters,
+        palaceID = palaceID,
+        parserExtensions = parserExtensions,
+        userAgent = userAgent,
       )
     }
   }
@@ -523,37 +471,37 @@ object PlayerModel {
    */
 
   fun parseAndCheckLCPLicense(
-    cacheDir: File,
-    userAgent: PlayerUserAgent,
-    licenseChecks: List<SingleLicenseCheckProviderType>,
-    parserExtensions: List<ManifestParserExtensionType>,
-    licenseBytes: ByteArray,
-    manifestBytes: ByteArray,
     bookCredentials: PlayerBookCredentialsType,
+    cacheDir: File,
+    licenseBytes: ByteArray,
+    licenseChecks: List<SingleLicenseCheckProviderType>,
+    manifestUnparsed: ManifestUnparsed,
+    parserExtensions: List<ManifestParserExtensionType>,
+    userAgent: PlayerUserAgent,
   ): CompletableFuture<Unit> {
     this.logger.debug("parseAndCheckLCPLicense")
 
     return this.executeTaskCancellingExisting {
       this.opParseAndCheckLCPLicense(
-        parserExtensions = parserExtensions,
-        userAgent = userAgent,
-        licenseChecks = licenseChecks,
+        bookCredentials = bookCredentials,
         cacheDir = cacheDir,
         licenseBytes = licenseBytes,
-        manifestBytes = manifestBytes,
-        bookCredentials = bookCredentials
+        licenseChecks = licenseChecks,
+        manifestUnparsed = manifestUnparsed,
+        parserExtensions = parserExtensions,
+        userAgent = userAgent
       )
     }
   }
 
   private fun opParseAndCheckLCPLicense(
-    parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
-    licenseChecks: List<SingleLicenseCheckProviderType>,
+    bookCredentials: PlayerBookCredentialsType,
     cacheDir: File,
     licenseBytes: ByteArray,
-    manifestBytes: ByteArray,
-    bookCredentials: PlayerBookCredentialsType
+    licenseChecks: List<SingleLicenseCheckProviderType>,
+    manifestUnparsed: ManifestUnparsed,
+    parserExtensions: List<ManifestParserExtensionType>,
+    userAgent: PlayerUserAgent,
   ) {
     this.logger.debug("opParseAndCheckLCPLicense")
     this.setNewState(PlayerManifestInProgress)
@@ -582,7 +530,7 @@ object PlayerModel {
             this.parseManifest(
               source = URI.create("urn:unavailable"),
               extensions = parserExtensions,
-              data = manifestBytes
+              data = manifestUnparsed
             )
 
           if (parseResult is ParseResult.Failure) {
@@ -633,14 +581,15 @@ object PlayerModel {
 
   private fun opDownloadAndParseLCPLicense(
     context: Application,
-    licenseParameters: ManifestFulfillmentBasicParameters,
-    parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
-    licenseChecks: List<SingleLicenseCheckProviderType>,
+    bookCredentials: PlayerBookCredentialsType,
     cacheDir: File,
+    licenseChecks: List<SingleLicenseCheckProviderType>,
     licenseFile: File,
     licenseFileTemp: File,
-    bookCredentials: PlayerBookCredentialsType
+    licenseParameters: ManifestFulfillmentBasicParameters,
+    palaceID: PlayerPalaceID,
+    parserExtensions: List<ManifestParserExtensionType>,
+    userAgent: PlayerUserAgent,
   ) {
     this.logger.debug("opDownloadAndParseLCPLicense")
     this.setNewState(PlayerManifestInProgress)
@@ -684,13 +633,14 @@ object PlayerModel {
         }
 
       return this.opParseManifest(
-        manifestData.source ?: URI.create("urn:unavailable"),
-        parserExtensions,
-        manifestData,
-        userAgent,
-        licenseChecks,
-        cacheDir,
-        bookCredentials
+        bookCredentials = bookCredentials,
+        cacheDir = cacheDir,
+        licenseChecks = licenseChecks,
+        manifest = manifestData,
+        palaceID = palaceID,
+        parserExtensions = parserExtensions,
+        sourceURI = manifestData.source ?: URI.create("urn:unavailable"),
+        userAgent = userAgent,
       )
     } catch (e: OperationFailedException) {
       throw e
@@ -710,13 +660,14 @@ object PlayerModel {
   }
 
   private fun opDownloadAndParseManifest(
-    strategy: ManifestFulfillmentStrategyType,
-    sourceURI: URI,
-    parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
-    licenseChecks: List<SingleLicenseCheckProviderType>,
+    bookCredentials: PlayerBookCredentialsType,
     cacheDir: File,
-    bookCredentials: PlayerBookCredentialsType
+    licenseChecks: List<SingleLicenseCheckProviderType>,
+    palaceID: PlayerPalaceID,
+    parserExtensions: List<ManifestParserExtensionType>,
+    sourceURI: URI,
+    strategy: ManifestFulfillmentStrategyType,
+    userAgent: PlayerUserAgent,
   ) {
     this.logger.debug("opDownloadAndParseManifest")
     this.setNewState(PlayerManifestInProgress)
@@ -732,13 +683,14 @@ object PlayerModel {
       this.configurePlayerExtensions(result.authorization)
 
       return this.opParseManifest(
-        sourceURI,
-        parserExtensions,
-        result,
-        userAgent,
-        licenseChecks,
-        cacheDir,
-        bookCredentials
+        bookCredentials = bookCredentials,
+        cacheDir = cacheDir,
+        licenseChecks = licenseChecks,
+        manifest = result,
+        palaceID = palaceID,
+        parserExtensions = parserExtensions,
+        sourceURI = sourceURI,
+        userAgent = userAgent
       )
     } catch (e: OperationFailedException) {
       throw e
@@ -768,36 +720,39 @@ object PlayerModel {
    */
 
   fun parseAndCheckManifest(
-    cacheDir: File,
-    manifest: ManifestFulfilled,
-    userAgent: PlayerUserAgent,
-    licenseChecks: List<SingleLicenseCheckProviderType>,
-    parserExtensions: List<ManifestParserExtensionType>,
     bookCredentials: PlayerBookCredentialsType,
+    cacheDir: File,
+    licenseChecks: List<SingleLicenseCheckProviderType>,
+    manifest: ManifestFulfilled,
+    palaceID: PlayerPalaceID,
+    parserExtensions: List<ManifestParserExtensionType>,
+    userAgent: PlayerUserAgent,
   ): CompletableFuture<Unit> {
     this.logger.debug("parseAndCheckManifest")
 
     return this.executeTaskCancellingExisting {
       this.opParseManifest(
-        sourceURI = URI.create("urn:unavailable"),
-        parserExtensions = parserExtensions,
-        manifest = manifest,
-        userAgent = userAgent,
-        licenseChecks = licenseChecks,
+        bookCredentials = bookCredentials,
         cacheDir = cacheDir,
-        bookCredentials = bookCredentials
+        licenseChecks = licenseChecks,
+        manifest = manifest,
+        palaceID = palaceID,
+        parserExtensions = parserExtensions,
+        sourceURI = URI.create("urn:unavailable"),
+        userAgent = userAgent,
       )
     }
   }
 
   private fun opParseManifest(
-    sourceURI: URI,
-    parserExtensions: List<ManifestParserExtensionType>,
-    manifest: ManifestFulfilled,
-    userAgent: PlayerUserAgent,
-    licenseChecks: List<SingleLicenseCheckProviderType>,
+    bookCredentials: PlayerBookCredentialsType,
     cacheDir: File,
-    bookCredentials: PlayerBookCredentialsType
+    licenseChecks: List<SingleLicenseCheckProviderType>,
+    manifest: ManifestFulfilled,
+    palaceID: PlayerPalaceID,
+    parserExtensions: List<ManifestParserExtensionType>,
+    sourceURI: URI,
+    userAgent: PlayerUserAgent,
   ) {
     this.logger.debug("opParseManifest")
     this.setNewState(PlayerManifestInProgress)
@@ -807,7 +762,7 @@ object PlayerModel {
         this.parseManifest(
           source = sourceURI,
           extensions = parserExtensions,
-          data = manifest.data
+          data = ManifestUnparsed(palaceID, manifest.data)
         )
 
       if (parseResult is ParseResult.Failure) {
@@ -1008,6 +963,14 @@ object PlayerModel {
         "No initial position was specified. Playback will begin at the start of the book."
       )
     }
+
+    PlayerUIThread.runOnUIThread {
+      try {
+        PlayerMediaController.start(this.application)
+      } catch (e: Throwable) {
+        this.logger.debug("Failed to start media controller: ", e)
+      }
+    }
   }
 
   private fun onHandleChapterCompletionForSleepTimer(
@@ -1044,12 +1007,34 @@ object PlayerModel {
     this.currentFuture?.cancel(true)
 
     /*
+     * Stop the media controller.
+     */
+
+    PlayerUIThread.runOnUIThread {
+      try {
+        PlayerMediaController.stop()
+      } catch (e: Throwable) {
+        this.logger.debug("Failed to stop media controller: ", e)
+      }
+    }
+
+    /*
+     * Tell any services to shut down.
+     */
+
+    try {
+      this.playerServiceSubject.onNext(PlayerServiceCommand.PlayerServiceShutDown)
+    } catch (e: Throwable) {
+      this.logger.debug("Failed to submit service shutdown command: ", e)
+    }
+
+    /*
      * Cancel the sleep timer.
      */
 
     try {
       PlayerSleepTimer.cancel()
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       this.logger.error("Failed to cancel sleep timer: ", e)
     }
 
@@ -1059,7 +1044,7 @@ object PlayerModel {
 
     try {
       PlayerBookmarkModel.clearBookmarks()
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       this.logger.error("Failed to clear bookmarks: ", e)
     }
 
@@ -1074,7 +1059,7 @@ object PlayerModel {
 
     try {
       this.playerAndBookField?.close()
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       this.logger.error("Failed to close player: ", e)
     }
 
@@ -1292,10 +1277,6 @@ object PlayerModel {
     application: Application
   ) {
     this.application = application
-
-    PlayerUIThread.runOnUIThread {
-      PlayerMediaController.start(this.application)
-    }
   }
 
   fun setStreamingPermitted(

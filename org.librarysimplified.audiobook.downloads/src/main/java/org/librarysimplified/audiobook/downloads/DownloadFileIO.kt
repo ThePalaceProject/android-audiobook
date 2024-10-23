@@ -80,15 +80,17 @@ internal object DownloadFileIO {
       }
 
       val toParent = to.parentFile
-      if (!toParent.isDirectory) {
-        throw IOException(
-          String.format(
-            "Could not rename '%s' to '%s' ('%s' is not a directory)",
-            from,
-            to,
-            toParent
+      if (toParent != null) {
+        if (!toParent.isDirectory) {
+          throw IOException(
+            String.format(
+              "Could not rename '%s' to '%s' ('%s' is not a directory)",
+              from,
+              to,
+              toParent
+            )
           )
-        )
+        }
       }
 
       throw IOException(

@@ -2,6 +2,7 @@ package org.librarysimplified.audiobook.api
 
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 
 /**
  * The type of events signalled by the player.
@@ -10,10 +11,17 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetada
 sealed class PlayerEvent {
 
   /**
+   * The raw OPDS ID of the book to which the event refers.
+   */
+
+  abstract val palaceId: PlayerPalaceID
+
+  /**
    * The player's playback rate changed.
    */
 
   data class PlayerEventPlaybackRateChanged(
+    override val palaceId: PlayerPalaceID,
     val rate: PlayerPlaybackRate
   ) : PlayerEvent()
 
@@ -21,7 +29,9 @@ sealed class PlayerEvent {
    * The player's manifest was successfully updated.
    */
 
-  data object PlayerEventManifestUpdated : PlayerEvent()
+  data class PlayerEventManifestUpdated(
+    override val palaceId: PlayerPalaceID
+  ) : PlayerEvent()
 
   /**
    * An error occurred during playback. The error is expected to reflect an error in the
@@ -29,6 +39,7 @@ sealed class PlayerEvent {
    */
 
   data class PlayerEventError(
+    override val palaceId: PlayerPalaceID,
     val readingOrderItem: PlayerReadingOrderItemType?,
     val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
     val exception: java.lang.Exception?,
@@ -60,6 +71,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackStarted(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
@@ -72,6 +84,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackBuffering(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
@@ -85,6 +98,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackPreparing(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
@@ -97,6 +111,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackWaitingForAction(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
@@ -109,6 +124,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackProgressUpdate(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
@@ -121,6 +137,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventChapterCompleted(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
@@ -132,6 +149,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventChapterWaiting(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       override val positionMetadata: PlayerManifestPositionMetadata,
       override val isStreaming: Boolean
@@ -142,6 +160,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackPaused(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       val readingOrderItemOffsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
@@ -153,6 +172,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventPlaybackStopped(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       val readingOrderItemOffsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
@@ -166,6 +186,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerEventCreateBookmark(
+      override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       val readingOrderItemOffsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
@@ -180,6 +201,7 @@ sealed class PlayerEvent {
    */
 
   data class PlayerEventDeleteBookmark(
+    override val palaceId: PlayerPalaceID,
     val bookmark: PlayerBookmark
   ) : PlayerEvent()
 
@@ -201,6 +223,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerAccessibilityIsBuffering(
+      override val palaceId: PlayerPalaceID,
       override val message: String
     ) : PlayerAccessibilityEvent()
 
@@ -209,6 +232,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerAccessibilityIsWaitingForChapter(
+      override val palaceId: PlayerPalaceID,
       override val message: String
     ) : PlayerAccessibilityEvent()
 
@@ -217,6 +241,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerAccessibilityErrorOccurred(
+      override val palaceId: PlayerPalaceID,
       override val message: String
     ) : PlayerAccessibilityEvent()
 
@@ -225,6 +250,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerAccessibilityPlaybackRateChanged(
+      override val palaceId: PlayerPalaceID,
       override val message: String
     ) : PlayerAccessibilityEvent()
 
@@ -233,6 +259,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerAccessibilitySleepTimerSettingChanged(
+      override val palaceId: PlayerPalaceID,
       override val message: String
     ) : PlayerAccessibilityEvent()
 
@@ -241,6 +268,7 @@ sealed class PlayerEvent {
      */
 
     data class PlayerAccessibilityChapterSelected(
+      override val palaceId: PlayerPalaceID,
       override val message: String
     ) : PlayerAccessibilityEvent()
   }

@@ -19,7 +19,7 @@ interface ManifestParsersType {
 
   fun parse(
     uri: URI,
-    streams: ByteArray
+    input: ManifestUnparsed
   ): ParseResult<PlayerManifest>
 
   /**
@@ -29,7 +29,7 @@ interface ManifestParsersType {
 
   fun parse(
     uri: URI,
-    streams: ByteArray,
+    input: ManifestUnparsed,
     extensions: List<ManifestParserExtensionType>
   ): ParseResult<PlayerManifest>
 }

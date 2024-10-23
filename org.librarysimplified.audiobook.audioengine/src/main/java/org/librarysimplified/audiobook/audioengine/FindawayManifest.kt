@@ -94,6 +94,7 @@ data class FindawayManifest(
 
         val manifestRewritten =
           PlayerManifest(
+            palaceId = manifest.palaceId,
             originalBytes = manifest.originalBytes,
             readingOrder = transformReadingOrder(manifest.readingOrder),
             metadata = manifest.metadata,
@@ -103,7 +104,7 @@ data class FindawayManifest(
           )
 
         val readingOrderItems =
-          manifestRewritten.readingOrder.mapIndexed { index, item ->
+          manifestRewritten.readingOrder.mapIndexed { _, item ->
             val part =
               valueInt(item.link.properties.extras, "findaway:part")
             val sequence =

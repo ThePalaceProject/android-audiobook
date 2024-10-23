@@ -57,7 +57,7 @@ class PlayerTOCBookmarksFragment : Fragment() {
           this.onBookmarkSelected(position)
         },
         onDelete = { index, bookmark ->
-          this.onBookmarkDelete(index, bookmark)
+          this.onBookmarkDelete(bookmark)
         },
         onTitleLookup = { position ->
           this.onTitleLookup(position)
@@ -82,7 +82,6 @@ class PlayerTOCBookmarksFragment : Fragment() {
   }
 
   private fun onBookmarkDelete(
-    index: Int,
     bookmark: PlayerBookmark
   ) {
     PlayerModel.bookmarkDelete(bookmark)

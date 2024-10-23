@@ -234,6 +234,7 @@ class ExoAudioBookPlayer private constructor(
 
         this.statusEvents.onNext(
           PlayerEventPlaybackStopped(
+            palaceId = this.book.palaceId,
             isStreaming = this.isStreamingNow,
             readingOrderItemOffsetMilliseconds = offsetMilliseconds,
             positionMetadata = positionMetadata,
@@ -256,6 +257,7 @@ class ExoAudioBookPlayer private constructor(
 
         this.statusEvents.onNext(
           PlayerEventPlaybackBuffering(
+            palaceId = this.book.palaceId,
             isStreaming = this.isStreamingNow,
             offsetMilliseconds = offsetMilliseconds,
             positionMetadata = positionMetadata,
@@ -279,6 +281,7 @@ class ExoAudioBookPlayer private constructor(
         if (state.oldState != ExoPlayerPlaybackStatus.PLAYING) {
           this.statusEvents.onNext(
             PlayerEventPlaybackStarted(
+              palaceId = this.book.palaceId,
               isStreaming = this.isStreamingNow,
               offsetMilliseconds = offsetMilliseconds,
               positionMetadata = positionMetadata,
@@ -289,6 +292,7 @@ class ExoAudioBookPlayer private constructor(
 
         this.statusEvents.onNext(
           PlayerEventPlaybackProgressUpdate(
+            palaceId = this.book.palaceId,
             isStreaming = this.isStreamingNow,
             offsetMilliseconds = offsetMilliseconds,
             positionMetadata = positionMetadata,
@@ -312,6 +316,7 @@ class ExoAudioBookPlayer private constructor(
         if (this.exoAdapter.isBufferingNow) {
           this.statusEvents.onNext(
             PlayerEventPlaybackBuffering(
+              palaceId = this.book.palaceId,
               isStreaming = this.isStreamingNow,
               offsetMilliseconds = offsetMilliseconds,
               positionMetadata = positionMetadata,
@@ -321,6 +326,7 @@ class ExoAudioBookPlayer private constructor(
         } else {
           this.statusEvents.onNext(
             PlayerEventPlaybackPaused(
+              palaceId = this.book.palaceId,
               isStreaming = this.isStreamingNow,
               readingOrderItemOffsetMilliseconds = offsetMilliseconds,
               positionMetadata = positionMetadata,
@@ -344,6 +350,7 @@ class ExoAudioBookPlayer private constructor(
 
         this.statusEvents.onNext(
           PlayerEventChapterCompleted(
+            palaceId = this.book.palaceId,
             isStreaming = this.isStreamingNow,
             positionMetadata = positionMetadata,
             readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
@@ -355,7 +362,7 @@ class ExoAudioBookPlayer private constructor(
   }
 
   private fun onManifestUpdated() {
-    this.statusEvents.onNext(PlayerEventManifestUpdated)
+    this.statusEvents.onNext(PlayerEventManifestUpdated(palaceId = this.book.palaceId))
   }
 
   companion object {
@@ -432,7 +439,12 @@ class ExoAudioBookPlayer private constructor(
   private fun setPlayerPlaybackRate(newRate: PlayerPlaybackRate) {
     this.log.debug("setPlayerPlaybackRate: {}", newRate)
 
-    this.statusEvents.onNext(PlayerEventPlaybackRateChanged(newRate))
+    this.statusEvents.onNext(
+      PlayerEventPlaybackRateChanged(
+        palaceId = this.book.palaceId,
+        rate = newRate,
+      )
+    )
     this.exoPlayer.playbackParameters = PlaybackParameters(newRate.speed.toFloat())
   }
 
@@ -498,6 +510,7 @@ class ExoAudioBookPlayer private constructor(
 
         this.statusEvents.onNext(
           PlayerEventChapterWaiting(
+            palaceId = this.book.palaceId,
             isStreaming = this.isStreamingNow,
             positionMetadata = positionMetadata,
             readingOrderItem = target.readingOrderItem,
@@ -824,7 +837,8 @@ class ExoAudioBookPlayer private constructor(
 
     this.statusEvents.onNext(
       PlayerEventCreateBookmark(
-        readingOrderItem.readingOrderItem,
+        palaceId = this.book.palaceId,
+        readingOrderItem = readingOrderItem.readingOrderItem,
         readingOrderItemOffsetMilliseconds = offsetMilliseconds,
         kind = PlayerBookmarkKind.EXPLICIT,
         isStreaming = this.isStreamingNow,
@@ -838,7 +852,10 @@ class ExoAudioBookPlayer private constructor(
     this.log.debug("opBookmarkDelete")
     PlayerUIThread.checkIsUIThread()
 
-    this.statusEvents.onNext(PlayerEventDeleteBookmark(bookmark))
+    this.statusEvents.onNext(PlayerEventDeleteBookmark(
+      palaceId = this.book.palaceId,
+      bookmark = bookmark,
+    ))
   }
 
   private fun opMovePlayheadToAbsoluteTime(

@@ -74,7 +74,6 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var playerCommands: ViewGroup
   private lateinit var playerDebugStatus: TextView
   private lateinit var playerDownloadMessage: TextView
-  private lateinit var playerDownloadProgress: ProgressBar
   private lateinit var playerDownloadProgressTotal: ProgressBar
   private lateinit var playerPosition: SeekBar
   private lateinit var playerRemainingBookTime: TextView
@@ -157,8 +156,6 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerDownloadMessage =
       view.findViewById(R.id.playerDownloadMessage)
-    this.playerDownloadProgress =
-      view.findViewById(R.id.playerDownloadProgress)
     this.playerDownloadProgressTotal =
       view.findViewById(R.id.playerDownloadProgressTotal)
 
@@ -259,7 +256,6 @@ class PlayerFragment : PlayerBaseFragment() {
      */
 
     this.playerDownloadMessage.text = ""
-    this.playerDownloadProgress.visibility = INVISIBLE
     this.playerDownloadProgressTotal.visibility = INVISIBLE
 
     for (task in tasks) {
@@ -268,10 +264,7 @@ class PlayerFragment : PlayerBaseFragment() {
           val progress = st.progress
           if (progress != null) {
             this.playerDownloadMessage.text =
-              this.resources.getString(R.string.audiobook_player_downloading, task.index + 1)
-            this.playerDownloadProgress.visibility = VISIBLE
-            this.playerDownloadProgress.isIndeterminate = false
-            this.playerDownloadProgress.progress = progress.asPercent()
+              this.resources.getString(R.string.audiobook_player_downloading)
             this.playerDownloadProgressTotal.visibility = VISIBLE
             this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).asPercent()
             return
@@ -302,9 +295,7 @@ class PlayerFragment : PlayerBaseFragment() {
           val progress = st.progress
           if (progress == null) {
             this.playerDownloadMessage.text =
-              this.resources.getString(R.string.audiobook_player_downloading, task.index + 1)
-            this.playerDownloadProgress.visibility = VISIBLE
-            this.playerDownloadProgress.isIndeterminate = true
+              this.resources.getString(R.string.audiobook_player_downloading_minimal)
             this.playerDownloadProgressTotal.visibility = VISIBLE
             this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).asPercent()
             return
@@ -318,30 +309,6 @@ class PlayerFragment : PlayerBaseFragment() {
         PlayerDownloadTaskStatus.IdleDownloaded,
         PlayerDownloadTaskStatus.IdleNotDownloaded -> {
           // Nothing important to say here.
-        }
-      }
-    }
-
-    /*
-     * If none of the tasks were downloading, then some of them might have failed, and it's
-     * worth announcing this...
-     */
-
-    for (task in tasks) {
-      when (task.status) {
-        is PlayerDownloadTaskStatus.Downloading,
-        PlayerDownloadTaskStatus.IdleDownloaded,
-        PlayerDownloadTaskStatus.IdleNotDownloaded -> {
-          // Nothing important to say here.
-        }
-
-        is PlayerDownloadTaskStatus.Failed -> {
-          this.playerDownloadMessage.text =
-            this.resources.getString(R.string.audiobook_player_downloading_failed, task.index + 1)
-          this.playerDownloadProgress.visibility = INVISIBLE
-          this.playerDownloadProgress.isIndeterminate = false
-          this.playerDownloadProgressTotal.visibility = INVISIBLE
-          return
         }
       }
     }
@@ -505,12 +472,12 @@ class PlayerFragment : PlayerBaseFragment() {
         this.showError(event)
       }
 
-      PlayerEventManifestUpdated -> {
+      is PlayerEventManifestUpdated -> {
         // Nothing to do
       }
 
       is PlayerEventPlaybackRateChanged -> {
-        this.onPlayerEventPlaybackRateChanged(event)
+        this.onPlayerEventPlaybackRateChanged()
       }
 
       is PlayerEventChapterCompleted -> {
@@ -579,9 +546,7 @@ class PlayerFragment : PlayerBaseFragment() {
       .start()
   }
 
-  private fun onPlayerEventPlaybackRateChanged(
-    event: PlayerEventPlaybackRateChanged
-  ) {
+  private fun onPlayerEventPlaybackRateChanged() {
     this.menuPlaybackRateText?.text =
       PlayerPlaybackRateAdapter.textOfRate(PlayerModel.playbackRate)
   }

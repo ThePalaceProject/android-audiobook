@@ -188,7 +188,7 @@ object PlayerMediaFacade : Player {
         }
       }
 
-      PlayerEventManifestUpdated -> {
+      is PlayerEventManifestUpdated -> {
         // Nothing to do
       }
 

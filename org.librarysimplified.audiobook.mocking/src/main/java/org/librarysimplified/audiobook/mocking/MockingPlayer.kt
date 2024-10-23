@@ -48,7 +48,7 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
       this.log.debug("playbackRate {}", value)
       this.callEvents.onNext("playbackRate $value")
       this.rate = value
-      this.statusEvents.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(value))
+      this.statusEvents.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(book.palaceId, value))
     }
 
   override val isClosed: Boolean
@@ -108,6 +108,7 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
     if (element != null) {
       this.statusEvents.onNext(
         PlayerEventPlaybackStarted(
+          palaceId = book.palaceId,
           readingOrderItem = element,
           offsetMilliseconds = offset,
           positionMetadata = PlayerManifestPositionMetadata(
