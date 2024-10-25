@@ -1321,4 +1321,117 @@ object PlayerModel {
       ""
     }
   }
+
+  /**
+   * Process the given book file: Attempt to extract a manifest and parse it, and take ownership
+   * of the book file.
+   */
+
+  @Deprecated("Packaged audiobooks are deprecated; use streaming.")
+  fun downloadLocalPackagedAudiobook(
+    context: Application,
+    bookCredentials: PlayerBookCredentialsType,
+    bookFile: File,
+    cacheDir: File,
+    licenseChecks: List<SingleLicenseCheckProviderType>,
+    palaceID: PlayerPalaceID,
+    parserExtensions: List<ManifestParserExtensionType>,
+    userAgent: PlayerUserAgent,
+  ): CompletableFuture<Unit> {
+    this.logger.debug("downloadLocalPackagedAudiobook")
+
+    return this.executeTaskCancellingExisting {
+      this.opDownloadLocalPackagedAudiobook(
+        bookCredentials = bookCredentials,
+        bookFile = bookFile,
+        cacheDir = cacheDir,
+        context = context,
+        licenseChecks = licenseChecks,
+        palaceID = palaceID,
+        parserExtensions = parserExtensions,
+        userAgent = userAgent,
+      )
+    }
+  }
+
+  private fun opDownloadLocalPackagedAudiobook(
+    context: Application,
+    bookCredentials: PlayerBookCredentialsType,
+    bookFile: File,
+    cacheDir: File,
+    licenseChecks: List<SingleLicenseCheckProviderType>,
+    palaceID: PlayerPalaceID,
+    parserExtensions: List<ManifestParserExtensionType>,
+    userAgent: PlayerUserAgent,
+  ) {
+    this.logger.debug("opDownloadLocalPackagedAudiobook")
+    this.setNewState(PlayerManifestInProgress)
+
+    try {
+      val receiver: (ManifestFulfillmentEvent) -> Unit = { event ->
+        this.manifestDownloadLogField = this.manifestDownloadLogField.plus(event)
+        this.manifestDownloadEventSubject.onNext(event)
+      }
+
+      when (val manifest = LCPDownloads.extractManifestFromFile(
+        context = context,
+        bookFile = bookFile,
+        receiver = receiver
+      )) {
+        is PlayerResult.Failure -> {
+          this.setNewState(PlayerManifestDownloadFailed(manifest.failure))
+          throw OperationFailedException()
+        }
+
+        is PlayerResult.Success -> {
+          val parseResult =
+            this.parseManifest(
+              source = bookFile.toURI(),
+              extensions = parserExtensions,
+              data = ManifestUnparsed(palaceID, manifest.result.data)
+            )
+
+          if (parseResult is ParseResult.Failure) {
+            this.manifestParseErrorLogField = parseResult.errors.toList()
+            this.setNewState(PlayerManifestParseFailed(parseResult.errors))
+            throw OperationFailedException()
+          }
+
+          val (_, parsedManifest) = parseResult as ParseResult.Success
+          val checkResult =
+            this.checkManifest(
+              manifest = parsedManifest,
+              userAgent = userAgent,
+              licenseChecks = licenseChecks,
+              cacheDir = cacheDir
+            )
+
+          if (!checkResult.checkSucceeded()) {
+            this.setNewState(PlayerManifestLicenseChecksFailed(checkResult.summarize()))
+            throw OperationFailedException()
+          }
+
+          this.setNewState(
+            PlayerManifestOK(
+              manifest = parsedManifest,
+              bookSource = PlayerBookSource.PlayerBookSourcePackagedBook(bookFile),
+              bookCredentials = bookCredentials
+            )
+          )
+        }
+      }
+    } catch (e: OperationFailedException) {
+      throw e
+    } catch (e: Throwable) {
+      this.logger.error("Unexpected exception: ", e)
+      this.setNewState(PlayerManifestDownloadFailed(
+        ManifestFulfillmentError(
+          message = e.message ?: e.javaClass.name,
+          extraMessages = listOf(),
+          serverData = null
+        )
+      ))
+      throw e
+    }
+  }
 }
