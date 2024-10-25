@@ -15,6 +15,15 @@ info()
   echo "credentials.sh: info: $1" 1>&2
 }
 
+if [ -z "${CI_AWS_ACCESS_ID}" ]
+then
+  fatal "CI_AWS_ACCESS_ID is not defined"
+fi
+if [ -z "${CI_AWS_SECRET_KEY}" ]
+then
+  fatal "CI_AWS_SECRET_KEY is not defined"
+fi
+
 #------------------------------------------------------------------------
 # Add the Gradle properties to the project properties.
 #
@@ -38,5 +47,8 @@ org.thepalaceproject.lcp.profile=prod
 org.thepalaceproject.findaway.enabled=true
 org.thepalaceproject.overdrive.enabled=true
 
+org.thepalaceproject.s3.depend=true
+org.thepalaceproject.aws.access_key_id=${CI_AWS_ACCESS_ID}
+org.thepalaceproject.aws.secret_access_key=${CI_AWS_SECRET_KEY}
 org.thepalaceproject.app.credentials.palace=${CREDENTIALS_PATH}
 EOF
