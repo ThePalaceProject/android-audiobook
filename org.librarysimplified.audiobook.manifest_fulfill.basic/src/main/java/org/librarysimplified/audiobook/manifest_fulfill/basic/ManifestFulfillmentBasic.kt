@@ -4,9 +4,8 @@ import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import one.irradia.mime.vanilla.MIMEParser
 import org.librarysimplified.audiobook.api.PlayerResult
-import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorHTTPRequestFailed
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
-import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentErrorType
+import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentError
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
 import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
@@ -31,8 +30,8 @@ class ManifestFulfillmentBasic(
   override val events: Observable<ManifestFulfillmentEvent> =
     this.eventSubject
 
-  override fun execute(): PlayerResult<ManifestFulfilled, ManifestFulfillmentErrorType> {
-    this.logger.debug("fulfilling manifest: {}", this.configuration.uri)
+  override fun execute(): PlayerResult<ManifestFulfilled, ManifestFulfillmentError> {
+    this.logger.debug("Fulfilling manifest: {}", this.configuration.uri)
 
     this.eventSubject.onNext(ManifestFulfillmentEvent("Fulfilling ${this.configuration.uri}…"))
     val credentials = this.configuration.credentials
@@ -61,7 +60,7 @@ class ManifestFulfillmentBasic(
     val contentType = response.properties?.contentType?.toString() ?: "application/octet-stream"
 
     this.logger.debug(
-      "received: {} {} for {} ({})",
+      "Received: {} {} for {} ({})",
       responseCode,
       responseMessage,
       this.configuration.uri,
@@ -78,6 +77,7 @@ class ManifestFulfillmentBasic(
       is LSHTTPResponseStatus.Responded.OK -> {
         PlayerResult.unit(
           ManifestFulfilled(
+            source = this.configuration.uri,
             contentType = MIMEParser.parseRaisingException(contentType),
             authorization = status.properties.authorization,
             data = status.bodyStream?.readBytes() ?: ByteArray(0)
@@ -86,26 +86,30 @@ class ManifestFulfillmentBasic(
       }
       is LSHTTPResponseStatus.Responded.Error -> {
         PlayerResult.Failure(
-          ManifestFulfillmentErrorHTTPRequestFailed(
+          ManifestFulfillmentError(
             message = responseMessage,
-            serverData = ManifestFulfillmentErrorType.ServerData(
+            extraMessages = listOf(),
+            serverData = ManifestFulfillmentError.ServerData(
               uri = this.configuration.uri,
               code = responseCode,
               receivedBody = status.bodyStream?.readBytes() ?: ByteArray(0),
-              receivedContentType = contentType
+              receivedContentType = contentType,
+              problemReport = status.properties.problemReport
             )
           )
         )
       }
       is LSHTTPResponseStatus.Failed -> {
         PlayerResult.Failure(
-          ManifestFulfillmentErrorHTTPRequestFailed(
+          ManifestFulfillmentError(
             message = responseMessage,
-            serverData = ManifestFulfillmentErrorType.ServerData(
+            extraMessages = listOf(),
+            serverData = ManifestFulfillmentError.ServerData(
               uri = this.configuration.uri,
               code = responseCode,
               receivedBody = ByteArray(0),
-              receivedContentType = contentType
+              receivedContentType = contentType,
+              problemReport = status.properties?.problemReport
             )
           )
         )

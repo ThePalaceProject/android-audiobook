@@ -121,7 +121,7 @@ object PlayerMediaFacade : Player {
       PlayerClosed,
       is PlayerManifestDownloadFailed,
       PlayerManifestInProgress,
-      PlayerManifestLicenseChecksFailed,
+      is PlayerManifestLicenseChecksFailed,
       is PlayerManifestOK,
       is PlayerManifestParseFailed,
       is PlayerOpen -> {

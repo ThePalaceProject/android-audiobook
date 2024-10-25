@@ -23,5 +23,5 @@ interface ManifestFulfillmentStrategyType : Closeable {
    * Execute the strategy, returning the raw bytes of the manifest.
    */
 
-  fun execute(): PlayerResult<ManifestFulfilled, ManifestFulfillmentErrorType>
+  fun execute(): PlayerResult<ManifestFulfilled, ManifestFulfillmentError>
 }

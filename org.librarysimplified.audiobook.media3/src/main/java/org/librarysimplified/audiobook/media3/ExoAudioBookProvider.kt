@@ -3,16 +3,22 @@ package org.librarysimplified.audiobook.media3
 import android.app.Application
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
+import com.google.common.io.Files
 import kotlinx.coroutines.runBlocking
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsLCP
 import org.librarysimplified.audiobook.api.PlayerBookID
+import org.librarysimplified.audiobook.api.PlayerBookSource
+import org.librarysimplified.audiobook.api.PlayerBookSource.PlayerBookSourceLicenseFile
+import org.librarysimplified.audiobook.api.PlayerBookSource.PlayerBookSourceManifestOnly
+import org.librarysimplified.audiobook.api.PlayerBookSource.PlayerBookSourcePackagedBook
 import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerResult.Failure
 import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
+import org.librarysimplified.audiobook.lcp.downloads.LCPDownloads
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpService
@@ -30,6 +36,7 @@ import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.net.URI
 import java.util.concurrent.ScheduledExecutorService
 
 /**
@@ -58,25 +65,86 @@ class ExoAudioBookProvider(
     extensions: List<PlayerExtensionType>
   ): PlayerResult<PlayerAudioBookType, Exception> {
     try {
-      /*
-       * LCP does not support direct downloads. More accurately, downloads are either expected
-       * to have happened before opening the book, or the LCP data source is expected to stream
-       * reading order items from an external server.
-       */
-
       val isLCP =
         ExoLCP.isLCP(this.request.manifest)
-      val supportsDownloads =
-        !isLCP
+
+      /*
+       * We need to decide what level of download support is available for a given book.
+       *
+       * If the book source is a license file, then this implies that the book is an LCP
+       * book. If we have the book fully downloaded, then downloads are unsupported. Otherwise,
+       * downloading the entire book as a single file is supported.
+       *
+       * If the book source is a packaged book, then this implies that the book is an LCP book.
+       * We copy the book into internal storage and ensure that the license is present in the
+       * book.
+       *
+       * If the book source is only a manifest, then this implies that the book is not an LCP
+       * book. Downloading individual chapters is supported.
+       */
+
+      val bookID =
+        PlayerBookID.transform(this.manifest.metadata.identifier)
+      val bookDirectory =
+        ExoAudioBook.findDirectoryFor(context, bookID)
+      val bookInternalFile =
+        File(bookDirectory, "book.zip")
+
+      val downloadSupport =
+        when (val source = this.request.bookSource) {
+          is PlayerBookSourceLicenseFile -> {
+            this.logger.debug("Book source is a license file.")
+            check(isLCP) { "A book with a license file must be an LCP book." }
+
+            if (bookInternalFile.isFile) {
+              this.logger.debug("Book is entirely downloaded; downloads are unsupported.")
+              ExoDownloadSupport.DownloadUnsupported
+            } else {
+              val licenseBytes = source.file.readBytes()
+              when (val license = LCPDownloads.parseLicense(licenseBytes)) {
+                is Failure -> {
+                  this.logger.debug(
+                    "Failed to parse license ({}): Downloads are unsupported.",
+                    license.failure.message
+                  )
+                  ExoDownloadSupport.DownloadUnsupported
+                }
+                is PlayerResult.Success -> {
+                  this.logger.debug(
+                    "Successfully parsed license: Downloading entire books is supported."
+                  )
+                  ExoDownloadSupport.DownloadEntireBookAsFile(
+                    targetURI = URI.create(license.result.license.publicationLink.href.toString()),
+                    licenseBytes = licenseBytes
+                  )
+                }
+              }
+            }
+          }
+
+          is PlayerBookSourcePackagedBook -> {
+            this.logger.debug("Book source is a packaged file: Downloads are unsupported.")
+            check(isLCP) { "A book with a license file must be an LCP book." }
+            this.logger.debug("Copying book into internal storage.")
+            Files.copy(source.file, bookInternalFile)
+            ExoDownloadSupport.DownloadUnsupported
+          }
+
+          PlayerBookSourceManifestOnly -> {
+            this.logger.debug("Manifest book source: Downloading individual chapters is supported.")
+            ExoDownloadSupport.DownloadIndividualChaptersAsFiles
+          }
+        }
 
       this.logger.debug("isLCP: {}", isLCP)
-      this.logger.debug("supportsDownloads: {}", supportsDownloads)
+      this.logger.debug("downloadSupport: {}", downloadSupport)
 
       val dataSourceFactory: DataSource.Factory =
         if (isLCP) {
           this.createLCPDataSource(
             context = context,
-            file = this.request.bookFile!!
+            bookSource = request.bookSource,
+            bookFile = bookInternalFile
           )
         } else {
           DefaultDataSource.Factory(context)
@@ -108,7 +176,7 @@ class ExoAudioBookProvider(
               userAgent = this.request.userAgent,
               dataSourceFactory = dataSourceFactory,
               missingTrackNameGenerator = missingTrackNameGenerator,
-              supportsDownloads = supportsDownloads
+              supportsDownloads = downloadSupport
             )
           )
 
@@ -120,16 +188,69 @@ class ExoAudioBookProvider(
     }
   }
 
+  override fun deleteBookData(
+    context: Application,
+    extensions: List<PlayerExtensionType>
+  ): Boolean {
+    this.logger.debug("deleteBookData")
+
+    val bookID =
+      PlayerBookID.transform(this.manifest.metadata.identifier)
+    val bookDirectory =
+      ExoAudioBook.findDirectoryFor(context, bookID)
+
+    if (bookDirectory.isDirectory) {
+      bookDirectory.deleteRecursively()
+      return true
+    }
+    return false
+  }
+
   private fun createLCPDataSource(
     context: Application,
-    file: File
+    bookSource: PlayerBookSource,
+    bookFile: File
   ): DataSource.Factory {
-    return LCPDataSource.Factory(
-      this.openLCPPublication(
-        context = context,
-        file = file
-      )
-    )
+    return when (bookSource) {
+      is PlayerBookSourceLicenseFile -> {
+        if (bookFile.isFile) {
+          this.logger.debug("Creating LCP datasource from packaged book file {}", bookFile)
+          LCPDataSource.Factory(
+            this.openLCPPublication(
+              context = context,
+              file = bookFile,
+              type = "Packaged audiobook file"
+            )
+          )
+        } else {
+          this.logger.debug("Creating LCP datasource from license {}", bookSource.file)
+          LCPDataSource.Factory(
+            this.openLCPPublication(
+              context = context,
+              file = bookSource.file,
+              type = "License file"
+            )
+          )
+        }
+      }
+
+      PlayerBookSourceManifestOnly -> {
+        throw IllegalArgumentException(
+          "For LCP audiobooks, either a book file or a license file is required."
+        )
+      }
+
+      is PlayerBookSourcePackagedBook -> {
+        this.logger.debug("Creating LCP datasource from packaged book file {}", bookFile)
+        LCPDataSource.Factory(
+          this.openLCPPublication(
+            context = context,
+            file = bookFile,
+            type = "Packaged audiobook file"
+          )
+        )
+      }
+    }
   }
 
   private data class ExoPublicationOpenError(
@@ -140,8 +261,10 @@ class ExoAudioBookProvider(
 
   private fun openLCPPublication(
     context: Application,
-    file: File
+    file: File,
+    type: String
   ): Publication {
+    this.logger.debug("Opening an LCP publication of type: {}", type)
     this.logger.debug("Determining passphrase...")
     val credentialsText =
       when (val c = this.request.bookCredentials) {

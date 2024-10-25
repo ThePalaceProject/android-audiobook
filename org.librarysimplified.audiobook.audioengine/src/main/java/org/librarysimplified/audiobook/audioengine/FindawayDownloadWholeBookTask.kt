@@ -3,6 +3,7 @@ package org.librarysimplified.audiobook.audioengine
 import io.audioengine.mobile.DownloadEvent
 import io.audioengine.mobile.DownloadRequest
 import io.reactivex.disposables.Disposable
+import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus.Downloading
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus.IdleDownloaded
@@ -49,7 +50,7 @@ class FindawayDownloadWholeBookTask(
         { error -> this.onDownloadError(error) })
   }
 
-  override val progress: Double
+  override val progress: PlayerDownloadProgress
     get() = this.determineProgress()
 
   override val index: Int
@@ -61,10 +62,9 @@ class FindawayDownloadWholeBookTask(
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = this.audioBook.readingOrder
 
-  private fun determineProgress(): Double {
-    return this.audioBook.downloadTasks.sumOf { task ->
-      task.progress
-    } / this.audioBook.downloadTasks.size
+  private fun determineProgress(): PlayerDownloadProgress {
+    val progressSum = this.audioBook.downloadTasks.sumOf { task -> task.progress.value }
+    return PlayerDownloadProgress.normalClamp(progressSum / this.audioBook.downloadTasks.size)
   }
 
   override fun cancel() {
@@ -218,13 +218,13 @@ class FindawayDownloadWholeBookTask(
         }
 
         DownloadEvent.DOWNLOAD_STARTED -> {
-          downloadTaskWithElement.setStatus(Downloading(0.0))
+          downloadTaskWithElement.setStatus(Downloading(PlayerDownloadProgress(0.0)))
           downloadTaskWithElement.readingOrderItems.forEach { spineElement ->
             val findawayElement = spineElement as FindawayReadingOrderItem
             findawayElement.setDownloadStatus(
               PlayerReadingOrderItemDownloading(
                 findawayElement,
-                0
+                PlayerDownloadProgress(0.0)
               )
             )
           }
@@ -246,14 +246,12 @@ class FindawayDownloadWholeBookTask(
             return
           }
 
-          downloadTaskWithElement.setStatus(Downloading(percentage.toDouble()))
+          val progress = PlayerDownloadProgress.percentClamp(percentage)
+          downloadTaskWithElement.setStatus(Downloading(progress))
           downloadTaskWithElement.readingOrderItems.forEach { spineElement ->
             val findawayElement = spineElement as FindawayReadingOrderItem
             findawayElement.setDownloadStatus(
-              PlayerReadingOrderItemDownloading(
-                findawayElement,
-                percentage
-              )
+              PlayerReadingOrderItemDownloading(findawayElement, progress)
             )
           }
 

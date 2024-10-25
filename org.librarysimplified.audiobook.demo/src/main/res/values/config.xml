@@ -27,6 +27,7 @@
         <item>@string/exLCPLicense</item>
     </array>
 
+    <string name="exDelete">Delete</string>
     <string name="exPlay">Play</string>
     <string name="exPresets">Presets</string>
     <array name="exAuthenticationTypes">

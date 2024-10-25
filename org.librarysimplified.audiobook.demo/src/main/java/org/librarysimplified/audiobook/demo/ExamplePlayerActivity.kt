@@ -231,7 +231,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         this.switchFragment(ExampleFragmentError())
       }
 
-      PlayerManifestLicenseChecksFailed -> {
+      is PlayerManifestLicenseChecksFailed -> {
         this.switchFragment(ExampleFragmentError())
       }
 
@@ -261,7 +261,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           manifest = state.manifest,
           fetchAll = true,
           initialPosition = initialPosition,
-          bookFile = state.bookFile,
+          bookSource = state.bookSource,
           bookCredentials = state.bookCredentials
         )
       }

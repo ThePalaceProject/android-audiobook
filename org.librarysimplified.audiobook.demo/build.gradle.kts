@@ -97,6 +97,7 @@ dependencies {
     implementation(libs.androidx.transition)
     implementation(libs.androidx.transition.ktx)
     implementation(libs.androidx.vectordrawable)
+    implementation(libs.androidx.vectordrawable.animated)
     implementation(libs.androidx.versionedparcelable)
     implementation(libs.androidx.viewbinding)
     implementation(libs.androidx.viewpager)
@@ -147,7 +148,7 @@ dependencies {
     implementation(libs.slf4j)
 
     if (lcpDRM) {
-        implementation(libs.readium.lcp) {
+        implementation(libs.palace.liblcp) {
             artifact {
                 type = "aar"
             }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsNone
+import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
@@ -29,9 +30,9 @@ abstract class PlayerAudioEnginesContract {
       manifest = manifest,
       filter = { true },
       downloadProvider = DishonestDownloadProvider(),
-      bookFile = null,
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
-      bookCredentials = PlayerBookCredentialsNone
+      bookCredentials = PlayerBookCredentialsNone,
+      bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
     )
     val providers = PlayerAudioEngines.findAllFor(request)
     Assertions.assertEquals(1, providers.size, "Exactly one open access provider should be present")
@@ -44,9 +45,9 @@ abstract class PlayerAudioEnginesContract {
       manifest = manifest,
       filter = { false },
       downloadProvider = DishonestDownloadProvider(),
-      bookFile = null,
       userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
-      bookCredentials = PlayerBookCredentialsNone
+      bookCredentials = PlayerBookCredentialsNone,
+      bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
     )
     val providers = PlayerAudioEngines.findAllFor(request)
     Assertions.assertEquals(0, providers.size, "No providers should be present")

@@ -1,5 +1,7 @@
 package org.librarysimplified.audiobook.api
 
+import android.app.Application
+import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.slf4j.LoggerFactory
 import java.util.ServiceLoader
 
@@ -44,5 +46,21 @@ object PlayerAudioEngines : PlayerAudioEnginesType {
     }
 
     return results
+  }
+
+  override fun delete(
+    context: Application,
+    extensions: List<PlayerExtensionType>,
+    request: PlayerAudioEngineRequest
+  ): Boolean {
+    var deleted = false
+    for (provider in this.providers) {
+      try {
+        deleted = deleted or provider.tryDeleteRequest(context, extensions, request)
+      } catch (e: Exception) {
+        this.logger.debug("Engine raised an exception: ", e)
+      }
+    }
+    return deleted
   }
 }

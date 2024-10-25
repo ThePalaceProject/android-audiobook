@@ -4,7 +4,9 @@ import java.util.Properties
 
 dependencies {
     implementation(project(":org.librarysimplified.audiobook.api"))
+    implementation(project(":org.librarysimplified.audiobook.lcp.downloads"))
     implementation(project(":org.librarysimplified.audiobook.manifest.api"))
+    implementation(project(":org.librarysimplified.audiobook.manifest_fulfill.spi"))
 
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.constraintlayout.core)

@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.media3
 
+import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerDownloadWholeBookTaskType
@@ -26,7 +27,7 @@ class ExoDownloadWholeBookTask(
     this.audioBook.downloadTasks.forEach(PlayerDownloadTaskType::delete)
   }
 
-  override val progress: Double
+  override val progress: PlayerDownloadProgress
     get() = this.calculateProgress()
 
   override val playbackURI: URI
@@ -41,7 +42,8 @@ class ExoDownloadWholeBookTask(
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = this.audioBook.readingOrder
 
-  private fun calculateProgress(): Double {
-    return this.audioBook.downloadTasks.sumOf { task -> task.progress } / this.audioBook.downloadTasks.size
+  private fun calculateProgress(): PlayerDownloadProgress {
+    val progressSum = this.audioBook.downloadTasks.sumOf { task -> task.progress.value }
+    return PlayerDownloadProgress.normalClamp(progressSum / this.audioBook.downloadTasks.size)
   }
 }

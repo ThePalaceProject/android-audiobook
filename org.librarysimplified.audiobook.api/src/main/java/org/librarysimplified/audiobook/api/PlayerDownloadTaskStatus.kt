@@ -12,6 +12,6 @@ sealed class PlayerDownloadTaskStatus {
   ) : PlayerDownloadTaskStatus()
 
   data class Downloading(
-    val progress: Double?
+    val progress: PlayerDownloadProgress?
   ) : PlayerDownloadTaskStatus()
 }

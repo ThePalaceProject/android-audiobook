@@ -1,5 +1,8 @@
 package org.librarysimplified.audiobook.api
 
+import android.app.Application
+import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
+
 /**
  * An API to find engine providers for books.
  */
@@ -23,4 +26,17 @@ interface PlayerAudioEnginesType {
   fun findBestFor(request: PlayerAudioEngineRequest): PlayerEngineAndBookProvider? {
     return findAllFor(request).sortedBy { pair -> pair.engineProvider.version() }.lastOrNull()
   }
+
+  /**
+   * Instruct all engine providers to delete any and all book data they may have for the given
+   * request.
+   *
+   * @return `true` if any engine deleted anything
+   */
+
+  fun delete(
+    context: Application,
+    extensions: List<PlayerExtensionType>,
+    request: PlayerAudioEngineRequest
+  ): Boolean
 }

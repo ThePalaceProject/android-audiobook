@@ -62,17 +62,25 @@ abstract class FeedbooksExtensionContract {
   @Test
   fun testNotApplicable() {
     val extension = FeedbooksPlayerExtension()
-    val file = File(TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     val request =
       PlayerDownloadRequest(
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     val future =
@@ -96,17 +104,25 @@ abstract class FeedbooksExtensionContract {
   @Test
   fun testNotConfigured() {
     val extension = FeedbooksPlayerExtension()
-    val file = File(TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     val request =
       PlayerDownloadRequest(
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     val future =
@@ -142,7 +158,13 @@ abstract class FeedbooksExtensionContract {
   @Test
   fun testBearerTokenSent() {
     val extension = FeedbooksPlayerExtension()
-    val file = File(TestDirectories.temporaryDirectory(), UUID.randomUUID().toString())
+
+    val fileName =
+      UUID.randomUUID().toString()
+    val file =
+      File(TestDirectories.temporaryDirectory(), fileName)
+    val fileTemp =
+      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
 
     extension.configuration =
       FeedbooksPlayerExtensionConfiguration(
@@ -155,10 +177,12 @@ abstract class FeedbooksExtensionContract {
         uri = URI.create("urn:fake"),
         credentials = null,
         outputFile = file,
+        outputFileTemp = fileTemp,
         onProgress = {
           this.logger.debug("progress: {}", it)
         },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0")
+        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        onCompletion = { }
       )
 
     val future =

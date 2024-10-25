@@ -12,7 +12,7 @@ data class ParseWarning(
   val message: String,
   val line: Int = 0,
   val column: Int = 0,
-  val exception: Exception? = null
+  val exception: Throwable? = null
 ) : Serializable {
 
   /**

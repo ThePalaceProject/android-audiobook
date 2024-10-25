@@ -57,7 +57,7 @@ interface PlayerDownloadTaskType {
    * The current download progress in the range [0, 1]
    */
 
-  val progress: Double
+  val progress: PlayerDownloadProgress
 
   /**
    * The list of reading order items related to the download task.

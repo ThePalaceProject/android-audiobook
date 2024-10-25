@@ -22,4 +22,18 @@ data class LicenseCheckResult(
       status is SingleLicenseCheckResult.Failed
     }
   }
+
+  /**
+   * Summarize the results of license checking.
+   */
+
+  fun summarize(): List<String> {
+    return this.checkStatuses.map { status ->
+      buildString {
+        this.append(status.shortName)
+        this.append(": ")
+        this.append(status.message)
+      }
+    }
+  }
 }

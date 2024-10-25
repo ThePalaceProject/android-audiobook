@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.api
 
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
-import java.io.File
 
 /**
  * A request for an audio engine.
@@ -39,11 +38,10 @@ data class PlayerAudioEngineRequest(
   val downloadProvider: PlayerDownloadProviderType,
 
   /**
-   * The book file, if this is a packaged audio book that has been downloaded. This will be null
-   * for unpackaged audio books.
+   * The source of the book data.
    */
 
-  val bookFile: File?,
+  val bookSource: PlayerBookSource,
 
   /**
    * The credentials required to open the book.

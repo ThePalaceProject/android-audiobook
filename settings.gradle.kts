@@ -44,14 +44,44 @@ dependencyResolutionManagement {
     }
 
     /*
+     * Conditionally enable access to S3.
+     */
+
+    val s3RepositoryEnabled: Boolean =
+        propertyBooleanOptional("org.thepalaceproject.s3.depend", false)
+    val s3RepositoryAccessKey: String? =
+        propertyOptional("org.thepalaceproject.aws.access_key_id")
+    val s3RepositorySecretKey: String? =
+        propertyOptional("org.thepalaceproject.aws.secret_access_key")
+
+    if (s3RepositoryEnabled) {
+        if (s3RepositoryAccessKey == null) {
+            throw GradleException(
+                "If the org.thepalaceproject.s3.depend property is set to true, " +
+                    "the org.thepalaceproject.aws.access_key_id property must be defined."
+            )
+        }
+        if (s3RepositorySecretKey == null) {
+            throw GradleException(
+                "If the org.thepalaceproject.s3.depend property is set to true, " +
+                    "the org.thepalaceproject.aws.secret_access_key property must be defined."
+            )
+        }
+    }
+
+    /*
      * Conditionally enable LCP DRM.
      */
 
     val lcpDRMEnabled: Boolean =
         propertyBooleanOptional("org.thepalaceproject.lcp.enabled", false)
 
-    val credentialsPath =
-        propertyOptional("org.thepalaceproject.app.credentials.palace")
+    if (lcpDRMEnabled && !s3RepositoryEnabled) {
+        throw GradleException(
+            "If the org.thepalaceproject.lcp.enabled property is set to true, " +
+                "the org.thepalaceproject.s3.depend property must also be set to true."
+        )
+    }
 
     /*
      * The set of repositories used to resolve library dependencies. The order is significant!
@@ -90,31 +120,31 @@ dependencyResolutionManagement {
         }
 
         /*
-         * Enable access to various credentials-gated elements.
+         * Optionally enable access to the S3 repository.
          */
 
-        if (lcpDRMEnabled) {
-            val filePath: String =
-                when (val lcpProfile = property("org.thepalaceproject.lcp.profile")) {
-                    "prod", "test" -> {
-                        "${credentialsPath}/LCP/Android/build_lcp_${lcpProfile}.properties"
-                    }
-                    else -> {
-                        throw GradleException("Unrecognized LCP profile: $lcpProfile")
-                    }
+        if (s3RepositoryEnabled) {
+            maven {
+                name = "S3 Snapshots"
+                url = uri("s3://se-maven-repo/snapshots/")
+                credentials(AwsCredentials::class) {
+                    accessKey = s3RepositoryAccessKey
+                    secretKey = s3RepositorySecretKey
                 }
-
-            val lcpProperties = Properties()
-            lcpProperties.load(File(filePath).inputStream())
-
-            ivy {
-                name = "LCP"
-                url = uri(lcpProperties.getProperty("org.thepalaceproject.lcp.repositoryURI"))
-                patternLayout {
-                    artifact(lcpProperties.getProperty("org.thepalaceproject.lcp.repositoryLayout"))
+                mavenContent {
+                    snapshotsOnly()
                 }
-                metadataSources {
-                    artifact()
+            }
+
+            maven {
+                name = "S3 Releases"
+                url = uri("s3://se-maven-repo/releases/")
+                credentials(AwsCredentials::class) {
+                    accessKey = s3RepositoryAccessKey
+                    secretKey = s3RepositorySecretKey
+                }
+                mavenContent {
+                    releasesOnly()
                 }
             }
         }

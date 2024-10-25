@@ -43,7 +43,7 @@ class ExampleFragmentError : Fragment() {
         this.populateErrorLog(current.failure.message)
         this.errorMessage.text = current.failure.message
       }
-      PlayerModelState.PlayerManifestLicenseChecksFailed -> {
+      is PlayerModelState.PlayerManifestLicenseChecksFailed -> {
         this.populateErrorLog("License check failed.")
         this.errorMessage.text = "License check failed."
       }

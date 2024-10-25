@@ -1,10 +1,12 @@
 package org.librarysimplified.audiobook.audioengine
 
+import android.app.Application
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerVersion
 import org.librarysimplified.audiobook.api.PlayerVersions
+import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.slf4j.LoggerFactory
 
 /**
@@ -37,6 +39,18 @@ class FindawayEngineProvider : PlayerAudioEngineProviderType {
     }
 
     return FindawayAudioBookProvider(request.manifest)
+  }
+
+  override fun tryDeleteRequest(
+    context: Application,
+    extensions: List<PlayerExtensionType>,
+    request: PlayerAudioEngineRequest
+  ): Boolean {
+    val provider = this.tryRequest(request)
+    if (provider != null) {
+      return provider.deleteBookData(context, extensions)
+    }
+    return false
   }
 
   override fun name(): String {

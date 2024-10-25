@@ -1,5 +1,6 @@
 package org.librarysimplified.audiobook.media3
 
+import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
@@ -35,7 +36,8 @@ class ExoDownloadAlwaysSucceededTask(
     // Ignored.
   }
 
-  override val progress: Double = 1.0
+  override val progress: PlayerDownloadProgress =
+    PlayerDownloadProgress(1.0)
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = listOf(this.readingOrderItem)

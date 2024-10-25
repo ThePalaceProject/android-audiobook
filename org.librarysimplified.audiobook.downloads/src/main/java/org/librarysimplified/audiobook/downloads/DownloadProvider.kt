@@ -171,15 +171,10 @@ class DownloadProvider private constructor(
 
     request.outputFile.parentFile?.mkdirs()
 
-    body.byteStream().use { input_stream ->
-
-      /*
-       * XXX: When API level 27 becomes the new minimum API, use the Files class with atomic
-       * renames rather than just replacing the output file directly.
-       */
-
-      FileOutputStream(request.outputFile, false).use { output_stream ->
-        this.copyStream(request, input_stream, output_stream, expectedLength, result)
+    body.byteStream().use { inputStream ->
+      FileOutputStream(request.outputFileTemp, false).use { outputStream ->
+        this.copyStream(request, inputStream, outputStream, expectedLength, result)
+        request.outputFileTemp.renameTo(request.outputFile)
       }
     }
 
@@ -197,6 +192,8 @@ class DownloadProvider private constructor(
           .toString()
       )
     }
+
+    request.onCompletion.invoke(request.outputFile)
   }
 
   private fun copyStream(

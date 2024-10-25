@@ -18,6 +18,15 @@ interface PlayerAudioBookProviderType {
 
   fun create(
     context: Application,
-    extensions: List<PlayerExtensionType> = listOf()
+    extensions: List<PlayerExtensionType>
   ): PlayerResult<PlayerAudioBookType, Exception>
+
+  /**
+   * Delete any existing data for the audio book.
+   */
+
+  fun deleteBookData(
+    context: Application,
+    extensions: List<PlayerExtensionType>
+  ): Boolean
 }

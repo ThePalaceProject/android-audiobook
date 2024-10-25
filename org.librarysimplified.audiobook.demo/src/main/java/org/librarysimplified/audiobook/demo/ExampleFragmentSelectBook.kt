@@ -56,6 +56,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   private lateinit var authenticationOverdrivePassword: TextView
   private lateinit var authenticationOverdriveUser: TextView
   private lateinit var authenticationSelected: String
+  private lateinit var delete: Button
   private lateinit var lcpPassphrase: EditText
   private lateinit var location: TextView
   private lateinit var play: Button
@@ -139,6 +140,8 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
     this.play =
       layout.findViewById(R.id.exPlay)
+    this.delete =
+      layout.findViewById(R.id.exDelete)
 
     this.location =
       layout.findViewById(R.id.exLocation)
@@ -154,6 +157,8 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
   override fun onStart() {
     super.onStart()
+
+    PlayerModel.setStreamingPermitted(true)
 
     this.authentication.onItemSelectedListener =
       object : AdapterView.OnItemSelectedListener {
@@ -222,6 +227,13 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     this.play.setOnClickListener {
       this.onSelectedPlay()
     }
+    this.delete.setOnClickListener {
+      this.onSelectedDelete()
+    }
+  }
+
+  private fun onSelectedDelete() {
+    // Not implemented yet
   }
 
   private fun onSelectedPlay() {
@@ -272,10 +284,11 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       this.typeLCP -> {
         PlayerModel.downloadParseAndCheckLCPLicense(
           bookCredentials = this.bookCredentials(),
-          bookFile = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook"),
-          bookFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.audiobook.tmp"),
           cacheDir = ExampleApplication.application.cacheDir,
+          context = ExampleApplication.application,
           licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
+          licenseFile = File(ExampleApplication.application.cacheDir, "lcpBook.lcpl"),
+          licenseFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.lcpl.tmp"),
           licenseParameters = this.basicParametersForLCPLicense(sourceURI, credentials),
           palaceID = palaceId(sourceURI),
           parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
@@ -391,6 +404,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
   private fun onSelectedPreset(preset: ExamplePreset) {
     this.location.text = preset.uri.toString()
+    this.lcpPassphrase.setText(preset.lcpPassphrase ?: this.lcpPassphrase.text.toString())
 
     when (preset.type) {
       ExampleTargetType.MANIFEST -> {
@@ -462,7 +476,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
             ?: throw UnsupportedOperationException()
 
-        val credentials =
+        val basicCredentials =
           ManifestFulfillmentBasicCredentials(
             userName = credentials.userName,
             password = credentials.password
@@ -471,7 +485,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
         strategies.create(
           ManifestFulfillmentBasicParameters(
             uri = source,
-            credentials = credentials,
+            credentials = basicCredentials,
             httpClient = ExampleApplication.httpClient,
             userAgent = ExampleApplication.userAgent
           )
@@ -483,7 +497,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
             ?: throw UnsupportedOperationException()
 
-        val credentials =
+        val basicCredentials =
           ManifestFulfillmentBasicCredentials(
             userName = credentials.userName,
             password = credentials.password
@@ -492,7 +506,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
         strategies.create(
           ManifestFulfillmentBasicParameters(
             uri = source,
-            credentials = credentials,
+            credentials = basicCredentials,
             httpClient = ExampleApplication.httpClient,
             userAgent = ExampleApplication.userAgent
           )
