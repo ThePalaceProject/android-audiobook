@@ -1,4 +1,6 @@
 dependencies {
+    coreLibraryDesugaring(libs.android.desugaring)
+
     api(libs.okhttp3)
 
     implementation(libs.kotlin.stdlib)

@@ -1,4 +1,6 @@
 dependencies {
+    coreLibraryDesugaring(libs.android.desugaring)
+
     api(project(":org.librarysimplified.audiobook.manifest_fulfill.spi"))
 
     implementation(libs.slf4j)

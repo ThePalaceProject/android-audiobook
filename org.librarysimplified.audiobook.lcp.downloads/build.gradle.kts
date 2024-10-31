@@ -2,6 +2,8 @@ val lcpDRM =
     project.findProperty("org.thepalaceproject.lcp.enabled") == "true"
 
 dependencies {
+    coreLibraryDesugaring(libs.android.desugaring)
+
     implementation(project(":org.librarysimplified.audiobook.api"))
     implementation(project(":org.librarysimplified.audiobook.manifest_fulfill.basic"))
     implementation(project(":org.librarysimplified.audiobook.manifest_fulfill.spi"))

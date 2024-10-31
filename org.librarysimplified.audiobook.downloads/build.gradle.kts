@@ -1,4 +1,6 @@
 dependencies {
+    coreLibraryDesugaring(libs.android.desugaring)
+
     implementation(project(":org.librarysimplified.audiobook.api"))
 
     implementation(libs.kotlin.reflect)

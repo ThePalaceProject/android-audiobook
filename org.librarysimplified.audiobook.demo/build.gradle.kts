@@ -4,6 +4,8 @@ val findawayDRM =
     project.findProperty("org.thepalaceproject.findaway.enabled") == "true"
 
 dependencies {
+    coreLibraryDesugaring(libs.android.desugaring)
+
     implementation(project(":org.librarysimplified.audiobook.api"))
     implementation(project(":org.librarysimplified.audiobook.downloads"))
     implementation(project(":org.librarysimplified.audiobook.feedbooks"))

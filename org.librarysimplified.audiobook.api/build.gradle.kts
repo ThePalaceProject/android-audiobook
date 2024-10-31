@@ -1,4 +1,6 @@
 dependencies {
+    coreLibraryDesugaring(libs.android.desugaring)
+
     implementation(project(":org.librarysimplified.audiobook.manifest.api"))
 
     implementation(libs.google.guava)

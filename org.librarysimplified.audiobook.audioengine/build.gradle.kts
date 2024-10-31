@@ -3,6 +3,8 @@ import java.io.FileOutputStream
 import java.util.Properties
 
 dependencies {
+    coreLibraryDesugaring(libs.android.desugaring)
+
     implementation(project(":org.librarysimplified.audiobook.api"))
     implementation(project(":org.librarysimplified.audiobook.manifest.api"))
     implementation(project(":org.librarysimplified.audiobook.parser.api"))

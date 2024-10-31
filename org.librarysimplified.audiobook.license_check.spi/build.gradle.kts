@@ -1,4 +1,6 @@
 dependencies {
+    coreLibraryDesugaring(libs.android.desugaring)
+
     api(project(":org.librarysimplified.audiobook.manifest.api"))
     api(project(":org.librarysimplified.audiobook.api"))
 

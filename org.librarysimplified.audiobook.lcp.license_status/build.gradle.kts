@@ -1,4 +1,6 @@
 dependencies {
+    coreLibraryDesugaring(libs.android.desugaring)
+
     api(project(":org.librarysimplified.audiobook.license_check.spi"))
     api(project(":org.librarysimplified.audiobook.parser.api"))
 
