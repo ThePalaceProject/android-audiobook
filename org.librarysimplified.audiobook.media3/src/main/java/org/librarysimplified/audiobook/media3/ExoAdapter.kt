@@ -191,13 +191,18 @@ class ExoAdapter(
   ) {
     this.logger.debug("onPlayWhenReadyChanged: {} {})", playWhenReady, reason)
 
-    if (this.exoPlayer.isPlaying) {
-      this.newState(ExoPlayerPlaybackStatus.PLAYING)
-    } else {
-      if (this.exoPlayer.isLoading) {
-        this.isBufferingNow = true
-        this.newState(ExoPlayerPlaybackStatus.BUFFERING)
-      } else {
+    when (playWhenReady) {
+      true -> {
+        if (this.exoPlayer.isPlaying) {
+          this.newState(ExoPlayerPlaybackStatus.PLAYING)
+          return
+        }
+        if (this.exoPlayer.isLoading) {
+          this.isBufferingNow = true
+          this.newState(ExoPlayerPlaybackStatus.BUFFERING)
+        }
+      }
+      false -> {
         this.newState(ExoPlayerPlaybackStatus.PAUSED)
       }
     }
