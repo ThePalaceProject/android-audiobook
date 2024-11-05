@@ -264,7 +264,7 @@ class PlayerFragment : PlayerBaseFragment() {
           val progress = st.progress
           if (progress != null) {
             this.playerDownloadMessage.text =
-              this.resources.getString(R.string.audiobook_player_downloading)
+              this.resources.getString(R.string.audiobook_player_downloading_minimal)
             this.playerDownloadProgressTotal.visibility = VISIBLE
             this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).asPercent()
             return
