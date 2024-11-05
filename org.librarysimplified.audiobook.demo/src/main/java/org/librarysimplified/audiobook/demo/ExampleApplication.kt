@@ -34,6 +34,7 @@ class ExampleApplication : Application() {
     INSTANCE = this
     this.databaseField = ExampleBookmarkDatabase(this)
 
+    System.out.println("Package name: ${this.packageName}")
     PlayerModel.start(this)
   }
 }

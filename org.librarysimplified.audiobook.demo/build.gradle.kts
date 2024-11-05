@@ -195,6 +195,7 @@ dependencies {
 
 android {
     defaultConfig {
+        applicationId = "org.thepalaceproject.audiobook.demo"
         versionName = project.version as String
         versionCode = 1000
     }

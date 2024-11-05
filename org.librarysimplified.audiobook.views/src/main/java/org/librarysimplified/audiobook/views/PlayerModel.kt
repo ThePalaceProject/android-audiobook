@@ -634,6 +634,7 @@ object PlayerModel {
 
       return this.opParseManifest(
         bookCredentials = bookCredentials,
+        bookSource = PlayerBookSource.PlayerBookSourceLicenseFile(licenseFile),
         cacheDir = cacheDir,
         licenseChecks = licenseChecks,
         manifest = manifestData,
@@ -684,6 +685,7 @@ object PlayerModel {
 
       return this.opParseManifest(
         bookCredentials = bookCredentials,
+        bookSource = PlayerBookSource.PlayerBookSourceManifestOnly,
         cacheDir = cacheDir,
         licenseChecks = licenseChecks,
         manifest = result,
@@ -733,6 +735,7 @@ object PlayerModel {
     return this.executeTaskCancellingExisting {
       this.opParseManifest(
         bookCredentials = bookCredentials,
+        bookSource = PlayerBookSource.PlayerBookSourceManifestOnly,
         cacheDir = cacheDir,
         licenseChecks = licenseChecks,
         manifest = manifest,
@@ -746,6 +749,7 @@ object PlayerModel {
 
   private fun opParseManifest(
     bookCredentials: PlayerBookCredentialsType,
+    bookSource: PlayerBookSource,
     cacheDir: File,
     licenseChecks: List<SingleLicenseCheckProviderType>,
     manifest: ManifestFulfilled,
@@ -788,7 +792,7 @@ object PlayerModel {
       this.setNewState(
         PlayerManifestOK(
           manifest = parsedManifest,
-          bookSource = PlayerBookSource.PlayerBookSourceManifestOnly,
+          bookSource = bookSource,
           bookCredentials = bookCredentials
         )
       )
