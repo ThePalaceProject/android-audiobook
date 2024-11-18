@@ -19,3 +19,4 @@ jobs:
           distribution: temurin
       - name: Build PR
         run: .ci/ci-main.sh pull-request
+
