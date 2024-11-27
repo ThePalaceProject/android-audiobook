@@ -414,12 +414,15 @@ class ExoAudioBookPlayer private constructor(
 
             is PlayerReadingOrderItemDownloaded -> {
               if (this.currentReadingOrderElement.readingOrderItem.downloadStatusPrevious !is PlayerReadingOrderItemDownloaded) {
-                this.log.debug(
-                  "Reading order item {} status changed, trying to start playback",
-                  status.readingOrderItem.id
-                )
-                this.preparePlayer(this.currentReadingOrderElement)
-                this.exoAdapter.playIfNotAlreadyPlaying()
+                if (this.exoAdapter.state != ExoPlayerPlaybackStatus.PLAYING) {
+                  this.log.debug(
+                    "Reading order item {} status changed, and state is {}: Trying to start playback",
+                    status.readingOrderItem.id,
+                    this.exoAdapter.state
+                  )
+                  this.preparePlayer(this.currentReadingOrderElement)
+                  this.exoAdapter.playIfNotAlreadyPlaying()
+                }
               }
             }
           }
