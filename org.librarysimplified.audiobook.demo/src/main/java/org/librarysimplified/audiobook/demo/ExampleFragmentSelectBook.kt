@@ -237,6 +237,8 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   }
 
   private fun onSelectedPlay() {
+    ExampleTimeTracking.timeSecondsTracked = 0L
+
     val credentials =
       when (this.authenticationSelected) {
         this.authBasic -> {

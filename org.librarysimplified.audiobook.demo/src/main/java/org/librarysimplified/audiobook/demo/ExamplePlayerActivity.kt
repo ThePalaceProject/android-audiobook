@@ -133,7 +133,6 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         when (f) {
           is PlayerFragment -> {
             this.close()
-            Unit
           }
 
           is PlayerTOCFragment -> {
@@ -329,10 +328,14 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
   ) {
     this.logger.debug("TimeTracked: {}", time)
 
+    ExampleTimeTracking.timeSecondsTracked += time.duration.toSeconds()
+
     PlayerUIThread.runOnUIThread {
       try {
-        Toast.makeText(this, "Time tracked: ${time.duration}", Toast.LENGTH_SHORT)
-          .show()
+        Toast.makeText(this, "" +
+          "Time tracked: ${time.duration.toSeconds()} (Total seconds: ${ExampleTimeTracking.timeSecondsTracked})",
+          Toast.LENGTH_LONG
+        ).show()
       } catch (e: Throwable) {
         // Don't care
       }
