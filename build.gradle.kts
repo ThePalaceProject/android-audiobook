@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.de.undercouch.gradle.tasks.download.Verify
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 
-val gradleVersionRequired = "8.10.2"
+val gradleVersionRequired = "8.14.3"
 val gradleVersionReceived = gradle.gradleVersion
 
 if (gradleVersionRequired != gradleVersionReceived) {
@@ -40,11 +40,11 @@ plugins {
         .apply(false)
 
     id("com.android.library")
-        .version("8.5.0")
+        .version("8.11.0")
         .apply(false)
 
     id("com.android.application")
-        .version("8.5.0")
+        .version("8.11.0")
         .apply(false)
 
     /*
