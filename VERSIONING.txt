@@ -10,3 +10,5 @@
 #
 #   ./gradlew verifySemanticVersioning
 #
+
+org.librarysimplified.audiobook.persistence.internal

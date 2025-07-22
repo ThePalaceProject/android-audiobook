@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":org.librarysimplified.audiobook.manifest_parser.api"))
     implementation(project(":org.librarysimplified.audiobook.manifest_parser.extension_spi"))
     implementation(project(":org.librarysimplified.audiobook.parser.api"))
+    implementation(project(":org.librarysimplified.audiobook.persistence"))
     implementation(project(":org.librarysimplified.audiobook.time_tracking"))
 
     implementation(libs.androidx.activity)

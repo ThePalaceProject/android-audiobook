@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":org.librarysimplified.audiobook.manifest_parser.webpub"))
     implementation(project(":org.librarysimplified.audiobook.media3"))
     implementation(project(":org.librarysimplified.audiobook.parser.api"))
+    implementation(project(":org.librarysimplified.audiobook.persistence"))
     implementation(project(":org.librarysimplified.audiobook.time_tracking"))
     implementation(project(":org.librarysimplified.audiobook.views"))
 
@@ -148,6 +149,23 @@ dependencies {
     implementation(libs.rxandroid2)
     implementation(libs.rxjava2)
     implementation(libs.slf4j)
+
+    // SQLite
+    implementation(libs.io7m.anethum.api)
+    implementation(libs.io7m.blackthorne.core)
+    implementation(libs.io7m.blackthorne.jxe)
+    implementation(libs.io7m.jaffirm.core)
+    implementation(libs.io7m.jattribute.core)
+    implementation(libs.io7m.jlexing.core)
+    implementation(libs.io7m.junreachable)
+    implementation(libs.io7m.jxe.core)
+    implementation(libs.io7m.seltzer.api)
+    implementation(libs.io7m.trasco.api)
+    implementation(libs.io7m.trasco.vanilla)
+    implementation(libs.io7m.trasco.xml.schemas)
+    implementation(libs.io7m.xyloid.natives)
+    implementation(libs.xerces)
+    implementation(libs.xerial.sqlite)
 
     if (lcpDRM) {
         implementation(libs.palace.liblcp) {
