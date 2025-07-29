@@ -23,6 +23,14 @@ if [ -z "${CI_AWS_SECRET_KEY}" ]
 then
   fatal "CI_AWS_SECRET_KEY is not defined"
 fi
+if [ -z "${MAVEN_CENTRAL_USERNAME}" ]
+then
+  fatal "MAVEN_CENTRAL_USERNAME is not defined"
+fi
+if [ -z "${MAVEN_CENTRAL_PASSWORD}" ]
+then
+  fatal "MAVEN_CENTRAL_PASSWORD is not defined"
+fi
 
 #------------------------------------------------------------------------
 # Add the Gradle properties to the project properties.
@@ -51,4 +59,7 @@ org.thepalaceproject.s3.depend=true
 org.thepalaceproject.aws.access_key_id=${CI_AWS_ACCESS_ID}
 org.thepalaceproject.aws.secret_access_key=${CI_AWS_SECRET_KEY}
 org.thepalaceproject.app.credentials.palace=${CREDENTIALS_PATH}
+
+mavenCentralUsername=${MAVEN_CENTRAL_USERNAME}
+mavenCentralPassword=${MAVEN_CENTRAL_PASSWORD}
 EOF
