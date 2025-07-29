@@ -21,6 +21,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
+import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.LoggerFactory
@@ -84,6 +85,16 @@ class ExoBookmarkObserver private constructor(
      */
 
     if (event.offsetMilliseconds < PlayerMillisecondsReadingOrderItem(3_000L)) {
+      return
+    }
+
+    /*
+     * Paranoia: Do not create bookmarks unless the player says that it is actually playing. We
+     * have seen player bugs in the past where the player gives nonsense position updates when
+     * it is stopped.
+     */
+
+    if (this.player.playbackStatus != PlayerPlaybackStatus.PLAYING) {
       return
     }
 
