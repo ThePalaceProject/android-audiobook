@@ -174,6 +174,17 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         )
 
         PlayerBookmarkModel.setBookmarks(bookmarkDatabase.bookmarkList(bookId))
+
+        PlayerUIThread.runOnUIThread {
+          try {
+            Toast.makeText(this, "" +
+              "Created bookmark",
+              Toast.LENGTH_LONG
+            ).show()
+          } catch (e: Throwable) {
+            // Don't care
+          }
+        }
       }
 
       is PlayerEvent.PlayerEventDeleteBookmark -> {
@@ -189,6 +200,17 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           bookId,
           event.bookmark
         )
+
+        PlayerUIThread.runOnUIThread {
+          try {
+            Toast.makeText(this, "" +
+              "Deleted bookmark",
+              Toast.LENGTH_LONG
+            ).show()
+          } catch (e: Throwable) {
+            // Don't care
+          }
+        }
       }
 
       is PlayerEvent.PlayerEventError,
