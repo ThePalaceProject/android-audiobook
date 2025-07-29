@@ -29,16 +29,6 @@ plugins {
         .version("0.51.0")
         .apply(true)
 
-    /*
-     * The AndroidX plugin for navigation (including view binding generation).
-     *
-     * https://developer.android.com/jetpack/androidx/releases/navigation
-     */
-
-    id("androidx.navigation.safeargs.kotlin")
-        .version("2.7.1")
-        .apply(false)
-
     id("com.android.library")
         .version("8.11.0")
         .apply(false)
@@ -80,7 +70,7 @@ plugins {
      */
 
     id("com.google.firebase.crashlytics")
-        .version("2.9.9")
+        .version("3.0.2")
         .apply(false)
 
     id("maven-publish")
