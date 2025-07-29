@@ -3,6 +3,7 @@ package org.librarysimplified.audiobook.views
 import android.app.Application
 import android.graphics.Bitmap
 import android.media.AudioManager
+import androidx.annotation.GuardedBy
 import androidx.annotation.UiThread
 import androidx.core.content.getSystemService
 import io.reactivex.Observable
@@ -13,20 +14,23 @@ import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
+import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerBookmark
+import org.librarysimplified.audiobook.api.PlayerBookmarkKind
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
-import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
@@ -45,6 +49,7 @@ import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProvi
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckStatus
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
@@ -56,6 +61,8 @@ import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseError
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.audiobook.persistence.ADatabaseType
+import org.librarysimplified.audiobook.persistence.ADatabases
 import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracker
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerBookOpenFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestDownloadFailed
@@ -69,11 +76,19 @@ import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
+import java.nio.file.Path
 import java.util.ServiceLoader
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
 object PlayerModel {
+
+  /**
+   * The last-read position of the current book when the book was opened.
+   */
+
+  @Volatile
+  private var playerStartingPosition: PlayerPosition? = null
 
   @Volatile
   private var isStreamingPermitted: Boolean = false
@@ -285,6 +300,11 @@ object PlayerModel {
     PlayerSleepTimer.events.subscribe {
       this.onSleepTimerEvent(it)
     }
+
+  @Volatile
+  @GuardedBy("databaseRefLock")
+  private var databaseRef: ADatabaseType? = null
+  private val databaseRefLock: Any = Any()
 
   init {
     this.stateSubject.onNext(this.state)
@@ -566,15 +586,17 @@ object PlayerModel {
       throw e
     } catch (e: Throwable) {
       this.logger.error("Unexpected exception: ", e)
-      this.setNewState(PlayerManifestParseFailed(
-        listOf(
-          ParseError(
-            source = URI.create("urn:unavailable"),
-            message = e.message ?: e.javaClass.name,
-            exception = e
+      this.setNewState(
+        PlayerManifestParseFailed(
+          listOf(
+            ParseError(
+              source = URI.create("urn:unavailable"),
+              message = e.message ?: e.javaClass.name,
+              exception = e
+            )
           )
         )
-      ))
+      )
       throw e
     }
   }
@@ -647,15 +669,17 @@ object PlayerModel {
       throw e
     } catch (e: Throwable) {
       this.logger.error("Unexpected exception: ", e)
-      this.setNewState(PlayerManifestParseFailed(
-        listOf(
-          ParseError(
-            source = URI.create("urn:unavailable"),
-            message = e.message ?: e.javaClass.name,
-            exception = e
+      this.setNewState(
+        PlayerManifestParseFailed(
+          listOf(
+            ParseError(
+              source = URI.create("urn:unavailable"),
+              message = e.message ?: e.javaClass.name,
+              exception = e
+            )
           )
         )
-      ))
+      )
       throw e
     }
   }
@@ -698,15 +722,17 @@ object PlayerModel {
       throw e
     } catch (e: Throwable) {
       this.logger.error("Unexpected exception: ", e)
-      this.setNewState(PlayerManifestParseFailed(
-        listOf(
-          ParseError(
-            source = URI.create("urn:unavailable"),
-            message = e.message ?: e.javaClass.name,
-            exception = e
+      this.setNewState(
+        PlayerManifestParseFailed(
+          listOf(
+            ParseError(
+              source = URI.create("urn:unavailable"),
+              message = e.message ?: e.javaClass.name,
+              exception = e
+            )
           )
         )
-      ))
+      )
       throw e
     }
   }
@@ -800,15 +826,17 @@ object PlayerModel {
       throw e
     } catch (e: Throwable) {
       this.logger.error("Unexpected exception: ", e)
-      this.setNewState(PlayerManifestParseFailed(
-        listOf(
-          ParseError(
-            source = sourceURI,
-            message = e.message ?: e.javaClass.name,
-            exception = e
+      this.setNewState(
+        PlayerManifestParseFailed(
+          listOf(
+            ParseError(
+              source = sourceURI,
+              message = e.message ?: e.javaClass.name,
+              exception = e
+            )
           )
         )
-      ))
+      )
       throw e
     }
   }
@@ -829,7 +857,6 @@ object PlayerModel {
     userAgent: PlayerUserAgent,
     manifest: PlayerManifest,
     fetchAll: Boolean,
-    initialPosition: PlayerPosition?,
     bookCredentials: PlayerBookCredentialsType,
     bookSource: PlayerBookSource
   ): CompletableFuture<Unit> {
@@ -853,7 +880,6 @@ object PlayerModel {
         context = context,
         extensions = this.playerExtensions,
         fetchAll = fetchAll,
-        initialPosition = initialPosition,
         bookCredentials = bookCredentials,
         bookSource = bookSource
       )
@@ -866,11 +892,16 @@ object PlayerModel {
     context: Application,
     extensions: List<PlayerExtensionType>,
     fetchAll: Boolean,
-    initialPosition: PlayerPosition?,
     bookCredentials: PlayerBookCredentialsType,
     bookSource: PlayerBookSource
   ) {
     this.logger.debug("opOpenPlayerForManifest")
+    this.openDatabase(context.filesDir.toPath().resolve("palace-audiobook-persistence.db"))
+
+    val bookID =
+      PlayerBookID.transform(manifest.metadata.identifier)
+    this.playerStartingPosition =
+      this.lastReadPositionGet(bookID)
 
     /*
      * Ask the API for the best audio engine available that can handle the given manifest.
@@ -953,19 +984,27 @@ object PlayerModel {
       { exception -> this.logger.error("Download exception: ", exception) }
     )
 
-    this.setNewState(PlayerModelState.PlayerOpen(newPair))
+    newPlayer.events.subscribe(
+      { event -> this.onHandleSaveLastReadPosition(bookID, event) },
+      { exception -> this.logger.error("Player exception: ", exception) }
+    )
+
+    this.setNewState(
+      PlayerModelState.PlayerOpen(
+        player = newPair,
+        positionOnOpen = this.playerStartingPosition
+      )
+    )
 
     if (fetchAll) {
       newPair.audioBook.wholeBookDownloadTask.fetch()
     }
 
-    if (initialPosition != null) {
-      this.logger.debug("An initial position of {} was specified.", initialPosition)
-      this.movePlayheadTo(initialPosition)
-    } else {
-      this.logger.debug(
-        "No initial position was specified. Playback will begin at the start of the book."
-      )
+    val startingPosition = this.playerStartingPosition
+    if (startingPosition != null) {
+      PlayerUIThread.runOnUIThread {
+        newPair.player.movePlayheadToLocation(startingPosition)
+      }
     }
 
     PlayerUIThread.runOnUIThread {
@@ -973,6 +1012,69 @@ object PlayerModel {
         PlayerMediaController.start(this.application)
       } catch (e: Throwable) {
         this.logger.debug("Failed to start media controller: ", e)
+      }
+    }
+  }
+
+  private fun onHandleSaveLastReadPosition(
+    bookID: PlayerBookID,
+    event: PlayerEvent
+  ) {
+    when (event) {
+      is PlayerEvent.PlayerEventWithPosition.PlayerEventCreateBookmark -> {
+        when (event.kind) {
+          PlayerBookmarkKind.EXPLICIT -> {
+            // Do nothing.
+          }
+          PlayerBookmarkKind.LAST_READ -> {
+            this.lastReadPositionSet(bookID, event.readingOrderItem, event.readingOrderItemOffsetMilliseconds)
+          }
+        }
+      }
+      else -> {
+        // Do nothing.
+      }
+    }
+  }
+
+  private fun lastReadPositionSet(
+    bookID: PlayerBookID,
+    readingOrderItem: PlayerReadingOrderItemType,
+    readingOrderItemOffsetMilliseconds: PlayerMillisecondsReadingOrderItem
+  ) {
+    val position =
+      PlayerPosition(
+        readingOrderID = readingOrderItem.id,
+        offsetMilliseconds = readingOrderItemOffsetMilliseconds
+      )
+    this.database()
+      ?.lastReadPositionSave(bookID, position)
+  }
+
+  private fun lastReadPositionGet(
+    bookID: PlayerBookID
+  ): PlayerPosition? {
+    return this.database()
+      ?.lastReadPositionGet(bookID)
+      ?.orElse(null)
+  }
+
+  private fun database(): ADatabaseType? {
+    return synchronized(this.databaseRefLock) {
+      this.databaseRef
+    }
+  }
+
+  private fun openDatabase(file: Path) {
+    synchronized(this.databaseRefLock) {
+      if (this.databaseRef == null) {
+        try {
+          this.logger.debug("Opening persistence database...")
+          this.databaseRef = ADatabases.open(file)
+          this.logger.debug("Opened persistence database.")
+        } catch (e: Throwable) {
+          this.logger.debug("Failed to open persistence database: ", e)
+        }
       }
     }
   }
@@ -1148,7 +1250,7 @@ object PlayerModel {
 
   fun skipForward() {
     try {
-      this.playerAndBookField?.player?.skipPlayhead(seekIncrement())
+      this.playerAndBookField?.player?.skipPlayhead(this.seekIncrement())
     } catch (e: Exception) {
       this.logger.error("skipForward: ", e)
     }
@@ -1156,7 +1258,7 @@ object PlayerModel {
 
   fun skipBack() {
     try {
-      this.playerAndBookField?.player?.skipPlayhead(-seekIncrement())
+      this.playerAndBookField?.player?.skipPlayhead(-this.seekIncrement())
     } catch (e: Exception) {
       this.logger.error("skipBack: ", e)
     }
@@ -1428,13 +1530,15 @@ object PlayerModel {
       throw e
     } catch (e: Throwable) {
       this.logger.error("Unexpected exception: ", e)
-      this.setNewState(PlayerManifestDownloadFailed(
-        ManifestFulfillmentError(
-          message = e.message ?: e.javaClass.name,
-          extraMessages = listOf(),
-          serverData = null
+      this.setNewState(
+        PlayerManifestDownloadFailed(
+          ManifestFulfillmentError(
+            message = e.message ?: e.javaClass.name,
+            extraMessages = listOf(),
+            serverData = null
+          )
         )
-      ))
+      )
       throw e
     }
   }

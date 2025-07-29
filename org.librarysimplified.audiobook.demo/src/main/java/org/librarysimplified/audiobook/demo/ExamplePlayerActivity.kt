@@ -174,6 +174,17 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         )
 
         PlayerBookmarkModel.setBookmarks(bookmarkDatabase.bookmarkList(bookId))
+
+        PlayerUIThread.runOnUIThread {
+          try {
+            Toast.makeText(this, "" +
+              "Created bookmark",
+              Toast.LENGTH_LONG
+            ).show()
+          } catch (e: Throwable) {
+            // Don't care
+          }
+        }
       }
 
       is PlayerEvent.PlayerEventDeleteBookmark -> {
@@ -189,6 +200,17 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           bookId,
           event.bookmark
         )
+
+        PlayerUIThread.runOnUIThread {
+          try {
+            Toast.makeText(this, "" +
+              "Deleted bookmark",
+              Toast.LENGTH_LONG
+            ).show()
+          } catch (e: Throwable) {
+            // Don't care
+          }
+        }
       }
 
       is PlayerEvent.PlayerEventError,
@@ -241,25 +263,14 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           ExampleApplication.application.bookmarkDatabase
         val bookmarksAll =
           bookmarkDatabase.bookmarkList(bookId)
-        val bookmarkLastRead =
-          bookmarkDatabase.bookmarkFindLastRead(bookId)
 
         PlayerBookmarkModel.setBookmarks(bookmarksAll)
-
-        val initialPosition =
-          if (bookmarkLastRead != null) {
-            this.logger.debug("Restoring last-read position: {}", bookmarkLastRead.position)
-            bookmarkLastRead.position
-          } else {
-            null
-          }
 
         PlayerModel.openPlayerForManifest(
           context = ExampleApplication.application,
           userAgent = PlayerUserAgent("AudioBookDemo"),
           manifest = state.manifest,
           fetchAll = true,
-          initialPosition = initialPosition,
           bookSource = state.bookSource,
           bookCredentials = state.bookCredentials
         )
@@ -281,6 +292,19 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           PlayerModel.bookTitle = manifest.metadata.title
           PlayerModel.bookAuthor = "An Example Author."
         }
+
+        val start = state.positionOnOpen
+        if (start != null) {
+          try {
+            Toast.makeText(this, "" +
+              "Starting at saved position: ${start.readingOrderID.text} ${start.offsetMilliseconds.value}",
+              Toast.LENGTH_LONG
+            ).show()
+          } catch (e: Throwable) {
+            // Don't care
+          }
+        }
+
         this.switchFragment(PlayerFragment())
       }
 
