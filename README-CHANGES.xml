@@ -563,8 +563,10 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2025-08-20T11:08:16+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="17.1.0">
-      <c:changes/>
+    <c:release date="2025-09-01T11:09:07+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="17.1.0">
+      <c:changes>
+        <c:change date="2025-09-01T11:09:07+00:00" summary="Attempt to fix an issue where a player could be closed before the position is restored (leading to an exception)."/>
+      </c:changes>
     </c:release>
   </c:releases>
   <c:ticket-systems>

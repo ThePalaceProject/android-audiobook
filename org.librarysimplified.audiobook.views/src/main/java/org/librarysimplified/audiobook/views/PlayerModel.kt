@@ -989,13 +989,6 @@ object PlayerModel {
       { exception -> this.logger.error("Player exception: ", exception) }
     )
 
-    this.setNewState(
-      PlayerModelState.PlayerOpen(
-        player = newPair,
-        positionOnOpen = this.playerStartingPosition
-      )
-    )
-
     if (fetchAll) {
       newPair.audioBook.wholeBookDownloadTask.fetch()
     }
@@ -1006,6 +999,13 @@ object PlayerModel {
         newPair.player.movePlayheadToLocation(startingPosition)
       }
     }
+
+    this.setNewState(
+      PlayerModelState.PlayerOpen(
+        player = newPair,
+        positionOnOpen = this.playerStartingPosition
+      )
+    )
 
     PlayerUIThread.runOnUIThread {
       try {
