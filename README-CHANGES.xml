@@ -568,8 +568,10 @@
         <c:change date="2025-09-01T00:00:00+00:00" summary="Attempt to fix an issue where a player could be closed before the position is restored (leading to an exception)."/>
       </c:changes>
     </c:release>
-    <c:release date="2025-09-04T16:29:21+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="17.2.0">
-      <c:changes/>
+    <c:release date="2025-09-05T13:28:38+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="17.2.0">
+      <c:changes>
+        <c:change date="2025-09-05T13:28:38+00:00" summary="Upgrade platform, Kotlin, dependencies."/>
+      </c:changes>
     </c:release>
   </c:releases>
   <c:ticket-systems>
