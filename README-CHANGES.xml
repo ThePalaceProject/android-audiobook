@@ -568,9 +568,14 @@
         <c:change date="2025-09-01T00:00:00+00:00" summary="Attempt to fix an issue where a player could be closed before the position is restored (leading to an exception)."/>
       </c:changes>
     </c:release>
-    <c:release date="2025-09-05T13:45:25+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="17.2.0">
+    <c:release date="2025-09-05T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="17.2.0">
       <c:changes>
         <c:change date="2025-09-05T00:00:00+00:00" summary="Upgrade platform, Kotlin, dependencies."/>
+      </c:changes>
+    </c:release>
+    <c:release date="2025-09-09T14:06:18+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="17.3.0">
+      <c:changes>
+        <c:change date="2025-09-09T14:06:18+00:00" summary="Attempt another fix that avoids closing players that are in the process of being opened."/>
       </c:changes>
     </c:release>
   </c:releases>

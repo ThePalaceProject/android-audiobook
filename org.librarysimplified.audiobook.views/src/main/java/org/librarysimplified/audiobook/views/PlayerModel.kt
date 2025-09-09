@@ -896,6 +896,16 @@ object PlayerModel {
     bookSource: PlayerBookSource
   ) {
     this.logger.debug("opOpenPlayerForManifest")
+
+    val existingPlayer = this.playerAndBookField
+    if (existingPlayer != null) {
+      this.logger.debug("Closing old player instance")
+      existingPlayer.close()
+    } else {
+      this.logger.debug("No existing player instance is present")
+    }
+    this.playerAndBookField = null
+
     this.openDatabase(context.filesDir.toPath().resolve("palace-audiobook-persistence.db"))
 
     val bookID =
@@ -966,9 +976,6 @@ object PlayerModel {
       PlayerBookAndPlayer(newBook, newPlayer)
 
     newPlayer.isStreamingPermitted = this.isStreamingPermitted
-    this.playerAndBookField?.close()
-    this.playerAndBookField = newPair
-
     newPlayer.events.subscribe(
       { event -> this.playerEventSubject.onNext(event) },
       { exception -> this.logger.error("Player exception: ", exception) }
@@ -1000,6 +1007,8 @@ object PlayerModel {
       }
     }
 
+    this.playerAndBookField = newPair
+
     this.setNewState(
       PlayerModelState.PlayerOpen(
         player = newPair,
@@ -1026,11 +1035,17 @@ object PlayerModel {
           PlayerBookmarkKind.EXPLICIT -> {
             // Do nothing.
           }
+
           PlayerBookmarkKind.LAST_READ -> {
-            this.lastReadPositionSet(bookID, event.readingOrderItem, event.readingOrderItemOffsetMilliseconds)
+            this.lastReadPositionSet(
+              bookID,
+              event.readingOrderItem,
+              event.readingOrderItemOffsetMilliseconds
+            )
           }
         }
       }
+
       else -> {
         // Do nothing.
       }
