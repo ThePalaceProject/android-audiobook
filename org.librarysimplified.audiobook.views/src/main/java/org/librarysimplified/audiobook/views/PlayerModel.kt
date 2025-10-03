@@ -1002,8 +1002,10 @@ object PlayerModel {
 
     val startingPosition = this.playerStartingPosition
     if (startingPosition != null) {
-      PlayerUIThread.runOnUIThread {
+      try {
         newPair.player.movePlayheadToLocation(startingPosition)
+      } catch (e: Throwable) {
+        this.logger.debug("Failed to set starting position: ", e)
       }
     }
 
