@@ -578,9 +578,9 @@
         <c:change date="2025-09-09T00:00:00+00:00" summary="Attempt another fix that avoids closing players that are in the process of being opened."/>
       </c:changes>
     </c:release>
-    <c:release date="2025-10-03T11:47:32+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="17.4.0">
+    <c:release date="2025-10-03T12:03:40+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="17.4.0">
       <c:changes>
-        <c:change date="2025-10-03T11:47:32+00:00" summary="Another attempt at a hotfix for operating on closed players."/>
+        <c:change date="2025-10-03T00:00:00+00:00" summary="Another attempt at a hotfix for operating on closed players."/>
       </c:changes>
     </c:release>
   </c:releases>
