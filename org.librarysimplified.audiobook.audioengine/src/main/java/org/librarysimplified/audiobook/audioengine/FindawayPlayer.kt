@@ -6,6 +6,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
+import org.librarysimplified.audiobook.api.PlayerBlame
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
@@ -22,7 +23,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * The primary Findaway based player.
@@ -51,8 +52,8 @@ class FindawayPlayer(
 
   private val bookmarkObserver: FindawayBookmarkObserver
 
-  private val closed: AtomicBoolean =
-    AtomicBoolean(false)
+  private val closed: AtomicReference<PlayerBlame> =
+    AtomicReference()
 
   private val eventSource: Subject<PlayerEvent> =
     BehaviorSubject.create<PlayerEvent>().toSerialized()
@@ -148,9 +149,7 @@ class FindawayPlayer(
   }
 
   private fun checkNotClosed() {
-    if (this.closed.get()) {
-      throw IllegalStateException("Player has been closed")
-    }
+    PlayerBlame.checkNotClosed(this.closed)
   }
 
   private fun opSkipForward(
@@ -191,10 +190,12 @@ class FindawayPlayer(
     this.log.debug("[{}]: opBookmarkDelete: {}", this.id, bookmark)
     PlayerUIThread.checkIsUIThread()
 
-    this.eventSource.onNext(PlayerEvent.PlayerEventDeleteBookmark(
-      palaceId = this.book.palaceId,
-      bookmark = bookmark,
-    ))
+    this.eventSource.onNext(
+      PlayerEvent.PlayerEventDeleteBookmark(
+        palaceId = this.book.palaceId,
+        bookmark = bookmark,
+      )
+    )
   }
 
   private fun opBookmark() {
@@ -239,9 +240,11 @@ class FindawayPlayer(
         milliseconds == 0L -> {
           // Nothing to do!
         }
+
         milliseconds > 0L -> {
           this.opSkipForward(milliseconds)
         }
+
         else -> {
           this.opSkipBack(milliseconds)
         }
@@ -341,7 +344,8 @@ class FindawayPlayer(
   }
 
   override val isClosed: Boolean
-    get() = this.closed.get()
+    get() = this.closed.get() != null
+
   override var isStreamingPermitted: Boolean
     get() = this.engineAdapter.isStreamingPermitted
     set(value) {
@@ -349,7 +353,7 @@ class FindawayPlayer(
     }
 
   override fun close() {
-    if (this.closed.compareAndSet(false, true)) {
+    if (PlayerBlame.closeIfOpen(this.closed)) {
       runOnUIThread {
         this.log.debug("[{}]: close", this.id)
         this.opEngineStop()

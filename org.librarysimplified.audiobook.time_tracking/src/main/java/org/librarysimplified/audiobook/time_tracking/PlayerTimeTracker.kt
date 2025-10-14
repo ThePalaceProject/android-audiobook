@@ -2,6 +2,7 @@ package org.librarysimplified.audiobook.time_tracking
 
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
+import org.librarysimplified.audiobook.api.PlayerBlame
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * The basic player time tracker service.
@@ -107,7 +109,7 @@ class PlayerTimeTracker private constructor(
   private val debugTicks =
     AtomicLong(0L)
   private val closeRequested =
-    AtomicBoolean(false)
+    AtomicReference<PlayerBlame>()
   private val closeCompleted =
     AtomicBoolean(false)
   private var state: State =
@@ -355,13 +357,11 @@ class PlayerTimeTracker private constructor(
   }
 
   private fun checkNotClosed() {
-    if (this.closeRequested.get()) {
-      throw IllegalStateException("Time tracking service is closed.")
-    }
+    PlayerBlame.checkNotClosed(this.closeRequested)
   }
 
   override fun close() {
-    if (this.closeRequested.compareAndSet(false, true)) {
+    if (PlayerBlame.closeIfOpen(this.closeRequested)) {
       val future = CompletableFuture<Void>()
       this.commandQueue.add(Command.ShutDown(future))
       this.executor.shutdown()

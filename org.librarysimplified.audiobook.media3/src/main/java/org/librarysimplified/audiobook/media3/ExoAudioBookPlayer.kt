@@ -10,6 +10,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
+import org.librarysimplified.audiobook.api.PlayerBlame
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
 import org.librarysimplified.audiobook.api.PlayerBookmarkMetadata
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * An ExoPlayer player.
@@ -68,7 +69,7 @@ class ExoAudioBookPlayer private constructor(
   private val log =
     LoggerFactory.getLogger(ExoAudioBookPlayer::class.java)
 
-  private val closed = AtomicBoolean(false)
+  private val closed = AtomicReference<PlayerBlame>()
   private val zeroBugTracker: ExoPlayerZeroBugDetection
   private val bookmarkObserver: ExoBookmarkObserver
   private val resources = CompositeDisposable()
@@ -915,9 +916,7 @@ class ExoAudioBookPlayer private constructor(
   }
 
   private fun checkNotClosed() {
-    if (this.closed.get()) {
-      throw IllegalStateException("Player has been closed")
-    }
+    PlayerBlame.checkNotClosed(this.closed)
   }
 
   override var playbackRate: PlayerPlaybackRate
@@ -1003,7 +1002,7 @@ class ExoAudioBookPlayer private constructor(
   }
 
   override val isClosed: Boolean
-    get() = this.closed.get()
+    get() = this.closed.get() != null
 
   override var isStreamingPermitted: Boolean
     get() =
@@ -1013,7 +1012,7 @@ class ExoAudioBookPlayer private constructor(
     }
 
   override fun close() {
-    if (this.closed.compareAndSet(false, true)) {
+    if (PlayerBlame.closeIfOpen(this.closed)) {
       runOnUIThread {
         this.opClose()
       }
