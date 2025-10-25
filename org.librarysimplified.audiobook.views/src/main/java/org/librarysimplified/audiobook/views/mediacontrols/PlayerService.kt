@@ -52,6 +52,12 @@ class PlayerService : MediaSessionService() {
       this.logger.debug("Shutting down service…")
 
       try {
+        this.subscription?.dispose()
+      } catch (e: Throwable) {
+        this.logger.debug("Unsubscribing failed: ", e)
+      }
+
+      try {
         this.releaseAllSessions()
 
         try {
