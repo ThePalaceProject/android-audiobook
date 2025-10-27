@@ -1,5 +1,4 @@
 package org.librarysimplified.audiobook.views
-
 import android.app.Application
 import android.graphics.Bitmap
 import android.media.AudioManager
@@ -71,7 +70,6 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLice
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
 import org.librarysimplified.audiobook.views.mediacontrols.PlayerMediaController
-import org.librarysimplified.audiobook.views.mediacontrols.PlayerServiceCommand
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -279,18 +277,6 @@ object PlayerModel {
 
   val downloadEvents: Observable<PlayerReadingOrderItemDownloadStatus> =
     this.downloadEventSubject.observeOn(AndroidSchedulers.mainThread())
-
-  /*
-   * A source of player service commands. Note that this is specifically NOT a behavior subject;
-   * if nothing is subscribed at the time a command is published, the command is discarded.
-   */
-
-  private val playerServiceSubject =
-    PublishSubject.create<PlayerServiceCommand>()
-      .toSerialized()
-
-  val playerServiceCommands: Observable<PlayerServiceCommand> =
-    this.playerServiceSubject.observeOn(AndroidSchedulers.mainThread())
 
   /*
    * Subscribe to the sleep timer so that the player can be paused when the timer expires.
@@ -1139,16 +1125,6 @@ object PlayerModel {
       } catch (e: Throwable) {
         this.logger.debug("Failed to stop media controller: ", e)
       }
-    }
-
-    /*
-     * Tell any services to shut down.
-     */
-
-    try {
-      this.playerServiceSubject.onNext(PlayerServiceCommand.PlayerServiceShutDown)
-    } catch (e: Throwable) {
-      this.logger.debug("Failed to submit service shutdown command: ", e)
     }
 
     /*

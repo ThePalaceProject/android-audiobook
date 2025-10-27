@@ -60,6 +60,8 @@ import org.slf4j.LoggerFactory
 
 object PlayerMediaFacade : Player {
 
+  private var playerServiceNow: PlayerService? = null
+
   private val logger =
     LoggerFactory.getLogger(PlayerMediaFacade::class.java)
 
@@ -931,5 +933,18 @@ object PlayerMediaFacade : Player {
     handleAudioFocus: Boolean
   ) {
     this.warnNotImplemented("setAudioAttributes")
+  }
+
+  fun playerServiceAssign(
+    playerService: PlayerService
+  ) {
+    this.logger.debug("playerServiceAssign: {}", playerService)
+    this.playerServiceNow = playerService
+  }
+
+  fun playerServiceClose() {
+    this.logger.debug("playerServiceClose")
+    this.playerServiceNow?.shutDown()
+    this.playerServiceNow = null
   }
 }

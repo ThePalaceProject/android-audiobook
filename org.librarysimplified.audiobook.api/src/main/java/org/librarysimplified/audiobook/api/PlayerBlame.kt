@@ -34,7 +34,7 @@ data class PlayerBlame(
       if (blame != null) {
         val exception =
           IllegalStateException(
-            "Object has been closed by thread ${blame.threadID} (${blame.threadName}"
+            "Object has been closed by thread ${blame.threadID} (${blame.threadName})"
           )
         exception.initCause(blame.where)
         throw exception

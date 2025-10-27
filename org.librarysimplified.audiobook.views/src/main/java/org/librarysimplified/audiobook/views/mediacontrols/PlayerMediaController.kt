@@ -43,7 +43,19 @@ object PlayerMediaController {
 
   fun stop() {
     this.logger.debug("Stopping media controller...")
-    this.controller?.stop()
-    this.controller = null
+
+    try {
+      this.controller?.stop()
+    } catch (e: Throwable) {
+      this.logger.error("Media controller stop failed: ", e)
+    } finally {
+      this.controller = null
+    }
+
+    try {
+      PlayerMediaFacade.playerServiceClose()
+    } catch (e: Throwable) {
+      this.logger.debug("Failed to stop media facade: ", e)
+    }
   }
 }
