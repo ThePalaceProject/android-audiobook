@@ -216,21 +216,41 @@ object LCPDownloads {
 
           for (entry in zipIn.entries()) {
             this.logger.debug("Entry: {} (size {})", entry.name, entry.size)
+
+            if (entry.name == "manifest.json") {
+              manifestBytes = zipIn.getInputStream(entry).use { s -> s.readBytes() }
+            }
+
             zipIn.getInputStream(entry).use { inStream ->
-              val data = inStream.readBytes()
               val crc = CRC32()
-              crc.update(data)
+              val buffer = ByteArray(4096)
+              var size = 0L
+              while (true) {
+                val r = inStream.read(buffer, 0, buffer.size)
+                if (r == -1) {
+                  break
+                }
+                size += r
+                crc.update(buffer, 0, r)
+              }
 
               val entryCopy = ZipEntry(entry.name)
               entryCopy.method = entry.method
-              entryCopy.size = data.size.toLong()
+              entryCopy.size = size
               entryCopy.crc = crc.value
 
               zipOut.putNextEntry(entryCopy)
-              if (entry.name == "manifest.json") {
-                manifestBytes = data
+            }
+
+            zipIn.getInputStream(entry).use { inStream ->
+              val buffer = ByteArray(4096)
+              while (true) {
+                val r = inStream.read(buffer, 0, buffer.size)
+                if (r == -1) {
+                  break
+                }
+                zipOut.write(buffer, 0, r)
               }
-              zipOut.write(data)
               zipOut.closeEntry()
             }
           }
