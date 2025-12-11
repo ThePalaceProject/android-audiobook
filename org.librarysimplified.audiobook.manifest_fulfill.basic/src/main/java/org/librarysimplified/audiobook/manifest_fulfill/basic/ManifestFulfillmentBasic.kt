@@ -9,12 +9,13 @@ import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentE
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
 import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
+import org.librarysimplified.http.api.LSHTTPAuthorizationBearerToken
 import org.librarysimplified.http.api.LSHTTPRequestBuilderType.AllowRedirects.ALLOW_UNSAFE_REDIRECTS
 import org.librarysimplified.http.api.LSHTTPResponseStatus
 import org.slf4j.LoggerFactory
 
 /**
- * A fulfillment strategy that expects to receive a manifest directly, via HTTP basic authentication.
+ * A fulfillment strategy that expects to receive a manifest directly.
  */
 
 class ManifestFulfillmentBasic(
@@ -37,20 +38,31 @@ class ManifestFulfillmentBasic(
     val credentials = this.configuration.credentials
     val httpClient = this.configuration.httpClient
 
-    val request = httpClient.newRequest(this.configuration.uri)
-      .apply {
-        if (credentials != null) {
-          setAuthorization(
-            LSHTTPAuthorizationBasic.ofUsernamePassword(
-              credentials.userName,
-              credentials.password
-            )
+    val requestBuilder =
+      httpClient.newRequest(this.configuration.uri)
+
+    when (credentials) {
+      is ManifestFulfillmentCredentialsBasic -> {
+        requestBuilder.setAuthorization(
+          LSHTTPAuthorizationBasic.ofUsernamePassword(
+            credentials.userName,
+            credentials.password
           )
-        }
+        )
       }
-      .addHeader("User-Agent", this.configuration.userAgent.userAgent)
-      .allowRedirects(ALLOW_UNSAFE_REDIRECTS)
-      .build()
+      is ManifestFulfillmentCredentialsToken -> {
+        requestBuilder.setAuthorization(
+          LSHTTPAuthorizationBearerToken.ofToken(credentials.token)
+        )
+      }
+      null -> {
+        requestBuilder.setAuthorization(null)
+      }
+    }
+
+    requestBuilder.addHeader("User-Agent", this.configuration.userAgent.userAgent)
+    requestBuilder.allowRedirects(ALLOW_UNSAFE_REDIRECTS)
+    val request = requestBuilder.build()
 
     this.eventSubject.onNext(ManifestFulfillmentEvent("Connecting…"))
     val response = request.execute()

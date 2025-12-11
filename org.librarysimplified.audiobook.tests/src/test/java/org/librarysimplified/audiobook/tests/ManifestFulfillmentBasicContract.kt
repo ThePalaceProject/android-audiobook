@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerUserAgent
-import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicCredentials
+import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentCredentialsBasic
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicProvider
 import org.librarysimplified.http.api.LSHTTPAuthorizationBearerToken
@@ -83,7 +83,7 @@ abstract class ManifestFulfillmentBasicContract {
         configuration = ManifestFulfillmentBasicParameters(
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           uri = URI.create("http://www.example.com"),
-          credentials = ManifestFulfillmentBasicCredentials(
+          credentials = ManifestFulfillmentCredentialsBasic(
             userName = "user",
             password = "password"
           ),
@@ -139,7 +139,7 @@ abstract class ManifestFulfillmentBasicContract {
         configuration = ManifestFulfillmentBasicParameters(
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           uri = URI.create("http://www.example.com"),
-          credentials = ManifestFulfillmentBasicCredentials(
+          credentials = ManifestFulfillmentCredentialsBasic(
             userName = "user",
             password = "password"
           ),
@@ -199,7 +199,7 @@ abstract class ManifestFulfillmentBasicContract {
         configuration = ManifestFulfillmentBasicParameters(
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           uri = URI.create("http://www.example.com"),
-          credentials = ManifestFulfillmentBasicCredentials(
+          credentials = ManifestFulfillmentCredentialsBasic(
             userName = "user",
             password = "password"
           ),

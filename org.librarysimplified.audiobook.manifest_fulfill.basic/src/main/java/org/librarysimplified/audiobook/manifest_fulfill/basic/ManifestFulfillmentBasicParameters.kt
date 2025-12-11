@@ -11,7 +11,7 @@ import java.net.URI
 
 data class ManifestFulfillmentBasicParameters(
   val uri: URI,
-  val credentials: ManifestFulfillmentBasicCredentials?,
+  val credentials: ManifestFulfillmentCredentialsType?,
   val httpClient: LSHTTPClientType,
   override val userAgent: PlayerUserAgent
 ) : ManifestFulfillmentStrategyParametersType

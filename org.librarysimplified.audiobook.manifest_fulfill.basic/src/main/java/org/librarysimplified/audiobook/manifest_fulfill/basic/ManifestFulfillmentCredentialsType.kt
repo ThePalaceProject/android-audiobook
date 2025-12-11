@@ -1,0 +1,3 @@
+package org.librarysimplified.audiobook.manifest_fulfill.basic
+
+sealed interface ManifestFulfillmentCredentialsType

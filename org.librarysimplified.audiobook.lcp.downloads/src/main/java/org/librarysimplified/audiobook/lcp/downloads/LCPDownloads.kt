@@ -4,14 +4,17 @@ import android.app.Application
 import kotlinx.coroutines.runBlocking
 import one.irradia.mime.api.MIMEType
 import org.librarysimplified.audiobook.api.PlayerResult
-import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicCredentials
+import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentCredentialsBasic
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicProvider
+import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentCredentialsToken
+import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentCredentialsType
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentError
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvents
 import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
+import org.librarysimplified.http.api.LSHTTPAuthorizationBearerToken
 import org.librarysimplified.http.api.LSHTTPRequestType
 import org.librarysimplified.http.downloads.LSHTTPDownloadRequest
 import org.librarysimplified.http.downloads.LSHTTPDownloadState.LSHTTPDownloadResult
@@ -138,21 +141,30 @@ object LCPDownloads {
   ): PlayerResult<Unit, LSHTTPDownloadResult.DownloadFailed> {
     this.logger.debug("Downloading LCP publication {}...", license.publicationLink.href)
 
-    val request: LSHTTPRequestType =
+    val requestBuilder =
       parameters.httpClient.newRequest(URI.create(license.publicationLink.href.toString()))
-        .apply {
-          val credentials = parameters.credentials
-          if (credentials != null) {
-            this.setAuthorization(
-              LSHTTPAuthorizationBasic.ofUsernamePassword(
-                credentials.userName,
-                credentials.password
-              )
-            )
-          }
-        }
-        .addHeader("User-Agent", parameters.userAgent.userAgent)
-        .build()
+
+    when (val credentials = parameters.credentials) {
+      is ManifestFulfillmentCredentialsBasic -> {
+        requestBuilder.setAuthorization(
+          LSHTTPAuthorizationBasic.ofUsernamePassword(
+            credentials.userName,
+            credentials.password
+          )
+        )
+      }
+      is ManifestFulfillmentCredentialsToken -> {
+        requestBuilder.setAuthorization(
+          LSHTTPAuthorizationBearerToken.ofToken(credentials.token)
+        )
+      }
+      null -> {
+        requestBuilder.setAuthorization(null)
+      }
+    }
+
+    requestBuilder.addHeader("User-Agent", parameters.userAgent.userAgent)
+    val request: LSHTTPRequestType = requestBuilder.build()
 
     val downloadRequest =
       LSHTTPDownloadRequest(
@@ -283,7 +295,7 @@ object LCPDownloads {
 
   fun downloadManifestFromPublication(
     context: Application,
-    credentials: ManifestFulfillmentBasicCredentials?,
+    credentials: ManifestFulfillmentCredentialsType?,
     license: LicenseDocument,
     receiver: (ManifestFulfillmentEvent) -> Unit
   ): PlayerResult<ManifestFulfilled, ManifestFulfillmentError> {
@@ -303,7 +315,7 @@ object LCPDownloads {
   private suspend fun downloadManifestTextFromLicenseFile(
     context: Application,
     license: LicenseDocument,
-    inputCredentials: ManifestFulfillmentBasicCredentials?,
+    inputCredentials: ManifestFulfillmentCredentialsType?,
     receiver: (ManifestFulfillmentEvent) -> Unit
   ): PlayerResult<ManifestFulfilled, ManifestFulfillmentError> {
     this.logger.debug("Downloading manifest text from LCP license file.")
@@ -323,13 +335,17 @@ object LCPDownloads {
     }
 
     val credentials =
-      if (inputCredentials != null) {
-        LSHTTPAuthorizationBasic.ofUsernamePassword(
-          userName = inputCredentials.userName,
-          password = inputCredentials.password
-        )
-      } else {
-        null
+      when (inputCredentials) {
+        is ManifestFulfillmentCredentialsBasic -> {
+          LSHTTPAuthorizationBasic.ofUsernamePassword(
+            userName = inputCredentials.userName,
+            password = inputCredentials.password
+          )
+        }
+        is ManifestFulfillmentCredentialsToken -> {
+          LSHTTPAuthorizationBearerToken.ofToken(inputCredentials.token)
+        }
+        null -> null
       }
 
     val httpClient =

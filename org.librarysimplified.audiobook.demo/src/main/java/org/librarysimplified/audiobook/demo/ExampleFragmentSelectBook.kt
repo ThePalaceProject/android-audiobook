@@ -18,7 +18,7 @@ import org.librarysimplified.audiobook.json_web_token.JSONBase64String
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_fulfill.api.ManifestFulfillmentStrategies
-import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicCredentials
+import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentCredentialsBasic
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicType
 import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAManifestFulfillmentStrategyProviderType
@@ -336,7 +336,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       is ExamplePlayerCredentials.Basic -> {
         ManifestFulfillmentBasicParameters(
           uri = sourceURI,
-          credentials = ManifestFulfillmentBasicCredentials(
+          credentials = ManifestFulfillmentCredentialsBasic(
             userName = credentials.userName,
             password = credentials.password
           ),
@@ -479,7 +479,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
             ?: throw UnsupportedOperationException()
 
         val basicCredentials =
-          ManifestFulfillmentBasicCredentials(
+          ManifestFulfillmentCredentialsBasic(
             userName = credentials.userName,
             password = credentials.password
           )
@@ -500,7 +500,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
             ?: throw UnsupportedOperationException()
 
         val basicCredentials =
-          ManifestFulfillmentBasicCredentials(
+          ManifestFulfillmentCredentialsBasic(
             userName = credentials.userName,
             password = credentials.password
           )
