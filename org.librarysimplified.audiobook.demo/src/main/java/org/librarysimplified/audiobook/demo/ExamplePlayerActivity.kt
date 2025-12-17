@@ -51,6 +51,7 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
+import org.librarysimplified.audiobook.views.bluetooth.PlayerBluetoothWatcher
 import org.slf4j.LoggerFactory
 
 class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity) {
@@ -84,6 +85,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
     this.subscriptions.add(PlayerModel.viewCommands.subscribe(this::onPlayerViewCommand))
     this.subscriptions.add(PlayerModel.playerEvents.subscribe(this::onPlayerEvent))
     this.subscriptions.add(PlayerModel.timeTracker.timeSegments.subscribe(this::onTimeTracked))
+
+    PlayerBluetoothWatcher.enable(ExampleApplication.application)
   }
 
   override fun onStop() {

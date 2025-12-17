@@ -607,11 +607,20 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2025-12-15T11:23:50+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="19.0.0">
+    <c:release date="2025-12-15T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="19.0.0">
       <c:changes>
         <c:change date="2025-12-11T00:00:00+00:00" summary="Support retrieving manifests and licenses using bearer tokens.">
           <c:tickets>
             <c:ticket id="PP-3410"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2025-12-17T13:46:43+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="19.1.0">
+      <c:changes>
+        <c:change date="2025-12-17T13:46:43+00:00" summary="Pause playback when a bluetooth audio device is disconnected.">
+          <c:tickets>
+            <c:ticket id="PP-3396"/>
           </c:tickets>
         </c:change>
       </c:changes>
