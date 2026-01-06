@@ -613,4 +613,29 @@ class ExoManifestTest {
       missingTrackNames = this.missingNames
     ) as PlayerResult.Success).result
   }
+
+  @Test
+  fun testBugStarWars() {
+    val result =
+      ManifestParsers.parse(
+        uri = URI.create("urn:demon"),
+        input = resource("master-of-evil.json"),
+        extensions = listOf()
+      )
+
+    this.log().debug("result: {}", result)
+    assertTrue(result is ParseResult.Success, "Result is success")
+
+    val success: ParseResult.Success<PlayerManifest> =
+      result as ParseResult.Success<PlayerManifest>
+
+    val manifest =
+      success.result
+
+    (ExoManifest.transform(
+      bookID = PlayerBookID.transform("x"),
+      manifest = manifest,
+      missingTrackNames = this.missingNames
+    ) as PlayerResult.Success).result
+  }
 }

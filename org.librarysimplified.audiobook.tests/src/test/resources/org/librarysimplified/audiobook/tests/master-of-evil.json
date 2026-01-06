@@ -1,0 +1,1090 @@
+{
+  "@context": "https://readium.org/webpub-manifest/context.jsonld",
+  "metadata": {
+    "@type": "http://schema.org/Audiobook",
+    "identifier": "urn:isbn:9798217083213",
+    "title": "Star Wars: Master of Evil",
+    "description": "\u003cb\u003eAfter \u003ci\u003eRevenge of the Sith,\u003c/i\u003e a newly forged Darth Vader hunts for the secrets of life and death under the watchful eye of Emperor Palpatine. \u003c/b\u003e\u003cbr\u003e\u003cbr\u003eIn the wake of Emperor Palpatine\u0026rsquo;s rise to power, the true nature of his most sinister enforcer remains a mystery. Darth Vader is a dominant yet illusive figure: the shadow cast by a malignant Imperial regime, unknowable to even its top officials. But even as his humanity gives way to myth, Vader remains haunted by the promises of the dark side, seeking the ultimate power that his master has hinted at but withheld\u0026mdash;the power to conquer death itself.\u003cbr\u003e\u003cbr\u003eOn the volcanic world of Mustafar, Vader undertakes a dark ritual, bleeding a kyber crystal to forge his lightsaber. This act unleashes a power far greater than he anticipated, giving him a glimpse into the limitless potential of the Force.\u003cbr\u003e\u003cbr\u003eVader is determined to follow this vision, even if it means defying his master\u0026rsquo;s orders. Yet he finds the Emperor suspiciously supportive of his mission, even sending Vader to the Diso system to investigate rumors of a Force-wielding shaman able to raise the dead. At his side are a cadre of the Emperor\u0026rsquo;s scarlet-robed Royal Guard, led by Colonel Halland Goth\u0026mdash;a decorated soldier with a very personal interest in Vader\u0026rsquo;s mission. \u003cbr\u003e\u003cbr\u003eEven as the Emperor\u0026rsquo;s true motivations reveal themselves, Vader falls deeper into obsession. His journey takes him far across the galaxy, chasing rumors and phantoms. But no matter how far he travels, he cannot escape the shadows within his own soul. Haunted by the echoes of his past, Vader circles the true resolution to his quest: only once all weakness is purged can he become a master of evil.",
+    "language": "en",
+    "readingProgression": "ltr",
+    "modified": "2025-11-11T04:27:07Z",
+    "published": "2025-11-11T00:00:00Z",
+    "publisher": "PRH Core Audio",
+    "author": "Adam Christopher",
+    "duration": 55675
+  },
+  "links": [
+    {
+      "href": "manifest.json",
+      "type": "application/audiobook+json",
+      "rel": "self"
+    }
+  ],
+  "readingOrder": [
+    {
+      "href": "969b68f925f53edea0aa6ca5f65a620bf8b58b.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_1-of-62.mp3",
+      "duration": 46,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "e33a4f9a307f13f2fe18dccf23107a300db883.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_2-of-62.mp3",
+      "duration": 112,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "74a37258c65f97a8efb1386aadb2607055aac7.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_3-of-62.mp3",
+      "duration": 3115,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "9e5b11291fed3bd85a89e8b3b7a9f37297b04e.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_4-of-62.mp3",
+      "duration": 1070,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "90324aa96ad58ed203d11c0be3ede5f2c320fe.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_5-of-62.mp3",
+      "duration": 1101,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "e228ab31245ef581265a0aefd7bff750a08291.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_6-of-62.mp3",
+      "duration": 1025,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "4be148e1b4ed229625b59327f62da696ced82d.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_7-of-62.mp3",
+      "duration": 534,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "a09e49fec1d6d0561cb46e711c62a48eb682c6.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_8-of-62.mp3",
+      "duration": 3063,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "d526f01a04beb668d0962ac1396b0ee4538a12.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_9-of-62.mp3",
+      "duration": 2558,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "0f047fe6d8ef9345c648dea276aa0700f4d57e.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_10-of-62.mp3",
+      "duration": 1303,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "fb6a72bc9187dbd35d78677a4c0f94b1facdd1.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_11-of-62.mp3",
+      "duration": 1375,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "10205b622482a7b3c6127cb3345174f862cc21.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_12-of-62.mp3",
+      "duration": 770,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "4acd9db0aa335867ef60caad82ce765f9be56a.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_13-of-62.mp3",
+      "duration": 819,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "590561477f1836ce43a2e755b3cbcd99597024.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_14-of-62.mp3",
+      "duration": 1348,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "2fb1cfe9fc5083857fad2a0b22b2762c7c4526.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_15-of-62.mp3",
+      "duration": 1008,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "419f8b9e639168908410b013f71566439b83e3.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_16-of-62.mp3",
+      "duration": 741,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "83e790c6568e8c84f6b778e47e595a05695487.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_17-of-62.mp3",
+      "duration": 890,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "268d40c596950149ef90d8bb71f8fa28b91bd9.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_18-of-62.mp3",
+      "duration": 1518,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "a79ee7f7804516e1d17b136a409a4d77fa55f0.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_19-of-62.mp3",
+      "duration": 710,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "0b222647e0dbadfec364c13d4e63277bea441c.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_20-of-62.mp3",
+      "duration": 966,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "bf83a6814a1b44acbedb2eef452a816ac3f2ee.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_21-of-62.mp3",
+      "duration": 614,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "09f3cdf88add18e5ac171f14d8fbd787aba3f0.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_22-of-62.mp3",
+      "duration": 454,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "782bccb6a44d798dc8307d5ecfbe2afcadf5e9.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_23-of-62.mp3",
+      "duration": 717,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "8d6c3e98de8a247584523e08f823af3f12a8fd.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_24-of-62.mp3",
+      "duration": 608,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "8ff0e41158b498d095c47d4f1ec58278ad768a.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_25-of-62.mp3",
+      "duration": 1736,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "47ddc9a3f1fc7bf45c95410d3780debd5d195c.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_26-of-62.mp3",
+      "duration": 402,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "12c5a19321d1e79175168f652921e63bb069b7.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_27-of-62.mp3",
+      "duration": 849,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "da16165db9f584eb44b667dc898b878ac61c03.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_28-of-62.mp3",
+      "duration": 1478,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "3f6858db3dd97c1562d24c42a411561c1b3c7e.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_29-of-62.mp3",
+      "duration": 563,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "774443c0f160d2a59e4ab7596dfbab60f6b10c.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_30-of-62.mp3",
+      "duration": 964,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "54795f59b064e350b0be67d99006d7bc6308cc.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_31-of-62.mp3",
+      "duration": 723,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "6b3349213f5cca9aa4ced7c07cebd0123d461c.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_32-of-62.mp3",
+      "duration": 554,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "a184d3b9ab8938b0f7b1c929ab06a77cb31846.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_33-of-62.mp3",
+      "duration": 1944,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "603767b526b5bf02b383444c1cb2e288cbc259.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_34-of-62.mp3",
+      "duration": 598,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "0afb2c94da5e412c1841917bc0390afba32467.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_35-of-62.mp3",
+      "duration": 966,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "368ede788fc554de88482f616d13090d4b48e8.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_36-of-62.mp3",
+      "duration": 566,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "4f8c2bbc4884425f32c77e2984b511057254ce.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_37-of-62.mp3",
+      "duration": 715,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "820e2547bbcddf266c2d94b63b601125f8ce93.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_38-of-62.mp3",
+      "duration": 868,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "e2db3c068d21c8069dbb31d78db6bdb0132050.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_39-of-62.mp3",
+      "duration": 1242,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "1c5e134c22a06463ee58e27c32809154a2dee9.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_40-of-62.mp3",
+      "duration": 1086,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "86979e18756cfd8330e0870f2f014555dfc531.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_41-of-62.mp3",
+      "duration": 1359,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "b92a7ca8f9a9c43f3b28f8bbfc871c7ca9a59a.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_42-of-62.mp3",
+      "duration": 827,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "b568a2a76ff4723bca8005fa8aaab1ecc16eec.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_43-of-62.mp3",
+      "duration": 1252,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "c4ac85f843f19beef90ce53e672a9270520a97.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_44-of-62.mp3",
+      "duration": 652,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "0efe7be3e154e16be477eecccdd66d600c406f.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_45-of-62.mp3",
+      "duration": 722,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "c9ebf037f2c7d644d0a6d6a1be2be93f916890.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_46-of-62.mp3",
+      "duration": 328,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "5d8ef653178e52eba15b4254e93b2ab82472c8.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_47-of-62.mp3",
+      "duration": 556,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "57e111dcf07d13a69e2b1f7a4f2e78de176ee6.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_48-of-62.mp3",
+      "duration": 236,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "99f9b37199a97e195daf204c1bc5271653c3ca.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_49-of-62.mp3",
+      "duration": 555,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "d28a95b16e21d731cfed9bc54113cff52d9248.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_50-of-62.mp3",
+      "duration": 572,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "c25b7c6bfb36b19528d601d557364db2218cbe.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_51-of-62.mp3",
+      "duration": 409,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "65c7e04090b96b8cc8976c7e1798986ff607c7.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_52-of-62.mp3",
+      "duration": 764,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "2f71f01243089dee5894cb06245843fdc82e8e.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_53-of-62.mp3",
+      "duration": 820,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "274bced100ae788f315ee13940df1de9761cc6.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_54-of-62.mp3",
+      "duration": 534,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "bfdeeb01850ca5cf2a188a48d71565f8e37553.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_55-of-62.mp3",
+      "duration": 1224,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "dbd5184e1f405b16365ac35478c6d9d9f5b903.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_56-of-62.mp3",
+      "duration": 1082,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "f258a3f093cf59ca3c4f7fffcda6dcd03a6efb.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_57-of-62.mp3",
+      "duration": 337,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "425d90c93d38eda7257321e09b215ba3de2f05.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_58-of-62.mp3",
+      "duration": 268,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "b8b88a328a91b96fb1868828156ac8fe65f6a8.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_59-of-62.mp3",
+      "duration": 417,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "367f3f0ac09419eceff3459a2f3ef8def44aae.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_60-of-62.mp3",
+      "duration": 715,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "7339a10ac58d1b3934a94fa49f535bd68b2663.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_61-of-62.mp3",
+      "duration": 232,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    },
+    {
+      "href": "513622aaeb80193330ceb6efa228d18ab52509.mp3",
+      "type": "audio/mpeg",
+      "title": "9798217083213_62-of-62.mp3",
+      "duration": 95,
+      "bitrate": 192,
+      "properties": {
+        "encrypted": {
+          "scheme": "http://readium.org/2014/01/lcp",
+          "algorithm": "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "href": "93cf169296d430357789656c926bb5e027b952.jpg",
+      "type": "image/jpeg",
+      "rel": "cover",
+      "height": 2850,
+      "width": 2850
+    }
+  ],
+  "toc": [
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/4a/969b68f925f53edea0aa6ca5f65a620bf8b58b.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=RwVp%2BwHybw81mEIIycWfYL5knZvn6A%2Fo3Fys6HJiCeA4SUDfRUEAiEwN%2Fvz%2BWE4dvYlWJoCFEq15XlNXTm3%2FG%2FT6NgY%2F2p1H3C7kaTsFVM%2FZJVu7%2F2qWU49znSeu7sppKL7M8SXZ%2By4Hs1OAi%2FCOQgONUEA8ADeOobvrHNGooXDPPYtsN4D4jtvVQnRSOqOoZyNWrvSV7C%2BYMYx2HpPGgSZD4N6lcZPPT42FERzlnbQcfyX9xRfyKvuKIQs41hh90M0IU%2Bk0JykA8amBuWOaK5hY0hwo5rrmnG%2BlPx%2FhEyr05xCA%2B9VSRl0XurtWAxFcfBZKQDOeJmVRZiJQ9%2FbXCA%3D%3D#t=0",
+      "title": "Chapter 1"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/c2/e33a4f9a307f13f2fe18dccf23107a300db883.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=fHBj%2F9uzfXF6WiYggr0K2LJoCqoibP2aOncqNG5kTbGPCptsEkCU3Gs7ykDu3FBMgU17e4Dqlx%2FdjXYjK%2BQQci3cStoWp3z9ch4fY96AMurxcOKiS1MEPpnCOtpAkiIK1g9%2FgU9n83G3adeV2DGwdxHeWoi78nRDvtDFvGN6V8NL06rYQxx8jKTfSWepiOZ%2Bco5UOkZ6EbQbMPHU45gVG10Vr47gk3wUS2PYEjxfavf%2FVn0WiDT9orjA1vleP0PPTkhRTtvfWzevg3mygNLkLkPemlMN%2BNA68w0DF7DQTFiOLDbIDGi24P8PjD1NgrdSOFMTqmJvF9XtVZ2uC9jaXA%3D%3D#t=0",
+      "title": "Chapter 2"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/92/74a37258c65f97a8efb1386aadb2607055aac7.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=fBj2f36eRnQ3JFGa7yrXFO%2FMjYOtp81pwkL5fLN4U4zDFuVdEpE%2F7Ykz5JUgCk6hEb4QjnA5O5LKRLSCsTOAsFec0EHZOErsX8Wqo%2Bziq7jrj%2B0Iz89mzgbJQ41mo%2B5wAF%2B370gpOa8PkdqwmaiKkKsCvJTqNlwyYGUGOAzQ5KGf00mBNaPq%2Bl7hVVGnI78UhUfI5MKfq%2FPh8RsLwG8EpeYwMuSlqkhg7EQl21bZvPmhvOwd126d%2FNY9dASVS%2FyKuYbWBODtBGG3VLHvAHRYF%2B2ULx7%2FNNimSEdV6jc4XalIQ8ozn2OH%2BVo5WS70u6gppj28n3ZGEvzWkCQf2GkgBw%3D%3D#t=0",
+      "title": "Chapter 3"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/dc/9e5b11291fed3bd85a89e8b3b7a9f37297b04e.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=AiBgWBGeYsmhEL9kpXgvd3cTMY5bi1JwpLMwT8M7t4xeVfDX%2B8ljo9vCR0CHin2yQGyeDexAKAbcMUAGpU3bMrY7gHf7MyXsIjxofBQrQsg189xGh%2Flw794LKf4bfvw2bGiwUbYYZR9wqzNeDADlwJPS0J5rn%2BvP20BQJJE15%2BW6Ez47UR8rMHc6qrDcqlHaLf46mC%2FBkWysJ%2FNGIVhLU6Grn73tf5%2Bo4%2BGvbQOLAZE1ahbeqFNYYjwKl6iYlSkj0sasmAPuVqDGdtM%2FiR2ekR3lQxogIsv9p6zfIiuWM8HdRvQFYgvhAGzyzx0zEEBf2euLY7Sohg1h1T7nZVpCYQ%3D%3D#t=0",
+      "title": "Chapter 4"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/60/90324aa96ad58ed203d11c0be3ede5f2c320fe.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=p6xg%2Ffw%2F5wk1j6vJldjVRCl0YbennUEaUD2H1JJSdl6LFN6Dw8M678b%2FmVU7W4Bx7DWKNcPWv4bk7YVW%2BY7tsIBHhAHbLrND0O1abR%2BUIOTMq81frqcuheHpgmXGXQyHAJptLtabUcKoqU8eHAXX%2FdaDJq5lItfhRukZlGxXyhwS548Hdl20Pntx%2BHuAUg1%2FWaeSnrqA2p3UZ%2F9REijFJTb85DXkpMpfl303LQ%2Fck24bS45opi0P0XUMjranYmuoF%2F%2Frh4B1eE3hbDd1VALEkQsZjntAExKcE2g5SBSH7IOCLpASralx2lHt%2FmTotzdgg3o6QpNQNxRIwwWvMmkPHg%3D%3D#t=0",
+      "title": "Chapter 5"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/f3/e228ab31245ef581265a0aefd7bff750a08291.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=CMBS%2Bo9ZJsHma2ZIXoYL6LGGV2jsWE1xV052QSAopDOk%2FwE5QiApZY9OO7t7LbGMKZeo0br4TEQUYQQSW3FuTEBwY2PPeDfHVfGY3lJpb%2BZkxbizx62K41Z6olkpqjgxRsrQymWuiYjl4mj9GlvQBHDsl1qTXbt0vJdQmvd9WbUWtXtpPBquxWPo%2FYnbsRZmfiyOTWLetc5kH3nn2fbyQV%2FWCr4yl89MSXtw0DD8fp%2BdLF2q0FdeX7AhC4YJJ8sB9wdyowAzC5j%2Bt780%2Be6m0JQVwzJEuXp3tUCKaNIsZykZdVk1Zy5bbQrgrfL84gkOfWGQNQYEzEOxGCgDkihRcw%3D%3D#t=0",
+      "title": "Chapter 6"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/b4/4be148e1b4ed229625b59327f62da696ced82d.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=jjh3csyZMGwnnjteag2%2FVBvYVxwyqu%2BFPjie5sbIgtYXZivbLLJmr%2B%2FvYVGE1MRGN9osNCjK5ugl5MjMHsx%2FANUEnzeRJGEOMQKj2EbHbORQIByY3pRhcIqvOSyCsKw61E%2BH9n1Y7itBTOyRJjfepPu%2BCnk1g%2FxucmawfuJqSuJaJWbQOhvb8rZJWM0wPedLJDi%2FGVbHhg0Z2ZbQr%2BqGt64z3ZADXJvjhfFmVw5zLg9iTDUvbYMF2AGY17aJaGjnP2Xej%2Bw28FhrVP26%2Bi1cCUr%2FBm4jQJCVQFX22DOCVRXvCthZLwwwBHkk%2FEJWYmGCFgKWG%2FNCatuY%2Bch%2BalyjBg%3D%3D#t=0",
+      "title": "Chapter 7"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/86/a09e49fec1d6d0561cb46e711c62a48eb682c6.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=gey9tnW%2F9WzzePaQry3t1W1pHLgt1mZEZYjlnJXk7eJpt1ByJ2W3FHP5GbUuMmcEhFDe61lxUJk4UFHEclDe8qkXqiNQG9aZ40VxftLvaGk52GZw7y7BMRgSCCCZ%2FhhjdlcsiZyv3ORbGw3zs1cbW%2BBD%2BnUjIQrOZ5AQ7%2FvYFUoddocvpXqKLWXTo7tkKuVcmReBX5%2FE5ykNmSKI71BOYsymdji3%2B4jA33xcNgZi7A9Zf1QsKPlGxmdvViSA%2Bg5wgNP%2BN4j9oy7%2Bz%2FliSgegbcW9N6hsZyPRIT7ZDO7UmG1PUXZrn8K8u%2BY4ps1FsbsBa%2BC7eNnHf%2BIyGmivgiPiiA%3D%3D#t=0",
+      "title": "Chapter 8"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/8a/d526f01a04beb668d0962ac1396b0ee4538a12.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=mH%2BDAtokWsEY2IsOf3%2BKA4z7ij8jCnO7pBcGzz%2BBitk11M8pt%2BL6s4RmUIZE3Rn0PMW83hwxRVJ2VLq1wlqT9LJKDBHDQr6q%2F8LtYYoRkGqcm%2F0mHG0snTMMr61nNqpAgB84LYXU1zMNeqCBS09p2JtrAHB84IGQeCThXeth3PoSOsDkXdB2DaZJwUrUUXSpSrfjmu%2FAcwNiLJZdFzl0y8ly8y56PH34rx62yRHOkAETBtlMrdCcqZIMrelXUF00wz6usCaOZJyIbp7Pm1ES5fnrkWc9B8GVwBYR3a7xdZzPOgjiCd8ZwpM6ibIfRileRFyI%2FJgwC4RUi2hWTOQxpA%3D%3D#t=0",
+      "title": "Chapter 9"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/35/0f047fe6d8ef9345c648dea276aa0700f4d57e.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=v58Qr4biih6ILm1mc66%2FTCoRtWn64r3nna%2B2GAVb9IDpGkjh2%2Bm1Ujr5bu3xwJ96i%2FgtgQPnBhkV1LtBGzVe5IMuJm6tTi1CSOcXWZdZ2pcSF3l5Qyzuu9wnMPGCSMDDkmq54%2FPxj1qv8atv4eHmPYWR5fAHMiZvphWOFEjN%2BjlxSz4gUGmQxZZZMK0XI9FKw2YR3J5qVZ1tlWRuUY3SGe4nX1ZXMgfGoiVKt8U1tu%2FxR9%2FsFoLIwSFvNFOQi%2B0bQGFtDkDPIzTRlR5eBDIOOqIwwuvAe1iXwRGyeXbwM7zKhXMjudBpTC5ox2nPXMllCDi6kRf5EynHAcHUNxlxGw%3D%3D#t=0",
+      "title": "Chapter 10"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/27/fb6a72bc9187dbd35d78677a4c0f94b1facdd1.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=rH70Irx9PeL7nscDqIn%2B3YndyvDvjie2HbmkBk8ZpyvstCggDGbWdgH6jDA8GLPR23AUxc%2FIJ3gVipz%2BCZTy8%2Fy3lZcB%2FOYrhluEkbt1aLpc6ecsTIIaVDuypTKz6Vpj3eeYKta9JyXdgtX1Nk9AzShanvunfzexsSqDPMrNLE4UV7sQUQ2q9Q8v9fHlbSsBBDhqmBCsEEBKU5aXL1iEgjlKArH5MqzqOFzkJh7I8eWe0eI4rJh2%2FzkoPO7Vavl57AgmoJyv7sPM7YGlh04cNj7zvv0HdszfjCmxsKQlVxvFzkMjbe%2FSNCZR%2FF25SN8M5abrULLMRVC5c6ihdqorZA%3D%3D#t=0",
+      "title": "Chapter 11"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/05/10205b622482a7b3c6127cb3345174f862cc21.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=XIvwM4w9gXuHcjqAXsTDQetKznlH6BV64aPhhm2ZEVdj0CIpiS6x74FOZKx3e39LcJHIWw5MEwCPqOgBLVYQ%2B%2BP0i8FmyGUWqUwJBkGKJ8drZlM1P%2BBOd3UMJ5mINPggDnCdOJ7bvZwcbowyT2E1JCk4f5c%2FLiwEoSZGMl5j2YbxfHurqg1dx8IOzvJPzj8R4cESFKT%2FRLa6O4uExoPJmv%2Boi4I8GiDCHgH5UcJgjDhYVuDnN2KsTXAQ9I0QeZ0QS5Kzy1%2Fnh2L11j1rd83vTk%2BTccXn3bxOqWTIoVt3g1wkakCQiSd3zFcPU0OhBhHYS0SVAlwBiZzuYnp872aY5w%3D%3D#t=0",
+      "title": "Chapter 12"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/9c/4acd9db0aa335867ef60caad82ce765f9be56a.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=pn0U9yllw%2BuJcZVxiQPF4NiInE18RH9Cpqlre1TWgKQRjKxdNMMdVB8HCzsoWwAROZ%2FP4dmLtaNkVKPyyiGTcakuQ%2BynUX8cUQ%2Fe4d88RwtHf%2BcReE%2F0zh3NpsYCxy0BclwXI7ACZocfS1NyzgvDmieAYzxPGMzYUJetx7FMtq2qdtRj43YKKP%2BNNIYn9gtvcacTcmSPlPp1qxr76c85GawNr6RGVc51LkURsxdvTaPcvt9JBK1IxTOarXnb3Ljb8xcfTuYKfBZN51X2jlh4%2FDcf3HF%2Busn6VZIDkz0k%2F9kwfJPWu3ebCxE7jc6NLDKMkxzO6Bw4egVBI3HXOznZjA%3D%3D#t=0",
+      "title": "Chapter 13"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/f6/590561477f1836ce43a2e755b3cbcd99597024.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=UNLzm520zOAdS3O3XF0TY%2FAOuyB68Vp7PSpML%2B7OGfhpiBdUwLq8Mmc6UmAYMPor4NuwOyINwOii9UnwtBEILHzIr4jtOW4dbvg31DXxcNivURrd31cbX%2F7YpXc%2FWQtCAAB0yKWUYo8TP%2B8r1uHJ%2FrepIJwW5gncUAjurPlM7whBu%2FyBxpFJ0PUH%2FX%2FlgfuTZZRKZwMmWFU5i%2Fhy45Na0NBBPTeTq6h3YEMwbIAHQZQbiXUd6zTkkcFWkjbp52aNM0%2FQEJrZCae6d10%2BWM%2B4AWqkr3LkR6oRK4V0LOAWoQusI99VZ2i7cYfQTszAimKBrbzRPIN3cgKHsWHHHp3JXw%3D%3D#t=0",
+      "title": "Chapter 14"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/f9/2fb1cfe9fc5083857fad2a0b22b2762c7c4526.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=vnU6u2pDov%2BD7NOESfjpRThDvXdvw60VXYWlHNB37uKnUsn26PMczpIFuX6%2BHN2LWBYjPgFRbM%2F7Jr6h0YPZeAXMcdiXCWI2RkwbFMyq%2FvlSpeK7o76wWMWojErq7Gyk%2FpMpZoH6MM%2Fa2SOmjQgoItToR7gErZYuqvNfv2YLpGfuEneos3SqAgQvu19ukx%2FCM5QxdFVcU%2Bt8AhP4wI9Qbr2yZqUX72syTxtz76WVHTIQAoJ5ZOm5JdM1fg1b1JFvAjCn4JVXeujyz2tkTIEa9nYQLqtd%2FFkG23p80gUbDmWv%2BVdOIt3ehClOhe%2B0T4mrO%2BMFXXhZGsPLwQUURevlcA%3D%3D#t=0",
+      "title": "Chapter 15"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/f8/419f8b9e639168908410b013f71566439b83e3.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=PHxXXC%2BjjMeAWdKgNnGk%2BUxCz%2B6iIXTCXEKL%2Bq96mZ4HYzv%2BpDyrGhKKBTbdIYoD2lyNrrqS%2Blr%2Fh2FPUfOKrwvfeaxnWNZSwBwA0RAjliEi%2FypjW1%2B3vf9H%2Bwiiwf7Y%2FgTZvweH1RIIbpaWiMAChIAiNHbQLcgk9aTeLIGEcLya54%2FfAdQN0FXQidYGw2ZWLOgHxHJVDx1Go3REse4UnDEPScVNUKTFZTYnYeDHb6gMCiH1g3%2B8f2u4VULm4KBjiYcZB4Zc3i86o3gvs8USZSK9RWlHpH82MxpjjtLfMjsDCB2DSP3MepNthMcx89KQ%2FoIt1tlgP9v72sSYB%2FWuzg%3D%3D#t=0",
+      "title": "Chapter 16"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/f7/83e790c6568e8c84f6b778e47e595a05695487.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=vghJguu2hEmmmBL96aAkS0R0gqlu8l5cA3wK0X2BoRY1Cs88HZY0YvaLezae6LjBzwcsQQnRDlkCdjGjhYTGrxljUWHhOpumnDaTMUAwGVvuHUgpkOTn5g1weqBV9vkm3m2h4DoAgAD4YfToqRBE0WK6zFTUsXVZtpZa%2FcW0fvtz5smZjYuTM3j0OgLuG2CKvX4hTD05WCMOrjO8s%2FVrqGcpop4e2F%2B0DO%2BzKIay2bNSSwwkB0l6lB5tReb3kEbM2VKQPhzJyJWkIdheVHuCDUNLeHuoUadA82%2Fy8KTJXwD6lBcI8SxparS5jPKPgRSeQUd%2FSRxDbPdVUs15RtBuWw%3D%3D#t=0",
+      "title": "Chapter 17"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/61/268d40c596950149ef90d8bb71f8fa28b91bd9.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=pLN%2FzpzhEPqQsVrtpJbkS1VTWjogF9z4oAn57wCmqphekmWXTQX2Baf12qPyzOtt8TI7Js6XXbgx8XDdoPVgwTqPVOxPGbkb6n3I5fxO9pgg97F37q8v2VyoIs3yW50hSZhJ7XVIPJNEXugOveVwXVPMZOBfEwNWANgXxLjAOVacgrb7x9suVIkc6vCfxCMfatHtb1xbg9oUNWmlxlEDG3Y1mz9HXGirYhsKxuqjNaqpi2%2BPhI0v6Ulcyl9qu8QELoZovRf44LcoDPwSmy%2F6Kd0hrs%2BGZDnC54Oa5Vp1pg52LqvVhzyRn9MiDu1kPjlXDB34%2BHhPJL%2By0AKeDIF1BA%3D%3D#t=0",
+      "title": "Chapter 18"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/db/a79ee7f7804516e1d17b136a409a4d77fa55f0.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=lndJN14o%2BdA3W5FjY6t%2BgxTEGzGZJwXbyxdkQF8tHw7JStA9j%2Fl0aOY%2FmLxGDZlDTTacEjfvssAdz0a5Law1Ht3dLlLGm%2BkyXxCcKgwn%2BsPjf%2BsKF9I3D6JHXWOveh3%2F3luB5TSi6TlBzgr499%2Bx9H9S%2Bns8HWhoheiWNBqutTQ7mLBQMtRpxvserVL%2FTGtRw8GxEamLfKSeYxTLT7DhWjuBjtzgwPFVut7K0FxLbH%2B%2BQ0KqjiqfkHpOu9tHgny1oOqf0KD3ZSQ4Cp8rKCmp4yfjlFOW%2FjMS1Dc1HnoHI%2Bz1NOyG%2BLiImPsBubE9gpeptZCJCafFGhjvx2hvJVKmbA%3D%3D#t=0",
+      "title": "Chapter 19"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/f8/0b222647e0dbadfec364c13d4e63277bea441c.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=tfnrTGuL1Zfe99i5OV%2FBiG6PpdOR%2Fe%2Fbk4FChEDKfGanukkhgMOe63iDf4ENRbsh%2FvmgvYQQsKk08ZtANIHicifhfOHkO8W7TkuRKoAdZ38wXcWkJKTxtO9CAi%2B1pXCvsHJsWGJiLZb4tdPbC9W65AO6Ws5NU4oLwsnxCDqe3vxefZjrmkZLxeTN0P4Rhj%2FSMamlumVOj70%2BLeyYRcjlISca0fCMVwDjW49XKiA503gu5tblH1tCWDm0k3JVI1kotooU%2Fty4ciCoHaF4fEPW9B1%2BF3EhgCxB%2F6UeT2fbsahw5n7BxuHpFXKqo3PCQ6IyM10sq9XWBRTO6qMAN7NfZw%3D%3D#t=0",
+      "title": "Chapter 20"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/b2/bf83a6814a1b44acbedb2eef452a816ac3f2ee.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=vuQ82OqWN6wX6ECgkhBPln0AducbjxCGYrhJQAnLKigGIn8cl0HSTIudqn9GoZfwiU%2FCFz6scwCc04bsf9odYh1Al3MDLlAwQvjBAuBXft8TYQbCXW92xdKH2qsiLcC%2FiYjxQQoVhgjjDNI%2BRjSeuDo9V5QxfHB83N4RY9RpM7wPS07vAftOP3RWxewKY7PTdA5T0BjYVxy0O1jW%2FZ%2FGZP8VxoyF2w4nIMOH1K44EzjvwchzJsrmYsEMV48tZM1FCNbM7zvtuBwABK6keYhw09NkZzI%2Fps63nh7wXA7iFc4zGAjKqg%2FUkFDpubBchRCEveuv8x2mQOnUWw3BHJ%2Bd2w%3D%3D#t=0",
+      "title": "Chapter 21"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/89/09f3cdf88add18e5ac171f14d8fbd787aba3f0.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=D9Q1QmjL9DSRq0d5sJxmYzDuHaRE8DwMXF4FBcKkbuX%2FD4W9PXVwusr8RTii%2Fb9E8MaiTkacJYQAGicZP3rVgix1%2BtZsgAk7lsPSIvZICbll9MQcpt2DtIiDO7%2Bc0ycbjUufksqiYw9Ot3%2BVCrpJiOqpi8LVyFfV21tzVvyW%2BmWD%2Be2AM3zHt1RTlJf9Byt5EGzJPnMjHibDt5UqK9Lsqf3DUxbNO%2B1IB90yO7kZ6%2FDIKhqeR%2Bu3R46niGCNdvc91kIoj4i05rR01PWeJbHd6kuvOiYF8yv%2FdKjs3dZ0pVtLZ5duEQZ0bm%2BMYQEnQdgbDlTcdMcfqL04%2BF4KKLfm6A%3D%3D#t=0",
+      "title": "Chapter 22"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/6d/782bccb6a44d798dc8307d5ecfbe2afcadf5e9.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=MxRqBXULHBRvDwBytVL7jTu9CTHx7jkBx9ejA7MPLVIUsN1IaaCAEhUB3ttoLaRGkg87us2CwN78Cc4%2BNjDT1WmKuO%2FWhvhO9ZoqWZr%2F0TRZEEQY5DNIcGkl1nB7ZlHLFigCt6lsY%2FsHrqqAfLzrezqRBrZG31oskDMC3yAMR5gUg%2FhkGV%2BBBH924h9bqO7vy%2FBiW7jNZ1JCLbHkXM8ZwiLTx%2Brj7deB%2FWKKVnr5s0GAK38yJmTALElL4gv%2FGp%2FnqxK5LnOjrDzU%2FeTC8UsUsVEf%2FmVCXTqj8eg7%2BsWBp5cXDbGWUG9y6XroLQEs%2Bm%2BMVQC13U3NsJvs1CrqbWyA8g%3D%3D#t=0",
+      "title": "Chapter 23"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/02/8d6c3e98de8a247584523e08f823af3f12a8fd.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=afaNHNIoXFSaZ3T7BTruXQz0BfZ6O%2B15%2BW7QcZOS5F%2FLYgZIOEV4rj2%2BvIAZRiJA%2Fe8LRipTmkrStrGis9j8qDtHrZH88t6JG2pOdIsm3y9r%2Bpy2tLVP57CN595xhN9NQnPbC6FqxIfz2N0hqtjARGntNHnv7hOz5GyLbWqxmvn6IrZyFEVdxS8s7ydWudO7j8oxY4rLHpN8RUltHwmlf2EfQzVPnjV7WPi0exfcUwZsSBAhqfC47LMGPYucuSQZ4Ywks92GaoOa1pGKNVv7ErHn8uMzv27%2FfxUCCVBFWCIiZmQ3gAc0KP9MSG4au7OrvSJTKFNfVgpQx0f6aB%2FaCA%3D%3D#t=0",
+      "title": "Chapter 24"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/93/8ff0e41158b498d095c47d4f1ec58278ad768a.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=c3Nr8XjoGZQrz1WF6nQDg%2Fe22GNrHpQk7CTolBwpQA%2FnUfyf2JJrH2SOVfzDU4TNKnK4ELQSLj6%2BcqwUixfdYLDWC2VzoC7u7CKCnOukOhlErQ9bv78claEp2pm4nsvyqpXCpDomHz%2B1Hd%2Bdrzh6307pGAtSpfUeD9hcZzmWrFJH17yBiOZsvHr5y5gY1PRQvcSDS0Sm4XrdiWVciKMElUolpGF41kuJWLGRO2NWpKhw4jTtK0O5%2F%2F5pd%2FImwG5wCIKPYD2%2FKbymMTxiEoB4CKTI%2BFQTYnFInzTAAjDPG%2FL%2FsczN%2BLzugdyK76nDDRgMwcvYZ8lznh05pNOiKowiaw%3D%3D#t=0",
+      "title": "Chapter 25"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/bf/47ddc9a3f1fc7bf45c95410d3780debd5d195c.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=ju4fUYwMluIVuJWN%2BMMaLjMWlIsXPwCo7rw%2FrWq4tTyZoFt6A53org43iCDHO33U0J9pJVJXLW%2BuqgzTirGC9zOElQCUV6zWeqlwXUtQXjzkO7crvJxBJKkcQg3DY%2FAOg9h1fai17N4kN2K9J%2B%2BhxG4neABu4w2xaU8RpDLzy0YXxNfgf9d3KrP0%2Bih6S%2B50pU%2FUxiMhZJGGbe2Jgz0HKsbQaSmnSBVuz9mKHBwz1io3FYocRiCbesNiCOpcXCMTdOHxfhL3qdpt1pNA0DAoN0BB4stAfwQxiql%2BoN4b5hM63bCGmghzpSzDETOinr8jrGt3D%2F%2Bb681Gs2D%2BfGjnfw%3D%3D#t=0",
+      "title": "Chapter 26"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/11/12c5a19321d1e79175168f652921e63bb069b7.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=isBMWJDb9x%2BvnimnjrgOYLKIXuwD9OzOl2Mx8cWj8s%2BEzfSD7pgOS1u7Qb2JqOLMUu4areJLhOcLMHCXnI2c1J8spvvhMlc2q4xbF5LVjOJ2msaTj06zv301HqML9RumlGBJhD9CyueMC9hzaOLA%2Fgtu%2FJaJDA40rlaCuZwjlgTeOGublUZd%2F7YRamVhSv2x8hBU9unF4kKz5HDfyPy74ZtK5e4yWWfXhma6VbjI1wAsNu2%2BN%2BpUKDBgR%2BR%2BeHu6U%2FoDIIali3xvBH6wACeQADpA9XxfVsrYHqxV5932d0eEyAY0ey6hnssyCM4lqQdiYQFmMH79JdnKFNakLcrwKg%3D%3D#t=0",
+      "title": "Chapter 27"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/87/da16165db9f584eb44b667dc898b878ac61c03.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=nAmmCBBHCMXxyocwHUmEvVkcRD8DbuGd%2BOThqteqMUYotBrrHSofeNEY2asTYsYd2AbYuiKkFhhslaMX2ubFv0YutywA%2FNJF5xitqFSUNVnM2yDw0zObhIpNzub4fXm%2BrvUtJzpVKplKqXxFI9QQ9yJpTFztz8Olz7JHClol2ZThPjyQb52hiV8cUBb7Sfc9xnMEzPT0gQqwrlYf1vGu7MLBi6a6EPUfOduZV6Pi6MLoYjNTVu6fHU4QRARJhVh%2FOKlpRciE%2Ff125%2BBEKCT8c1a9LnXMhQcQ0vV%2Bue2Ju46supSt%2F%2FPxveiGwWXZkdlsyQ0b8VOlDoIP%2BPYw4Jp0pw%3D%3D#t=0",
+      "title": "Chapter 28"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/1a/3f6858db3dd97c1562d24c42a411561c1b3c7e.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=HPgmssff%2BDlRIkNWZCKUztf6NPSZehXjKdzK6jMPy7rGqxVWY2vvqD2o9Onqn75g1VIKzRV%2FxPKyyWNJq3bntCLnMghPOk%2F0ZHSY%2FLNBhiWkAJsB3XihRD9RVvC1x7zSbkx6V1HUHL17XPhaGRy1YQH236FBSft%2FrSYWOQRWm3hsjZkvjAtnPyH0lp1P80vE5vDJnqDQ%2B8JChHK8fxh%2F4tWlBAask%2FhTolh4Eav5Ffuob1cCWWvcirPd4kbrEiA6W%2BXqNz1rM4iuubi8i3TF5Q1sM2uFelDZTc%2BQGT6pyYY33Lh0MDzrctoJG5GjSP4l9E2k04mOYhhrbXXgi7sH2Q%3D%3D#t=0",
+      "title": "Chapter 29"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/dd/774443c0f160d2a59e4ab7596dfbab60f6b10c.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=HNErjMjHNBx5jrpB%2BakWM%2FodsP5YP3Kqliper4%2BSYuME%2F3p3a2unlrEqOkRtx0UPpgw1XvgzJX2oSM1SZRZ8%2FaiOOdpNc4kIPh5qFwOlB6eA6C92sz9jCeMO%2FgBoZVEu4YtClYLGnECOkHJm9JbQawSyey6Ph4mlzqXkyd8tIfuZJCLiZ82vwqDke%2BqSVRuguGNNc7CXoMv7WhaPCoFQQoJfpFlfKGvRSkQS7gvOlDJLywylm0CX7BLb9uB%2FPGPELAirp3e37ZTuu%2BTrZuG6UNzrFf9dde62eWfsJsMyg0hUYeNxFg40%2BpYTyjAYozmYk2lit2HDM%2FxwqGgT%2BHaxaA%3D%3D#t=0",
+      "title": "Chapter 30"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/71/54795f59b064e350b0be67d99006d7bc6308cc.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=r%2FXOd6NouVbCZY4jiI7Et8gseJ0%2BgbucQuTHEBNkkIAUAey6Q6MiSdBVPtUqlvlFneycllMh1oMm%2Bx79l6JI9HPnK9YqfEfTpDpZe2VVJ%2BxDxyP8K10mD0CzSXHBy3AWHlHZJ6cmkiRFpNB3abV%2FSSvaWmQ9vpthYPRader76J7lKOe0tE2z1pb2bndsInOjj5XLITUA%2B7nNq043y7vnzoQpvE8%2FNWX7LnvTUrFZOYnBQKnaS%2Brs8VeiHaaeaXxfo4ZHVdgrlxyGKAK4t0KHbsxIIadNUnCv1tAmu2kMfCSdw588jypf4VACT88adCWFzZrW4aTkPYmTi4q3j7sx2w%3D%3D#t=0",
+      "title": "Chapter 31"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/aa/6b3349213f5cca9aa4ced7c07cebd0123d461c.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=gw%2FyY5u6HJ3pVX3y7iKiMk1j5bd7s0HxgJ9soK0JA0netLL1iTBLX4Mn9a%2BRUc5kXSbpOw7%2BIbScJsJx9cz9UPGo60E7K0G0HQMBvsy5juksD6An6juYFyuQY7%2F7GTiKFVbOlCvZ4sbQhRnXHATeIM%2B7OAD%2BM9Uza1p2dVluPEifS%2FVI9URHE%2B%2BEBKyYFgnDhS7GTEIUhahYYHN5mazkK81QDO9PlD6WYzKHsg%2B1RdqXvVv0J97w5NCClPoxYPFn5JmiPXCtU5TLg5oLbsJs3o2K02tsFDExwNoO12rn6S7lSuQ70ERCF6mfNZSTDOs07ptfdeUkZ2FX14HpnvNwpw%3D%3D#t=0",
+      "title": "Chapter 32"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/97/a184d3b9ab8938b0f7b1c929ab06a77cb31846.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=x%2FUn9s%2BOYcR%2Fhh1%2BmFgiM4%2BQew797ngKiXZ4ZzPH670Gq9Fp2QfSYrXXpQMoZ8oCGpfI70Ug8Bi%2B3kP%2BG5k6wWKISxfVzYq0tZ3vtcX96L5jwXaF8b18ki%2FEiHmjQkcYPnMsrC5Kj3DFwBcR4cX7bIiG6fMT3LOkj3aIJHCoaKnsiMrxk6fsAe%2Br1sEORIion4lo0VXJFOErTI1Tvdxmmp59HXedkf50ruvFj1W7%2FvrCFooqx1WsdwgxsY74wV4B5zxK48n%2F%2F1iyvnDxE8uCGzoVSgJnf3D5eVaZ06S8WyJtK6Ab6sBN%2Bk6OPhb1orx7E2FAcNpqhzVKrnJCiCKdgg%3D%3D#t=0",
+      "title": "Chapter 33"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/ea/603767b526b5bf02b383444c1cb2e288cbc259.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=UZNKQDewsZ7qI0W7nmiIUdP9YtWOye85BEOfMXPSVqKTcZiPJ2JY6gDEi0%2FcTln0Pmcsi8PKzRl8yON0j0z2R4gWz1S1QzLpSmH3eEcLLP22ZAzQhecxmR%2FdDLrfGrNRCXjgOGjD7%2F0r%2F0I8v9JbGM%2F85WK3z3S2vcIjG0y0Iib6wLhBhc6marW7KUM9w1fPukOPAADI8lGF9DCITIW76ON470ZR1BGnju%2FD85XBocm62%2FhtA%2FHJ7lX7fa6JaA2zK%2BS4J1hK8Jroyu40dJ99QEs7yUeyPSHbWNxghhyvddm2H9sQSG4ApU%2FGvwX9OZNTQZIeaHKmQs6gcsis%2B5DmAA%3D%3D#t=0",
+      "title": "Chapter 34"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/86/0afb2c94da5e412c1841917bc0390afba32467.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=x1sS2YvQSS9gqfz6MUHFfzcCAXS9AtfoairBBcNMTHMqFwZ6fGvp9BCXUVXNM1FBZH31PR7q9fT%2BrHZtY2WB8Y2MDVFD4Z%2BWTC4YbCldCgNC7kIUlCU6BsygB4ZXIqd7tGQjxjMnXf3sj1flzo0UetqKLhWHnRpxsAORgURHyOzXK9FaT586lCX9Wsq4ThQcA2cL3eRP1sVv0RbmZSLGkssH0cQatJp5jtMyTYuk0RB9b3Iwwm2d%2BfXp7044OeVlcs9RW2DYK6DfT01ON3cBaCVeFF138MbTrTHAQ9QAkyOJVeh%2B0KwitlWoKugifNeokbR72HVYBnYKlsegiFUrtg%3D%3D#t=0",
+      "title": "Chapter 35"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/b1/368ede788fc554de88482f616d13090d4b48e8.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=RvULynjyYVQr2Vqz4nXfM2ZQOVpXkLoVUV9i6OvJwe%2F1nr4Uht%2Fkko7ribQiFTvjHCJZkljFY%2FiZkxNiwm9AD6G6lpsBUJ3O00DnGQq%2BJ7kyWZPn1tQUF7lsHqSqEstYh%2FJViaexp6L7YdhMNV0gzZYFKGHDzZYC2nEOVL1thGEMq55yZ3A669PDaSy0RhuTnsuhfQrUQl0gHHxDOJTcpa3zYH4dv9ho8GYP%2FgIiwGnlg8Kc5pMS4yA8tlETDPVUajM16aKMBhzYWOOkAgL8yeUYhkedL7se3oDuSVjeUHnf2kRAPMhM%2Fx5h0bD7W%2F96G4Y8BdCv0I4xylv6nll3sw%3D%3D#t=0",
+      "title": "Chapter 36"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/4b/4f8c2bbc4884425f32c77e2984b511057254ce.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=hiVMRSXzEKbpqqQ5Ngnu5iKt6LO7m35sJy2Otg%2FS%2Fa4WDT4i6AJoJzORtmt%2F3Rt%2FVrvttYvLjX0YMvQYJWE03MBi6FR5WR9ED6uY7GEawVG0n7JLpPFFPGJt7jU5XWuCkdaJHOBsw6%2FIi9aOeat35iUc8fAMZBPdri6VA9IQPS0N9gNw3DPkIC1WuTf1t5dk5vvazbCYN0v%2BoBh3j60meejTDjvCyXKC9L4j9zAl0Meq5XeKWqYYGv3Gyr9rvZ%2FbynA5fR%2F7HQTMKPIQYvlfYqsoSBZpcOaO9Jdpv7Rw%2Fe8XslsKSZUSh2Nyp4aCf9sPhB%2BbMHTlJRO%2FrvPB8xoZvg%3D%3D#t=0",
+      "title": "Chapter 37"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/41/820e2547bbcddf266c2d94b63b601125f8ce93.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=smn7iyT4UQROJyHbtcEXPsGsSRP2bNtdCzST6H8gKH1Epwd61RWnOWq7ohBBO3aHYNJi6yun5kh2X3W5%2FJ9SIs2x%2FRHOYsKia31BYSs4TM10pXMsqya0gf5k78b2gb%2F%2FmdqdQ8ANWgUVdIjxSEE3zXGEVaSa0zWTC7QUA9y7FjNAxJ5lHJKkh8Ex%2BgJlzl94UIPjBW8NHjSy3tB7POJ4fl%2BMP78NLZvC%2BKCo3xMeVEa8C6EYzWvOsk0BAoCHp40wUFxPurRAAKtzthJ3YybKG1Usj%2Bk5xAIOuOd5ekRIqtlNFe%2BeQ5viA4gQCCG31F1z%2BVrw%2FkARqWBoVeZ%2F7zEkMQ%3D%3D#t=0",
+      "title": "Chapter 38"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/0e/e2db3c068d21c8069dbb31d78db6bdb0132050.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=INAQx4pTeBpa78YmkytmHZGASMVeB3jcFsZTrn226LzdQaO4KkDi2WYffmW1NMXqAYDqNVB%2FoXk0mSJ05xKT4xEYb%2F3rHgN7sV3spDBQqv1JKi%2B7XJ4S7La9l%2B1oK%2FxNmJtkdAgayJWLJ%2Be3MN25XvpG0aTJ2nt9W4j2I06%2Bto3FgJlB3lZyn7%2FXii0eofVD3mqBE6QfhDGQczgRNVxZsygzOHT6vUwmnl3cuZqmUYtMjCTb5IR7zwlm%2BWqOACLC0WDbPlkhnu4pUXC0Dljfl49wZ2NQV4Vm0XlAR%2FYBALYtWTAY3eTN9O54BuzPxjeCHzqSQv2xzICBxeZZL%2FSqNQ%3D%3D#t=0",
+      "title": "Chapter 39"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/05/1c5e134c22a06463ee58e27c32809154a2dee9.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=Qq8d7lMe04aPV2yWzIvDwo%2F1%2FbRut0O3rwoKub8sT78FXpIJxTDdCeFJIRdKE6hb6rPX5gBx4cVWbTQzr4T4SV3J7R0VpvRXzpZZ7elFC8ZDLIWFnwdaNXOqcw2dGtNFQH9PKjYfLOpfVukPaNLyf0f2yPRYAOTqpQed301PFHAlX3HXFnxasinmMA65emip62JXe13dDlsl8POWa4z1CQePzC7HUTQ%2BNhqqW4XWbnnughNv8Kmn8dUZ59nkK8pxVmnVrdOe%2B1%2Bsr8%2FA0vxfFgcmKRGrs4we%2BgczoxNOAmSa%2B%2FM0G59ANnlPyI5NfHxa7QiewjDJDd6UZZmqwC1R8Q%3D%3D#t=0",
+      "title": "Chapter 40"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/cf/86979e18756cfd8330e0870f2f014555dfc531.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=U6uVnXZ2Hcs9%2FknQz5DrSRPwqU3Yq%2Bc95WHbphJrhzYYsvGoGmspdoG83O%2F37nAUa4nXujIZVMPejY0YvID%2FJfEjjEHv6B5NQmRugevd9gAX4IGUdMU9YGHyHPqc4Atmug3JkbSr4sZtazCWEPZlgJ5cMoBWfDM%2BMyP6ER9DD9vYGJvlINvKs7wQAYdbEBp%2BGLuewbNXBOlASilbpG4UqNUs%2FNYuE%2BKfAx2L64sAKHt2xMGJ5jI8rA3azkoK1FDqTAviT1b3eUDs83qSOGQ0lv1vef2mu2vnh%2BLJsEmW0mDWrqph342IHrS7ynhmll9hmoSAAXpXIe7fdmfkqDM%2B8Q%3D%3D#t=0",
+      "title": "Chapter 41"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/c7/b92a7ca8f9a9c43f3b28f8bbfc871c7ca9a59a.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=TtWYjtEsVyzo0fq5oUCTU1sYsDKtVNPI%2B8AVMcSH4poYown5AhVcWYEb%2FiuTIQa12%2FTrnIhzKaNDhvKyVThqIByg7fPWq%2F8Po1JpUWUxVIFxHMupuwb8IDZ%2BK%2FrTszR27Icgjr7HB%2BdWnlIgVJ2puO47TnF1OPJ4z7cxAeSIApLbQDjy6VVxkw30FS4gCpDLKPWgBl3BHe%2BpukNR1H493Ji4c3yOsEH9TaSqvuIBjCMFAdhNjnjwPkoT7jF96kCrMjMdheEZ09LGdSMfdoakzoOHNs7291lAcC6GOV%2F%2BxDMhYDqywpgtI0WTOkUSUHLa3m0sBbUTlqzwbe3PppqenQ%3D%3D#t=0",
+      "title": "Chapter 42"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/6d/b568a2a76ff4723bca8005fa8aaab1ecc16eec.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=SV9gc315nvQbReryZLc50I436QYm%2FblelOqx%2FFVn3XxnSBwEJT%2Be60gi%2FT%2F43dj5gM8Py9AUFM59HIzf%2BhWGrEsU3IKxAiKbJkM%2BnTVz3Afpl2liu9bX6jYORVISoAZ%2BIT4UrolywkgWyqlyQ7bNAofqB9nS3LVdseU31BTAydEGvOuy7gGaZL%2F9j9yHeg6BJqY3OGZnV%2BOGF%2F6sHQR8BHv42oV9Wfkr2EF2ipNK62SYJn2GjEqR9lq8DZZzK0oRssyyYk54yphU8HYYr%2BGdb19fGOPCEpDf9QAMoDAYXX9Z7OGqJ65tmWD3CfooHH61L3kC6WeAxRnlgliC4iFAqw%3D%3D#t=0",
+      "title": "Chapter 43"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/24/c4ac85f843f19beef90ce53e672a9270520a97.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=tiLz0sXGcthEjozLC99S7YS71FRqMXGk7%2FH7dFyUQRgGi18dZTCG50VEUJrSOl8KOi2X46rOLd%2B3pjviIRdiqgMNpzzB7V5NqmXErZN0YUvk9Hf2VDjpIUzXJbCrpdQ6G96%2B5p83%2F9Hliqp7VGfTxpecl6VED4F9OaG12m81gS%2BvvDOtQRMXV7sSbWVhfXGLon6JL6OIeXn4LPRREpZ9LImlSI5iKapNZJ76bIZEL%2FUF7c9TkdYFrWQMRQsK52unupSLw3WNiQ%2B80sRTvWb7j%2FuwzCku1%2B%2F2ytARcOtqIfDN7gqq3jWZa4b%2BzBYIMTpqYxLiJTnq6WbRfFaVe7udxg%3D%3D#t=0",
+      "title": "Chapter 44"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/8e/0efe7be3e154e16be477eecccdd66d600c406f.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=fmgjrXh5MJX3I%2FShEKrH8%2B4Ah515Lta4jcBXdVlm5TTAq3gDHRwVO%2FpbnsECT7wYYZLog57ubkA%2FECTlGAiWei2N2A1F7N7a3TevRrbVBHdz8j3ugmpZVe%2FMMpCevdWw59F%2FF6YzENHw5vZe8hcpWDVkdfCymy5MGPhfrCajtquHHKs16c%2BkUCnuVrtcMGrlTxiEct4077YaR6U4X3QEkML%2FWTBTGAFhoQ1PsWbmIiaACaaqhlamq3VKl6%2FZq%2F4BwcfaCWhlxe9ePrsN3rPq4bVfGDMAMnz8Qbn7qNnooEbQOtBhONZkX59KHbmak19NqvncjedLa4aZh%2Bbg8P9vsA%3D%3D#t=0",
+      "title": "Chapter 45"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/de/c9ebf037f2c7d644d0a6d6a1be2be93f916890.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=EC1ITNB5BGAZO0W5KvNXYamzQ0MxIpF8k%2BQGDr9gZcw%2FJJNIsRwGBcYPI020jCLsTFYLg21RUhik3mS0W4aX7MylUM73lopuBCNoD28Uyrcz8mH3I8A5MBRJGh3ggdG%2FoAFKU16cHZashZ1hfJwn%2BC8sDmKkfQjGeHC6bOijXnXZ2jiUzMrgNMcweuJAWRVTamz0aEHR4Z2HC93NieVIN14rlNUaDLgDNji6rpO3lirB%2BZhRAsUaJaXAOkCaOlmfGv5zek1f03A8DiZehG%2B9gikvVJy%2BQq9JeRDfJu%2FLer%2BKcPnbs8pnibg9YSXs1KxUTFJTWK9ItdXOIQLtVyvpCw%3D%3D#t=0",
+      "title": "Chapter 46"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/12/5d8ef653178e52eba15b4254e93b2ab82472c8.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=OWUAMZ8Y6Dnf%2F783p3NsBdQ7uza0%2BxszkcboaD0AjjivO6nRWxo3X3k9DKHWRds40lMZXPYe5OmnFD%2Fc0hEBTj5nlKutHvCeGobUjdg9vEZoUMDBTPX3Hs0%2BGCmGHP%2Bl%2F1Hbgr%2B7f6nLRIMCjN0O6JlYOiHKXBL8qnLw86ZMuE6v3PJPzScz9qmxe2j0Zyahs7bdsEWJATIQ2aUrq39MchF2B%2FYF9wnvDGuXyI9XKWK6IG7CIZ8Cl1NC6efoTmaoIouFBUJwUMHC3Vp0g%2FFZMGUbGc9rVBgP%2FUY89fA7z%2FYv5MxcjZiMzopHXKr1dAkLEHymOJLFMQor8aknGLAMyQ%3D%3D#t=0",
+      "title": "Chapter 47"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/e5/57e111dcf07d13a69e2b1f7a4f2e78de176ee6.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=ecbDKo5Bda8PLuvbnxcvnPlctksrCj901aijxHPtjWmXvb2m1MI38PEUKQLAp%2BrQi%2B%2ByFQGG61olv5yFJru36BHCcTRGQd0%2FpAUfuPCUuS%2F4jBXDH7VvOWkj8CoNZJSu%2BMBTFKqNkzKMlMG%2FIV%2BUsbcGk2QQcylxi8WsoFQ%2FMLIc6GQNMoJ7gte4l%2FK%2FFY0RxW4YqvN%2FdG3XgdkccCPvUOPDUikG3cKddni1%2BjXYaeRli5%2FIy0HFdUMKOMGR5zEueaYC3txJgv84lqPNgCEc86geisacuIZyIpr0tNzv%2BkW78k5XrBCOBCnMDVXmVegxzUEwcksDtOD%2F%2FOdmvX0aYw%3D%3D#t=0",
+      "title": "Chapter 48"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/e1/99f9b37199a97e195daf204c1bc5271653c3ca.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=PfhzGp%2Fj2kzsagEkqrJXDAPVQ%2BwrPoDxyQ7mw2C1VSoD2R85LfGjz24h9JMVyiOD0tpVqv%2BI3mISCj8LrgqVUXPzcZJjor2pLnA9QVeA380ypaQjmz%2Fp%2BG%2BTCwoJ5oJkiLNfxCs10BX4CrBN2hwsWE2DAK7AGXoer%2FuV4ThNBwFX5IrSZfMXydNLXWDYssaa6xTtcTFAq9EOG9s%2BPEdjPIiwxQTaNlKAOEe9UbOlTtamknwH%2FOXLB5SYJKoSb%2BcSEUgv3sOLM4B59AMstEcPlp8Jg3kI7Cp78RVEgptsbOW1HfD6A7Jg0egZyvPnU9%2FyRyG93Py%2F87ZrWf6u%2FqQtXg%3D%3D#t=0",
+      "title": "Chapter 49"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/ee/d28a95b16e21d731cfed9bc54113cff52d9248.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=BNQD%2BExGG15lzRwLIk9RrPCSjMQhs7Ae1rYsINOMp43oo3mWWRZMKzJDhCShXiLKv5EGYTeogIgWcbj96iRdolLHjZdiAC6xP9dqMIPxq1DwRYfkaE5TVR3yXvdiboXrE%2B%2Bw%2BKQFSRVn600qJTiIP%2FqnvOghFrcBMrCNtRghro%2FRrfgvz%2BbmM%2B5Ky9LWD5R7DDMiMLA3Noy1d%2FZDmDg8YOPcMtQ6zPIpcXer4MX5QnlX2Wo22shOtPk5%2Bo%2Bup9EdWskzvAxiGbXguVi%2F8VsNov9upkx5qdf%2FXCU5u68GTYAVLElpvlgqgkR%2BB1GSgcCPna3Em6SbBC3XTPiI36nYkw%3D%3D#t=0",
+      "title": "Chapter 50"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/73/c25b7c6bfb36b19528d601d557364db2218cbe.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=Sdq2QOiA4db71DUHCbrg1ZSPBZfeTn8Kv0GROvxPw3g5Fu3micQziTJE858jqUXT45EGIhjQZ9yybO4l6%2BkpDnz6o3d6yTzKkLsJ2XlAH4brsXbsiqW%2FkQqUOcNdHy61hh5De%2FT356RyP%2B8TD2Ya2J%2FWIHer%2FDTlUGLUPGGc5OTT6BQFyYV1D%2F0bCb8bP8CTHyxktgi4TOIZbmiCtMMUdD7%2Bim%2FS%2BAXcwCvT8q%2FaULO4U0y80Rwo9FaPuhOm0YYR7DNVTZ5ybsr91pF3EhI5%2BVEfA7puzjay6gThyq62LDUmOdFfIXtE8OrP96DwBdc6aQuBNcMUvU49jgLQWxOWWg%3D%3D#t=0",
+      "title": "Chapter 51"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/97/65c7e04090b96b8cc8976c7e1798986ff607c7.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=XqUAjMQeiBG85TYojhQyImqYiQnNfQR2r1etFZcztwOzvF2EdG5yQXksGMldMjcMmUKSQ7Teri%2FlTWD15BX3%2FF9FTPgcYkWtw0qvF9DEzrb3%2FBIoxkRfu%2BENDki5RdWwq53BfcWSBvLbholjeq0r9xWY6lqXXGuZdzwLrw3hvVBDrNQJnFqCve6Z2eJnoM8vWFHyezft2qQV%2FUiu61eT2Gijr61ld67eXKsiCRY%2BUZJfSFRBqlZ9apGMdXhCs%2BeV4d5cTHeesGCHg56B5AGXdQjfI89DgqcvgidMQqdQshUbDwiZhq6fZ%2Bu82vdXcGRxBoLcRk0G4LI%2FUOAQNYenJg%3D%3D#t=0",
+      "title": "Chapter 52"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/d2/2f71f01243089dee5894cb06245843fdc82e8e.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=KLdAuwDbeUyKaZXOJ83lV%2FlPoEjf3wj1N%2BcNcHrFJNqA7CLSCG9HcJbJo4RUnKgQjUYQr%2B%2FLPF1oKuAS0VN3dcZ5ZvHMmrdTEyoxQSJw9jEFzi8NBXozRlGnH%2BSgHBxL9JNK730Qf6OW4Xqc6uzseeGrK3i92e0dOO%2BGBTRnj7Wmi8Bhj7G6WcZu3TO8raQ9zV%2FxyvI6W8hDRSTLpeTWcGlHoNItxilFsQ%2FP3AbHQs%2F0LC%2B7p2gWOYvqp6WD1IKymT6XGgQsN%2BLvQKLNvS5G%2BVLXSAnEswHWgbY%2BU0qcK2aEHm156R3e2AS2ecFpHpQ1YVgrI8vNn2uq7J5PX6DpHw%3D%3D#t=0",
+      "title": "Chapter 53"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/25/274bced100ae788f315ee13940df1de9761cc6.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=duOMlKpIHf3r%2FHlLUunoheL3fVO1WnUq7XWq07A0KsLoctKXjLxtPb8az3lrbUw4VCgTe2wART01etRWvrXx06X82YlfQqjNO6p1i%2Bh5ljzZK8VIPXxJPGh01BZM5IMStOzlAxO50QH21Ff2gaqUUMM%2FqgsHVcweWXw0uaz3%2Buqk3SW0pYKtFHXXYSRCqBSr0UEcHVzBmZLuOFYvy4ml2JCGBBba5OS8j7AOK7hgmCV%2FYg5YqODHeTpETcCcS6byJyNX0nQQaPU9g3PZpSrGS1%2BwyerZTc3LztJ%2FoUJofhjLXKYrL6R3bgxhXMK8hNM%2FGCn8Q%2BXC7PQdY32TQwCoBQ%3D%3D#t=0",
+      "title": "Chapter 54"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/0a/bfdeeb01850ca5cf2a188a48d71565f8e37553.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=dcb029bSiXggKNV4uM47iHs9PogxIVAUlANCy6TJdU0WxfYw7bM5uCqxn0sudy55z5Ghzs1Ca4KWP4XwUPXKDYPsL7A3l55HJ%2FMMA9Wf1majFbQwrqElF5ugieJFRN%2BEzlWJPu1Nu209od7ToSVFgza4L8DZ2%2BDhToPWd0p8ZQxAkAYagb4s%2BNP4YTiZ4JfmDEkLcxV9mrli24jzf26%2FZQTvSS5%2BfQ0YKsd2RGBxmbMbAUMiK%2BrSmL4gqPGMMs6F0pD2tjYziANCm2kRiFNrtNK4bT2gkUgcSOFZ9qLl3gWhkx6pQL7hVag914wFty7lJTxntuyLnWQBRAZ7Zfm8LQ%3D%3D#t=0",
+      "title": "Chapter 55"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/7e/dbd5184e1f405b16365ac35478c6d9d9f5b903.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=lsJTcuFNM5F0hzZEDwPhnINglegOecxwLTmoyMxzHsgtDVT63BRcQW1xwhcE4DcS%2Bi%2FbY7eELu0y3J81kIba5HFJADhA9%2F%2BCxRHe5A6xaQZkk0B7goNfQbRguywpgjqPhc9t7WvgV8gNi6U9MPAiiph7D19ysNVeza0Z2Slt8ggAAfKI1Y8eYodq%2B9ZgvHkh04yTlWK10ycD9FD1COFzF091eohpPRlStsiUoKEkHyelDboU7%2BDwR%2BnPuzQsdPt%2BRHFlBXQF2%2FcqQe4CVuu3%2B7f6M3uBoyarTmjo%2BNXDE9bh6wMBLOgDjpz1tr872D1uw8OLeL9gHmMoo6JcxyLUoQ%3D%3D#t=0",
+      "title": "Chapter 56"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/43/f258a3f093cf59ca3c4f7fffcda6dcd03a6efb.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=AEY%2F9bAvzcrzJSC7m9zngbCPqI4x8ETgebVRD%2F%2BLJm90HpmxshyvD2telmwlrYBAf6dO2DY7Hi07z%2BEAFNVT3tDcVmYgm7BHP10ElmhxPSVLJu60ybVafahnHsifdQSnmRodCoSO32h2JP7PDBjurby2GownS%2BuOgAZvoK1DG6sTZZAMklQ74t3sLspp9RYjnfAySr47MHRLuS1QF7JkqcNvRByi6YWom7up6xN9dXfSS0Yip9dSGOrkvxawe1VJBOmEdAz1UpkB3fbLwpSG47vz3v4%2B6d58DQQdbSOLlmo0prAUeROJu9D36PCKIRWEKHzg9EVCIySucm7qjAvJeg%3D%3D#t=0",
+      "title": "Chapter 57"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/ae/425d90c93d38eda7257321e09b215ba3de2f05.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=FIOq%2BekJv3E9mzkWBd5edveDGgAyPxV8rxeTaPChbEDje7lFyF1bAW1L51YtC5f5Rv8yBA82ITTHnDURCCsHdrpmjThNLtExIgTOiNAN4bc20esyxci6h6uyfjBag29YBasVfu1l%2F5FMRyF%2F3tREVfw8nhiwHYYKud54APISJQcHjZpsAvwfIueh3qFdB2tSuQkPxdW7BKe1DASyjJhr29a%2FyRR0BvxiAs2C8ddRDj5hhQO5zwxR44mYo6%2B7sKVq7ZtuaXy37zF5KCGaqjijj0HmGCQ7vR2BT4qM3TGiUb4ew3nCa4JUCWvP54U3Ey47gPnKW9wk%2FQtB9vSdCXFAWQ%3D%3D#t=0",
+      "title": "Chapter 58"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/16/b8b88a328a91b96fb1868828156ac8fe65f6a8.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=cWgZISa7niMNuBXtU9d3jQ14kfbDtMVbA5Pvl4Hyg2hGPdEfXhfan31fr5LQjQBbAIpQJ1%2BkYueKxzDLaB7%2FmBGw%2BpblQsNusPMB1Gc8RCQMTyLE9laT%2BL9x7RUgmJHgIfTv8qAwDpNV0wooBFZe3I45nF9E%2Ffs%2Bhojj7B2bWR1Xz%2FkhlfbO1gEwumvvTeOPre3ksHSdrQW4ybWBDzp6lSQFav1HpSk3zLvRz3rl%2BPVftQlTtAZ9An9PjvsA5jGaSLer2S9lA%2BaJfQee9zlEcJbDoFnq1WggkQSmQoAsDPa8emtQzfswk%2BFVkQsdawGYrT%2BATRyBL%2B3dAzPixRiHxQ%3D%3D#t=0",
+      "title": "Chapter 59"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/2d/367f3f0ac09419eceff3459a2f3ef8def44aae.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=AqgQ3%2BwNx0VJcjH8DfQr%2FU3ijCPrvj%2BcxcDCh5TOsX%2Bh4eKDmoWn3xo%2Bm3BPHfA%2BYFz0%2F9MZ%2Bb6vT6fEMfS46TYOqj20h%2Bm1HVfaIBI4DT7GdqEqV%2BOF4WGROICeTG6pn0lTaYWMseDxnR8ysi4Q%2BvAzV8Gxji%2BTGBSGjYExxvJd1nJv4d%2BBWrbzk%2BPwDH1s%2B9TVMe%2FL%2FAwNlleYm1fjQtr9ZFUZf4Z%2BCTEPgF3SuCXTCgYgMxVzXXY9g%2FRv2U5Pa%2B5hnsu67BubXhwfmilorKYNg9e3r3lhZR%2BMuZDv0trlSJqo0Z9LmQNTdT%2BeFoO%2F0KT6yQ7hOSxHXbtS%2BTNHDA%3D%3D#t=0",
+      "title": "Chapter 60"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/25/7339a10ac58d1b3934a94fa49f535bd68b2663.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=WZ3n0tqCXdBviJGbe9DndkssrEgNNdnTIvQouyeJ%2Bb7AlK6yebT%2B3dZm9w3YDwsyRC%2B6xvv%2Fwgx%2BQrCcBmjEVyrxVTP%2BVCbdI9Ezzdbmv2WOC2b44PVm9spqjk4EWiQm5eQs3JnZokxY%2FSwNU0NaQ93tZ3ag5C%2BY%2BC0SrHxD7qm1AXTb07x5AZxx%2FivSs9JnRYICkO2PIqruti95nfC6L3kJhUqO4InCByz%2FTPKpw93C%2BaqQGsbUaW1tVkkGnLozSdRqwU4hYfr9%2BaEcYQhh%2BkGN%2BcYCL5F9vj2ajEKJHIKnWzrBpqmJyHRd3MHrQ3wA30%2FdKQL7Pi3Rf%2F262gyzig%3D%3D#t=0",
+      "title": "Chapter 61"
+    },
+    {
+      "href": "https://storage.googleapis.com/hub-assets-cant-prod-northamerica/48/513622aaeb80193330ceb6efa228d18ab52509.mp3?GoogleAccessId=hub-prod-northamerica%40demarque.iam.gserviceaccount.com\u0026Expires=1763443557\u0026Signature=l5NBPF1FLC1VNTbN%2B7YaI9O0RflKqE8VrOY0xdc0lT4YDOIXwAD3NJhT0D7Iml4kRmFehrJrapgkfXZFwdsmRxn%2F7gxUTeVL3Qtfp%2BL6vTqtaxtocobOCS12jFexGj3%2B%2BkF13pSCUNKRGQbX5tcpxAEJnV8Wu7Mymk2DPoEZKmdM2y22Ec4oX9U%2F7VQjay7bJnA862ZapAyX7gSDyn4VTlhPLlhe8%2Ft1X8eJCNKLalSaWB70mBq9bHRK8rGb2BA238pLx1bWAPYMt2lG3bgYf4HwQRWE7VtcbinLOMTVlxfgkiAQeZoR%2F23Wt4S%2Bob4M6BssrX94UEQYG2qPybVS1A%3D%3D#t=0",
+      "title": "Chapter 62"
+    }
+  ]
+}

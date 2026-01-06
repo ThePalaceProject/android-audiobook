@@ -124,9 +124,9 @@ object PlayerManifestTOCs {
       val withOffset =
         extractURIOffset(tocMember.item.hrefURI!!)
       val readingOrderInterval =
-        readingOrderIntervals[withOffset.uriWithoutOffset]!!
+        findReadingOrderInterval(readingOrderIntervals, withOffset)
       val readingOrderItem =
-        readingOrderByID[withOffset.uriWithoutOffset]!!
+        findReadingOrderItem(readingOrderByID, withOffset)
 
       /*
        * The lower bound for this TOC item's interval is the absolute time of the start of the
@@ -150,7 +150,7 @@ object PlayerManifestTOCs {
           val withOffsetNext =
             extractURIOffset(tocMemberNext.item.hrefURI!!)
           val readingOrderIntervalNext =
-            readingOrderIntervals[withOffsetNext.uriWithoutOffset]!!
+            findReadingOrderInterval(readingOrderIntervals, withOffsetNext)
           val upperOffset =
             withOffsetNext.offset
 
@@ -231,6 +231,68 @@ object PlayerManifestTOCs {
       readingOrderIntervals = readingOrderIntervals,
       readingOrderItemsByInterval = readingOrderItemsByInterval,
       readingOrderItemTree = readingOrderItemTree
+    )
+  }
+
+  private fun findReadingOrderItem(
+    readingOrderByID: MutableMap<PlayerManifestReadingOrderID, PlayerManifestReadingOrderItem>,
+    withOffset: URIWithOffset
+  ): PlayerManifestReadingOrderItem {
+    val r0 = readingOrderByID[withOffset.uriWithoutOffset]
+    if (r0 != null) {
+      return r0
+    }
+
+    /*
+     * Some questionably-valid manifests will contain TOC elements that have fully qualified
+     * URIs in some elements in the `toc` section.
+     */
+
+    val parsedURI =
+      URI.create(withOffset.uriWithoutOffset.text)
+    val pathSegments =
+      parsedURI.path.split("/")
+    val lastFile =
+      pathSegments.last()
+
+    val r1 = readingOrderByID[PlayerManifestReadingOrderID(lastFile)]
+    if (r1 != null) {
+      return r1
+    }
+
+    throw IllegalStateException(
+      "Invalid audiobook manifest: Could not find a TOC (ID) entry for ${withOffset.uriWithoutOffset}"
+    )
+  }
+
+  private fun findReadingOrderInterval(
+    readingOrderIntervals: MutableMap<PlayerManifestReadingOrderID, PlayerMillisecondsAbsoluteInterval>,
+    withOffset: URIWithOffset
+  ): PlayerMillisecondsAbsoluteInterval {
+    val r0 = readingOrderIntervals[withOffset.uriWithoutOffset]
+    if (r0 != null) {
+      return r0
+    }
+
+    /*
+     * Some questionably-valid manifests will contain TOC elements that have fully qualified
+     * URIs in some elements in the `toc` section.
+     */
+
+    val parsedURI =
+      URI.create(withOffset.uriWithoutOffset.text)
+    val pathSegments =
+      parsedURI.path.split("/")
+    val lastFile =
+      pathSegments.last()
+
+    val r1 = readingOrderIntervals[PlayerManifestReadingOrderID(lastFile)]
+    if (r1 != null) {
+      return r1
+    }
+
+    throw IllegalStateException(
+      "Invalid audiobook manifest: Could not find a TOC (interval) entry for ${withOffset.uriWithoutOffset}"
     )
   }
 

@@ -1026,4 +1026,31 @@ class PlayerManifestTest {
     val manifest = success.result
     assertTrue(ExoLCP.isLCP(manifest), "Manifest is inferred as LCP")
   }
+
+  /**
+   * Inevitable Ruin
+   */
+
+  @Test
+  fun testInevitableRuin() {
+    val result =
+      ManifestParsers.parse(
+        uri = URI.create("inevitable-ruin.json"),
+        input = this.resource("inevitable-ruin.json"),
+        extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
+      )
+    this.log().debug("result: {}", result)
+    assertTrue(result is ParseResult.Success, "Result is success")
+
+    val success: ParseResult.Success<PlayerManifest> =
+      result as ParseResult.Success<PlayerManifest>
+
+    val manifest =
+      success.result
+    val tocItems =
+      PlayerManifestTOCs.createTOC(manifest) { index -> "Track $index" }
+
+    assertEquals(102, tocItems.tocItemsInOrder.size)
+    this.checkTOCInvariants(tocItems, manifest)
+  }
 }
