@@ -184,6 +184,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerPosition.setOnTouchListener { _, event -> this.handleTouchOnSeekbar(event) }
 
+    this.playerDebugStatus.alpha = 0.0f
     this.playerStatusArea.alpha = 0.0f
     this.coverView.setImageBitmap(PlayerModel.coverImage)
     return view
