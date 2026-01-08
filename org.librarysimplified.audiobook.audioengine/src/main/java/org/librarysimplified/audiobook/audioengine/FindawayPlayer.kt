@@ -9,6 +9,7 @@ import io.reactivex.subjects.Subject
 import org.librarysimplified.audiobook.api.PlayerBlame
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
+import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
@@ -131,20 +132,27 @@ class FindawayPlayer(
     this.log.debug("[{}]: opEnginePlayFromCurrentPosition", this.id)
     PlayerUIThread.checkIsUIThread()
 
+    this.engineAdapter.pauseReason = PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED
     this.engineAdapter.playFromCurrentPosition()
   }
 
-  private fun opEnginePause() {
-    this.log.debug("[{}]: opEnginePause", this.id)
+  private fun opEnginePause(
+    reason: PlayerPauseReason
+  ) {
+    this.log.debug("[{}]: opEnginePause {}", this.id, reason)
     PlayerUIThread.checkIsUIThread()
 
+    this.engineAdapter.pauseReason = reason
     this.engine.playbackEngine.pause()
   }
 
-  private fun opEngineStop() {
-    this.log.debug("[{}]: opEngineStop", this.id)
+  private fun opEngineStop(
+    reason: PlayerPauseReason
+  ) {
+    this.log.debug("[{}]: opEngineStop {}", this.id, reason)
     PlayerUIThread.checkIsUIThread()
 
+    this.engineAdapter.pauseReason = reason
     this.engine.playbackEngine.stop()
   }
 
@@ -217,7 +225,9 @@ class FindawayPlayer(
     }
   }
 
-  override fun pause() {
+  override fun pause(
+    reason: PlayerPauseReason
+  ) {
     this.checkNotClosed()
     this.log.debug("[{}]: pause", this.id)
 
@@ -225,7 +235,7 @@ class FindawayPlayer(
       PlayerPlaybackIntention.SHOULD_BE_STOPPED
 
     runOnUIThread {
-      this.opEnginePause()
+      this.opEnginePause(reason)
     }
   }
 
@@ -356,7 +366,7 @@ class FindawayPlayer(
     if (PlayerBlame.closeIfOpen(this.closed)) {
       runOnUIThread {
         this.log.debug("[{}]: close", this.id)
-        this.opEngineStop()
+        this.opEngineStop(PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED)
         this.eventSource.onComplete()
         this.bookmarkObserver.close()
         this.resources.dispose()

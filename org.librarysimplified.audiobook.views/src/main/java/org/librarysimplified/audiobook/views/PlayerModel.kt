@@ -24,6 +24,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackPaused
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
@@ -1177,7 +1178,7 @@ object PlayerModel {
       return when (event) {
         PlayerSleepTimerEvent.PlayerSleepTimerFinished -> {
           this.logger.debug("Sleep timer finished: Pausing player")
-          this.playerAndBookField?.player?.pause()
+          this.playerAndBookField?.player?.pause(PlayerPauseReason.PAUSE_REASON_SLEEP_TIMER)
           Unit
         }
 
@@ -1216,9 +1217,11 @@ object PlayerModel {
     }
   }
 
-  fun pause() {
+  fun pause(
+    reason: PlayerPauseReason
+  ) {
     try {
-      this.playerAndBookField?.player?.pause()
+      this.playerAndBookField?.player?.pause(reason)
     } catch (e: Exception) {
       this.logger.error("Pause: ", e)
     }
@@ -1230,10 +1233,12 @@ object PlayerModel {
     }
   }
 
-  fun playOrPauseAsAppropriate() {
+  fun playOrPauseAsAppropriate(
+    reason: PlayerPauseReason
+  ) {
     val playerCurrent = this.playerAndBookField?.player
     when (playerCurrent?.playbackIntention) {
-      PlayerPlaybackIntention.SHOULD_BE_PLAYING -> this.pause()
+      PlayerPlaybackIntention.SHOULD_BE_PLAYING -> this.pause(reason)
       PlayerPlaybackIntention.SHOULD_BE_STOPPED -> this.play()
       null -> {
         // Nothing to do.

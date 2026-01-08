@@ -51,6 +51,16 @@
     <string name="audiobook_player_downloading">Downloading part %1$d…</string>
     <string name="audiobook_player_downloading_failed">Downloading part %1$d (and possibly others) failed.</string>
 
+    <string name="audiobook_player_pause_reason_bluetooth">
+      The player is currently paused because your Bluetooth audio device changed.
+    </string>
+    <string name="audiobook_player_pause_reason_focus">
+      The player is currently paused because another application wanted to use the audio device.
+    </string>
+    <string name="audiobook_player_pause_sleep_timer">
+      The player is currently paused because the sleep timer was activated.
+    </string>
+
     <!--
       Accessibility strings.
       -->

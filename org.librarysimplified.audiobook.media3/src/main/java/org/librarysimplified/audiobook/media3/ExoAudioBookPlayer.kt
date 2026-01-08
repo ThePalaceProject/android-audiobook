@@ -26,6 +26,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_PLAYING
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_STOPPED
@@ -65,6 +66,9 @@ class ExoAudioBookPlayer private constructor(
   manifestUpdates: Observable<Unit>,
   private val statusEvents: Subject<PlayerEvent>,
 ) : PlayerType {
+
+  private var pauseReason: PlayerPauseReason =
+    PlayerPauseReason.PAUSE_REASON_INITIALLY_PAUSED
 
   private val log =
     LoggerFactory.getLogger(ExoAudioBookPlayer::class.java)
@@ -240,6 +244,7 @@ class ExoAudioBookPlayer private constructor(
             readingOrderItemOffsetMilliseconds = offsetMilliseconds,
             positionMetadata = positionMetadata,
             readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
+            reason = this.pauseReason
           )
         )
       }
@@ -332,6 +337,7 @@ class ExoAudioBookPlayer private constructor(
               readingOrderItemOffsetMilliseconds = offsetMilliseconds,
               positionMetadata = positionMetadata,
               readingOrderItem = this.currentReadingOrderElement.readingOrderItem,
+              reason = this.pauseReason
             )
           )
         }
@@ -461,6 +467,7 @@ class ExoAudioBookPlayer private constructor(
     PlayerUIThread.checkIsUIThread()
 
     this.intention = SHOULD_BE_STOPPED
+    this.pauseReason = PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED
     this.exoPlayer.stop()
     this.exoPlayer.seekTo(0L)
   }
@@ -580,6 +587,8 @@ class ExoAudioBookPlayer private constructor(
     PlayerUIThread.checkIsUIThread()
 
     this.intention = SHOULD_BE_PLAYING
+    this.pauseReason = PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED
+
     when (this.exoAdapter.state) {
       ExoPlayerPlaybackStatus.INITIAL -> {
         this.preparePlayer(this.currentReadingOrderElement)
@@ -629,11 +638,14 @@ class ExoAudioBookPlayer private constructor(
     SKIP_TO_CHAPTER_READY
   }
 
-  private fun opPause() {
-    this.log.debug("opPause")
+  private fun opPause(
+    reason: PlayerPauseReason
+  ) {
+    this.log.debug("opPause {}", reason)
     PlayerUIThread.checkIsUIThread()
 
     this.intention = SHOULD_BE_STOPPED
+    this.pauseReason = reason
     this.exoPlayer.pause()
   }
 
@@ -943,11 +955,13 @@ class ExoAudioBookPlayer private constructor(
     }
   }
 
-  override fun pause() {
+  override fun pause(
+    reason: PlayerPauseReason
+  ) {
     this.checkNotClosed()
 
     runOnUIThread {
-      this.opPause()
+      this.opPause(reason)
     }
   }
 

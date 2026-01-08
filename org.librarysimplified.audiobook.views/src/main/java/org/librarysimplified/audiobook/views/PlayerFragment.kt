@@ -37,6 +37,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
+import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.EndOfChapter
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.Off
@@ -59,6 +60,7 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 
 class PlayerFragment : PlayerBaseFragment() {
 
+  private lateinit var playerPauseReason: TextView
   private lateinit var coverView: ImageView
   private lateinit var menuAddBookmark: MenuItem
   private lateinit var menuPlaybackRate: MenuItem
@@ -161,6 +163,9 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerDownloadProgressTotal.isIndeterminate = false
 
+    this.playerPauseReason =
+      view.findViewById(R.id.player_pause_reason)
+
     this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
     this.toolbarConfigureAllActions()
 
@@ -168,7 +173,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerPositionDragging = false
 
     this.playPauseButton.setOnClickListener {
-      PlayerModel.playOrPauseAsAppropriate()
+      PlayerModel.playOrPauseAsAppropriate(PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED)
     }
     this.playerSkipForwardButton.setOnClickListener {
       PlayerModel.skipForward()
@@ -227,7 +232,7 @@ class PlayerFragment : PlayerBaseFragment() {
   @UiThread
   private fun setButtonToShowPause() {
     this.playPauseButton.setImageResource(R.drawable.round_pause_24)
-    this.playPauseButton.setOnClickListener { PlayerModel.pause() }
+    this.playPauseButton.setOnClickListener { PlayerModel.pause(PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED) }
     this.playPauseButton.contentDescription =
       this.getString(R.string.audiobook_accessibility_pause)
   }
@@ -546,6 +551,31 @@ class PlayerFragment : PlayerBaseFragment() {
       .start()
   }
 
+  private fun publishPauseReason(
+    reason: PlayerPauseReason
+  ) {
+    when (reason) {
+      PlayerPauseReason.PAUSE_REASON_INITIALLY_PAUSED -> {
+        this.playerPauseReason.text = ""
+      }
+      PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED -> {
+        this.playerPauseReason.text = ""
+      }
+      PlayerPauseReason.PAUSE_REASON_BLUETOOTH_DEVICE_CHANGED -> {
+        this.playerPauseReason.text =
+          this.getString(R.string.audiobook_player_pause_reason_bluetooth)
+      }
+      PlayerPauseReason.PAUSE_REASON_AUDIO_FOCUS_LOST -> {
+        this.playerPauseReason.text =
+          this.getString(R.string.audiobook_player_pause_reason_focus)
+      }
+      PlayerPauseReason.PAUSE_REASON_SLEEP_TIMER -> {
+        this.playerPauseReason.text =
+          this.getString(R.string.audiobook_player_pause_sleep_timer)
+      }
+    }
+  }
+
   private fun onPlayerEventPlaybackRateChanged() {
     this.menuPlaybackRateText?.text =
       PlayerPlaybackRateAdapter.textOfRate(PlayerModel.playbackRate)
@@ -567,6 +597,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerBusy.visibility = GONE
     this.playerCommands.visibility = VISIBLE
 
+    this.playerPauseReason.text = ""
     this.playerStatusIcon.setImageBitmap(null)
     this.publishStatusAreaMessage("")
 
@@ -627,6 +658,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.setButtonToShowPlay()
     this.onEventUpdateTimeRelatedUI(event.positionMetadata)
+    this.publishPauseReason(event.reason)
   }
 
   @UiThread
@@ -640,6 +672,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.setButtonToShowPlay()
     this.onEventUpdateTimeRelatedUI(event.positionMetadata)
+    this.publishPauseReason(event.reason)
   }
 
   override fun onStop() {
@@ -677,7 +710,7 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onReleasedPlayerPositionBar() {
     val tocItemOffsetMilliseconds =
       this.playerPosition.progress.toLong()
-    val newOffset: PlayerMillisecondsAbsolute =
+    val newOffset =
       PlayerMillisecondsAbsolute(this.playerPositionMin.value + tocItemOffsetMilliseconds)
 
     PlayerModel.movePlayheadToAbsoluteTime(newOffset)

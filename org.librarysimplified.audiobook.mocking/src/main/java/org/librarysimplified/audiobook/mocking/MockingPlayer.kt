@@ -7,6 +7,7 @@ import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
+import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
@@ -65,9 +66,11 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
     this.callEvents.onNext("play")
   }
 
-  override fun pause() {
-    this.log.debug("pause")
-    this.callEvents.onNext("pause")
+  override fun pause(
+    reason: PlayerPauseReason
+  ) {
+    this.log.debug("pause {}", reason)
+    this.callEvents.onNext("pause $reason")
   }
 
   override fun skipForward() {

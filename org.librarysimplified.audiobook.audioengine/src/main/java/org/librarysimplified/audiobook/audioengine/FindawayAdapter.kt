@@ -18,6 +18,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
@@ -43,6 +44,9 @@ class FindawayAdapter(
   private val engine: AudioEngine,
   private val intention: () -> PlayerPlaybackIntention,
 ) : AutoCloseable {
+
+  var pauseReason: PlayerPauseReason =
+    PlayerPauseReason.PAUSE_REASON_INITIALLY_PAUSED
 
   /**
    * A flag to track whether the user has permitted streaming or not. This is currently unused
@@ -454,6 +458,7 @@ class FindawayAdapter(
         readingOrderItemOffsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
         readingOrderItem = position.readingOrderItem,
+        reason = this.pauseReason
       )
     )
   }
@@ -475,6 +480,7 @@ class FindawayAdapter(
         readingOrderItemOffsetMilliseconds = position.readingOrderItemOffsetMilliseconds,
         positionMetadata = positionMetadata,
         readingOrderItem = position.readingOrderItem,
+        reason = this.pauseReason
       )
     )
   }

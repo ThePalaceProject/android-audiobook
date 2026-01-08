@@ -122,7 +122,7 @@
         android:id="@+id/player_commands"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="64dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView
@@ -176,7 +176,7 @@
         android:id="@+id/player_busy"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginBottom="48dp"
+        android:layout_marginBottom="80dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -256,6 +256,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/playerChapterTitle" />
+
+    <TextView
+        android:id="@+id/player_pause_reason"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/playerDebugStatus"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/player_commands"
+        tools:text="Very, very, very long placeholder text that should never be seen in practice." />
 
     <TextView
         android:id="@+id/playerDebugStatus"

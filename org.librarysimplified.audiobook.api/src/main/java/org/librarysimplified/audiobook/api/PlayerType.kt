@@ -75,7 +75,7 @@ interface PlayerType : AutoCloseable {
    * @throws java.lang.IllegalStateException If and only if the player is closed
    */
 
-  fun pause()
+  fun pause(reason: PlayerPauseReason)
 
   /**
    * Skip forwards/backwards, possibly across chapter boundaries. If the given parameter is

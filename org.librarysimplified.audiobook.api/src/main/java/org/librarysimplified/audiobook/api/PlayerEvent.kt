@@ -164,7 +164,8 @@ sealed class PlayerEvent {
       override val readingOrderItem: PlayerReadingOrderItemType,
       val readingOrderItemOffsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
-      override val isStreaming: Boolean
+      override val isStreaming: Boolean,
+      val reason: PlayerPauseReason
     ) : PlayerEventWithPosition()
 
     /**
@@ -176,7 +177,8 @@ sealed class PlayerEvent {
       override val readingOrderItem: PlayerReadingOrderItemType,
       val readingOrderItemOffsetMilliseconds: PlayerMillisecondsReadingOrderItem,
       override val positionMetadata: PlayerManifestPositionMetadata,
-      override val isStreaming: Boolean
+      override val isStreaming: Boolean,
+      val reason: PlayerPauseReason
     ) : PlayerEventWithPosition()
 
     /**

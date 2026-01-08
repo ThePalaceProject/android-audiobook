@@ -11,6 +11,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventError
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventManifestUpdated
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition
+import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.views.PlayerModel
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
@@ -82,7 +83,7 @@ object PlayerBluetoothWatcher {
       is PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate -> {
         if (this.bluetoothAudioWasDisconnected()) {
           this.logger.debug("Bluetooth audio disconnected. Pausing player...")
-          PlayerModel.pause()
+          PlayerModel.pause(PlayerPauseReason.PAUSE_REASON_BLUETOOTH_DEVICE_CHANGED)
         } else {
           // Nothing to do.
         }

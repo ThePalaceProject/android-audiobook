@@ -36,6 +36,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
+import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadExpired
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
@@ -394,7 +395,7 @@ abstract class ExoEngineProviderContract {
     player.play()
     Thread.sleep(250L)
 
-    player.pause()
+    player.pause(PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED)
     Thread.sleep(250L)
 
     player.play()

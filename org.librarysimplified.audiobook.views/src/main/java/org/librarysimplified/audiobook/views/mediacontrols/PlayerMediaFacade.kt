@@ -36,6 +36,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
+import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.views.PlayerModel
 import org.librarysimplified.audiobook.views.PlayerModelState
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerBookOpenFailed
@@ -437,7 +438,7 @@ object PlayerMediaFacade : Player {
 
   override fun pause() {
     this.logger.debug("pause")
-    PlayerModel.pause()
+    PlayerModel.pause(PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED)
   }
 
   override fun setPlayWhenReady(
@@ -614,7 +615,7 @@ object PlayerMediaFacade : Player {
 
   override fun stop() {
     this.logger.debug("stop")
-    PlayerModel.pause()
+    PlayerModel.pause(PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED)
   }
 
   override fun release() {
