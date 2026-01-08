@@ -616,7 +616,7 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2026-01-07T17:20:33+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="19.1.0">
+    <c:release date="2026-01-08T12:25:35+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="20.0.0">
       <c:changes>
         <c:change date="2025-12-17T00:00:00+00:00" summary="Pause playback when a bluetooth audio device is disconnected.">
           <c:tickets>
@@ -628,12 +628,12 @@
             <c:ticket id="PP-3455"/>
           </c:tickets>
         </c:change>
-        <c:change date="2026-01-07T00:00:00+00:00" summary="Require a PlayerPauseReason with all pause operations." compatible="false">
+        <c:change compatible="false" date="2026-01-07T00:00:00+00:00" summary="Require a PlayerPauseReason with all pause operations.">
           <c:tickets>
             <c:ticket id="PP-1982"/>
           </c:tickets>
         </c:change>
-        <c:change date="2026-01-07T17:20:33+00:00" summary="Pause playback when audio focus is lost.">
+        <c:change date="2026-01-07T00:00:00+00:00" summary="Pause playback when audio focus is lost.">
           <c:tickets>
             <c:ticket id="PP-1982"/>
           </c:tickets>
