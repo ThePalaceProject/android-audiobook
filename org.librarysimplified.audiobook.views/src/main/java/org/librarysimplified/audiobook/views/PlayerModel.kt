@@ -70,6 +70,7 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestInPr
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLicenseChecksFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
+import org.librarysimplified.audiobook.views.focus.PlayerFocusWatcher
 import org.librarysimplified.audiobook.views.mediacontrols.PlayerMediaController
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
@@ -1115,6 +1116,18 @@ object PlayerModel {
 
   private fun opCloseBookOrDismissError() {
     this.currentFuture?.cancel(true)
+
+    /*
+     * Stop the focus watcher.
+     */
+
+    PlayerUIThread.runOnUIThread {
+      try {
+        PlayerFocusWatcher.disable()
+      } catch (e: Throwable) {
+        this.logger.debug("Failed to stop media controller: ", e)
+      }
+    }
 
     /*
      * Stop the media controller.

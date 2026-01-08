@@ -16,6 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 object PlayerFocusWatcher {
 
+  private var focusRequest: AudioFocusRequest? = null
+
   private lateinit var context: Application
 
   private val logger =
@@ -26,47 +28,59 @@ object PlayerFocusWatcher {
   private val wasPaused =
     AtomicBoolean(false)
 
-  fun enable(newContext: Application) {
+  fun enable(
+    newContext: Application
+  ) {
     this.context = newContext
-    this.enabled.set(true)
-    this.logger.debug("Audio focus watcher enabled.")
+    if (this.enabled.compareAndSet(false, true)) {
+      this.logger.debug("Audio focus watcher enabled.")
 
-    val audioManager =
-      context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+      val audioManager =
+        this.context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-    val afChangeListener =
-      AudioManager.OnAudioFocusChangeListener { focusChange ->
-        when (focusChange) {
-          AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
-          AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-            this.onShouldPause()
-          }
+      val afChangeListener =
+        AudioManager.OnAudioFocusChangeListener { focusChange ->
+          when (focusChange) {
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+              this.onShouldPause()
+            }
 
-          AudioManager.AUDIOFOCUS_GAIN -> {
-            this.onShouldResume()
-          }
+            AudioManager.AUDIOFOCUS_GAIN -> {
+              this.onShouldResume()
+            }
 
-          AudioManager.AUDIOFOCUS_LOSS -> {
-            this.onShouldPause()
+            AudioManager.AUDIOFOCUS_LOSS -> {
+              this.onShouldPause()
+            }
           }
         }
+
+      this.focusRequest =
+        AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+          .setOnAudioFocusChangeListener(afChangeListener)
+          .build()
+
+      val result = audioManager.requestAudioFocus(this.focusRequest!!)
+      if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+        this.logger.warn("Audio focus request was denied: {}", result)
+        this.enabled.set(false)
       }
-
-    val focusRequest =
-      AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-        .setOnAudioFocusChangeListener(afChangeListener)
-        .build()
-
-    val result = audioManager.requestAudioFocus(focusRequest)
-    if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-      this.logger.warn("Audio focus request was denied: {}", result)
-      this.enabled.set(false)
     }
   }
 
   fun disable() {
-    this.enabled.set(false)
-    this.logger.debug("Audio focus watcher disabled.")
+    if (this.enabled.compareAndSet(true, false)) {
+      this.logger.debug("Audio focus watcher disabled.")
+
+      val audioManager =
+        this.context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+      this.focusRequest?.let { request ->
+        audioManager.abandonAudioFocusRequest(request)
+        this.focusRequest = null
+      }
+    }
   }
 
   private fun onShouldResume() {
