@@ -97,26 +97,7 @@ dependencyResolutionManagement {
          */
 
         maven {
-            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-        }
-
-        /*
-         * Allow access to Jitpack. This is used by, for example, Readium.
-         */
-
-        maven {
-            url = uri("https://jitpack.io")
-        }
-
-        /*
-         * Findaway access.
-         */
-
-        if (findawayDRM) {
-            maven {
-                url = uri("http://maven.findawayworld.com/artifactory/libs-release/")
-                isAllowInsecureProtocol = true
-            }
+            url = uri("https://central.sonatype.com/repository/maven-snapshots/")
         }
 
         /*
@@ -148,13 +129,6 @@ dependencyResolutionManagement {
                 }
             }
         }
-
-        /*
-         * Allow access to jcenter. This is needed for Exoplayer. This badly needs to be
-         * removed/upgraded.
-         */
-
-        jcenter()
     }
 }
 
