@@ -66,7 +66,6 @@ object PlayerObservableAuthorizationHandler : PlayerAuthorizationHandlerType {
     this.delegate?.onAuthorizationIsInvalid(source, kind)
   }
 
-
   override fun onConfigureAuthorizationFor(
     source: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind

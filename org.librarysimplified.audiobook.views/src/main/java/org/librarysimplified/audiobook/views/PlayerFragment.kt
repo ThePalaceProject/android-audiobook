@@ -51,7 +51,14 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Running
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType.Status.Stopped
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
-import org.librarysimplified.audiobook.views.PlayerViewCommand.*
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewErrorsDownloadOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewLoginOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
 
 class PlayerFragment : PlayerBaseFragment() {
 
