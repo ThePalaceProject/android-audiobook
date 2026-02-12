@@ -84,4 +84,12 @@ class PlayerAuthorizationHandlerDelegating private constructor(
     this.logger.debug("Did not override manifest authorization.")
     return original
   }
+
+  override fun <T : Any> onRequireCustomCredentialsFor(
+    providerName: String,
+    kind: PlayerDownloadRequest.Kind,
+    credentialsType: Class<T>
+  ): T {
+    return this.delegate.onRequireCustomCredentialsFor(providerName, kind, credentialsType)
+  }
 }

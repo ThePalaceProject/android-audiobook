@@ -38,13 +38,16 @@ class FeedbooksPlayerExtension : PlayerAuthorizationHandlerExtensionType {
     authorization: LSHTTPAuthorizationType?
   ): PlayerAuthorizationHandlerExtensionType.AuthenticationOverrideType {
     return when (kind) {
-      PlayerDownloadRequest.Kind.MANIFEST ->
-        PlayerAuthorizationHandlerExtensionType.OverrideNotApplicable
-
       PlayerDownloadRequest.Kind.CHAPTER ->
         this.onOverrideAuthorizationForChapter(link)
 
+      PlayerDownloadRequest.Kind.MANIFEST ->
+        PlayerAuthorizationHandlerExtensionType.OverrideNotApplicable
+
       PlayerDownloadRequest.Kind.WHOLE_BOOK ->
+        PlayerAuthorizationHandlerExtensionType.OverrideNotApplicable
+
+      PlayerDownloadRequest.Kind.LICENSE ->
         PlayerAuthorizationHandlerExtensionType.OverrideNotApplicable
     }
   }

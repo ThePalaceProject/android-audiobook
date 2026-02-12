@@ -1,32 +1,33 @@
-package org.librarysimplified.audiobook.tests
+package org.librarysimplified.audiobook.api
 
-import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
-import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
 
-class SimpleAuthorizationHandler : PlayerAuthorizationHandlerType {
+/**
+ * A no-op authorization handler.
+ */
 
-  var authorization: LSHTTPAuthorizationType? = null
+object PlayerAuthorizationHandlerNoOp : PlayerAuthorizationHandlerType {
 
   override fun onAuthorizationIsNoLongerInvalid(
     source: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind
   ) {
-
+    // Don't care.
   }
 
   override fun onAuthorizationIsInvalid(
     source: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind
   ) {
+    // Don't care.
   }
 
   override fun onConfigureAuthorizationFor(
     source: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind
   ): LSHTTPAuthorizationType? {
-    return this.authorization
+    return null
   }
 
   override fun <T : Any> onRequireCustomCredentialsFor(

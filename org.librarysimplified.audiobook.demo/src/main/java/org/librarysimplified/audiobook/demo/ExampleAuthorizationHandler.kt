@@ -3,10 +3,15 @@ package org.librarysimplified.audiobook.demo
 import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAUsernamePassword
 import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
+import org.slf4j.LoggerFactory
 
 object ExampleAuthorizationHandler : PlayerAuthorizationHandlerType {
+
+  private val logger =
+    LoggerFactory.getLogger(ExampleAuthorizationHandler::class.java)
 
   @Volatile
   private var credentials: ExamplePlayerCredentials =
@@ -15,6 +20,7 @@ object ExampleAuthorizationHandler : PlayerAuthorizationHandlerType {
   fun setCredentials(
     credentials: ExamplePlayerCredentials
   ) {
+    this.logger.debug("Credentials set to {}", credentials)
     this.credentials = credentials
   }
 
@@ -56,8 +62,25 @@ object ExampleAuthorizationHandler : PlayerAuthorizationHandlerType {
       }
 
       is ExamplePlayerCredentials.Overdrive -> {
-        null
+        throw UnsupportedOperationException("Overdrive must use custom credentials.")
       }
     }
+  }
+
+  override fun <T : Any> onRequireCustomCredentialsFor(
+    providerName: String,
+    kind: PlayerDownloadRequest.Kind,
+    credentialsType: Class<T>
+  ): T {
+    if (credentialsType == OPAUsernamePassword::class.java) {
+      val current = this.credentials
+      if (current is ExamplePlayerCredentials.Overdrive) {
+        return credentialsType.cast(OPAUsernamePassword(
+          current.userName,
+          current.password
+        ))
+      }
+    }
+    throw UnsupportedOperationException("No available credentials of type $credentialsType")
   }
 }

@@ -443,8 +443,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
       return strategies.create(
         OPAParameters(
-          userName = credentials.userName,
-          password = credentials.password,
+          authorizationHandler = ExampleAuthorizationHandler,
           clientKey = credentials.clientKey,
           clientPass = credentials.clientPass,
           targetURI = OPAManifestURI.Indirect(source),

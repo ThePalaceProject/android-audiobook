@@ -72,4 +72,16 @@ object PlayerObservableAuthorizationHandler : PlayerAuthorizationHandlerType {
   ): LSHTTPAuthorizationType? {
     return this.delegate?.onConfigureAuthorizationFor(source, kind)
   }
+
+  override fun <T : Any> onRequireCustomCredentialsFor(
+    providerName: String,
+    kind: PlayerDownloadRequest.Kind,
+    credentialsType: Class<T>
+  ): T {
+    val currentDelegate = this.delegate
+    if (currentDelegate != null) {
+      return currentDelegate.onRequireCustomCredentialsFor(providerName, kind, credentialsType)
+    }
+    throw UnsupportedOperationException("No available credentials of type $credentialsType")
+  }
 }

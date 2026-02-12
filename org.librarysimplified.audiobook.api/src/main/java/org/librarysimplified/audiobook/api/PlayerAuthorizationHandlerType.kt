@@ -46,4 +46,18 @@ interface PlayerAuthorizationHandlerType {
     source: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind
   ): LSHTTPAuthorizationType?
+
+  /**
+   * Produce custom credentials for manifest strategy providers that cannot use the normal
+   * authorization mechanisms (e.g. OPA).
+   *
+   * @throws UnsupportedOperationException If credentials are required that are not available
+   */
+
+  @Throws(UnsupportedOperationException::class)
+  fun <T : Any> onRequireCustomCredentialsFor(
+    providerName: String,
+    kind: PlayerDownloadRequest.Kind,
+    credentialsType: Class<T>
+  ): T
 }

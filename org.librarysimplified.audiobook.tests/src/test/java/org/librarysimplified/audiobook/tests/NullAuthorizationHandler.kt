@@ -25,4 +25,12 @@ class NullAuthorizationHandler : PlayerAuthorizationHandlerType {
   ): LSHTTPAuthorizationType? {
     return null
   }
+
+  override fun <T : Any> onRequireCustomCredentialsFor(
+    providerName: String,
+    kind: PlayerDownloadRequest.Kind,
+    credentialsType: Class<T>
+  ): T {
+    throw UnsupportedOperationException("No available credentials of type $credentialsType")
+  }
 }

@@ -17,9 +17,26 @@ data class PlayerDownloadRequest(
   val kind: Kind,
   val authorizationHandler: PlayerAuthorizationHandlerType
 ) {
+  /**
+   * The kind of object being downloaded.
+   */
+
   enum class Kind {
+
+    /** A manifest file. */
+
     MANIFEST,
+
+    /** A chapter within a manifest (typically an audio file) */
+
     CHAPTER,
-    WHOLE_BOOK
+
+    /** An entire book (typically an LCP publication) */
+
+    WHOLE_BOOK,
+
+    /** A license file (typically an LCP license) */
+
+    LICENSE
   }
 }
