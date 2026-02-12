@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerUserAgent
-import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentCredentialsBasic
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicProvider
 import org.librarysimplified.http.api.LSHTTPAuthorizationBearerToken
@@ -83,10 +82,7 @@ abstract class ManifestFulfillmentBasicContract {
         configuration = ManifestFulfillmentBasicParameters(
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           uri = URI.create("http://www.example.com"),
-          credentials = ManifestFulfillmentCredentialsBasic(
-            userName = "user",
-            password = "password"
-          ),
+          authorizationHandler = NullAuthorizationHandler(),
           httpClient = this.client
         )
       )
@@ -139,10 +135,7 @@ abstract class ManifestFulfillmentBasicContract {
         configuration = ManifestFulfillmentBasicParameters(
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           uri = URI.create("http://www.example.com"),
-          credentials = ManifestFulfillmentCredentialsBasic(
-            userName = "user",
-            password = "password"
-          ),
+          authorizationHandler = NullAuthorizationHandler(),
           httpClient = this.client
         )
       )
@@ -194,15 +187,15 @@ abstract class ManifestFulfillmentBasicContract {
     val provider =
       ManifestFulfillmentBasicProvider()
 
+    val authorizationHandler = SimpleAuthorizationHandler()
+    authorizationHandler.authorization = LSHTTPAuthorizationBearerToken.ofToken("abcd")
+
     val strategy =
       provider.create(
         configuration = ManifestFulfillmentBasicParameters(
           userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           uri = URI.create("http://www.example.com"),
-          credentials = ManifestFulfillmentCredentialsBasic(
-            userName = "user",
-            password = "password"
-          ),
+          authorizationHandler = authorizationHandler,
           httpClient = this.client
         )
       )

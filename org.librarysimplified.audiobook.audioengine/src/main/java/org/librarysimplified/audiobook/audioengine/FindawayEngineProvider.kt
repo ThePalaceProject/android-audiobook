@@ -6,7 +6,6 @@ import org.librarysimplified.audiobook.api.PlayerAudioEngineProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerVersion
 import org.librarysimplified.audiobook.api.PlayerVersions
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.slf4j.LoggerFactory
 
 /**
@@ -43,12 +42,14 @@ class FindawayEngineProvider : PlayerAudioEngineProviderType {
 
   override fun tryDeleteRequest(
     context: Application,
-    extensions: List<PlayerExtensionType>,
     request: PlayerAudioEngineRequest
   ): Boolean {
     val provider = this.tryRequest(request)
     if (provider != null) {
-      return provider.deleteBookData(context, extensions)
+      return provider.deleteBookData(
+        context = context,
+        authorizationHandler = request.authorizationHandler
+      )
     }
     return false
   }

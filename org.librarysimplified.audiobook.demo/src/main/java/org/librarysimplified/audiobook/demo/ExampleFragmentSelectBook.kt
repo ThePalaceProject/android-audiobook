@@ -18,7 +18,6 @@ import org.librarysimplified.audiobook.json_web_token.JSONBase64String
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_fulfill.api.ManifestFulfillmentStrategies
-import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentCredentialsBasic
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicType
 import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAManifestFulfillmentStrategyProviderType
@@ -280,11 +279,14 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
         }
       }
 
+    ExampleAuthorizationHandler.setCredentials(credentials)
+
     val sourceURI = URI.create(this.location.text.toString())
 
     when (this.typeSelected) {
       this.typeLCP -> {
         PlayerModel.downloadParseAndCheckLCPLicense(
+          authorizationHandler = ExampleAuthorizationHandler,
           bookCredentials = this.bookCredentials(),
           cacheDir = ExampleApplication.application.cacheDir,
           context = ExampleApplication.application,
@@ -332,36 +334,12 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     sourceURI: URI,
     credentials: ExamplePlayerCredentials
   ): ManifestFulfillmentBasicParameters {
-    return when (credentials) {
-      is ExamplePlayerCredentials.Basic -> {
-        ManifestFulfillmentBasicParameters(
-          uri = sourceURI,
-          credentials = ManifestFulfillmentCredentialsBasic(
-            userName = credentials.userName,
-            password = credentials.password
-          ),
-          httpClient = ExampleApplication.httpClient,
-          userAgent = ExampleApplication.userAgent
-        )
-      }
-
-      is ExamplePlayerCredentials.Feedbooks -> {
-        throw IllegalStateException()
-      }
-
-      is ExamplePlayerCredentials.None -> {
-        ManifestFulfillmentBasicParameters(
-          uri = sourceURI,
-          credentials = null,
-          httpClient = ExampleApplication.httpClient,
-          userAgent = ExampleApplication.userAgent
-        )
-      }
-
-      is ExamplePlayerCredentials.Overdrive -> {
-        throw IllegalStateException()
-      }
-    }
+    return ManifestFulfillmentBasicParameters(
+      uri = sourceURI,
+      authorizationHandler = ExampleAuthorizationHandler,
+      httpClient = ExampleApplication.httpClient,
+      userAgent = ExampleApplication.userAgent
+    )
   }
 
   private fun onSelectedType(type: String) {
@@ -457,81 +435,35 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     source: URI,
     credentials: ExamplePlayerCredentials
   ): ManifestFulfillmentStrategyType {
-    return when (credentials) {
-      is ExamplePlayerCredentials.None -> {
-        val strategies =
-          ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
-            ?: throw UnsupportedOperationException()
+    if (credentials is ExamplePlayerCredentials.Overdrive) {
+      val strategies =
+        ManifestFulfillmentStrategies.findStrategy(
+          OPAManifestFulfillmentStrategyProviderType::class.java
+        ) ?: throw UnsupportedOperationException()
 
-        strategies.create(
-          ManifestFulfillmentBasicParameters(
-            uri = source,
-            credentials = null,
-            httpClient = ExampleApplication.httpClient,
-            userAgent = ExampleApplication.userAgent
-          )
+      return strategies.create(
+        OPAParameters(
+          userName = credentials.userName,
+          password = credentials.password,
+          clientKey = credentials.clientKey,
+          clientPass = credentials.clientPass,
+          targetURI = OPAManifestURI.Indirect(source),
+          userAgent = ExampleApplication.userAgent
         )
-      }
-
-      is ExamplePlayerCredentials.Basic -> {
-        val strategies =
-          ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
-            ?: throw UnsupportedOperationException()
-
-        val basicCredentials =
-          ManifestFulfillmentCredentialsBasic(
-            userName = credentials.userName,
-            password = credentials.password
-          )
-
-        strategies.create(
-          ManifestFulfillmentBasicParameters(
-            uri = source,
-            credentials = basicCredentials,
-            httpClient = ExampleApplication.httpClient,
-            userAgent = ExampleApplication.userAgent
-          )
-        )
-      }
-
-      is ExamplePlayerCredentials.Feedbooks -> {
-        val strategies =
-          ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
-            ?: throw UnsupportedOperationException()
-
-        val basicCredentials =
-          ManifestFulfillmentCredentialsBasic(
-            userName = credentials.userName,
-            password = credentials.password
-          )
-
-        strategies.create(
-          ManifestFulfillmentBasicParameters(
-            uri = source,
-            credentials = basicCredentials,
-            httpClient = ExampleApplication.httpClient,
-            userAgent = ExampleApplication.userAgent
-          )
-        )
-      }
-
-      is ExamplePlayerCredentials.Overdrive -> {
-        val strategies =
-          ManifestFulfillmentStrategies.findStrategy(
-            OPAManifestFulfillmentStrategyProviderType::class.java
-          ) ?: throw UnsupportedOperationException()
-
-        strategies.create(
-          OPAParameters(
-            userName = credentials.userName,
-            password = credentials.password,
-            clientKey = credentials.clientKey,
-            clientPass = credentials.clientPass,
-            targetURI = OPAManifestURI.Indirect(source),
-            userAgent = ExampleApplication.userAgent
-          )
-        )
-      }
+      )
     }
+
+    val strategies =
+      ManifestFulfillmentStrategies.findStrategy(ManifestFulfillmentBasicType::class.java)
+        ?: throw UnsupportedOperationException()
+
+    return strategies.create(
+      ManifestFulfillmentBasicParameters(
+        uri = source,
+        authorizationHandler = ExampleAuthorizationHandler,
+        httpClient = ExampleApplication.httpClient,
+        userAgent = ExampleApplication.userAgent
+      )
+    )
   }
 }

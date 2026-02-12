@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsLCP
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerBookSource
@@ -17,7 +18,6 @@ import org.librarysimplified.audiobook.api.PlayerBookSource.PlayerBookSourcePack
 import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerResult.Failure
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.lcp.downloads.LCPDownloads
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.readium.r2.lcp.LcpAuthenticating
@@ -62,7 +62,7 @@ class ExoAudioBookProvider(
 
   override fun create(
     context: Application,
-    extensions: List<PlayerExtensionType>
+    authorizationHandler: PlayerAuthorizationHandlerType,
   ): PlayerResult<PlayerAudioBookType, Exception> {
     try {
       val isLCP =
@@ -172,11 +172,11 @@ class ExoAudioBookProvider(
               engineExecutor = this.engineExecutor,
               manifest = parsed.result,
               downloadProvider = this.request.downloadProvider,
-              extensions = extensions,
               userAgent = this.request.userAgent,
               dataSourceFactory = dataSourceFactory,
               missingTrackNameGenerator = missingTrackNameGenerator,
-              supportsDownloads = downloadSupport
+              supportsDownloads = downloadSupport,
+              authorizationHandler = this.request.authorizationHandler
             )
           )
 
@@ -190,7 +190,7 @@ class ExoAudioBookProvider(
 
   override fun deleteBookData(
     context: Application,
-    extensions: List<PlayerExtensionType>
+    authorizationHandler: PlayerAuthorizationHandlerType,
   ): Boolean {
     this.logger.debug("deleteBookData")
 

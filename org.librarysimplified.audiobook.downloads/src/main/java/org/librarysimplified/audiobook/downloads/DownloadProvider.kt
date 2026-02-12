@@ -1,13 +1,12 @@
 package org.librarysimplified.audiobook.downloads
 
-import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
-import org.librarysimplified.audiobook.api.PlayerDownloadRequestCredentials.Basic
-import org.librarysimplified.audiobook.api.PlayerDownloadRequestCredentials.BearerToken
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.FileOutputStream
 import java.io.IOException
@@ -49,7 +48,7 @@ class DownloadProvider private constructor(
     this.executor.submit {
       try {
         result.complete(doDownload(request, result))
-      } catch (e: CancellationException) {
+      } catch (_: CancellationException) {
         doCleanUp(request)
         result.cancel(true)
       } catch (e: Throwable) {
@@ -80,9 +79,20 @@ class DownloadProvider private constructor(
     request: PlayerDownloadRequest,
     result: CompletableFuture<Unit>
   ) {
-    this.log.debug("downloading {} to {}", request.uri, request.outputFile)
+    this.log.debug("Downloading {} to {}", request.link.hrefURI, request.outputFile)
 
     this.reportProgress(request, 0)
+
+    val link = request.link
+    if (link !is PlayerManifestLink.LinkBasic) {
+      this.log.debug("Templated links are not supported.")
+      throw IOException("Templated links are not supported.")
+    }
+    val targetURI = link.hrefURI
+    if (targetURI == null) {
+      this.log.debug("Links without href values are not supported.")
+      throw IOException("Links without href values are not supported.")
+    }
 
     val client =
       OkHttpClient.Builder()
@@ -93,14 +103,26 @@ class DownloadProvider private constructor(
     val httpRequestBuilder =
       Request.Builder()
         .header("User-Agent", request.userAgent.userAgent)
-        .url(request.uri.toURL())
+        .url(targetURI.toURL())
 
     this.configureRequestCredentials(request, httpRequestBuilder)
     val httpRequest = httpRequestBuilder.build()
     val call = client.newCall(httpRequest)
-    this.log.debug("executing http request")
+    this.log.debug("Executing HTTP request.")
 
     call.execute().use { response ->
+      if (response.code == 401) {
+        request.authorizationHandler.onAuthorizationIsInvalid(
+          source = request.link,
+          kind = request.kind
+        )
+      } else {
+        request.authorizationHandler.onAuthorizationIsNoLongerInvalid(
+          source = request.link,
+          kind = request.kind
+        )
+      }
+
       if (!response.isSuccessful) {
         throw IOException(
           StringBuilder(128)
@@ -122,27 +144,18 @@ class DownloadProvider private constructor(
     request: PlayerDownloadRequest,
     httpRequestBuilder: Request.Builder
   ) {
-    return when (val credentials = request.credentials) {
-      null -> {
-        this.log.debug("not using authentication")
-      }
-      is Basic -> {
-        this.log.debug("using basic auth")
-        httpRequestBuilder.header(
-          "Authorization",
-          Credentials.basic(credentials.user, credentials.password)
-        )
-        Unit
-      }
-      is BearerToken -> {
-        this.log.debug("using bearer token auth")
-        httpRequestBuilder.header(
-          "Authorization",
-          "Bearer ${credentials.token}"
-        )
-        Unit
-      }
+    val auth: LSHTTPAuthorizationType? =
+      request.authorizationHandler.onConfigureAuthorizationFor(
+        source = request.link,
+        kind = request.kind
+      )
+
+    if (auth == null) {
+      this.log.debug("Not using authentication for {} {}", request.kind, request.link.hrefURI)
+      return
     }
+
+    httpRequestBuilder.header("Authorization", auth.toHeaderValue())
   }
 
   private fun handleSuccessfulResponse(
@@ -155,7 +168,7 @@ class DownloadProvider private constructor(
      */
 
     if (result.isCancelled) {
-      this.log.debug("download cancelled")
+      this.log.debug("Download cancelled")
       throw CancellationException()
     }
 
@@ -216,7 +229,7 @@ class DownloadProvider private constructor(
        */
 
       if (result.isCancelled) {
-        this.log.debug("download cancelled")
+        this.log.debug("Download cancelled")
         throw CancellationException()
       }
 
@@ -228,14 +241,14 @@ class DownloadProvider private constructor(
       outputStream.write(buffer, 0, r)
 
       /*
-       * Throttle progress updates to one every ~500ms.
+       * Throttle progress updates to one every ~1000ms.
        */
 
       progressCurrent = (received.toDouble() / expectedLength.toDouble()) * 100.0
-      val enoughTimeElapsed = (System.currentTimeMillis() - timeLast) >= 500L
+      val enoughTimeElapsed = (System.currentTimeMillis() - timeLast) >= 1000L
       if (progressCurrent >= 100.0 || enoughTimeElapsed) {
         timeLast = System.currentTimeMillis()
-        this.log.debug("download progress: {}", progressCurrent)
+        this.log.debug("Download progress: {}", progressCurrent)
         this.reportProgress(request, progressCurrent.toInt())
       }
     }

@@ -17,6 +17,7 @@ import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.audiobook.tests.NullAuthorizationHandler
 import org.librarysimplified.audiobook.tests.ResourceMarker
 import org.slf4j.Logger
 import java.net.URI
@@ -55,6 +56,7 @@ abstract class ExoDownloadContract {
     val engine =
       PlayerAudioEngines.findBestFor(
         PlayerAudioEngineRequest(
+          authorizationHandler = NullAuthorizationHandler(),
           manifest = manifest,
           filter = { true },
           downloadProvider = org.librarysimplified.audiobook.tests.ExoUriDownloadProvider(
@@ -74,7 +76,7 @@ abstract class ExoDownloadContract {
     val bookResult =
       engine?.bookProvider?.create(
         context = context(),
-        extensions = listOf()
+        authorizationHandler = NullAuthorizationHandler(),
       )
 
     Assertions.assertNotNull(engine)

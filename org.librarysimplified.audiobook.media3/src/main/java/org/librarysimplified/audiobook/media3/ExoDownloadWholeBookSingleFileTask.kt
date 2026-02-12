@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.media3
 
 import net.jcip.annotations.GuardedBy
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
 import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
@@ -10,12 +11,12 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.lcp.downloads.LCPDownloads
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
 
 internal class ExoDownloadWholeBookSingleFileTask(
@@ -40,13 +41,13 @@ internal class ExoDownloadWholeBookSingleFileTask(
   }
 
   internal class SharedState(
-    internal val downloadStatusExecutor: ExecutorService,
     internal val downloadProvider: PlayerDownloadProviderType,
     internal val userAgent: PlayerUserAgent,
     internal val bookDownloadURI: URI,
     internal val bookFile: File,
     internal val bookFileTemp: File,
-    internal val licenseBytes: ByteArray
+    internal val licenseBytes: ByteArray,
+    internal val authorizationHandler: PlayerAuthorizationHandlerType
   ) {
     var downloading: CompletableFuture<Unit>? = null
     private val stateLock: Any = Object()
@@ -229,10 +230,13 @@ internal class ExoDownloadWholeBookSingleFileTask(
   private fun onStartDownload(): CompletableFuture<Unit> {
     this.logger.debug("Download: {}", this.sharedState.bookDownloadURI)
 
+    val link =
+      PlayerManifestLink.LinkBasic(this.sharedState.bookDownloadURI)
+
     val request =
       PlayerDownloadRequest(
-        uri = this.sharedState.bookDownloadURI,
-        credentials = null,
+        link = link,
+        kind = PlayerDownloadRequest.Kind.WHOLE_BOOK,
         outputFile = this.sharedState.bookFile,
         outputFileTemp = this.sharedState.bookFileTemp,
         userAgent = this.sharedState.userAgent,
@@ -246,7 +250,8 @@ internal class ExoDownloadWholeBookSingleFileTask(
             file = this.sharedState.bookFile,
             fileTemp = this.sharedState.bookFileTemp
           )
-        }
+        },
+        authorizationHandler = this.sharedState.authorizationHandler
       )
 
     val future = this.sharedState.downloadProvider.download(request)

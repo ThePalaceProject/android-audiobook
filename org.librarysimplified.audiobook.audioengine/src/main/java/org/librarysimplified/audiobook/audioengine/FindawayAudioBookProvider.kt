@@ -3,9 +3,9 @@ package org.librarysimplified.audiobook.audioengine
 import android.app.Application
 import org.librarysimplified.audiobook.api.PlayerAudioBookProviderType
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerResult
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.slf4j.LoggerFactory
 
@@ -22,7 +22,7 @@ class FindawayAudioBookProvider(
 
   override fun create(
     context: Application,
-    extensions: List<PlayerExtensionType>
+    authorizationHandler: PlayerAuthorizationHandlerType
   ): PlayerResult<PlayerAudioBookType, Exception> {
     val id =
       PlayerBookID.transform(this.manifest.metadata.identifier)
@@ -53,10 +53,10 @@ class FindawayAudioBookProvider(
 
   override fun deleteBookData(
     context: Application,
-    extensions: List<PlayerExtensionType>
+    authorizationHandler: PlayerAuthorizationHandlerType,
   ): Boolean {
     this.logger.debug("deleteBookData")
-    return when (val book = create(context, extensions)) {
+    return when (val book = create(context, authorizationHandler)) {
       is PlayerResult.Failure -> {
         false
       }

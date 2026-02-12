@@ -183,7 +183,7 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:visibility="visible" />
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/playerStatusArea"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -199,7 +199,9 @@
             android:id="@+id/playerStatusIcon"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/player_status_error" />
+            android:src="@drawable/player_status_error"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/playerStatusText"
@@ -208,9 +210,21 @@
             android:layout_marginLeft="16dp"
             android:textSize="14sp"
             android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/playerStatusIcon"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Very, very, very, very, very, very, very, very, very, very, very, very, very long placeholder text that should never be seen in practice." />
 
-    </LinearLayout>
+        <Button
+            android:id="@+id/playerStatusButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/audiobook_player_log_in"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/playerStatusText" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/playerDownloadStatusArea"

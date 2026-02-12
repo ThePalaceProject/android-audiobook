@@ -4,12 +4,16 @@ import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerDelegating
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
-import org.librarysimplified.audiobook.api.PlayerDownloadRequestCredentials
 import org.librarysimplified.audiobook.api.PlayerUserAgent
+import org.librarysimplified.audiobook.api.extensions.PlayerAuthorizationHandlerExtensionType
+import org.librarysimplified.audiobook.api.extensions.PlayerAuthorizationHandlerExtensionType.*
 import org.librarysimplified.audiobook.feedbooks.FeedbooksPlayerExtension
 import org.librarysimplified.audiobook.feedbooks.FeedbooksPlayerExtensionConfiguration
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestEncrypted
@@ -63,37 +67,20 @@ abstract class FeedbooksExtensionContract {
   fun testNotApplicable() {
     val extension = FeedbooksPlayerExtension()
 
-    val fileName =
-      UUID.randomUUID().toString()
-    val file =
-      File(TestDirectories.temporaryDirectory(), fileName)
-    val fileTemp =
-      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
-
-    val request =
-      PlayerDownloadRequest(
-        uri = URI.create("urn:fake"),
-        credentials = null,
-        outputFile = file,
-        outputFileTemp = fileTemp,
-        onProgress = {
-          this.logger.debug("progress: {}", it)
-        },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
-        onCompletion = { }
+    val link =
+      PlayerManifestLink.LinkBasic(
+        href = URI.create("urn:fake"),
+        properties = PlayerManifestLinkProperties()
       )
 
-    val future =
-      extension.onDownloadLink(
-        statusExecutor = this.executor,
-        downloadProvider = this.downloadProvider,
-        originalRequest = request,
-        link = PlayerManifestLink.LinkBasic(
-          href = URI.create("urn:fake")
-        )
+    assertEquals(
+      OverrideNotApplicable,
+      extension.onOverrideAuthorizationFor(
+        link = link,
+        kind = PlayerDownloadRequest.Kind.CHAPTER,
+        authorization = null
       )
-
-    Assertions.assertEquals(null, future)
+    )
   }
 
   /**
@@ -105,50 +92,24 @@ abstract class FeedbooksExtensionContract {
   fun testNotConfigured() {
     val extension = FeedbooksPlayerExtension()
 
-    val fileName =
-      UUID.randomUUID().toString()
-    val file =
-      File(TestDirectories.temporaryDirectory(), fileName)
-    val fileTemp =
-      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
-
-    val request =
-      PlayerDownloadRequest(
-        uri = URI.create("urn:fake"),
-        credentials = null,
-        outputFile = file,
-        outputFileTemp = fileTemp,
-        onProgress = {
-          this.logger.debug("progress: {}", it)
-        },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
-        onCompletion = { }
-      )
-
-    val future =
-      extension.onDownloadLink(
-        statusExecutor = this.executor,
-        downloadProvider = this.downloadProvider,
-        originalRequest = request,
-        link = PlayerManifestLink.LinkBasic(
-          href = URI.create("urn:fake"),
-          properties = PlayerManifestLinkProperties(
-            encrypted = PlayerManifestEncrypted(
-              scheme = "http://www.feedbooks.com/audiobooks/access-restriction"
-            )
+    val link =
+      PlayerManifestLink.LinkBasic(
+        href = URI.create("urn:fake"),
+        properties = PlayerManifestLinkProperties(
+          encrypted = PlayerManifestEncrypted(
+            scheme = "http://www.feedbooks.com/audiobooks/access-restriction"
           )
         )
       )
 
-    try {
-      future!!.get()
-    } catch (e: ExecutionException) {
-      val cause = e.cause as IllegalStateException
-      Assertions.assertTrue(cause.message!!.contains("has not been configured"))
-      return
-    }
-
-    Assertions.fail<Any>()
+    assertEquals(
+      OverrideError("Link requires Feedbooks support, but the Feedbooks extension has not been configured."),
+      extension.onOverrideAuthorizationFor(
+        link = link,
+        kind = PlayerDownloadRequest.Kind.CHAPTER,
+        authorization = null
+      )
+    )
   }
 
   /**
@@ -158,53 +119,28 @@ abstract class FeedbooksExtensionContract {
   @Test
   fun testBearerTokenSent() {
     val extension = FeedbooksPlayerExtension()
+    extension.configuration = FeedbooksPlayerExtensionConfiguration(
+      bearerTokenSecret = ByteArray(4),
+      issuerURL = "http://example.com"
+    )
 
-    val fileName =
-      UUID.randomUUID().toString()
-    val file =
-      File(TestDirectories.temporaryDirectory(), fileName)
-    val fileTemp =
-      File(TestDirectories.temporaryDirectory(), fileName + ".tmp")
-
-    extension.configuration =
-      FeedbooksPlayerExtensionConfiguration(
-        bearerTokenSecret = "confound delivery".toByteArray(),
-        issuerURL = "http://www.example.com"
-      )
-
-    val request =
-      PlayerDownloadRequest(
-        uri = URI.create("urn:fake"),
-        credentials = null,
-        outputFile = file,
-        outputFileTemp = fileTemp,
-        onProgress = {
-          this.logger.debug("progress: {}", it)
-        },
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
-        onCompletion = { }
-      )
-
-    val future =
-      extension.onDownloadLink(
-        statusExecutor = this.executor,
-        downloadProvider = this.downloadProvider,
-        originalRequest = request,
-        link = PlayerManifestLink.LinkBasic(
-          href = URI.create("urn:fake"),
-          properties = PlayerManifestLinkProperties(
-            encrypted = PlayerManifestEncrypted(
-              scheme = "http://www.feedbooks.com/audiobooks/access-restriction"
-            )
+    val link =
+      PlayerManifestLink.LinkBasic(
+        href = URI.create("urn:fake"),
+        properties = PlayerManifestLinkProperties(
+          encrypted = PlayerManifestEncrypted(
+            scheme = "http://www.feedbooks.com/audiobooks/access-restriction"
           )
         )
       )
 
-    future!!.get()
-
-    val sentRequest = this.downloadProvider.requests.poll()
-    Assertions.assertEquals(request.uri, sentRequest.uri)
-    Assertions.assertEquals(request.outputFile, sentRequest.outputFile)
-    Assertions.assertTrue(sentRequest.credentials is PlayerDownloadRequestCredentials.BearerToken)
+    assertInstanceOf(
+      OverrideWith::class.java,
+      extension.onOverrideAuthorizationFor(
+        link = link,
+        kind = PlayerDownloadRequest.Kind.CHAPTER,
+        authorization = null
+      )
+    )
   }
 }

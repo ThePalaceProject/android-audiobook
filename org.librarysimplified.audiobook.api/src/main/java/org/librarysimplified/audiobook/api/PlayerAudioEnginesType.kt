@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.api
 
 import android.app.Application
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 
 /**
  * An API to find engine providers for books.
@@ -36,7 +35,6 @@ interface PlayerAudioEnginesType {
 
   fun delete(
     context: Application,
-    extensions: List<PlayerExtensionType>,
     request: PlayerAudioEngineRequest
   ): Boolean
 }

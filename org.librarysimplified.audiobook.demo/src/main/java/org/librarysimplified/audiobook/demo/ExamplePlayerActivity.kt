@@ -270,14 +270,14 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           bookmarkDatabase.bookmarkList(bookId)
 
         PlayerBookmarkModel.setBookmarks(bookmarksAll)
-
         PlayerModel.openPlayerForManifest(
-          context = ExampleApplication.application,
-          userAgent = PlayerUserAgent("AudioBookDemo"),
-          manifest = state.manifest,
-          fetchAll = true,
+          authorizationHandler = ExampleAuthorizationHandler,
+          bookCredentials = state.bookCredentials,
           bookSource = state.bookSource,
-          bookCredentials = state.bookCredentials
+          context = ExampleApplication.application,
+          fetchAll = true,
+          manifest = state.manifest,
+          userAgent = PlayerUserAgent("AudioBookDemo"),
         )
       }
 
@@ -348,6 +348,16 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
       PlayerViewErrorsDownloadOpen -> {
         this.switchFragment(ExampleFragmentErrorDownload())
+      }
+
+      PlayerViewCommand.PlayerViewLoginOpen -> {
+        PlayerUIThread.runOnUIThread {
+          Toast.makeText(
+            this,
+            "In a real application, a login screen would have opened here.",
+            Toast.LENGTH_LONG)
+            .show()
+        }
       }
     }
   }

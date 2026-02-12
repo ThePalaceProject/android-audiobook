@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.media3.datasource.DataSource
 import io.reactivex.subjects.PublishSubject
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
@@ -14,7 +15,6 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
@@ -42,7 +42,8 @@ class ExoAudioBook private constructor(
   override val readingOrderByID: Map<PlayerManifestReadingOrderID, ExoReadingOrderItemHandle>,
   override val readingOrderElementDownloadStatus: PublishSubject<PlayerReadingOrderItemDownloadStatus>,
   private val missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
-  private val supportsDownloads: ExoDownloadSupport
+  private val supportsDownloads: ExoDownloadSupport,
+  private val authorizationHandler: PlayerAuthorizationHandlerType
 ) : PlayerAudioBookType {
 
   private val logger =
@@ -65,7 +66,8 @@ class ExoAudioBook private constructor(
       book = this,
       context = this.context,
       manifestUpdates = this.manifestUpdates,
-      dataSourceFactory = this.dataSourceFactory
+      dataSourceFactory = this.dataSourceFactory,
+      authorizationHandler = this.authorizationHandler
     )
   }
 
@@ -171,7 +173,7 @@ class ExoAudioBook private constructor(
       engineExecutor: ScheduledExecutorService,
       manifest: ExoManifest,
       downloadProvider: PlayerDownloadProviderType,
-      extensions: List<PlayerExtensionType>,
+      authorizationHandler: PlayerAuthorizationHandlerType,
       userAgent: PlayerUserAgent,
       dataSourceFactory: DataSource.Factory,
       missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
@@ -237,13 +239,13 @@ class ExoAudioBook private constructor(
               if (wholeBookDownloadSharedState == null) {
                 wholeBookDownloadSharedState =
                   ExoDownloadWholeBookSingleFileTask.SharedState(
+                    downloadProvider = downloadProvider,
+                    userAgent = userAgent,
                     bookDownloadURI = supportsDownloads.targetURI,
                     bookFile = bookFile,
                     bookFileTemp = bookFileTemp,
-                    downloadProvider = downloadProvider,
-                    downloadStatusExecutor = engineExecutor,
-                    userAgent = userAgent,
-                    licenseBytes = supportsDownloads.licenseBytes
+                    licenseBytes = supportsDownloads.licenseBytes,
+                    authorizationHandler = authorizationHandler,
                   )
               }
 
@@ -258,8 +260,7 @@ class ExoAudioBook private constructor(
             DownloadIndividualChaptersAsFiles -> {
               ExoDownloadTask(
                 downloadProvider = downloadProvider,
-                downloadStatusExecutor = engineExecutor,
-                extensions = extensions,
+                authenticationHandler = authorizationHandler,
                 index = manifestItem.index,
                 originalLink = manifestItem.item.link,
                 partFile = partFile,
@@ -284,17 +285,18 @@ class ExoAudioBook private constructor(
 
       val book =
         ExoAudioBook(
-          exoManifest = manifest,
+          authorizationHandler = authorizationHandler,
+          context = context,
+          dataSourceFactory = dataSourceFactory,
           downloadTasks = downloadTasks.toList(),
           downloadTasksByID = downloadTasksById.toMap(),
-          context = context,
           engineExecutor = engineExecutor,
-          dataSourceFactory = dataSourceFactory,
+          exoManifest = manifest,
+          missingTrackNameGenerator = missingTrackNameGenerator,
           readingOrder = handles.toList(),
           readingOrderByID = handlesById.toMap(),
           readingOrderElementDownloadStatus = statusEvents,
-          missingTrackNameGenerator = missingTrackNameGenerator,
-          supportsDownloads = supportsDownloads
+          supportsDownloads = supportsDownloads,
         )
 
       for (e in handles) {

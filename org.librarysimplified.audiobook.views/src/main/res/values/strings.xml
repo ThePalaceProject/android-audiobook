@@ -34,7 +34,7 @@
 
     <string name="audiobook_player_buffering">Buffering…</string>
     <string name="audiobook_player_waiting">This chapter must be downloaded before playback can continue.</string>
-    <string name="audiobook_player_error">An error occurred during playback. Error code: %1$d</string>
+    <string name="audiobook_player_error">An error occurred during playback. Error code: %1$s (%2$d)</string>
 
     <string name="audiobook_player_toc_track_n">Track %1$d</string>
     <string name="audiobook_player_toc_menu_refresh_all">Refresh All</string>
@@ -60,6 +60,9 @@
     <string name="audiobook_player_pause_sleep_timer">
       The player is currently paused because the sleep timer was activated.
     </string>
+
+    <string name="audiobook_player_log_in">Log In</string>
+    <string name="audiobook_player_login_expired">Playback has halted because your session has expired. Please log in to refresh your session.</string>
 
     <!--
       Accessibility strings.

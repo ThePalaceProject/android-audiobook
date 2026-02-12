@@ -4,6 +4,7 @@ dependencies {
     implementation(project(":org.librarysimplified.audiobook.api"))
     implementation(project(":org.librarysimplified.audiobook.http"))
     implementation(project(":org.librarysimplified.audiobook.manifest_fulfill.spi"))
+    implementation(project(":org.librarysimplified.audiobook.manifest.api"))
 
     implementation(libs.irradia.mime.api)
     implementation(libs.irradia.mime.vanilla)

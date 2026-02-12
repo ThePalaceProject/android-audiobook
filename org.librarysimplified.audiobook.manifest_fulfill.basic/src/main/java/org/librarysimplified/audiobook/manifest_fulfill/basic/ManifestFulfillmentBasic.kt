@@ -3,13 +3,13 @@ package org.librarysimplified.audiobook.manifest_fulfill.basic
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import one.irradia.mime.vanilla.MIMEParser
+import org.librarysimplified.audiobook.api.PlayerDownloadRequest.Kind.MANIFEST
 import org.librarysimplified.audiobook.api.PlayerResult
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfilled
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentError
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentEvent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
-import org.librarysimplified.http.api.LSHTTPAuthorizationBasic
-import org.librarysimplified.http.api.LSHTTPAuthorizationBearerToken
 import org.librarysimplified.http.api.LSHTTPRequestBuilderType.AllowRedirects.ALLOW_UNSAFE_REDIRECTS
 import org.librarysimplified.http.api.LSHTTPResponseStatus
 import org.slf4j.LoggerFactory
@@ -35,31 +35,17 @@ class ManifestFulfillmentBasic(
     this.logger.debug("Fulfilling manifest: {}", this.configuration.uri)
 
     this.eventSubject.onNext(ManifestFulfillmentEvent("Fulfilling ${this.configuration.uri}…"))
-    val credentials = this.configuration.credentials
     val httpClient = this.configuration.httpClient
 
     val requestBuilder =
       httpClient.newRequest(this.configuration.uri)
 
-    when (credentials) {
-      is ManifestFulfillmentCredentialsBasic -> {
-        requestBuilder.setAuthorization(
-          LSHTTPAuthorizationBasic.ofUsernamePassword(
-            credentials.userName,
-            credentials.password
-          )
-        )
-      }
-      is ManifestFulfillmentCredentialsToken -> {
-        requestBuilder.setAuthorization(
-          LSHTTPAuthorizationBearerToken.ofToken(credentials.token)
-        )
-      }
-      null -> {
-        requestBuilder.setAuthorization(null)
-      }
-    }
+    val link =
+      PlayerManifestLink.LinkBasic(this.configuration.uri)
 
+    requestBuilder.setAuthorization(
+      this.configuration.authorizationHandler.onConfigureAuthorizationFor(link, MANIFEST)
+    )
     requestBuilder.addHeader("User-Agent", this.configuration.userAgent.userAgent)
     requestBuilder.allowRedirects(ALLOW_UNSAFE_REDIRECTS)
     val request = requestBuilder.build()
@@ -87,6 +73,8 @@ class ManifestFulfillmentBasic(
 
     return when (val status = response.status) {
       is LSHTTPResponseStatus.Responded.OK -> {
+        this.configuration.authorizationHandler.onAuthorizationIsNoLongerInvalid(link, MANIFEST)
+
         PlayerResult.unit(
           ManifestFulfilled(
             source = this.configuration.uri,
@@ -96,7 +84,14 @@ class ManifestFulfillmentBasic(
           )
         )
       }
+
       is LSHTTPResponseStatus.Responded.Error -> {
+        if (responseCode == 401) {
+          this.configuration.authorizationHandler.onAuthorizationIsInvalid(link, MANIFEST)
+        } else {
+          this.configuration.authorizationHandler.onAuthorizationIsNoLongerInvalid(link, MANIFEST)
+        }
+
         PlayerResult.Failure(
           ManifestFulfillmentError(
             message = responseMessage,
@@ -111,7 +106,10 @@ class ManifestFulfillmentBasic(
           )
         )
       }
+
       is LSHTTPResponseStatus.Failed -> {
+        this.configuration.authorizationHandler.onAuthorizationIsNoLongerInvalid(link, MANIFEST)
+
         PlayerResult.Failure(
           ManifestFulfillmentError(
             message = responseMessage,

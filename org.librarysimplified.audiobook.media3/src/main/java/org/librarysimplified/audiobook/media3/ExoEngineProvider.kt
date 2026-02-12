@@ -7,7 +7,6 @@ import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerVersion
 import org.librarysimplified.audiobook.api.PlayerVersions
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -104,7 +103,6 @@ class ExoEngineProvider(
 
   override fun tryDeleteRequest(
     context: Application,
-    extensions: List<PlayerExtensionType>,
     request: PlayerAudioEngineRequest
   ): Boolean {
     val manifest = request.manifest
@@ -112,7 +110,10 @@ class ExoEngineProvider(
       request = request,
       engineExecutor = this.engineExecutor,
       manifest = manifest
-    ).deleteBookData(context, extensions)
+    ).deleteBookData(
+      context = context,
+      authorizationHandler = request.authorizationHandler,
+    )
   }
 
   override fun name(): String {
