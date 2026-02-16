@@ -151,7 +151,8 @@ class FindawayAdapter(
         readingOrderItem = this.mostRecentPosition.readingOrderItem,
         offsetMilliseconds = this.mostRecentPosition.readingOrderItemOffsetMilliseconds,
         exception = thrown,
-        errorCode = code
+        errorCode = code,
+        errorCodeName = "FINDAWAY_$code"
       )
     )
   }

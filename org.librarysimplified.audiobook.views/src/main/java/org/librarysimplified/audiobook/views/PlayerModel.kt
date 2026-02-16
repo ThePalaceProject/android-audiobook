@@ -1,4 +1,5 @@
 package org.librarysimplified.audiobook.views
+
 import android.app.Application
 import android.graphics.Bitmap
 import android.media.AudioManager
@@ -12,6 +13,8 @@ import io.reactivex.subjects.PublishSubject
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerDelegating
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
 import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerBookSource
@@ -38,7 +41,7 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.api.PlayerUserAgent
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
+import org.librarysimplified.audiobook.api.extensions.PlayerAuthorizationHandlerExtensionType
 import org.librarysimplified.audiobook.downloads.DownloadProvider
 import org.librarysimplified.audiobook.lcp.downloads.LCPDownloads
 import org.librarysimplified.audiobook.lcp.downloads.LCPLicenseAndBytes
@@ -72,7 +75,6 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
 import org.librarysimplified.audiobook.views.focus.PlayerFocusWatcher
 import org.librarysimplified.audiobook.views.mediacontrols.PlayerMediaController
-import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
@@ -97,8 +99,8 @@ object PlayerModel {
     PlayerTimeTracker.create()
 
   @Volatile
-  var playerExtensions: List<PlayerExtensionType> =
-    ServiceLoader.load(PlayerExtensionType::class.java)
+  var authorizationHandlerExtensions: List<PlayerAuthorizationHandlerExtensionType> =
+    ServiceLoader.load(PlayerAuthorizationHandlerExtensionType::class.java)
       .toList()
 
   @Volatile
@@ -446,6 +448,7 @@ object PlayerModel {
 
   fun downloadParseAndCheckLCPLicense(
     context: Application,
+    authorizationHandler: PlayerAuthorizationHandlerType,
     bookCredentials: PlayerBookCredentialsType,
     cacheDir: File,
     licenseChecks: List<SingleLicenseCheckProviderType>,
@@ -460,6 +463,7 @@ object PlayerModel {
 
     return this.executeTaskCancellingExisting {
       this.opDownloadAndParseLCPLicense(
+        authorizationHandler = authorizationHandler,
         bookCredentials = bookCredentials,
         cacheDir = cacheDir,
         context = context,
@@ -591,6 +595,7 @@ object PlayerModel {
 
   private fun opDownloadAndParseLCPLicense(
     context: Application,
+    authorizationHandler: PlayerAuthorizationHandlerType,
     bookCredentials: PlayerBookCredentialsType,
     cacheDir: File,
     licenseChecks: List<SingleLicenseCheckProviderType>,
@@ -603,6 +608,7 @@ object PlayerModel {
   ) {
     this.logger.debug("opDownloadAndParseLCPLicense")
     this.setNewState(PlayerManifestInProgress)
+    PlayerObservableAuthorizationHandler.setHandler(authorizationHandler)
 
     try {
       val receiver: (ManifestFulfillmentEvent) -> Unit = { event ->
@@ -630,7 +636,7 @@ object PlayerModel {
       val manifestData: ManifestFulfilled =
         when (val result = LCPDownloads.downloadManifestFromPublication(
           context = context,
-          credentials = licenseParameters.credentials,
+          authorizationHandler = PlayerObservableAuthorizationHandler,
           license = licenseAndBytes.license,
           receiver = receiver
         )) {
@@ -693,7 +699,6 @@ object PlayerModel {
       }
 
       val result = (downloadResult as PlayerResult.Success).result
-      this.configurePlayerExtensions(result.authorization)
 
       return this.opParseManifest(
         bookCredentials = bookCredentials,
@@ -829,32 +834,22 @@ object PlayerModel {
     }
   }
 
-  private fun configurePlayerExtensions(
-    authorization: LSHTTPAuthorizationType?
-  ) {
-    this.logger.debug("Providing authorization to player extensions…")
-
-    this.playerExtensions.forEachIndexed { index, extension ->
-      this.logger.debug("configurePlayerExtensions: [{}] extension {}", index, extension.name)
-      extension.setAuthorization(authorization)
-    }
-  }
-
   fun openPlayerForManifest(
     context: Application,
     userAgent: PlayerUserAgent,
     manifest: PlayerManifest,
     fetchAll: Boolean,
     bookCredentials: PlayerBookCredentialsType,
-    bookSource: PlayerBookSource
+    bookSource: PlayerBookSource,
+    authorizationHandler: PlayerAuthorizationHandlerType
   ): CompletableFuture<Unit> {
     this.logger.debug("openPlayerForManifest")
 
-    if (this.playerExtensions.isEmpty()) {
-      this.logger.debug("openPlayerForManifest: No player extensions were provided.")
+    if (this.authorizationHandlerExtensions.isEmpty()) {
+      this.logger.debug("openPlayerForManifest: No authorization extensions were provided.")
     } else {
-      this.playerExtensions.forEachIndexed { index, extension ->
-        this.logger.debug("openPlayerForManifest: [{}] extension {}", index, extension.name)
+      this.authorizationHandlerExtensions.forEachIndexed { index, extension ->
+        this.logger.debug("openPlayerForManifest: [{}] Extension {}", index, extension.name)
       }
     }
 
@@ -863,13 +858,14 @@ object PlayerModel {
 
     return this.executeTaskCancellingExisting {
       this.opOpenPlayerForManifest(
+        authorizationHandlerDelegate = authorizationHandler,
+        authorizationHandlerExtensions = this.authorizationHandlerExtensions,
+        bookCredentials = bookCredentials,
+        bookSource = bookSource,
+        context = context,
+        fetchAll = fetchAll,
         manifest = manifest,
         userAgent = userAgent,
-        context = context,
-        extensions = this.playerExtensions,
-        fetchAll = fetchAll,
-        bookCredentials = bookCredentials,
-        bookSource = bookSource
       )
     }
   }
@@ -878,12 +874,20 @@ object PlayerModel {
     manifest: PlayerManifest,
     userAgent: PlayerUserAgent,
     context: Application,
-    extensions: List<PlayerExtensionType>,
     fetchAll: Boolean,
     bookCredentials: PlayerBookCredentialsType,
-    bookSource: PlayerBookSource
+    bookSource: PlayerBookSource,
+    authorizationHandlerDelegate: PlayerAuthorizationHandlerType,
+    authorizationHandlerExtensions: List<PlayerAuthorizationHandlerExtensionType>,
   ) {
     this.logger.debug("opOpenPlayerForManifest")
+
+    val authorizationHandler =
+      PlayerAuthorizationHandlerDelegating.create(
+        delegate = authorizationHandlerDelegate,
+        extensions = authorizationHandlerExtensions
+      )
+    PlayerObservableAuthorizationHandler.setHandler(authorizationHandler)
 
     val existingPlayer = this.playerAndBookField
     if (existingPlayer != null) {
@@ -913,7 +917,8 @@ object PlayerModel {
           downloadProvider = DownloadProvider.create(this.downloadExecutor),
           userAgent = userAgent,
           bookCredentials = bookCredentials,
-          bookSource = bookSource
+          bookSource = bookSource,
+          authorizationHandler = PlayerObservableAuthorizationHandler
         )
       )
 
@@ -941,7 +946,7 @@ object PlayerModel {
     val bookResult =
       engine.bookProvider.create(
         context = context,
-        extensions = extensions
+        authorizationHandler = PlayerObservableAuthorizationHandler,
       )
 
     if (bookResult is PlayerResult.Failure) {

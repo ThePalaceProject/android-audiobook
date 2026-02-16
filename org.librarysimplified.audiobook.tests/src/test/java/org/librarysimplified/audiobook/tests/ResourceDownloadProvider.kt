@@ -75,12 +75,12 @@ class ResourceDownloadProvider private constructor(
     request: PlayerDownloadRequest,
     result: CompletableFuture<Unit>
   ) {
-    this.log.debug("downloading {} to {}", request.uri, request.outputFile)
+    this.log.debug("downloading {} to {}", request.link, request.outputFile)
 
     this.reportProgress(request, 0)
 
-    if (!this.resources.containsKey(request.uri)) {
-      throw IOException("No such URI in resources: " + request.uri)
+    if (!this.resources.containsKey(request.link.hrefURI!!)) {
+      throw IOException("No such URI in resources: " + request.link.hrefURI!!)
     }
 
     /*
@@ -100,7 +100,7 @@ class ResourceDownloadProvider private constructor(
     val directory = request.outputFile.parentFile
     directory.mkdirs()
 
-    this.resources[request.uri]!!().use { input_stream ->
+    this.resources[request.link.hrefURI!!]!!().use { input_stream ->
 
       /*
        * XXX: When API level 27 becomes the new minimum API, use the Files class with atomic

@@ -10,6 +10,7 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.SeekBar
@@ -52,6 +53,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetada
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewErrorsDownloadOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewLoginOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
@@ -60,6 +62,7 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 
 class PlayerFragment : PlayerBaseFragment() {
 
+  private lateinit var playerStatusButton: Button
   private lateinit var playerPauseReason: TextView
   private lateinit var coverView: ImageView
   private lateinit var menuAddBookmark: MenuItem
@@ -155,6 +158,8 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.playerStatusIcon)
     this.playerStatusText =
       view.findViewById(R.id.playerStatusText)
+    this.playerStatusButton =
+      view.findViewById(R.id.playerStatusButton)
 
     this.playerDownloadMessage =
       view.findViewById(R.id.playerDownloadMessage)
@@ -209,6 +214,9 @@ class PlayerFragment : PlayerBaseFragment() {
     this.subscriptions.add(PlayerModel.downloadEvents.subscribe { event ->
       this.onDownloadEvent()
     })
+    this.subscriptions.add(PlayerObservableAuthorizationHandler.credentialsEvents.subscribe { event ->
+      this.onOnCredentialsValid(event)
+    })
     this.setPlayPauseButtonAppropriately()
   }
 
@@ -249,6 +257,23 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playPauseButton.setOnClickListener { PlayerModel.play() }
     this.playPauseButton.contentDescription =
       this.getString(R.string.audiobook_accessibility_play)
+  }
+
+  @UiThread
+  private fun onOnCredentialsValid(
+    valid: Boolean
+  ) {
+    if (valid) {
+      this.playerStatusArea.alpha = 0.0f
+      this.playerStatusButton.visibility = GONE
+    } else {
+      this.playerStatusArea.alpha = 1.0f
+      this.playerStatusText.text = this.resources.getString(R.string.audiobook_player_login_expired)
+      this.playerStatusButton.visibility = VISIBLE
+      this.playerStatusButton.setOnClickListener {
+        PlayerModel.submitViewCommand(PlayerViewLoginOpen)
+      }
+    }
   }
 
   @UiThread
@@ -338,6 +363,7 @@ class PlayerFragment : PlayerBaseFragment() {
         this.coverView.setImageBitmap(PlayerModel.coverImage)
       }
 
+      PlayerViewLoginOpen,
       PlayerViewErrorsDownloadOpen,
       PlayerViewNavigationCloseAll,
       PlayerViewNavigationPlaybackRateMenuOpen,
@@ -537,7 +563,7 @@ class PlayerFragment : PlayerBaseFragment() {
   ) {
     this.playerStatusIcon.setImageResource(R.drawable.player_status_error)
     this.publishStatusAreaMessage(
-      this.resources.getString(R.string.audiobook_player_error, event.errorCode)
+      this.resources.getString(R.string.audiobook_player_error, event.errorCodeName, event.errorCode)
     )
   }
 

@@ -10,6 +10,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
 import org.librarysimplified.audiobook.api.PlayerBlame
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
@@ -65,6 +66,7 @@ class ExoAudioBookPlayer private constructor(
   private val exoPlayer: ExoPlayer,
   manifestUpdates: Observable<Unit>,
   private val statusEvents: Subject<PlayerEvent>,
+  private val authorizationHandler: PlayerAuthorizationHandlerType
 ) : PlayerType {
 
   private var pauseReason: PlayerPauseReason =
@@ -149,10 +151,10 @@ class ExoAudioBookPlayer private constructor(
       currentReadingOrderItem = {
         this.currentReadingOrderElement.readingOrderItem
       },
-      toc = this.book.tableOfContents
-    ) {
-      this.isStreamingNow
-    }
+      authorizationHandler = this.authorizationHandler,
+      toc = this.book.tableOfContents,
+      isStreamingNow = { this.isStreamingNow }
+    )
 
   init {
     this.resources.add(Disposables.fromAction(this.statusExecutor::shutdown))
@@ -193,7 +195,9 @@ class ExoAudioBookPlayer private constructor(
     this.resources.add(
       this.exoAdapter.stateObservable.subscribe(
         { transition -> this.onPlayerStateChanged(transition) },
-        { exception -> this.log.error("Player status error: ", exception) }
+        { exception ->
+          this.log.error("Player status error: ", exception)
+        }
       )
     )
 
@@ -206,7 +210,9 @@ class ExoAudioBookPlayer private constructor(
     this.resources.add(
       this.book.readingOrderElementDownloadStatus.subscribe(
         { status -> runOnUIThread { this.onDownloadStatusChanged(status) } },
-        { exception -> this.log.error("Download status error: ", exception) }
+        { exception ->
+          this.log.error("Download status error: ", exception)
+        }
       )
     )
 
@@ -378,7 +384,8 @@ class ExoAudioBookPlayer private constructor(
       book: ExoAudioBook,
       context: Application,
       manifestUpdates: Observable<Unit>,
-      dataSourceFactory: Factory
+      dataSourceFactory: Factory,
+      authorizationHandler: PlayerAuthorizationHandlerType
     ): ExoAudioBookPlayer {
       val statusEvents =
         BehaviorSubject.create<PlayerEvent>()
@@ -390,6 +397,7 @@ class ExoAudioBookPlayer private constructor(
         exoPlayer = ExoPlayer.Builder(context).build(),
         manifestUpdates = manifestUpdates,
         statusEvents = statusEvents,
+        authorizationHandler = authorizationHandler
       )
     }
   }

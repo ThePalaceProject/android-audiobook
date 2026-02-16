@@ -63,4 +63,9 @@
         location="https://io7m.github.io/audiobooks/missing_files/manifest.json">
         <AuthenticationNone />
     </Preset>
+    <Preset
+        name="Chapter 401s"
+        location="https://commonfields.io7m.com/audiobook/401/manifest.json">
+        <AuthenticationNone />
+    </Preset>
 </Presets>

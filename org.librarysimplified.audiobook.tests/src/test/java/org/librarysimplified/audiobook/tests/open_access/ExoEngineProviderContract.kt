@@ -58,6 +58,7 @@ import org.librarysimplified.audiobook.media3.ExoEngineProvider
 import org.librarysimplified.audiobook.media3.ExoEngineThread
 import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.audiobook.tests.NullAuthorizationHandler
 import org.librarysimplified.audiobook.tests.ResourceMarker
 import org.slf4j.Logger
 import java.io.ByteArrayInputStream
@@ -113,6 +114,7 @@ abstract class ExoEngineProviderContract {
   fun testAudioEnginesTrivial() {
     val manifest = this.parseManifest("ok_minimal_0.json")
     val request = PlayerAudioEngineRequest(
+      authorizationHandler = NullAuthorizationHandler(),
       manifest = manifest,
       filter = { true },
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
@@ -124,7 +126,7 @@ abstract class ExoEngineProviderContract {
     val book_provider = engine_provider.tryRequest(request)
     Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
-    val result = book_provider_nn.create(this.context(), listOf())
+    val result = book_provider_nn.create(this.context(), NullAuthorizationHandler())
     this.log().debug("testAudioEnginesTrivial:result: {}", result)
     Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
   }
@@ -137,6 +139,7 @@ abstract class ExoEngineProviderContract {
   fun testAudioEnginesFlatland() {
     val manifest = this.parseManifest("flatland.audiobook-manifest.json")
     val request = PlayerAudioEngineRequest(
+      authorizationHandler = NullAuthorizationHandler(),
       manifest = manifest,
       filter = { true },
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
@@ -148,7 +151,7 @@ abstract class ExoEngineProviderContract {
     val book_provider = engine_provider.tryRequest(request)
     Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
-    val result = book_provider_nn.create(this.context(), listOf())
+    val result = book_provider_nn.create(this.context(), NullAuthorizationHandler())
     this.log().debug("testAudioEnginesFlatland:result: {}", result)
     Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
   }
@@ -161,6 +164,7 @@ abstract class ExoEngineProviderContract {
   fun testAudioEnginesFeedbooks() {
     val manifest = this.parseManifest("summerwives.audiobook-manifest.json")
     val request = PlayerAudioEngineRequest(
+      authorizationHandler = NullAuthorizationHandler(),
       manifest = manifest,
       filter = { true },
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
@@ -172,7 +176,7 @@ abstract class ExoEngineProviderContract {
     val book_provider = engine_provider.tryRequest(request)
     Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
-    val result = book_provider_nn.create(this.context(), listOf())
+    val result = book_provider_nn.create(this.context(), NullAuthorizationHandler())
     this.log().debug("testAudioEnginesFeedbooks:result: {}", result)
     Assertions.assertTrue(result is PlayerResult.Success, "Engine accepts book")
   }
@@ -750,6 +754,7 @@ abstract class ExoEngineProviderContract {
     val manifest = this.parseManifest(name)
     val request =
       PlayerAudioEngineRequest(
+        authorizationHandler = NullAuthorizationHandler(),
         manifest = manifest,
         filter = { true },
         downloadProvider = downloadProvider,
@@ -761,7 +766,7 @@ abstract class ExoEngineProviderContract {
     val book_provider = engine_provider.tryRequest(request)
     Assertions.assertNotNull(book_provider, "Engine must handle manifest")
     val book_provider_nn = book_provider!!
-    val result = book_provider_nn.create(this.context(), listOf())
+    val result = book_provider_nn.create(this.context(), NullAuthorizationHandler())
     this.log().debug("testAudioEnginesTrivial:result: {}", result)
 
     val book = (result as PlayerResult.Success).result
@@ -794,6 +799,7 @@ abstract class ExoEngineProviderContract {
 
     val request =
       PlayerAudioEngineRequest(
+        authorizationHandler = NullAuthorizationHandler(),
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
@@ -807,7 +813,7 @@ abstract class ExoEngineProviderContract {
     val bookProvider =
       engineProvider.tryRequest(request)!!
     val audioBook =
-      (bookProvider.create(this.context(), listOf()) as PlayerResult.Success).result
+      (bookProvider.create(this.context(), NullAuthorizationHandler()) as PlayerResult.Success).result
 
     Assertions.assertEquals(
       URI.create("http://www.example.com/0.mp3"),
@@ -857,6 +863,7 @@ abstract class ExoEngineProviderContract {
 
     val request =
       PlayerAudioEngineRequest(
+        authorizationHandler = NullAuthorizationHandler(),
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
@@ -870,7 +877,7 @@ abstract class ExoEngineProviderContract {
     val bookProvider =
       engineProvider.tryRequest(request)!!
     val audioBook =
-      (bookProvider.create(this.context(), listOf()) as PlayerResult.Success).result
+      (bookProvider.create(this.context(), NullAuthorizationHandler()) as PlayerResult.Success).result
 
     val exception = Assertions.assertThrows(ExecutionException::class.java) {
       audioBook.replaceManifest(manifest2).get()
@@ -897,6 +904,7 @@ abstract class ExoEngineProviderContract {
 
     val request =
       PlayerAudioEngineRequest(
+        authorizationHandler = NullAuthorizationHandler(),
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
@@ -910,7 +918,7 @@ abstract class ExoEngineProviderContract {
     val bookProvider =
       engineProvider.tryRequest(request)!!
     val audioBook =
-      (bookProvider.create(this.context(), listOf()) as PlayerResult.Success).result
+      (bookProvider.create(this.context(), NullAuthorizationHandler()) as PlayerResult.Success).result
 
     val exception = Assertions.assertThrows(ExecutionException::class.java) {
       audioBook.replaceManifest(manifest2).get()
@@ -960,6 +968,7 @@ abstract class ExoEngineProviderContract {
 
     val request =
       PlayerAudioEngineRequest(
+        authorizationHandler = NullAuthorizationHandler(),
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.FailingDownloadProvider(),
@@ -979,7 +988,7 @@ abstract class ExoEngineProviderContract {
       }
     })
 
-    val result = bookProvider.create(this.context(), listOf())
+    val result = bookProvider.create(this.context(), NullAuthorizationHandler())
     dumpResult(result)
     val audioBook = (result as PlayerResult.Success).result
 
@@ -1042,6 +1051,7 @@ abstract class ExoEngineProviderContract {
 
     val request =
       PlayerAudioEngineRequest(
+        authorizationHandler = NullAuthorizationHandler(),
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.FailingDownloadProvider(),
@@ -1055,7 +1065,7 @@ abstract class ExoEngineProviderContract {
     val bookProvider =
       engineProvider.tryRequest(request)!!
     val result =
-      bookProvider.create(this.context(), listOf())
+      bookProvider.create(this.context(), NullAuthorizationHandler())
     val audioBook =
       (result as PlayerResult.Success).result
     val player =

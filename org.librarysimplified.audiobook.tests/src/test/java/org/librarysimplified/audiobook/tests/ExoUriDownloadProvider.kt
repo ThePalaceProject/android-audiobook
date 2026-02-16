@@ -18,18 +18,19 @@ class ExoUriDownloadProvider(
   PlayerDownloadProviderType {
 
   override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
-    val numberOfTimesUriWasDownloaded = uriDownloadTimes[request.uri]
+    val hrefURI = request.link.hrefURI!!
+    val numberOfTimesUriWasDownloaded = uriDownloadTimes[hrefURI]
 
     // check if this URI is in the map and if it's not add it with
     if (numberOfTimesUriWasDownloaded == null) {
-      uriDownloadTimes[request.uri] = 0
+      uriDownloadTimes[hrefURI] = 0
 
       // the URI is on the list, so we increment the number of times it was downloaded
     } else {
-      uriDownloadTimes[request.uri] = numberOfTimesUriWasDownloaded + 1
+      uriDownloadTimes[hrefURI] = numberOfTimesUriWasDownloaded + 1
     }
 
-    onRequestSuccessfullyCompleted(request.uri)
+    onRequestSuccessfullyCompleted(hrefURI)
 
     return CompletableFuture.supplyAsync {
       request.onProgress.invoke(0)

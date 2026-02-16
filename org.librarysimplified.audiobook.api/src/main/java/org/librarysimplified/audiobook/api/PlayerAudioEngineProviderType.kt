@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.api
 
 import android.app.Application
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 
 /**
  * The interface exposed by audio engine providers.
@@ -41,7 +40,6 @@ interface PlayerAudioEngineProviderType {
 
   fun tryDeleteRequest(
     context: Application,
-    extensions: List<PlayerExtensionType>,
     request: PlayerAudioEngineRequest
   ): Boolean
 }

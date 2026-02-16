@@ -47,5 +47,11 @@ data class PlayerAudioEngineRequest(
    * The credentials required to open the book.
    */
 
-  val bookCredentials: PlayerBookCredentialsType
+  val bookCredentials: PlayerBookCredentialsType,
+
+  /**
+   * The handler used for authenticated requests.
+   */
+
+  val authorizationHandler: PlayerAuthorizationHandlerType
 )

@@ -5,20 +5,25 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.HttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
+import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.Logger
 import org.slf4j.MDC
+import java.net.URI
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -34,6 +39,7 @@ class ExoAdapter(
   private val manifest: PlayerManifest,
   private val toc: PlayerManifestTOC,
   private val isStreamingNow: () -> Boolean,
+  private val authorizationHandler: PlayerAuthorizationHandlerType,
 ) : Player.Listener, AutoCloseable {
 
   private val closed =
@@ -126,12 +132,32 @@ class ExoAdapter(
     this.logger.error("onPlayerError: ", error)
 
     this.savedError = error
+
+    /*
+     * Detect a 401 error. This is treated differently from an ordinary playback error because
+     * we need views to be able to show login buttons when credentials have expired. We avoid
+     * publishing a [PlayerEventError] as this would (at the time of writing) cause the 401 error
+     * message to be overwritten in the player view.
+     */
+
+    val cause = error.cause
+    if (cause is HttpDataSource.InvalidResponseCodeException) {
+      if (cause.responseCode == 401) {
+        this.authorizationHandler.onAuthorizationIsInvalid(
+          source = PlayerManifestLink.LinkBasic(URI.create("urn:unavailable")),
+          kind = PlayerDownloadRequest.Kind.CHAPTER
+        )
+        return
+      }
+    }
+
     this.events.onNext(
       PlayerEvent.PlayerEventError(
         palaceId = this.manifest.palaceId,
         readingOrderItem = this.currentReadingOrderItem.invoke(),
         exception = error,
         errorCode = error.errorCode,
+        errorCodeName = error.errorCodeName,
         offsetMilliseconds = this.currentTrackOffsetMilliseconds()
       )
     )
@@ -308,7 +334,7 @@ class ExoAdapter(
     )
 
     if (this.preparedURI == targetURI) {
-      if (!isPlayerBroken()) {
+      if (!this.isPlayerBroken()) {
         this.logger.debug(
           "prepare: [{}] A media source with this URI is already prepared; skipping preparation.",
           targetURI

@@ -27,6 +27,7 @@ abstract class PlayerAudioEnginesContract {
   fun testAudioEnginesTrivial() {
     val manifest = parseManifest("ok_minimal_0.json")
     val request = PlayerAudioEngineRequest(
+      authorizationHandler = NullAuthorizationHandler(),
       manifest = manifest,
       filter = { true },
       downloadProvider = DishonestDownloadProvider(),
@@ -42,6 +43,7 @@ abstract class PlayerAudioEnginesContract {
   fun testAudioEnginesAllFiltered() {
     val manifest = parseManifest("ok_minimal_0.json")
     val request = PlayerAudioEngineRequest(
+      authorizationHandler = NullAuthorizationHandler(),
       manifest = manifest,
       filter = { false },
       downloadProvider = DishonestDownloadProvider(),

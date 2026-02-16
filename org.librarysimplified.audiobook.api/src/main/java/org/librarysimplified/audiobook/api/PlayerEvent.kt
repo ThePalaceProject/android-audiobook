@@ -1,7 +1,7 @@
 package org.librarysimplified.audiobook.api
 
-import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 
 /**
@@ -43,7 +43,8 @@ sealed class PlayerEvent {
     val readingOrderItem: PlayerReadingOrderItemType?,
     val offsetMilliseconds: PlayerMillisecondsReadingOrderItem,
     val exception: java.lang.Exception?,
-    val errorCode: Int
+    val errorCode: Int,
+    val errorCodeName: String
   ) : PlayerEvent()
 
   sealed class PlayerEventWithPosition : PlayerEvent() {

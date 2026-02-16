@@ -48,4 +48,10 @@ sealed class PlayerViewCommand {
    */
 
   data object PlayerViewErrorsDownloadOpen : PlayerViewCommand()
+
+  /**
+   * The user performed an action that means the application should open a login screen.
+   */
+
+  data object PlayerViewLoginOpen : PlayerViewCommand()
 }

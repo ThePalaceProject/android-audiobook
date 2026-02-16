@@ -45,7 +45,7 @@ class MockingDownloadProvider(
   }
 
   private fun doDownload(request: PlayerDownloadRequest, result: CompletableFuture<Unit>) {
-    val time = Math.max(1, request.uri.rawSchemeSpecificPart.toInt()) * 10
+    val time = Math.max(1, request.link.hrefURI!!.rawSchemeSpecificPart.toInt()) * 10
 
     request.onProgress(0)
     for (i in 0..time) {

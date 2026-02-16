@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.media3
 
 import net.jcip.annotations.GuardedBy
+import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
 import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
@@ -13,7 +14,6 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUserAgent
-import org.librarysimplified.audiobook.api.extensions.PlayerExtensionType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Downloaded
 import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Downloading
@@ -24,19 +24,17 @@ import java.io.File
 import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 
 /**
  * An Exo implementation of the download task.
  */
 
 class ExoDownloadTask(
-  private val downloadStatusExecutor: ExecutorService,
+  private val authenticationHandler: PlayerAuthorizationHandlerType,
   private val downloadProvider: PlayerDownloadProviderType,
   private val originalLink: PlayerManifestLink,
   private val readingOrderItem: ExoReadingOrderItemHandle,
   private val userAgent: PlayerUserAgent,
-  private val extensions: List<PlayerExtensionType>,
   val partFile: File,
   val partFileTemp: File,
   override val index: Int
@@ -140,12 +138,13 @@ class ExoDownloadTask(
   }
 
   private fun onStartDownload(): CompletableFuture<Unit> {
-    this.log.debug("[{}] download: {}", this.readingOrderItem.id, this.originalLink.hrefURI)
+    this.log.debug("[{}] Download: {}", this.readingOrderItem.id, this.originalLink.hrefURI)
 
     val request =
       PlayerDownloadRequest(
-        uri = this.originalLink.hrefURI ?: URI.create("urn:missing"),
-        credentials = null,
+        authorizationHandler = this.authenticationHandler,
+        kind = PlayerDownloadRequest.Kind.CHAPTER,
+        link = this.originalLink,
         outputFile = this.partFile,
         outputFileTemp = this.partFileTemp,
         userAgent = this.userAgent,
@@ -155,32 +154,9 @@ class ExoDownloadTask(
         onCompletion = { }
       )
 
-    val future =
-      this.onStartDownloadForRequest(request, this.originalLink)
-
+    val future = this.downloadProvider.download(request)
     this.createDownloadingRequest(future, this.originalLink)
     return future
-  }
-
-  private fun onStartDownloadForRequest(
-    request: PlayerDownloadRequest,
-    targetLink: PlayerManifestLink
-  ): CompletableFuture<Unit> {
-    for (extension in this.extensions) {
-      val future =
-        extension.onDownloadLink(
-          statusExecutor = this.downloadStatusExecutor,
-          downloadProvider = this.downloadProvider,
-          originalRequest = request,
-          link = targetLink
-        )
-      if (future != null) {
-        this.log.debug("extension {} provided a download substitution", extension.name)
-        return future
-      }
-    }
-
-    return this.downloadProvider.download(request)
   }
 
   private fun onDownloadCancelled() {
@@ -201,7 +177,7 @@ class ExoDownloadTask(
 
   private fun onDownloadFailed(exception: Exception) {
     this.log.error("[{}] onDownloadFailed: ", this.readingOrderItem.id, exception)
-    this.stateSetCurrent(Failed(exceptionMessage(exception), exception))
+    this.stateSetCurrent(Failed(this.exceptionMessage(exception), exception))
     this.readingOrderItem.setDownloadStatus(
       PlayerReadingOrderItemDownloadFailed(
         this.readingOrderItem, exception, exception.message ?: "Missing exception message"
@@ -233,7 +209,7 @@ class ExoDownloadTask(
     try {
       ExoFileIO.fileDelete(this.partFile)
     } catch (e: Exception) {
-      this.log.error("[{}] failed to delete file: ", this.readingOrderItem.id, e)
+      this.log.error("[{}] Failed to delete file: ", this.readingOrderItem.id, e)
     } finally {
       this.stateSetCurrent(Initial)
       this.onBroadcastState()
@@ -241,7 +217,7 @@ class ExoDownloadTask(
   }
 
   override fun delete() {
-    this.log.debug("[{}] delete", this.readingOrderItem.id)
+    this.log.debug("[{}] Delete", this.readingOrderItem.id)
 
     return when (val current = this.stateGetCurrent()) {
       Initial -> this.onBroadcastState()
@@ -275,7 +251,7 @@ class ExoDownloadTask(
     }
 
   override fun fetch() {
-    this.log.debug("[{}] fetch", this.readingOrderItem.id)
+    this.log.debug("[{}] Fetch", this.readingOrderItem.id)
 
     when (this.stateGetCurrent()) {
       Initial -> {
@@ -297,7 +273,7 @@ class ExoDownloadTask(
   }
 
   override fun cancel() {
-    this.log.debug("cancel")
+    this.log.debug("Cancel")
 
     return when (val current = this.stateGetCurrent()) {
       Initial -> this.onBroadcastState()
