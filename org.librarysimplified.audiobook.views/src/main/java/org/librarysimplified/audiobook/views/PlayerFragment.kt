@@ -191,6 +191,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerDebugStatus.alpha = 0.0f
     this.playerStatusArea.alpha = 0.0f
+    this.playerStatusButton.visibility = GONE
     this.coverView.setImageBitmap(PlayerModel.coverImage)
     return view
   }
@@ -572,6 +573,7 @@ class PlayerFragment : PlayerBaseFragment() {
   ) {
     this.playerStatusText.text = message
     this.playerStatusArea.alpha = 1.0f
+    this.playerStatusButton.visibility = GONE
     this.playerStatusArea.animate()
       .alpha(0.0f)
       .setDuration(30000L)
