@@ -67,9 +67,14 @@ class PlayerService : MediaSessionService() {
 
   override fun onGetSession(
     controllerInfo: MediaSession.ControllerInfo
-  ): MediaSession {
+  ): MediaSession? {
     this.logger.debug("{}: onGetSession: {}", this, controllerInfo)
-    return this.session.get()
+    val sessionNow = this.session.get()
+    if (sessionNow == null) {
+      this.logger.warn("{}: onGetSession: {}: No available session", this, controllerInfo)
+      return null
+    }
+    return sessionNow
   }
 
   fun shutDown() {
