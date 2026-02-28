@@ -562,10 +562,14 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun showError(
     event: PlayerEventError
   ) {
-    this.playerStatusIcon.setImageResource(R.drawable.player_status_error)
-    this.publishStatusAreaMessage(
-      this.resources.getString(R.string.audiobook_player_error, event.errorCodeName, event.errorCode)
-    )
+    try {
+      this.playerStatusIcon.setImageResource(R.drawable.player_status_error)
+      this.publishStatusAreaMessage(
+        this.resources.getString(R.string.audiobook_player_error, event.errorCodeName, event.errorCode)
+      )
+    } catch (_: Throwable) {
+      // Nothing we can do about failures here.
+    }
   }
 
   private fun publishStatusAreaMessage(
