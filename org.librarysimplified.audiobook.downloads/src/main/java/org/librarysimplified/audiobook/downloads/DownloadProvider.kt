@@ -1,12 +1,11 @@
 package org.librarysimplified.audiobook.downloads
 
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
+import org.librarysimplified.http.api.LSHTTPRequestBuilderType
+import org.librarysimplified.http.api.LSHTTPResponseStatus
 import org.slf4j.LoggerFactory
 import java.io.FileOutputStream
 import java.io.IOException
@@ -14,7 +13,6 @@ import java.io.InputStream
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.TimeUnit
 
 /*
  * A simple download provider.
@@ -94,55 +92,52 @@ class DownloadProvider private constructor(
       throw IOException("Links without href values are not supported.")
     }
 
-    val client =
-      OkHttpClient.Builder()
-        .connectTimeout(10L, TimeUnit.SECONDS)
-        .followRedirects(true)
-        .build()
-
     val httpRequestBuilder =
-      Request.Builder()
-        .header("User-Agent", request.userAgent.userAgent)
-        .url(targetURI.toURL())
+      request.httpClient.newRequest(targetURI)
 
     this.configureRequestCredentials(request, httpRequestBuilder)
     val httpRequest = httpRequestBuilder.build()
-    val call = client.newCall(httpRequest)
+
     this.log.debug("Executing HTTP request.")
+    val response = httpRequest.execute()
 
-    call.execute().use { response ->
-      if (response.code == 401) {
-        request.authorizationHandler.onAuthorizationIsInvalid(
-          source = request.link,
-          kind = request.kind
-        )
-      } else {
-        request.authorizationHandler.onAuthorizationIsNoLongerInvalid(
-          source = request.link,
-          kind = request.kind
-        )
+    when (val status = response.status) {
+      is LSHTTPResponseStatus.Failed -> {
+        throw status.exception
       }
+      is LSHTTPResponseStatus.Responded.Error -> {
+        if (status.properties.status == 401) {
+          request.authorizationHandler.onAuthorizationIsInvalid(
+            source = request.link,
+            kind = request.kind
+          )
+        } else {
+          request.authorizationHandler.onAuthorizationIsNoLongerInvalid(
+            source = request.link,
+            kind = request.kind
+          )
+        }
 
-      if (!response.isSuccessful) {
         throw IOException(
           StringBuilder(128)
             .append("Server returned an error response.\n")
             .append("  Response: ")
-            .append(response.code)
+            .append(response.properties?.status)
             .append(' ')
-            .append(response.message)
+            .append(response.properties?.message)
             .append('\n')
             .toString()
         )
       }
-
-      this.handleSuccessfulResponse(response, request, result)
+      is LSHTTPResponseStatus.Responded.OK -> {
+        this.handleSuccessfulResponse(status, request, result)
+      }
     }
   }
 
   private fun configureRequestCredentials(
     request: PlayerDownloadRequest,
-    httpRequestBuilder: Request.Builder
+    httpRequestBuilder: LSHTTPRequestBuilderType
   ) {
     val auth: LSHTTPAuthorizationType? =
       request.authorizationHandler.onConfigureAuthorizationFor(
@@ -155,11 +150,11 @@ class DownloadProvider private constructor(
       return
     }
 
-    httpRequestBuilder.header("Authorization", auth.toHeaderValue())
+    httpRequestBuilder.addHeader("Authorization", auth.toHeaderValue())
   }
 
   private fun handleSuccessfulResponse(
-    response: Response,
+    response: LSHTTPResponseStatus.Responded.OK,
     request: PlayerDownloadRequest,
     result: CompletableFuture<Unit>
   ) {
@@ -173,9 +168,9 @@ class DownloadProvider private constructor(
     }
 
     val body =
-      response.body ?: throw IOException("HTTP server response did not contain a body")
+      response.bodyStream ?: throw IOException("HTTP server response did not contain a body")
     val expectedLength =
-      body.contentLength()
+      response.properties.contentLength
 
     /*
      * Try to create the parent directory (and all of the required ancestors too). Ignore
@@ -184,26 +179,28 @@ class DownloadProvider private constructor(
 
     request.outputFile.parentFile?.mkdirs()
 
-    body.byteStream().use { inputStream ->
+    body.use { inputStream ->
       FileOutputStream(request.outputFileTemp, false).use { outputStream ->
         this.copyStream(request, inputStream, outputStream, expectedLength, result)
         request.outputFileTemp.renameTo(request.outputFile)
       }
     }
 
-    val receivedSize = request.outputFile.length()
-    if (receivedSize != expectedLength) {
-      throw IOException(
-        StringBuilder(128)
-          .append("Resulting file size does not match the expected size.\n")
-          .append("  Expected size: ")
-          .append(expectedLength)
-          .append('\n')
-          .append("  Received size: ")
-          .append(receivedSize)
-          .append('\n')
-          .toString()
-      )
+    if (expectedLength != null) {
+      val receivedSize = request.outputFile.length()
+      if (receivedSize != expectedLength) {
+        throw IOException(
+          StringBuilder(128)
+            .append("Resulting file size does not match the expected size.\n")
+            .append("  Expected size: ")
+            .append(expectedLength)
+            .append('\n')
+            .append("  Received size: ")
+            .append(receivedSize)
+            .append('\n')
+            .toString()
+        )
+      }
     }
 
     request.onCompletion.invoke(request.outputFile)
@@ -213,7 +210,7 @@ class DownloadProvider private constructor(
     request: PlayerDownloadRequest,
     inputStream: InputStream,
     outputStream: FileOutputStream,
-    expectedLength: Long,
+    expectedLength: Long?,
     result: CompletableFuture<Unit>
   ) {
     var progressCurrent: Double
@@ -244,7 +241,10 @@ class DownloadProvider private constructor(
        * Throttle progress updates to one every ~1000ms.
        */
 
-      progressCurrent = (received.toDouble() / expectedLength.toDouble()) * 100.0
+      val bound =
+        expectedLength?.toDouble() ?: received.toDouble()
+
+      progressCurrent = (received.toDouble() / bound) * 100.0
       val enoughTimeElapsed = (System.currentTimeMillis() - timeLast) >= 1000L
       if (progressCurrent >= 100.0 || enoughTimeElapsed) {
         timeLast = System.currentTimeMillis()

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerResult
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicParameters
 import org.librarysimplified.audiobook.manifest_fulfill.basic.ManifestFulfillmentBasicProvider
 import org.librarysimplified.http.api.LSHTTPAuthorizationBearerToken
@@ -80,10 +79,9 @@ abstract class ManifestFulfillmentBasicContract {
     val strategy =
       provider.create(
         configuration = ManifestFulfillmentBasicParameters(
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.client,
           uri = URI.create("http://www.example.com"),
           authorizationHandler = NullAuthorizationHandler(),
-          httpClient = this.client
         )
       )
 
@@ -133,7 +131,6 @@ abstract class ManifestFulfillmentBasicContract {
     val strategy =
       provider.create(
         configuration = ManifestFulfillmentBasicParameters(
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           uri = URI.create("http://www.example.com"),
           authorizationHandler = NullAuthorizationHandler(),
           httpClient = this.client
@@ -193,7 +190,6 @@ abstract class ManifestFulfillmentBasicContract {
     val strategy =
       provider.create(
         configuration = ManifestFulfillmentBasicParameters(
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
           uri = URI.create("http://www.example.com"),
           authorizationHandler = authorizationHandler,
           httpClient = this.client

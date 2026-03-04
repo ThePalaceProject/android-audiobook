@@ -1,10 +1,10 @@
 package org.librarysimplified.audiobook.demo
 
 import android.app.Application
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.views.PlayerModel
 import org.librarysimplified.http.api.LSHTTPClientConfiguration
 import org.librarysimplified.http.api.LSHTTPClientType
+import org.librarysimplified.http.api.LSHTTPNetworkAccess
 import org.librarysimplified.http.vanilla.LSHTTPClients
 
 class ExampleApplication : Application() {
@@ -21,12 +21,12 @@ class ExampleApplication : Application() {
     val application: ExampleApplication
       get() = this.INSTANCE
 
-    val userAgent: PlayerUserAgent =
-      PlayerUserAgent("AudioBookDemo")
-
     val httpClient: LSHTTPClientType
       get() = LSHTTPClients()
-        .create(this.INSTANCE, LSHTTPClientConfiguration("AudioBookDemo", "1.0.0"))
+        .create(
+          this.INSTANCE,
+          LSHTTPClientConfiguration("AudioBookDemo", "1.0.0", networkAccess = LSHTTPNetworkAccess)
+        )
   }
 
   override fun onCreate() {

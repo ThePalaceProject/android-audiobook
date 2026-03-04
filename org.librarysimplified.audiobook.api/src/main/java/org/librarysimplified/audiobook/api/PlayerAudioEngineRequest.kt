@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.api
 
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.http.api.LSHTTPClientType
 
 /**
  * A request for an audio engine.
@@ -14,10 +15,10 @@ data class PlayerAudioEngineRequest(
   val manifest: PlayerManifest,
 
   /**
-   * The user agent used to make HTTP requests.
+   * The HTTP client used to make HTTP requests.
    */
 
-  val userAgent: PlayerUserAgent,
+  val httpClient: LSHTTPClientType,
 
   /**
    * A filter for audio engine providers. If the function returns `true`, then the engine provider

@@ -44,7 +44,6 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerType
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestMetadata
@@ -60,6 +59,11 @@ import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.librarysimplified.audiobook.tests.NullAuthorizationHandler
 import org.librarysimplified.audiobook.tests.ResourceMarker
+import org.librarysimplified.http.api.LSHTTPClientConfiguration
+import org.librarysimplified.http.api.LSHTTPClientType
+import org.librarysimplified.http.api.LSHTTPNetworkAccess
+import org.librarysimplified.http.vanilla.LSHTTPClients
+import org.mockito.Mockito
 import org.slf4j.Logger
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -90,12 +94,23 @@ abstract class ExoEngineProviderContract {
   private lateinit var exec: ListeningExecutorService
   private lateinit var timeThen: Instant
   private lateinit var timeNow: Instant
+  private lateinit var httpClient: LSHTTPClientType
 
   @BeforeEach
   open fun setup() {
     this.log().debug("setup")
     this.timeThen = Instant.now()
     this.exec = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(1))!!
+    this.httpClient =
+      LSHTTPClients()
+        .create(
+          Mockito.mock(Application::class.java),
+          LSHTTPClientConfiguration(
+            applicationName = "org.thepalaceproject.audiobook.tests",
+            applicationVersion = "1.0.0",
+            networkAccess = LSHTTPNetworkAccess
+          )
+        )
   }
 
   @AfterEach
@@ -118,7 +133,7 @@ abstract class ExoEngineProviderContract {
       manifest = manifest,
       filter = { true },
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
-      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+      httpClient = this.httpClient,
       bookCredentials = PlayerBookCredentialsNone,
       bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
     )
@@ -143,7 +158,7 @@ abstract class ExoEngineProviderContract {
       manifest = manifest,
       filter = { true },
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
-      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+      httpClient = this.httpClient,
       bookCredentials = PlayerBookCredentialsNone,
       bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
     )
@@ -168,7 +183,7 @@ abstract class ExoEngineProviderContract {
       manifest = manifest,
       filter = { true },
       downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
-      userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+      httpClient = this.httpClient,
       bookCredentials = PlayerBookCredentialsNone,
       bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
     )
@@ -758,7 +773,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest,
         filter = { true },
         downloadProvider = downloadProvider,
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         bookCredentials = PlayerBookCredentialsNone,
         bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
@@ -803,7 +818,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         bookCredentials = PlayerBookCredentialsNone,
         bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
@@ -867,7 +882,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         bookCredentials = PlayerBookCredentialsNone,
         bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
@@ -908,7 +923,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.DishonestDownloadProvider(),
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         bookCredentials = PlayerBookCredentialsNone,
         bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
@@ -972,7 +987,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.FailingDownloadProvider(),
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         bookCredentials = PlayerBookCredentialsNone,
         bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )
@@ -1055,7 +1070,7 @@ abstract class ExoEngineProviderContract {
         manifest = manifest0,
         filter = { true },
         downloadProvider = org.librarysimplified.audiobook.tests.FailingDownloadProvider(),
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         bookCredentials = PlayerBookCredentialsNone,
         bookSource = PlayerBookSource.PlayerBookSourceManifestOnly
       )

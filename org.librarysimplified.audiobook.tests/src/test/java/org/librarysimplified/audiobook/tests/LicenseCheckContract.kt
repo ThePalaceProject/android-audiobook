@@ -1,10 +1,10 @@
 package org.librarysimplified.audiobook.tests
 
+import android.app.Application
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.license_check.api.LicenseCheckParameters
 import org.librarysimplified.audiobook.license_check.api.LicenseCheckProviderType
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckParameters
@@ -18,6 +18,11 @@ import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.http.api.LSHTTPClientConfiguration
+import org.librarysimplified.http.api.LSHTTPClientType
+import org.librarysimplified.http.api.LSHTTPNetworkAccess
+import org.librarysimplified.http.vanilla.LSHTTPClients
+import org.mockito.Mockito
 import org.slf4j.Logger
 import java.io.File
 import java.io.IOException
@@ -31,6 +36,7 @@ abstract class LicenseCheckContract {
   abstract fun log(): Logger
 
   abstract fun licenseChecks(): LicenseCheckProviderType
+  private lateinit var httpClient: LSHTTPClientType
 
   @TempDir
   @JvmField
@@ -39,6 +45,16 @@ abstract class LicenseCheckContract {
   @BeforeEach
   fun testSetup() {
     this.eventLog = mutableListOf()
+    this.httpClient =
+      LSHTTPClients()
+        .create(
+          Mockito.mock(Application::class.java),
+          LSHTTPClientConfiguration(
+            applicationName = "org.thepalaceproject.audiobook.tests",
+            applicationVersion = "1.0.0",
+            networkAccess = LSHTTPNetworkAccess
+          )
+        )
   }
 
   /**
@@ -53,7 +69,7 @@ abstract class LicenseCheckContract {
     val parameters =
       LicenseCheckParameters(
         manifest = manifest,
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         checks = listOf(),
         cacheDirectory = File(tempFolder, "cache")
       )
@@ -80,7 +96,7 @@ abstract class LicenseCheckContract {
     val parameters =
       LicenseCheckParameters(
         manifest = manifest,
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         checks = listOf(
           SucceedingTest(),
           SucceedingTest(),
@@ -112,7 +128,7 @@ abstract class LicenseCheckContract {
     val parameters =
       LicenseCheckParameters(
         manifest = manifest,
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         checks = listOf(
           SucceedingTest(),
           SucceedingTest(),
@@ -144,7 +160,7 @@ abstract class LicenseCheckContract {
     val parameters =
       LicenseCheckParameters(
         manifest = manifest,
-        userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+        httpClient = this.httpClient,
         checks = listOf(
           NonApplicableTest(),
           NonApplicableTest(),

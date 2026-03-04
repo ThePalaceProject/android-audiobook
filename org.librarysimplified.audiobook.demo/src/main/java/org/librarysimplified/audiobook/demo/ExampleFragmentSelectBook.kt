@@ -290,13 +290,13 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           bookCredentials = this.bookCredentials(),
           cacheDir = ExampleApplication.application.cacheDir,
           context = ExampleApplication.application,
+          httpClient = ExampleApplication.httpClient,
           licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
           licenseFile = File(ExampleApplication.application.cacheDir, "lcpBook.lcpl"),
           licenseFileTemp = File(ExampleApplication.application.cacheDir, "lcpBook.lcpl.tmp"),
           licenseParameters = this.basicParametersForLCPLicense(sourceURI, credentials),
           palaceID = palaceId(sourceURI),
           parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
-          userAgent = ExampleApplication.userAgent,
         )
       }
 
@@ -304,12 +304,12 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
         PlayerModel.downloadParseAndCheckManifest(
           bookCredentials = this.bookCredentials(),
           cacheDir = ExampleApplication.application.cacheDir,
+          httpClient = ExampleApplication.httpClient,
           licenseChecks = ServiceLoader.load(SingleLicenseCheckProviderType::class.java).toList(),
           palaceID = palaceId(sourceURI),
           parserExtensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList(),
           sourceURI = sourceURI,
           strategy = this.downloadStrategyForCredentials(sourceURI, credentials),
-          userAgent = ExampleApplication.userAgent,
         )
       }
     }
@@ -338,7 +338,6 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       uri = sourceURI,
       authorizationHandler = ExampleAuthorizationHandler,
       httpClient = ExampleApplication.httpClient,
-      userAgent = ExampleApplication.userAgent
     )
   }
 
@@ -447,7 +446,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
           clientKey = credentials.clientKey,
           clientPass = credentials.clientPass,
           targetURI = OPAManifestURI.Indirect(source),
-          userAgent = ExampleApplication.userAgent
+          httpClient = ExampleApplication.httpClient,
         )
       )
     }
@@ -461,7 +460,6 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
         uri = source,
         authorizationHandler = ExampleAuthorizationHandler,
         httpClient = ExampleApplication.httpClient,
-        userAgent = ExampleApplication.userAgent
       )
     )
   }

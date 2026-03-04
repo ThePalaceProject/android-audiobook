@@ -46,7 +46,6 @@ class ManifestFulfillmentBasic(
     requestBuilder.setAuthorization(
       this.configuration.authorizationHandler.onConfigureAuthorizationFor(link, MANIFEST)
     )
-    requestBuilder.addHeader("User-Agent", this.configuration.userAgent.userAgent)
     requestBuilder.allowRedirects(ALLOW_UNSAFE_REDIRECTS)
     val request = requestBuilder.build()
 

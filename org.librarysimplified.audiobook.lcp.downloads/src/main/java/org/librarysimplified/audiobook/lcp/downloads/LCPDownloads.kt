@@ -148,7 +148,6 @@ object LCPDownloads {
       parameters.authorizationHandler.onConfigureAuthorizationFor(link, MANIFEST)
     )
 
-    requestBuilder.addHeader("User-Agent", parameters.userAgent.userAgent)
     val request: LSHTTPRequestType = requestBuilder.build()
 
     val downloadRequest =

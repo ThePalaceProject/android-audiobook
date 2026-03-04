@@ -6,7 +6,7 @@ dependencies {
 
     implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
-    implementation(libs.okhttp3)
+    implementation(libs.palace.http.api)
     implementation(libs.slf4j)
 
     compileOnly(libs.jcip)

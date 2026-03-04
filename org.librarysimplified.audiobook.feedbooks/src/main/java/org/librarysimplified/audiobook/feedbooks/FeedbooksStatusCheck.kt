@@ -1,7 +1,5 @@
 package org.librarysimplified.audiobook.feedbooks
 
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.librarysimplified.audiobook.lcp.license_status.LicenseStatusDocument
 import org.librarysimplified.audiobook.lcp.license_status.LicenseStatusDocument.Status.ACTIVE
 import org.librarysimplified.audiobook.lcp.license_status.LicenseStatusDocument.Status.CANCELLED
@@ -17,6 +15,7 @@ import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.librarysimplified.audiobook.parser.api.ParserType
+import org.librarysimplified.http.api.LSHTTPResponseStatus
 import org.slf4j.LoggerFactory
 import java.net.URI
 
@@ -25,7 +24,6 @@ import java.net.URI
  */
 
 class FeedbooksStatusCheck(
-  private val httpClient: OkHttpClient,
   private val parsers: LicenseStatusParserProviderType,
   private val parameters: SingleLicenseCheckParameters
 ) : SingleLicenseCheckType {
@@ -50,6 +48,7 @@ class FeedbooksStatusCheck(
         this.event("Check is not applicable: No license link.")
         SingleLicenseCheckResult.NotApplicable("No license link.")
       }
+
       is PlayerManifestLink.LinkBasic -> {
         val href = link.href
         if (href == null) {
@@ -58,6 +57,7 @@ class FeedbooksStatusCheck(
           this.checkLink(href)
         }
       }
+
       is PlayerManifestLink.LinkTemplated -> {
         this.event("Check is not applicable: Templated links are not supported.")
         SingleLicenseCheckResult.NotApplicable("Templated links are not supported.")
@@ -73,24 +73,34 @@ class FeedbooksStatusCheck(
     this.event("Fetching license document $target…")
 
     val request =
-      Request.Builder()
-        .url(target.toURL())
-        .header("User-Agent", this.parameters.userAgent.userAgent)
+      this.parameters.httpClient.newRequest(target)
         .build()
 
-    return this.httpClient.newCall(request).execute().use { response ->
-      this.logger.debug("response: {} {}", response.code, response.message)
+    val response =
+      request.execute()
 
-      if (!response.isSuccessful) {
+    return when (val status = response.status) {
+      is LSHTTPResponseStatus.Failed -> {
         this.event("Check is not applicable: The server failed to produce a license status document.")
-        return SingleLicenseCheckResult.NotApplicable(
+        SingleLicenseCheckResult.NotApplicable(
           "The server failed to produce a license status document."
         )
       }
 
-      val body = response.body?.bytes() ?: ByteArray(0)
-      this.logger.debug("received {} bytes", body.size)
-      this.parsers.createParser(target, body).use(this::parseLicenseStatusDocument)
+      is LSHTTPResponseStatus.Responded.Error -> {
+        this.event("Check is not applicable: The server failed to produce a license status document.")
+        SingleLicenseCheckResult.NotApplicable(
+          "The server failed to produce a license status document."
+        )
+      }
+
+      is LSHTTPResponseStatus.Responded.OK -> {
+        val bodyBytes = status.bodyStream?.readBytes() ?: ByteArray(0)
+        this.logger.debug("Received {} bytes", bodyBytes.size)
+        val body = status.bodyStream?.readBytes() ?: ByteArray(0)
+        this.logger.debug("received {} bytes", body.size)
+        this.parsers.createParser(target, body).use(this::parseLicenseStatusDocument)
+      }
     }
   }
 
@@ -107,6 +117,7 @@ class FeedbooksStatusCheck(
             this.event("Check succeeded: License status is ${document.status}")
             SingleLicenseCheckResult.Succeeded("License status is ${document.status}")
           }
+
           REVOKED,
           RETURNED,
           CANCELLED,
@@ -116,6 +127,7 @@ class FeedbooksStatusCheck(
           }
         }
       }
+
       is ParseResult.Failure -> {
         for (error in parseResult.errors) {
           this.logger.error(

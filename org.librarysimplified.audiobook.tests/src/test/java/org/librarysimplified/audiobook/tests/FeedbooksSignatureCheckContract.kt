@@ -6,11 +6,11 @@ import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody
+import one.irradia.mime.api.MIMEType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.feedbooks.FeedbooksSignatureCheck
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckParameters
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckResult
@@ -21,6 +21,14 @@ import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.http.api.LSHTTPRequestBuilderType
+import org.librarysimplified.http.api.LSHTTPRequestType
+import org.librarysimplified.http.api.LSHTTPResponseProperties
+import org.librarysimplified.http.api.LSHTTPResponseStatus
+import org.librarysimplified.http.vanilla.internal.LSHTTPClient
+import org.librarysimplified.http.vanilla.internal.LSHTTPResponse
+import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.slf4j.Logger
 import java.io.File
 import java.net.URI
@@ -36,9 +44,31 @@ abstract class FeedbooksSignatureCheckContract {
   @JvmField
   var tempFolder: File? = null
 
+  private lateinit var client: LSHTTPClient
+  private lateinit var requestBuilder: LSHTTPRequestBuilderType
+  private lateinit var request: LSHTTPRequestType
+
   @BeforeEach
   fun testSetup() {
     this.eventLog = mutableListOf()
+    this.client =
+      Mockito.mock(LSHTTPClient::class.java)
+    this.requestBuilder =
+      Mockito.mock(LSHTTPRequestBuilderType::class.java)
+    this.request =
+      Mockito.mock(LSHTTPRequestType::class.java)
+
+    Mockito.`when`(this.client.newRequest(any<URI>()))
+      .thenReturn(this.requestBuilder)
+
+    Mockito.`when`(this.requestBuilder.setAuthorization(any()))
+      .thenReturn(this.requestBuilder)
+    Mockito.`when`(this.requestBuilder.addHeader(any(), any()))
+      .thenReturn(this.requestBuilder)
+    Mockito.`when`(this.requestBuilder.allowRedirects(any()))
+      .thenReturn(this.requestBuilder)
+    Mockito.`when`(this.requestBuilder.build())
+      .thenReturn(this.request)
   }
 
   /**
@@ -49,19 +79,34 @@ abstract class FeedbooksSignatureCheckContract {
     val manifestName = "feedbooks_2.json"
     val certificateName = "jwks_0.json"
 
-    val httpClient = mockHttpClient(
-      respondToUrl = "https://listen.cantookaudio.com/.well-known/jwks.json",
-      responseResourceName = certificateName
-    )
+    Mockito.`when`(this.request.execute())
+      .thenReturn(
+        LSHTTPResponse(
+          LSHTTPResponseStatus.Responded.OK(
+            properties = LSHTTPResponseProperties(
+              authorization = null,
+              contentLength = null,
+              contentType = MIMEType("text", "plain", mapOf()),
+              cookies = listOf(),
+              message = "OK",
+              originalStatus = 200,
+              problemReport = null,
+              status = 200,
+              headers = mapOf()
+            ),
+            bodyStream = resource(certificateName).data.inputStream()
+          ),
+          response = null
+        )
+      )
 
     val cacheDirectory = emptyCacheDirectory()
 
     val result =
       FeedbooksSignatureCheck(
-        httpClient = httpClient,
         parameters = SingleLicenseCheckParameters(
           manifest = this.manifest(manifestName),
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.client,
           onStatusChanged = { },
           cacheDirectory = cacheDirectory
         )
@@ -78,15 +123,32 @@ abstract class FeedbooksSignatureCheckContract {
     val manifestName = "feedbooks_0.json"
     val certificateName = "jwks_0.json"
 
+    Mockito.`when`(this.request.execute())
+      .thenReturn(
+        LSHTTPResponse(
+          LSHTTPResponseStatus.Responded.OK(
+            properties = LSHTTPResponseProperties(
+              authorization = null,
+              contentLength = null,
+              contentType = MIMEType("text", "plain", mapOf()),
+              cookies = listOf(),
+              message = "OK",
+              originalStatus = 200,
+              problemReport = null,
+              status = 200,
+              headers = mapOf()
+            ),
+            bodyStream = resource(certificateName).data.inputStream()
+          ),
+          response = null
+        )
+      )
+
     val result =
       FeedbooksSignatureCheck(
-        httpClient = mockHttpClient(
-          respondToUrl = "https://listen.cantookaudio.com/.well-known/jwks.json",
-          responseResourceName = certificateName
-        ),
         parameters = SingleLicenseCheckParameters(
           manifest = this.manifest(manifestName),
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.client,
           onStatusChanged = { },
           cacheDirectory = emptyCacheDirectory()
         )
@@ -104,15 +166,32 @@ abstract class FeedbooksSignatureCheckContract {
     val manifestName = "feedbooks_3.json"
     val certificateName = "jwks_0.json"
 
+    Mockito.`when`(this.request.execute())
+      .thenReturn(
+        LSHTTPResponse(
+          LSHTTPResponseStatus.Responded.OK(
+            properties = LSHTTPResponseProperties(
+              authorization = null,
+              contentLength = null,
+              contentType = MIMEType("text", "plain", mapOf()),
+              cookies = listOf(),
+              message = "OK",
+              originalStatus = 200,
+              problemReport = null,
+              status = 200,
+              headers = mapOf()
+            ),
+            bodyStream = resource(certificateName).data.inputStream()
+          ),
+          response = null
+        )
+      )
+
     val result =
       FeedbooksSignatureCheck(
-        httpClient = mockHttpClient(
-          respondToUrl = "https://listen.cantookaudio.com/.well-known/jwks.json",
-          responseResourceName = certificateName
-        ),
         parameters = SingleLicenseCheckParameters(
           manifest = this.manifest(manifestName),
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.client,
           onStatusChanged = { },
           cacheDirectory = emptyCacheDirectory()
         )
@@ -130,15 +209,32 @@ abstract class FeedbooksSignatureCheckContract {
     val manifestName = "feedbooks_1.json"
     val certificateName = "jwks_0.json"
 
+    Mockito.`when`(this.request.execute())
+      .thenReturn(
+        LSHTTPResponse(
+          LSHTTPResponseStatus.Responded.OK(
+            properties = LSHTTPResponseProperties(
+              authorization = null,
+              contentLength = null,
+              contentType = MIMEType("text", "plain", mapOf()),
+              cookies = listOf(),
+              message = "OK",
+              originalStatus = 200,
+              problemReport = null,
+              status = 200,
+              headers = mapOf()
+            ),
+            bodyStream = resource(certificateName).data.inputStream()
+          ),
+          response = null
+        )
+      )
+
     val result =
       FeedbooksSignatureCheck(
-        httpClient = mockHttpClient(
-          respondToUrl = "https://listen.cantookaudio.com/.well-known/jwks.json",
-          responseResourceName = certificateName
-        ),
         parameters = SingleLicenseCheckParameters(
           manifest = this.manifest(manifestName),
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.client,
           onStatusChanged = { },
           cacheDirectory = emptyCacheDirectory()
         )
@@ -155,12 +251,32 @@ abstract class FeedbooksSignatureCheckContract {
   fun certificateRetrievalFailure() {
     val manifestName = "feedbooks_0.json"
 
+    Mockito.`when`(this.request.execute())
+      .thenReturn(
+        LSHTTPResponse(
+          LSHTTPResponseStatus.Responded.Error(
+            properties = LSHTTPResponseProperties(
+              authorization = null,
+              contentLength = null,
+              contentType = MIMEType("text", "plain", mapOf()),
+              cookies = listOf(),
+              message = "OK",
+              originalStatus = 200,
+              problemReport = null,
+              status = 200,
+              headers = mapOf()
+            ),
+            bodyStream = null
+          ),
+          response = null
+        )
+      )
+
     val result =
       FeedbooksSignatureCheck(
-        httpClient = mockFailingHttpClient(),
         parameters = SingleLicenseCheckParameters(
           manifest = this.manifest(manifestName),
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.client,
           onStatusChanged = { },
           cacheDirectory = emptyCacheDirectory()
         )
@@ -178,19 +294,34 @@ abstract class FeedbooksSignatureCheckContract {
     val manifestName = "feedbooks_2.json"
     val certificateName = "jwks_2.json"
 
-    val httpClient = mockHttpClient(
-      respondToUrl = "https://listen.cantookaudio.com/.well-known/jwks.json",
-      responseResourceName = certificateName
-    )
+    Mockito.`when`(this.request.execute())
+      .thenReturn(
+        LSHTTPResponse(
+          LSHTTPResponseStatus.Responded.OK(
+            properties = LSHTTPResponseProperties(
+              authorization = null,
+              contentLength = null,
+              contentType = MIMEType("text", "plain", mapOf()),
+              cookies = listOf(),
+              message = "OK",
+              originalStatus = 200,
+              problemReport = null,
+              status = 200,
+              headers = mapOf()
+            ),
+            bodyStream = resource(certificateName).data.inputStream()
+          ),
+          response = null
+        )
+      )
 
     val cacheDirectory = emptyCacheDirectory()
 
     val result =
       FeedbooksSignatureCheck(
-        httpClient = httpClient,
         parameters = SingleLicenseCheckParameters(
           manifest = this.manifest(manifestName),
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.client,
           onStatusChanged = { },
           cacheDirectory = cacheDirectory
         )
@@ -257,27 +388,6 @@ abstract class FeedbooksSignatureCheckContract {
               ResponseBody.create(
                 "text/plain".toMediaTypeOrNull(),
                 "Not found"
-              )
-            ).addHeader("content-type", "text/plain")
-            .build()
-        }
-      })
-      .build()
-  }
-
-  private fun mockFailingHttpClient(): OkHttpClient {
-    return OkHttpClient.Builder()
-      .addInterceptor(object : Interceptor {
-        override fun intercept(chain: Interceptor.Chain): Response {
-          return chain.proceed(chain.request())
-            .newBuilder()
-            .code(500)
-            .protocol(Protocol.HTTP_1_1)
-            .message("Nope")
-            .body(
-              ResponseBody.create(
-                "text/plain".toMediaTypeOrNull(),
-                "Nope nope nope"
               )
             ).addHeader("content-type", "text/plain")
             .build()

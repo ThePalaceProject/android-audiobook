@@ -1,8 +1,8 @@
 package org.librarysimplified.audiobook.license_check.api
 
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.http.api.LSHTTPClientType
 import java.io.File
 
 /**
@@ -18,10 +18,10 @@ data class LicenseCheckParameters(
   val manifest: PlayerManifest,
 
   /**
-   * The user agent used in any HTTP requests.
+   * The HTTP client used to make HTTP requests.
    */
 
-  val userAgent: PlayerUserAgent,
+  val httpClient: LSHTTPClientType,
 
   /**
    * The list of license checks that will be evaluated.
