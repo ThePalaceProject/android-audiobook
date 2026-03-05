@@ -67,7 +67,7 @@ class PlayerTOCChapterAdapter(
      */
 
     val okToPlay =
-      if (PlayerModel.isStreamingSupportedAndPermitted()) {
+      if (PlayerModel.isStreamingSupported()) {
         true
       } else {
         this.book.tableOfContents.readingOrderItemTree

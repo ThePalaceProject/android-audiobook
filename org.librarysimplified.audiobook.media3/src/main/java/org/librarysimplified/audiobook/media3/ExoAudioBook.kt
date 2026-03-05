@@ -21,6 +21,7 @@ import org.librarysimplified.audiobook.media3.ExoDownloadSupport.DownloadEntireB
 import org.librarysimplified.audiobook.media3.ExoDownloadSupport.DownloadIndividualChaptersAsFiles
 import org.librarysimplified.audiobook.media3.ExoDownloadSupport.DownloadUnsupported
 import org.librarysimplified.http.api.LSHTTPClientType
+import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.concurrent.CompletableFuture
@@ -43,7 +44,8 @@ class ExoAudioBook private constructor(
   override val readingOrderElementDownloadStatus: PublishSubject<PlayerReadingOrderItemDownloadStatus>,
   private val missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
   private val supportsDownloads: ExoDownloadSupport,
-  private val authorizationHandler: PlayerAuthorizationHandlerType
+  private val authorizationHandler: PlayerAuthorizationHandlerType,
+  private val networkAccess: LSHTTPNetworkAccessReadableType,
 ) : PlayerAudioBookType {
 
   private val logger =
@@ -63,11 +65,12 @@ class ExoAudioBook private constructor(
     check(!this.isClosed) { "Audio book has been closed" }
 
     return ExoAudioBookPlayer.create(
+      authorizationHandler = this.authorizationHandler,
       book = this,
       context = this.context,
-      manifestUpdates = this.manifestUpdates,
       dataSourceFactory = this.dataSourceFactory,
-      authorizationHandler = this.authorizationHandler
+      manifestUpdates = this.manifestUpdates,
+      networkAccess = this.networkAccess,
     )
   }
 
@@ -293,6 +296,7 @@ class ExoAudioBook private constructor(
           engineExecutor = engineExecutor,
           exoManifest = manifest,
           missingTrackNameGenerator = missingTrackNameGenerator,
+          networkAccess = httpClient.networkAccess,
           readingOrder = handles.toList(),
           readingOrderByID = handlesById.toMap(),
           readingOrderElementDownloadStatus = statusEvents,

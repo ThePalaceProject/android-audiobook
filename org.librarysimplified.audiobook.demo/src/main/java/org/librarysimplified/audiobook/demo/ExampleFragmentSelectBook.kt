@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsLCP
 import org.librarysimplified.audiobook.api.PlayerBookCredentialsNone
@@ -27,6 +28,7 @@ import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAPassword
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.views.PlayerModel
+import org.librarysimplified.http.api.LSHTTPNetworkAccess
 import java.io.File
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -65,6 +67,7 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   private lateinit var typeSelect: Spinner
   private lateinit var typeSelected: String
   private lateinit var types: Array<String>
+  private lateinit var permitCellular: SwitchCompat
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -141,6 +144,8 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       layout.findViewById(R.id.exPlay)
     this.delete =
       layout.findViewById(R.id.exDelete)
+    this.permitCellular =
+      layout.findViewById(R.id.exPermitCellular)
 
     this.location =
       layout.findViewById(R.id.exLocation)
@@ -151,13 +156,16 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
 
     this.onSelectedAuthentication(this.authNone)
     this.onSelectedType(this.typeManifest)
+
+    this.permitCellular.isChecked = LSHTTPNetworkAccess.cellularPermitted.get()
+    this.permitCellular.setOnCheckedChangeListener { _, enabled ->
+      LSHTTPNetworkAccess.setCellularPermitted(enabled)
+    }
     return layout
   }
 
   override fun onStart() {
     super.onStart()
-
-    PlayerModel.setStreamingPermitted(true)
 
     this.authentication.onItemSelectedListener =
       object : AdapterView.OnItemSelectedListener {

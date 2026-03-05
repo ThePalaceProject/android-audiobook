@@ -4,6 +4,9 @@ import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.http.api.LSHTTPAuthorizationType
+import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType.LSHTTPNetworkAvailability.NETWORK_AVAILABLE
+import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType.LSHTTPNetworkAvailability.NETWORK_NOT_PERMITTED
+import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType.LSHTTPNetworkAvailability.NETWORK_UNAVAILABLE
 import org.librarysimplified.http.api.LSHTTPRequestBuilderType
 import org.librarysimplified.http.api.LSHTTPResponseStatus
 import org.slf4j.LoggerFactory
@@ -90,6 +93,18 @@ class DownloadProvider private constructor(
     if (targetURI == null) {
       this.log.debug("Links without href values are not supported.")
       throw IOException("Links without href values are not supported.")
+    }
+
+    when (request.httpClient.networkAccess.canUseNetwork()) {
+      NETWORK_UNAVAILABLE -> {
+        throw IOException("The network is currently unavailable.")
+      }
+      NETWORK_AVAILABLE -> {
+        this.log.debug("Downloads are permitted by network access.")
+      }
+      NETWORK_NOT_PERMITTED -> {
+        throw IOException("Downloads are not permitted by the current network settings.")
+      }
     }
 
     val httpRequestBuilder =

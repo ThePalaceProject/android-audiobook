@@ -38,6 +38,8 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerWaitReason.NETWORK_SETTINGS_DO_NOT_PERMIT_DOWNLOADS_OR_STREAMING
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerWaitReason.NETWORK_UNAVAILABLE
 import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.EndOfChapter
@@ -646,7 +648,17 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerDebugStatus.text = "Waiting for chapter to download…"
 
     this.playerStatusIcon.setImageResource(R.drawable.player_status_download)
-    this.publishStatusAreaMessage(this.resources.getString(R.string.audiobook_player_waiting))
+
+    when (event.reason) {
+      NETWORK_SETTINGS_DO_NOT_PERMIT_DOWNLOADS_OR_STREAMING -> {
+        this.publishStatusAreaMessage(
+          this.resources.getString(R.string.audiobook_player_waiting_network_denied))
+      }
+      NETWORK_UNAVAILABLE -> {
+        this.publishStatusAreaMessage(
+          this.resources.getString(R.string.audiobook_player_waiting_network_unavailable))
+      }
+    }
 
     this.playerBusy.visibility = VISIBLE
     this.playerCommands.visibility = INVISIBLE

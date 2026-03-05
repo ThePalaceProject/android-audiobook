@@ -92,9 +92,6 @@ object PlayerModel {
   @Volatile
   private var playerStartingPosition: PlayerPosition? = null
 
-  @Volatile
-  private var isStreamingPermitted: Boolean = false
-
   val timeTracker =
     PlayerTimeTracker.create()
 
@@ -968,7 +965,6 @@ object PlayerModel {
     val newPair =
       PlayerBookAndPlayer(newBook, newPlayer)
 
-    newPlayer.isStreamingPermitted = this.isStreamingPermitted
     newPlayer.events.subscribe(
       { event -> this.playerEventSubject.onNext(event) },
       { exception -> this.logger.error("Player exception: ", exception) }
@@ -1381,11 +1377,11 @@ object PlayerModel {
     }
   }
 
-  fun isStreamingSupportedAndPermitted(): Boolean {
+  fun isStreamingSupported(): Boolean {
     return try {
       val playerAndBook = this.playerAndBookField
       if (playerAndBook != null) {
-        return playerAndBook.audioBook.supportsStreaming && playerAndBook.player.isStreamingPermitted
+        return playerAndBook.audioBook.supportsStreaming
       } else {
         false
       }
@@ -1399,24 +1395,6 @@ object PlayerModel {
     application: Application
   ) {
     this.application = application
-  }
-
-  fun setStreamingPermitted(
-    permitted: Boolean
-  ) {
-    return try {
-      this.logger.debug("setStreamingPermitted: {}", permitted)
-      this.isStreamingPermitted = permitted
-
-      val playerAndBook = this.playerAndBookField
-      if (playerAndBook != null) {
-        playerAndBook.player.isStreamingPermitted = permitted
-      } else {
-        Unit
-      }
-    } catch (e: Exception) {
-      this.logger.error("setStreamingPermitted: ", e)
-    }
   }
 
   fun seekIncrement(): Long {

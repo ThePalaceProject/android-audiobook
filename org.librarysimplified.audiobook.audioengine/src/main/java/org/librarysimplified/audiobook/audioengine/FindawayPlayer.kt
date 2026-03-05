@@ -356,12 +356,6 @@ class FindawayPlayer(
   override val isClosed: Boolean
     get() = this.closed.get() != null
 
-  override var isStreamingPermitted: Boolean
-    get() = this.engineAdapter.isStreamingPermitted
-    set(value) {
-      this.engineAdapter.isStreamingPermitted = value
-    }
-
   override fun close() {
     if (PlayerBlame.closeIfOpen(this.closed)) {
       runOnUIThread {

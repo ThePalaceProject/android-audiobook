@@ -1,10 +1,12 @@
 package org.librarysimplified.audiobook.demo
 
 import android.app.Application
+import android.content.Intent
 import org.librarysimplified.audiobook.views.PlayerModel
 import org.librarysimplified.http.api.LSHTTPClientConfiguration
 import org.librarysimplified.http.api.LSHTTPClientType
 import org.librarysimplified.http.api.LSHTTPNetworkAccess
+import org.librarysimplified.http.network_access.LSHTTPNetworkAvailabilityService
 import org.librarysimplified.http.vanilla.LSHTTPClients
 
 class ExampleApplication : Application() {
@@ -36,5 +38,12 @@ class ExampleApplication : Application() {
 
     System.out.println("Package name: ${this.packageName}")
     PlayerModel.start(this)
+
+    this.startService(
+      Intent(
+        this,
+        LSHTTPNetworkAvailabilityService::class.java
+      )
+    )
   }
 }

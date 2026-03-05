@@ -33,7 +33,9 @@
     <string name="audiobook_player_options_cancel">Cancel</string>
 
     <string name="audiobook_player_buffering">Buffering…</string>
-    <string name="audiobook_player_waiting">This chapter must be downloaded before playback can continue.</string>
+    <string name="audiobook_player_waiting_network_denied">This chapter must be downloaded before playback can continue, and your current network settings do not permit downloading or streaming on this network.</string>
+    <string name="audiobook_player_waiting_network_unavailable">This chapter must be downloaded before playback can continue, and networking is currently unavailable.</string>
+
     <string name="audiobook_player_error">An error occurred during playback. Error code: %s (%d)</string>
 
     <string name="audiobook_player_toc_track_n">Track %1$d</string>

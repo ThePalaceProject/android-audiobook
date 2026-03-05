@@ -145,6 +145,26 @@ sealed class PlayerEvent {
     ) : PlayerEventWithPosition()
 
     /**
+     * The reason the player is waiting.
+     */
+
+    enum class PlayerWaitReason {
+      /**
+       * The user's current network settings don't allow for downloading or streaming. This applies
+       * if, for example, the user doesn't want to allow cellular data to be used for downloads
+       * (preferring to wait until Wi-Fi is available).
+       */
+
+      NETWORK_SETTINGS_DO_NOT_PERMIT_DOWNLOADS_OR_STREAMING,
+
+      /**
+       * There is currently no network connection available.
+       */
+
+      NETWORK_UNAVAILABLE
+    }
+
+    /**
      * The player is currently waiting for the given reading order item to become available before
      * playback can continue.
      */
@@ -153,7 +173,8 @@ sealed class PlayerEvent {
       override val palaceId: PlayerPalaceID,
       override val readingOrderItem: PlayerReadingOrderItemType,
       override val positionMetadata: PlayerManifestPositionMetadata,
-      override val isStreaming: Boolean
+      override val isStreaming: Boolean,
+      val reason: PlayerWaitReason
     ) : PlayerEventWithPosition()
 
     /**
