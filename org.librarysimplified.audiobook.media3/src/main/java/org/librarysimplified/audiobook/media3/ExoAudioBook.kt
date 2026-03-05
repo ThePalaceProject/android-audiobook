@@ -14,13 +14,14 @@ import org.librarysimplified.audiobook.api.PlayerMissingTrackNameGeneratorType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerResult
 import org.librarysimplified.audiobook.api.PlayerType
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.media3.ExoDownloadSupport.DownloadEntireBookAsFile
 import org.librarysimplified.audiobook.media3.ExoDownloadSupport.DownloadIndividualChaptersAsFiles
 import org.librarysimplified.audiobook.media3.ExoDownloadSupport.DownloadUnsupported
+import org.librarysimplified.http.api.LSHTTPClientType
+import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.concurrent.CompletableFuture
@@ -43,7 +44,8 @@ class ExoAudioBook private constructor(
   override val readingOrderElementDownloadStatus: PublishSubject<PlayerReadingOrderItemDownloadStatus>,
   private val missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
   private val supportsDownloads: ExoDownloadSupport,
-  private val authorizationHandler: PlayerAuthorizationHandlerType
+  private val authorizationHandler: PlayerAuthorizationHandlerType,
+  private val networkAccess: LSHTTPNetworkAccessReadableType,
 ) : PlayerAudioBookType {
 
   private val logger =
@@ -63,11 +65,12 @@ class ExoAudioBook private constructor(
     check(!this.isClosed) { "Audio book has been closed" }
 
     return ExoAudioBookPlayer.create(
+      authorizationHandler = this.authorizationHandler,
       book = this,
       context = this.context,
-      manifestUpdates = this.manifestUpdates,
       dataSourceFactory = this.dataSourceFactory,
-      authorizationHandler = this.authorizationHandler
+      manifestUpdates = this.manifestUpdates,
+      networkAccess = this.networkAccess,
     )
   }
 
@@ -170,14 +173,14 @@ class ExoAudioBook private constructor(
 
     fun create(
       context: Application,
-      engineExecutor: ScheduledExecutorService,
-      manifest: ExoManifest,
-      downloadProvider: PlayerDownloadProviderType,
       authorizationHandler: PlayerAuthorizationHandlerType,
-      userAgent: PlayerUserAgent,
       dataSourceFactory: DataSource.Factory,
+      downloadProvider: PlayerDownloadProviderType,
+      engineExecutor: ScheduledExecutorService,
+      httpClient: LSHTTPClientType,
+      manifest: ExoManifest,
       missingTrackNameGenerator: PlayerMissingTrackNameGeneratorType,
-      supportsDownloads: ExoDownloadSupport
+      supportsDownloads: ExoDownloadSupport,
     ): PlayerAudioBookType {
       val directory = this.findDirectoryFor(context, manifest.bookID)
       this.log.debug("Book directory: {}", directory)
@@ -240,12 +243,12 @@ class ExoAudioBook private constructor(
                 wholeBookDownloadSharedState =
                   ExoDownloadWholeBookSingleFileTask.SharedState(
                     downloadProvider = downloadProvider,
-                    userAgent = userAgent,
                     bookDownloadURI = supportsDownloads.targetURI,
                     bookFile = bookFile,
                     bookFileTemp = bookFileTemp,
                     licenseBytes = supportsDownloads.licenseBytes,
                     authorizationHandler = authorizationHandler,
+                    httpClient = httpClient,
                   )
               }
 
@@ -259,14 +262,14 @@ class ExoAudioBook private constructor(
 
             DownloadIndividualChaptersAsFiles -> {
               ExoDownloadTask(
-                downloadProvider = downloadProvider,
                 authenticationHandler = authorizationHandler,
-                index = manifestItem.index,
+                downloadProvider = downloadProvider,
                 originalLink = manifestItem.item.link,
+                readingOrderItem = handle,
                 partFile = partFile,
                 partFileTemp = partFileTemp,
-                readingOrderItem = handle,
-                userAgent = userAgent,
+                index = manifestItem.index,
+                httpClient = httpClient,
               )
             }
 
@@ -293,6 +296,7 @@ class ExoAudioBook private constructor(
           engineExecutor = engineExecutor,
           exoManifest = manifest,
           missingTrackNameGenerator = missingTrackNameGenerator,
+          networkAccess = httpClient.networkAccess,
           readingOrder = handles.toList(),
           readingOrderByID = handlesById.toMap(),
           readingOrderElementDownloadStatus = statusEvents,

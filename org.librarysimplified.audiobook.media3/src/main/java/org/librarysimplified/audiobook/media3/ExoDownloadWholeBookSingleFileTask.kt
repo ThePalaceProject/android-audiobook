@@ -9,9 +9,9 @@ import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.lcp.downloads.LCPDownloads
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import org.librarysimplified.http.api.LSHTTPClientType
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
@@ -41,13 +41,13 @@ internal class ExoDownloadWholeBookSingleFileTask(
   }
 
   internal class SharedState(
-    internal val downloadProvider: PlayerDownloadProviderType,
-    internal val userAgent: PlayerUserAgent,
+    internal val authorizationHandler: PlayerAuthorizationHandlerType,
     internal val bookDownloadURI: URI,
     internal val bookFile: File,
     internal val bookFileTemp: File,
+    internal val downloadProvider: PlayerDownloadProviderType,
+    internal val httpClient: LSHTTPClientType,
     internal val licenseBytes: ByteArray,
-    internal val authorizationHandler: PlayerAuthorizationHandlerType
   ) {
     var downloading: CompletableFuture<Unit>? = null
     private val stateLock: Any = Object()
@@ -239,7 +239,7 @@ internal class ExoDownloadWholeBookSingleFileTask(
         kind = PlayerDownloadRequest.Kind.WHOLE_BOOK,
         outputFile = this.sharedState.bookFile,
         outputFileTemp = this.sharedState.bookFileTemp,
-        userAgent = this.sharedState.userAgent,
+        httpClient = this.sharedState.httpClient,
         onProgress = { percent ->
           this.onDownloading(PlayerDownloadProgress.percentClamp(percent))
         },

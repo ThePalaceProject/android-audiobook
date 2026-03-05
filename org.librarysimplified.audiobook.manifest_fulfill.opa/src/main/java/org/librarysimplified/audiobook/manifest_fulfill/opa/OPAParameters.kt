@@ -1,8 +1,8 @@
 package org.librarysimplified.audiobook.manifest_fulfill.opa
 
 import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerType
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyParametersType
+import org.librarysimplified.http.api.LSHTTPClientType
 
 /**
  * Parameters for Overdrive Patron Authentication.
@@ -34,5 +34,6 @@ data class OPAParameters(
    */
 
   val targetURI: OPAManifestURI,
-  override val userAgent: PlayerUserAgent
+
+  override val httpClient: LSHTTPClientType
 ) : ManifestFulfillmentStrategyParametersType

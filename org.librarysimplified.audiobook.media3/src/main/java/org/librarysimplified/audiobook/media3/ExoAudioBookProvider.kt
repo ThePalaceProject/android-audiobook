@@ -168,15 +168,15 @@ class ExoAudioBookProvider(
         is PlayerResult.Success ->
           PlayerResult.Success(
             ExoAudioBook.create(
+              authorizationHandler = this.request.authorizationHandler,
               context = context,
-              engineExecutor = this.engineExecutor,
-              manifest = parsed.result,
-              downloadProvider = this.request.downloadProvider,
-              userAgent = this.request.userAgent,
               dataSourceFactory = dataSourceFactory,
+              downloadProvider = this.request.downloadProvider,
+              engineExecutor = this.engineExecutor,
+              httpClient = this.request.httpClient,
+              manifest = parsed.result,
               missingTrackNameGenerator = missingTrackNameGenerator,
               supportsDownloads = downloadSupport,
-              authorizationHandler = this.request.authorizationHandler
             )
           )
 

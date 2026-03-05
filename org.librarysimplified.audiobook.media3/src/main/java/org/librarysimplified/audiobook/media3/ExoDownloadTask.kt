@@ -13,12 +13,12 @@ import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloading
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemNotDownloaded
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
 import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Downloaded
 import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Downloading
 import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Failed
 import org.librarysimplified.audiobook.media3.ExoDownloadTask.State.Initial
+import org.librarysimplified.http.api.LSHTTPClientType
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
@@ -34,10 +34,10 @@ class ExoDownloadTask(
   private val downloadProvider: PlayerDownloadProviderType,
   private val originalLink: PlayerManifestLink,
   private val readingOrderItem: ExoReadingOrderItemHandle,
-  private val userAgent: PlayerUserAgent,
   val partFile: File,
   val partFileTemp: File,
-  override val index: Int
+  override val index: Int,
+  private val httpClient: LSHTTPClientType
 ) : PlayerDownloadTaskType {
 
   private val log =
@@ -147,7 +147,7 @@ class ExoDownloadTask(
         link = this.originalLink,
         outputFile = this.partFile,
         outputFileTemp = this.partFileTemp,
-        userAgent = this.userAgent,
+        httpClient = httpClient,
         onProgress = { percent ->
           this.onDownloading(PlayerDownloadProgress.percentClamp(percent))
         },

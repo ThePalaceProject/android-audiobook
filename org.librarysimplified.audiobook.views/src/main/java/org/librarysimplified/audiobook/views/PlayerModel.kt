@@ -40,7 +40,6 @@ import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration
 import org.librarysimplified.audiobook.api.PlayerSleepTimerEvent
 import org.librarysimplified.audiobook.api.PlayerSleepTimerType
 import org.librarysimplified.audiobook.api.PlayerUIThread
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerAuthorizationHandlerExtensionType
 import org.librarysimplified.audiobook.downloads.DownloadProvider
 import org.librarysimplified.audiobook.lcp.downloads.LCPDownloads
@@ -75,6 +74,7 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
 import org.librarysimplified.audiobook.views.focus.PlayerFocusWatcher
 import org.librarysimplified.audiobook.views.mediacontrols.PlayerMediaController
+import org.librarysimplified.http.api.LSHTTPClientType
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
@@ -91,9 +91,6 @@ object PlayerModel {
 
   @Volatile
   private var playerStartingPosition: PlayerPosition? = null
-
-  @Volatile
-  private var isStreamingPermitted: Boolean = false
 
   val timeTracker =
     PlayerTimeTracker.create()
@@ -365,8 +362,8 @@ object PlayerModel {
 
   private fun checkManifest(
     manifest: PlayerManifest,
-    userAgent: PlayerUserAgent,
     licenseChecks: List<SingleLicenseCheckProviderType>,
+    httpClient: LSHTTPClientType,
     cacheDir: File
   ): LicenseCheckResult {
     this.logger.debug("checkManifest")
@@ -375,7 +372,7 @@ object PlayerModel {
       LicenseChecks.createLicenseCheck(
         LicenseCheckParameters(
           manifest = manifest,
-          userAgent = userAgent,
+          httpClient = httpClient,
           checks = licenseChecks,
           cacheDirectory = cacheDir
         )
@@ -418,7 +415,7 @@ object PlayerModel {
 
   fun downloadParseAndCheckManifest(
     sourceURI: URI,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
     cacheDir: File,
     palaceID: PlayerPalaceID,
     licenseChecks: List<SingleLicenseCheckProviderType>,
@@ -437,7 +434,7 @@ object PlayerModel {
         parserExtensions = parserExtensions,
         sourceURI = sourceURI,
         strategy = strategy,
-        userAgent = userAgent,
+        httpClient = httpClient,
       )
     }
   }
@@ -451,13 +448,13 @@ object PlayerModel {
     authorizationHandler: PlayerAuthorizationHandlerType,
     bookCredentials: PlayerBookCredentialsType,
     cacheDir: File,
+    httpClient: LSHTTPClientType,
     licenseChecks: List<SingleLicenseCheckProviderType>,
     licenseFile: File,
     licenseFileTemp: File,
     licenseParameters: ManifestFulfillmentBasicParameters,
     palaceID: PlayerPalaceID,
     parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
   ): CompletableFuture<Unit> {
     this.logger.debug("downloadParseAndCheckLCPLicense")
 
@@ -473,7 +470,7 @@ object PlayerModel {
         licenseParameters = licenseParameters,
         palaceID = palaceID,
         parserExtensions = parserExtensions,
-        userAgent = userAgent,
+        httpClient = httpClient,
       )
     }
   }
@@ -489,7 +486,7 @@ object PlayerModel {
     licenseChecks: List<SingleLicenseCheckProviderType>,
     manifestUnparsed: ManifestUnparsed,
     parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
   ): CompletableFuture<Unit> {
     this.logger.debug("parseAndCheckLCPLicense")
 
@@ -497,11 +494,11 @@ object PlayerModel {
       this.opParseAndCheckLCPLicense(
         bookCredentials = bookCredentials,
         cacheDir = cacheDir,
+        httpClient = httpClient,
         licenseBytes = licenseBytes,
         licenseChecks = licenseChecks,
         manifestUnparsed = manifestUnparsed,
         parserExtensions = parserExtensions,
-        userAgent = userAgent
       )
     }
   }
@@ -513,7 +510,7 @@ object PlayerModel {
     licenseChecks: List<SingleLicenseCheckProviderType>,
     manifestUnparsed: ManifestUnparsed,
     parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
   ) {
     this.logger.debug("opParseAndCheckLCPLicense")
     this.setNewState(PlayerManifestInProgress)
@@ -554,10 +551,10 @@ object PlayerModel {
           val (_, parsedManifest) = parseResult as ParseResult.Success
           val checkResult =
             this.checkManifest(
-              manifest = parsedManifest,
-              userAgent = userAgent,
+              cacheDir = cacheDir,
+              httpClient = httpClient,
               licenseChecks = licenseChecks,
-              cacheDir = cacheDir
+              manifest = parsedManifest,
             )
 
           if (!checkResult.checkSucceeded()) {
@@ -594,17 +591,17 @@ object PlayerModel {
   }
 
   private fun opDownloadAndParseLCPLicense(
-    context: Application,
     authorizationHandler: PlayerAuthorizationHandlerType,
     bookCredentials: PlayerBookCredentialsType,
     cacheDir: File,
+    context: Application,
+    httpClient: LSHTTPClientType,
     licenseChecks: List<SingleLicenseCheckProviderType>,
     licenseFile: File,
     licenseFileTemp: File,
     licenseParameters: ManifestFulfillmentBasicParameters,
     palaceID: PlayerPalaceID,
     parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
   ) {
     this.logger.debug("opDownloadAndParseLCPLicense")
     this.setNewState(PlayerManifestInProgress)
@@ -657,7 +654,7 @@ object PlayerModel {
         palaceID = palaceID,
         parserExtensions = parserExtensions,
         sourceURI = manifestData.source ?: URI.create("urn:unavailable"),
-        userAgent = userAgent,
+        httpClient = httpClient,
       )
     } catch (e: OperationFailedException) {
       throw e
@@ -686,7 +683,7 @@ object PlayerModel {
     parserExtensions: List<ManifestParserExtensionType>,
     sourceURI: URI,
     strategy: ManifestFulfillmentStrategyType,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
   ) {
     this.logger.debug("opDownloadAndParseManifest")
     this.setNewState(PlayerManifestInProgress)
@@ -704,12 +701,12 @@ object PlayerModel {
         bookCredentials = bookCredentials,
         bookSource = PlayerBookSource.PlayerBookSourceManifestOnly,
         cacheDir = cacheDir,
+        httpClient = httpClient,
         licenseChecks = licenseChecks,
         manifest = result,
         palaceID = palaceID,
         parserExtensions = parserExtensions,
         sourceURI = sourceURI,
-        userAgent = userAgent
       )
     } catch (e: OperationFailedException) {
       throw e
@@ -747,7 +744,7 @@ object PlayerModel {
     manifest: ManifestFulfilled,
     palaceID: PlayerPalaceID,
     parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
   ): CompletableFuture<Unit> {
     this.logger.debug("parseAndCheckManifest")
 
@@ -756,12 +753,12 @@ object PlayerModel {
         bookCredentials = bookCredentials,
         bookSource = PlayerBookSource.PlayerBookSourceManifestOnly,
         cacheDir = cacheDir,
+        httpClient = httpClient,
         licenseChecks = licenseChecks,
         manifest = manifest,
         palaceID = palaceID,
         parserExtensions = parserExtensions,
         sourceURI = URI.create("urn:unavailable"),
-        userAgent = userAgent,
       )
     }
   }
@@ -775,7 +772,7 @@ object PlayerModel {
     palaceID: PlayerPalaceID,
     parserExtensions: List<ManifestParserExtensionType>,
     sourceURI: URI,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
   ) {
     this.logger.debug("opParseManifest")
     this.setNewState(PlayerManifestInProgress)
@@ -797,10 +794,10 @@ object PlayerModel {
       val (_, parsedManifest) = parseResult as ParseResult.Success
       val checkResult =
         this.checkManifest(
-          manifest = parsedManifest,
-          userAgent = userAgent,
+          cacheDir = cacheDir,
+          httpClient = httpClient,
           licenseChecks = licenseChecks,
-          cacheDir = cacheDir
+          manifest = parsedManifest,
         )
 
       if (!checkResult.checkSucceeded()) {
@@ -836,7 +833,7 @@ object PlayerModel {
 
   fun openPlayerForManifest(
     context: Application,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
     manifest: PlayerManifest,
     fetchAll: Boolean,
     bookCredentials: PlayerBookCredentialsType,
@@ -865,14 +862,14 @@ object PlayerModel {
         context = context,
         fetchAll = fetchAll,
         manifest = manifest,
-        userAgent = userAgent,
+        httpClient = httpClient,
       )
     }
   }
 
   private fun opOpenPlayerForManifest(
     manifest: PlayerManifest,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
     context: Application,
     fetchAll: Boolean,
     bookCredentials: PlayerBookCredentialsType,
@@ -915,7 +912,7 @@ object PlayerModel {
           manifest = manifest,
           filter = { true },
           downloadProvider = DownloadProvider.create(this.downloadExecutor),
-          userAgent = userAgent,
+          httpClient = httpClient,
           bookCredentials = bookCredentials,
           bookSource = bookSource,
           authorizationHandler = PlayerObservableAuthorizationHandler
@@ -968,7 +965,6 @@ object PlayerModel {
     val newPair =
       PlayerBookAndPlayer(newBook, newPlayer)
 
-    newPlayer.isStreamingPermitted = this.isStreamingPermitted
     newPlayer.events.subscribe(
       { event -> this.playerEventSubject.onNext(event) },
       { exception -> this.logger.error("Player exception: ", exception) }
@@ -1381,11 +1377,11 @@ object PlayerModel {
     }
   }
 
-  fun isStreamingSupportedAndPermitted(): Boolean {
+  fun isStreamingSupported(): Boolean {
     return try {
       val playerAndBook = this.playerAndBookField
       if (playerAndBook != null) {
-        return playerAndBook.audioBook.supportsStreaming && playerAndBook.player.isStreamingPermitted
+        return playerAndBook.audioBook.supportsStreaming
       } else {
         false
       }
@@ -1399,24 +1395,6 @@ object PlayerModel {
     application: Application
   ) {
     this.application = application
-  }
-
-  fun setStreamingPermitted(
-    permitted: Boolean
-  ) {
-    return try {
-      this.logger.debug("setStreamingPermitted: {}", permitted)
-      this.isStreamingPermitted = permitted
-
-      val playerAndBook = this.playerAndBookField
-      if (playerAndBook != null) {
-        playerAndBook.player.isStreamingPermitted = permitted
-      } else {
-        Unit
-      }
-    } catch (e: Exception) {
-      this.logger.error("setStreamingPermitted: ", e)
-    }
   }
 
   fun seekIncrement(): Long {
@@ -1458,7 +1436,7 @@ object PlayerModel {
     licenseChecks: List<SingleLicenseCheckProviderType>,
     palaceID: PlayerPalaceID,
     parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
   ): CompletableFuture<Unit> {
     this.logger.debug("downloadLocalPackagedAudiobook")
 
@@ -1471,7 +1449,7 @@ object PlayerModel {
         licenseChecks = licenseChecks,
         palaceID = palaceID,
         parserExtensions = parserExtensions,
-        userAgent = userAgent,
+        httpClient = httpClient,
       )
     }
   }
@@ -1484,7 +1462,7 @@ object PlayerModel {
     licenseChecks: List<SingleLicenseCheckProviderType>,
     palaceID: PlayerPalaceID,
     parserExtensions: List<ManifestParserExtensionType>,
-    userAgent: PlayerUserAgent,
+    httpClient: LSHTTPClientType,
   ) {
     this.logger.debug("opDownloadLocalPackagedAudiobook")
     this.setNewState(PlayerManifestInProgress)
@@ -1523,7 +1501,7 @@ object PlayerModel {
           val checkResult =
             this.checkManifest(
               manifest = parsedManifest,
-              userAgent = userAgent,
+              httpClient = httpClient,
               licenseChecks = licenseChecks,
               cacheDir = cacheDir
             )

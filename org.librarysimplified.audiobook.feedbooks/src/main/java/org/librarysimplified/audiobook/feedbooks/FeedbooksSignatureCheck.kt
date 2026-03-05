@@ -5,21 +5,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.nimbusds.jose.jwk.JWK
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.util.Base64
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.librarysimplified.audiobook.json_canon.JSONCanonicalization
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckParameters
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckResult
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckStatus
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckType
+import org.librarysimplified.http.api.LSHTTPResponseStatus
 import org.slf4j.LoggerFactory
-import java.io.IOException
 import java.net.URL
 import java.security.Signature
 import java.text.ParseException
 
 class FeedbooksSignatureCheck(
-  private val httpClient: OkHttpClient,
   private val parameters: SingleLicenseCheckParameters
 ) : SingleLicenseCheckType {
 
@@ -62,7 +59,7 @@ class FeedbooksSignatureCheck(
 
     this.event("Checking signature…")
     return try {
-      checkSignature(canonicalManifestBytes, signature)
+      this.checkSignature(canonicalManifestBytes, signature)
     } catch (e: UnsupportedAlgorithmException) {
       val message = e.message ?: "Unsupported signature algorithm."
       this.event("Signature check failed: $message")
@@ -86,9 +83,9 @@ class FeedbooksSignatureCheck(
     manifestBytes: ByteArray,
     signature: FeedbooksSignature
   ): SingleLicenseCheckResult {
-    val certificate = retrieveCertificate(signature)
+    val certificate = this.retrieveCertificate(signature)
 
-    if (verifySignatureWithCertificate(certificate, manifestBytes, signature)) {
+    if (this.verifySignatureWithCertificate(certificate, manifestBytes, signature)) {
       return SingleLicenseCheckResult.Succeeded("Signature verified.")
     }
 
@@ -102,7 +99,7 @@ class FeedbooksSignatureCheck(
   ): Boolean {
     val keySet = JWKSet.parse(String(certificateBytes, Charsets.UTF_8))
 
-    return keySet.keys.any({ key -> verifySignatureWithKey(key, manifestBytes, signature) })
+    return keySet.keys.any({ key -> this.verifySignatureWithKey(key, manifestBytes, signature) })
   }
 
   private fun verifySignatureWithKey(
@@ -120,6 +117,7 @@ class FeedbooksSignatureCheck(
 
         return verifier.verify(Base64.from(signature.value).decode())
       }
+
       else -> {
         throw UnsupportedAlgorithmException("Unsupported signature algorithm $algorithm.")
       }
@@ -129,42 +127,39 @@ class FeedbooksSignatureCheck(
   private fun retrieveCertificate(
     signature: FeedbooksSignature
   ): ByteArray {
-    val certificateURL = getCertificateURL(signature.issuer)
+    val certificateURL = this.getCertificateURL(signature.issuer)
 
     this.event("Retrieving certificate $certificateURL...")
 
     val request =
-      Request.Builder()
-        .url(certificateURL)
-        .header("User-Agent", this.parameters.userAgent.userAgent)
+      this.parameters.httpClient.newRequest(certificateURL.toURI())
         .build()
 
-    try {
-      this.httpClient.newCall(request).execute().use { response ->
-        this.logger.debug("response: {} {}", response.code, response.message)
+    val response =
+      request.execute()
 
-        if (!response.isSuccessful) {
-          this.event("Error downloading certificate (${response.code})")
+    when (val status = response.status) {
+      is LSHTTPResponseStatus.Failed -> {
+        throw CertificateRetrievalException()
+      }
 
-          throw CertificateRetrievalException()
-        }
+      is LSHTTPResponseStatus.Responded.Error -> {
+        this.event("Error downloading certificate (${status.properties.status})")
+        throw CertificateRetrievalException()
+      }
 
-        val bodyBytes = response.body?.bytes() ?: ByteArray(0)
-        this.logger.debug("received {} bytes", bodyBytes.size)
-
+      is LSHTTPResponseStatus.Responded.OK -> {
+        val bodyBytes = status.bodyStream?.readBytes() ?: ByteArray(0)
+        this.logger.debug("Received {} bytes", bodyBytes.size)
         return bodyBytes
       }
-    } catch (e: IOException) {
-      throw CertificateRetrievalException()
     }
   }
 
   private fun getCertificateURL(issuerURI: String?): URL {
-    val certificateUrl = issuers[issuerURI]
-
-    if (certificateUrl == null) {
-      throw UnknownIssuerException("Unknown signature issuer $issuerURI.")
-    }
+    val certificateUrl =
+      this.issuers[issuerURI]
+        ?: throw UnknownIssuerException("Unknown signature issuer $issuerURI.")
 
     return URL(certificateUrl)
   }

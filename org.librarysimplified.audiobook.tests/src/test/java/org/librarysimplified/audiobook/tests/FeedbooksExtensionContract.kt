@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerDelegating
 import org.librarysimplified.audiobook.api.PlayerDownloadProviderType
 import org.librarysimplified.audiobook.api.PlayerDownloadRequest
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.api.extensions.PlayerAuthorizationHandlerExtensionType
 import org.librarysimplified.audiobook.api.extensions.PlayerAuthorizationHandlerExtensionType.*
 import org.librarysimplified.audiobook.feedbooks.FeedbooksPlayerExtension

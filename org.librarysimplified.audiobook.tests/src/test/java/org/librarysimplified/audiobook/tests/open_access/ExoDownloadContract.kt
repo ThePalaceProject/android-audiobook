@@ -2,6 +2,7 @@ package org.librarysimplified.audiobook.tests.open_access
 
 import android.app.Application
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
@@ -10,7 +11,6 @@ import org.librarysimplified.audiobook.api.PlayerBookCredentialsNone
 import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
 import org.librarysimplified.audiobook.api.PlayerResult
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
@@ -19,6 +19,11 @@ import org.librarysimplified.audiobook.media3.ExoReadingOrderItemHandle
 import org.librarysimplified.audiobook.parser.api.ParseResult
 import org.librarysimplified.audiobook.tests.NullAuthorizationHandler
 import org.librarysimplified.audiobook.tests.ResourceMarker
+import org.librarysimplified.http.api.LSHTTPClientConfiguration
+import org.librarysimplified.http.api.LSHTTPClientType
+import org.librarysimplified.http.api.LSHTTPNetworkAccess
+import org.librarysimplified.http.vanilla.LSHTTPClients
+import org.mockito.Mockito
 import org.slf4j.Logger
 import java.net.URI
 
@@ -27,6 +32,22 @@ abstract class ExoDownloadContract {
   abstract fun log(): Logger
 
   abstract fun context(): Application
+
+  private lateinit var httpClient: LSHTTPClientType
+
+  @BeforeEach
+  fun testSetup() {
+    this.httpClient =
+      LSHTTPClients()
+        .create(
+          Mockito.mock(Application::class.java),
+          LSHTTPClientConfiguration(
+            applicationName = "org.thepalaceproject.audiobook.tests",
+            applicationVersion = "1.0.0",
+            networkAccess = LSHTTPNetworkAccess
+          )
+        )
+  }
 
   @Test
   fun testDownloadFlatlandURIsJustOnce() {
@@ -65,7 +86,7 @@ abstract class ExoDownloadContract {
             },
             uriDownloadTimes = urisDownloadMap
           ),
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.httpClient,
           bookSource = PlayerBookSource.PlayerBookSourceManifestOnly,
           bookCredentials = PlayerBookCredentialsNone
         )

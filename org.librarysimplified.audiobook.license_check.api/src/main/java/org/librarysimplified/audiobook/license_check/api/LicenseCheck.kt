@@ -30,7 +30,7 @@ internal class LicenseCheck internal constructor(
           checkProvider.createLicenseCheck(
             SingleLicenseCheckParameters(
               manifest = this.parameters.manifest,
-              userAgent = this.parameters.userAgent,
+              httpClient = this.parameters.httpClient,
               onStatusChanged = this.eventSubject::onNext,
               cacheDirectory = this.parameters.cacheDirectory
             )

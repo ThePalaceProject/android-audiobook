@@ -27,6 +27,8 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackProgressUpdate
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerWaitReason.NETWORK_SETTINGS_DO_NOT_PERMIT_DOWNLOADS_OR_STREAMING
+import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerWaitReason.NETWORK_UNAVAILABLE
 import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_PLAYING
@@ -50,6 +52,10 @@ import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrd
 import org.librarysimplified.audiobook.media3.ExoAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_NONEXISTENT
 import org.librarysimplified.audiobook.media3.ExoAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_NOT_DOWNLOADED
 import org.librarysimplified.audiobook.media3.ExoAudioBookPlayer.SkipChapterStatus.SKIP_TO_CHAPTER_READY
+import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType
+import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType.LSHTTPNetworkAvailability
+import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType.LSHTTPNetworkAvailability.NETWORK_AVAILABLE
+import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType.LSHTTPNetworkAvailability.NETWORK_NOT_PERMITTED
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -66,7 +72,8 @@ class ExoAudioBookPlayer private constructor(
   private val exoPlayer: ExoPlayer,
   manifestUpdates: Observable<Unit>,
   private val statusEvents: Subject<PlayerEvent>,
-  private val authorizationHandler: PlayerAuthorizationHandlerType
+  private val authorizationHandler: PlayerAuthorizationHandlerType,
+  private val networkAccess: LSHTTPNetworkAccessReadableType,
 ) : PlayerType {
 
   private var pauseReason: PlayerPauseReason =
@@ -123,15 +130,6 @@ class ExoAudioBookPlayer private constructor(
 
   @Volatile
   internal var isStreamingNow: Boolean =
-    false
-
-  /**
-   * A flag that indicates whether chapters can be streamed before they are downloaded. Users
-   * may choose not to permit this various reasons (bandwidth usage, etc).
-   */
-
-  @Volatile
-  private var isStreamingPermittedField: Boolean =
     false
 
   /**
@@ -381,23 +379,25 @@ class ExoAudioBookPlayer private constructor(
   companion object {
 
     fun create(
+      authorizationHandler: PlayerAuthorizationHandlerType,
       book: ExoAudioBook,
       context: Application,
-      manifestUpdates: Observable<Unit>,
       dataSourceFactory: Factory,
-      authorizationHandler: PlayerAuthorizationHandlerType
+      manifestUpdates: Observable<Unit>,
+      networkAccess: LSHTTPNetworkAccessReadableType,
     ): ExoAudioBookPlayer {
       val statusEvents =
         BehaviorSubject.create<PlayerEvent>()
           .toSerialized()
 
       return ExoAudioBookPlayer(
+        authorizationHandler = authorizationHandler,
         book = book,
         dataSourceFactory = dataSourceFactory,
         exoPlayer = ExoPlayer.Builder(context).build(),
         manifestUpdates = manifestUpdates,
+        networkAccess = networkAccess,
         statusEvents = statusEvents,
-        authorizationHandler = authorizationHandler
       )
     }
   }
@@ -520,28 +520,52 @@ class ExoAudioBookPlayer private constructor(
 
     val downloadStatus = target.readingOrderItem.downloadStatus
     if (downloadStatus !is PlayerReadingOrderItemDownloaded) {
-      if (!this.isStreamingPermitted) {
-        this.log.debug(
-          "preparePlayer: [{}] Download status is {} and streaming is not permitted. Waiting!",
-          target.readingOrderItem.id,
-          downloadStatus.javaClass.simpleName
-        )
-
-        this.statusEvents.onNext(
-          PlayerEventChapterWaiting(
-            palaceId = this.book.palaceId,
-            isStreaming = this.isStreamingNow,
-            positionMetadata = positionMetadata,
-            readingOrderItem = target.readingOrderItem,
+      when (this.networkAccess.canUseNetwork()) {
+        LSHTTPNetworkAvailability.NETWORK_UNAVAILABLE -> {
+          this.log.debug(
+            "preparePlayer: [{}] Download status is {} and the network is unavailable. Waiting!",
+            target.readingOrderItem.id,
+            downloadStatus.javaClass.simpleName
           )
-        )
-        return SKIP_TO_CHAPTER_NOT_DOWNLOADED
-      } else {
-        this.log.debug(
-          "preparePlayer: [{}] Download status is {} and streaming is permitted. Streaming!",
-          target.readingOrderItem.id,
-          downloadStatus.javaClass.simpleName
-        )
+
+          this.statusEvents.onNext(
+            PlayerEventChapterWaiting(
+              palaceId = this.book.palaceId,
+              isStreaming = this.isStreamingNow,
+              positionMetadata = positionMetadata,
+              readingOrderItem = target.readingOrderItem,
+              reason = NETWORK_UNAVAILABLE
+            )
+          )
+          return SKIP_TO_CHAPTER_NOT_DOWNLOADED
+        }
+
+        NETWORK_NOT_PERMITTED -> {
+          this.log.debug(
+            "preparePlayer: [{}] Download status is {} and streaming is not permitted on this network. Waiting!",
+            target.readingOrderItem.id,
+            downloadStatus.javaClass.simpleName
+          )
+
+          this.statusEvents.onNext(
+            PlayerEventChapterWaiting(
+              palaceId = this.book.palaceId,
+              isStreaming = this.isStreamingNow,
+              positionMetadata = positionMetadata,
+              readingOrderItem = target.readingOrderItem,
+              reason = NETWORK_SETTINGS_DO_NOT_PERMIT_DOWNLOADS_OR_STREAMING
+            )
+          )
+          return SKIP_TO_CHAPTER_NOT_DOWNLOADED
+        }
+
+        NETWORK_AVAILABLE -> {
+          this.log.debug(
+            "preparePlayer: [{}] Download status is {} and streaming is permitted. Streaming!",
+            target.readingOrderItem.id,
+            downloadStatus.javaClass.simpleName
+          )
+        }
       }
     }
 
@@ -876,10 +900,12 @@ class ExoAudioBookPlayer private constructor(
     this.log.debug("opBookmarkDelete")
     PlayerUIThread.checkIsUIThread()
 
-    this.statusEvents.onNext(PlayerEventDeleteBookmark(
-      palaceId = this.book.palaceId,
-      bookmark = bookmark,
-    ))
+    this.statusEvents.onNext(
+      PlayerEventDeleteBookmark(
+        palaceId = this.book.palaceId,
+        bookmark = bookmark,
+      )
+    )
   }
 
   private fun opMovePlayheadToAbsoluteTime(
@@ -1025,13 +1051,6 @@ class ExoAudioBookPlayer private constructor(
 
   override val isClosed: Boolean
     get() = this.closed.get() != null
-
-  override var isStreamingPermitted: Boolean
-    get() =
-      this.isStreamingPermittedField
-    set(value) {
-      this.isStreamingPermittedField = value
-    }
 
   override fun close() {
     if (PlayerBlame.closeIfOpen(this.closed)) {

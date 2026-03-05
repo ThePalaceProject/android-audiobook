@@ -1,6 +1,6 @@
 package org.librarysimplified.audiobook.manifest_fulfill.spi
 
-import org.librarysimplified.audiobook.api.PlayerUserAgent
+import org.librarysimplified.http.api.LSHTTPClientType
 
 /**
  * The base type of manifest fulfillment strategy parameters.
@@ -9,8 +9,8 @@ import org.librarysimplified.audiobook.api.PlayerUserAgent
 interface ManifestFulfillmentStrategyParametersType {
 
   /**
-   * The user agent used to make various HTTP requests.
+   * The client used to make various HTTP requests.
    */
 
-  val userAgent: PlayerUserAgent
+  val httpClient: LSHTTPClientType
 }

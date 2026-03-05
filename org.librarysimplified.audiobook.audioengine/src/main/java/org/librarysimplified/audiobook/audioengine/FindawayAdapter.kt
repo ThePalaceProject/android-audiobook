@@ -48,14 +48,6 @@ class FindawayAdapter(
   var pauseReason: PlayerPauseReason =
     PlayerPauseReason.PAUSE_REASON_INITIALLY_PAUSED
 
-  /**
-   * A flag to track whether the user has permitted streaming or not. This is currently unused
-   * in the Findaway player as it is next to impossible to get it to stop streaming.
-   */
-
-  internal var isStreamingPermitted: Boolean =
-    false
-
   @Volatile
   private var currentPlaybackRateField: PlayerPlaybackRate =
     PlayerPlaybackRate.NORMAL_TIME

@@ -6,8 +6,9 @@ dependencies {
 
     api(libs.irradia.mime.api)
 
-    implementation(libs.kotlin.stdlib)
     implementation(libs.kotlin.reflect)
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.palace.http.api)
     implementation(libs.slf4j)
 
     compileOnly(libs.jcip)

@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.api
 
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestLink
+import org.librarysimplified.http.api.LSHTTPClientType
 import java.io.File
 
 /**
@@ -9,7 +10,7 @@ import java.io.File
 
 data class PlayerDownloadRequest(
   val link: PlayerManifestLink,
-  val userAgent: PlayerUserAgent,
+  val httpClient: LSHTTPClientType,
   val outputFile: File,
   val outputFileTemp: File,
   val onProgress: (Int) -> Unit,

@@ -25,7 +25,6 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerUIThread
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracked
 import org.librarysimplified.audiobook.views.PlayerBaseFragment
 import org.librarysimplified.audiobook.views.PlayerBookmarkModel
@@ -276,8 +275,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           bookSource = state.bookSource,
           context = ExampleApplication.application,
           fetchAll = true,
+          httpClient = ExampleApplication.httpClient,
           manifest = state.manifest,
-          userAgent = PlayerUserAgent("AudioBookDemo"),
         )
       }
 

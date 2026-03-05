@@ -1,11 +1,11 @@
 package org.librarysimplified.audiobook.tests
 
+import android.app.Application
 import org.joda.time.LocalDateTime
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import org.librarysimplified.audiobook.api.PlayerUserAgent
 import org.librarysimplified.audiobook.feedbooks.FeedbooksRightsCheck
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckParameters
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckResult
@@ -16,6 +16,12 @@ import org.librarysimplified.audiobook.manifest_parser.api.ManifestParsers
 import org.librarysimplified.audiobook.manifest_parser.api.ManifestUnparsed
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.parser.api.ParseResult
+import org.librarysimplified.http.api.LSHTTPClientConfiguration
+import org.librarysimplified.http.api.LSHTTPClientType
+import org.librarysimplified.http.api.LSHTTPNetworkAccess
+import org.librarysimplified.http.vanilla.LSHTTPClients
+import org.librarysimplified.http.vanilla.internal.LSHTTPClient
+import org.mockito.Mockito
 import org.slf4j.Logger
 import java.io.File
 import java.net.URI
@@ -24,6 +30,9 @@ import java.util.ServiceLoader
 abstract class FeedbooksRightsCheckContract {
 
   private lateinit var eventLog: MutableList<SingleLicenseCheckStatus>
+
+  private lateinit var httpClient: LSHTTPClientType
+
 
   abstract fun log(): Logger
 
@@ -34,6 +43,16 @@ abstract class FeedbooksRightsCheckContract {
   @BeforeEach
   fun testSetup() {
     this.eventLog = mutableListOf()
+    this.httpClient =
+      LSHTTPClients()
+        .create(
+          Mockito.mock(Application::class.java),
+          LSHTTPClientConfiguration(
+            applicationName = "org.thepalaceproject.audiobook.tests",
+            applicationVersion = "1.0.0",
+            networkAccess = LSHTTPNetworkAccess
+          )
+        )
   }
 
   @Test
@@ -44,7 +63,7 @@ abstract class FeedbooksRightsCheckContract {
       FeedbooksRightsCheck(
         parameters = SingleLicenseCheckParameters(
           manifest = manifest,
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.httpClient,
           onStatusChanged = { },
           cacheDirectory = File(tempFolder, "cache")
         ),
@@ -62,7 +81,7 @@ abstract class FeedbooksRightsCheckContract {
       FeedbooksRightsCheck(
         parameters = SingleLicenseCheckParameters(
           manifest = manifest,
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.httpClient,
           onStatusChanged = { },
           cacheDirectory = File(tempFolder, "cache")
         ),
@@ -80,7 +99,7 @@ abstract class FeedbooksRightsCheckContract {
       FeedbooksRightsCheck(
         parameters = SingleLicenseCheckParameters(
           manifest = manifest,
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.httpClient,
           onStatusChanged = { },
           cacheDirectory = File(tempFolder, "cache")
         ),
@@ -99,7 +118,7 @@ abstract class FeedbooksRightsCheckContract {
       FeedbooksRightsCheck(
         parameters = SingleLicenseCheckParameters(
           manifest = manifest,
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.httpClient,
           onStatusChanged = { },
           cacheDirectory = File(tempFolder, "cache")
         ),
@@ -118,7 +137,7 @@ abstract class FeedbooksRightsCheckContract {
       FeedbooksRightsCheck(
         parameters = SingleLicenseCheckParameters(
           manifest = manifest,
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.httpClient,
           onStatusChanged = { },
           cacheDirectory = File(tempFolder, "cache")
         ),
@@ -136,7 +155,7 @@ abstract class FeedbooksRightsCheckContract {
       FeedbooksRightsCheck(
         parameters = SingleLicenseCheckParameters(
           manifest = manifest,
-          userAgent = PlayerUserAgent("org.librarysimplified.audiobook.tests 1.0.0"),
+          httpClient = this.httpClient,
           onStatusChanged = { },
           cacheDirectory = File(tempFolder, "cache")
         ),
