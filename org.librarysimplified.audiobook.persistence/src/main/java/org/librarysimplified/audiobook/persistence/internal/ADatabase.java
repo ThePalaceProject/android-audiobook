@@ -295,12 +295,13 @@ public final class ADatabase
         st.setString(1, bookID.getValue());
         try (final var rs = st.executeQuery()) {
           while (rs.next()) {
-            return Optional.of(
-              new PlayerPosition(
-                new PlayerManifestReadingOrderID(rs.getString("lr_item_id")),
-                new PlayerMillisecondsReadingOrderItem(rs.getLong("lr_time_milliseconds"))
-              )
+            final var position = new PlayerPosition(
+              new PlayerManifestReadingOrderID(rs.getString("lr_item_id")),
+              new PlayerMillisecondsReadingOrderItem(rs.getLong("lr_time_milliseconds"))
             );
+
+            LOG.debug("Database loaded last read position: {} {}", bookID, position);
+            return Optional.of(position);
           }
         }
       }
@@ -309,6 +310,7 @@ public final class ADatabase
       return Optional.empty();
     }
 
+    LOG.debug("No last read position available: {}", bookID);
     return Optional.empty();
   }
 
@@ -335,6 +337,8 @@ public final class ADatabase
     final PlayerPosition position) {
     Objects.requireNonNull(bookID, "bookID");
     Objects.requireNonNull(position, "position");
+
+    LOG.debug("Database saving last read position: {} {}", bookID, position);
 
     final var nowTime =
       OffsetDateTime.now(UTC).toString();
