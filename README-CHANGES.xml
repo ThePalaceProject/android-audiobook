@@ -668,9 +668,9 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2026-03-13T14:51:32+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="23.1.0">
+    <c:release date="2026-03-13T14:53:03+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="23.1.0">
       <c:changes>
-        <c:change date="2026-03-13T14:51:32+00:00" summary="Add more database logging."/>
+        <c:change date="2026-03-13T00:00:00+00:00" summary="Add more database logging."/>
       </c:changes>
     </c:release>
   </c:releases>
