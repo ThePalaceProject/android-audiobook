@@ -1,6 +1,7 @@
 package org.librarysimplified.audiobook.views.mediacontrols
 
 import android.app.Application
+import android.graphics.Bitmap
 import android.os.Looper
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -11,6 +12,8 @@ import androidx.media3.common.C
 import androidx.media3.common.DeviceInfo
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MediaMetadata.PICTURE_TYPE_FRONT_COVER
+import androidx.media3.common.MediaMetadata.PICTURE_TYPE_MEDIA
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -47,8 +50,18 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLice
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewErrorsDownloadOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewLoginOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
 import org.librarysimplified.audiobook.views.R
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayOutputStream
 
 /**
  * The media session API requires access to a [Player] instance.
@@ -74,6 +87,7 @@ object PlayerMediaFacade : Player {
       .add(Player.COMMAND_SEEK_BACK)
       .add(Player.COMMAND_SEEK_FORWARD)
       .add(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
+      .add(Player.COMMAND_SET_MEDIA_ITEM)
       .build()
 
   @Volatile
@@ -99,6 +113,7 @@ object PlayerMediaFacade : Player {
   private var listeners: List<Player.Listener> = listOf()
 
   init {
+    PlayerModel.viewCommands.subscribe(this::onViewCommand)
     PlayerModel.playerEvents.subscribe(this::onPlayerEvent)
     PlayerModel.stateEvents.subscribe(this::onStateEvent)
   }
@@ -135,6 +150,52 @@ object PlayerMediaFacade : Player {
     }
   }
 
+  private fun coverImageData(): ByteArray? {
+    val coverImage = PlayerModel.coverImage
+    return if (coverImage != null) {
+      ByteArrayOutputStream()
+        .use { stream ->
+          coverImage.compress(Bitmap.CompressFormat.JPEG, 80, stream)
+          stream.toByteArray()
+        }
+    } else {
+      null
+    }
+  }
+
+  private fun setCoverImageFor(
+    data: ByteArray?,
+    builder: MediaMetadata.Builder
+  ) {
+    builder.setArtworkData(data, PICTURE_TYPE_FRONT_COVER)
+    builder.setArtworkData(data, PICTURE_TYPE_MEDIA)
+  }
+
+  private fun onViewCommand(
+    command: PlayerViewCommand
+  ) {
+    when (command) {
+      PlayerViewCoverImageChanged -> {
+        val coverData = coverImageData()
+        val builder = this.mediaMetadataLatest.buildUpon()
+        setCoverImageFor(coverData, builder)
+        this.mediaMetadataLatest = builder.build()
+
+        this.listeners.forEach { listener ->
+          listener.onMediaMetadataChanged(this.mediaMetadataLatest)
+        }
+      }
+
+      PlayerViewErrorsDownloadOpen -> {}
+      PlayerViewLoginOpen -> {}
+      PlayerViewNavigationCloseAll -> {}
+      PlayerViewNavigationPlaybackRateMenuOpen -> {}
+      PlayerViewNavigationSleepMenuOpen -> {}
+      PlayerViewNavigationTOCClose -> {}
+      PlayerViewNavigationTOCOpen -> {}
+    }
+  }
+
   private fun onPlayerEvent(event: PlayerEvent) {
     if (event is PlayerEvent.PlayerEventWithPosition) {
       this.latestChapterDuration =
@@ -153,7 +214,7 @@ object PlayerMediaFacade : Player {
           chapterTitle
         }
 
-      this.mediaMetadataLatest =
+      val builder =
         MediaMetadata.Builder()
           .setAlbumTitle(title)
           .setAlbumArtist(PlayerModel.bookAuthor)
@@ -161,7 +222,10 @@ object PlayerMediaFacade : Player {
           .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
           .setTitle(title)
           .setWriter(PlayerModel.bookAuthor)
-          .build()
+
+      val coverData = coverImageData()
+      setCoverImageFor(coverData, builder)
+      this.mediaMetadataLatest = builder.build()
 
       this.listeners.forEach { listener ->
         listener.onMediaMetadataChanged(this.mediaMetadataLatest)
@@ -295,24 +359,43 @@ object PlayerMediaFacade : Player {
     this.warnNotImplemented("setMediaItems")
   }
 
+  private fun logMediaItem(mediaItem: MediaItem) {
+    this.logger.debug("setMediaItem: mediaId {}", mediaItem.mediaId)
+    this.logger.debug(
+      "setMediaItem: mediaMetadata.title {}",
+      mediaItem.mediaMetadata.title
+    )
+    this.logger.debug(
+      "setMediaItem: mediaMetadata.artworkData {}",
+      mediaItem.mediaMetadata.artworkData
+    )
+    this.logger.debug(
+      "setMediaItem: mediaMetadata.artworkUri {}",
+      mediaItem.mediaMetadata.artworkUri
+    )
+  }
+
   override fun setMediaItem(
     mediaItem: MediaItem
   ) {
     this.warnNotImplemented("setMediaItem")
+    this.logMediaItem(mediaItem)
   }
 
   override fun setMediaItem(
     mediaItem: MediaItem,
     startPositionMs: Long
   ) {
-    this.warnNotImplemented("setMediaItem")
+    this.warnNotImplemented("setMediaItem $startPositionMs")
+    this.logMediaItem(mediaItem)
   }
 
   override fun setMediaItem(
     mediaItem: MediaItem,
     resetPosition: Boolean
   ) {
-    this.warnNotImplemented("setMediaItem")
+    this.warnNotImplemented("setMediaItem $resetPosition")
+    this.logMediaItem(mediaItem)
   }
 
   override fun addMediaItem(
@@ -643,8 +726,11 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getPlaylistMetadata(): MediaMetadata {
-    this.warnNotImplemented("getPlaylistMetadata")
-    return MediaMetadata.EMPTY
+    this.logger.debug("getPlaylistMetadata")
+    return MediaMetadata.Builder()
+      .setTitle("Audiobooks")
+      .setIsBrowsable(true)
+      .build()
   }
 
   override fun setPlaylistMetadata(
@@ -699,7 +785,9 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getCurrentMediaItem(): MediaItem {
-    return MediaItem.EMPTY
+    return MediaItem.Builder()
+      .setMediaMetadata(this.mediaMetadataLatest)
+      .build()
   }
 
   override fun getMediaItemCount(): Int {

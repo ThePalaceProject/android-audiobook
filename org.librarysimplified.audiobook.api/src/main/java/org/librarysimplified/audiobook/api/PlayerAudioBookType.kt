@@ -6,6 +6,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import java.io.Closeable
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -90,7 +91,7 @@ interface PlayerAudioBookType : Closeable {
    * Create a player for the audio book. The player must be closed when it is no longer needed.
    */
 
-  fun createPlayer(): PlayerType
+  fun createPlayer(id: UUID): PlayerType
 
   /**
    * A download task that downloads all chapters and can also be used to delete local book data.

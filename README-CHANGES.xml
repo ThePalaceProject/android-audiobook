@@ -673,8 +673,12 @@
         <c:change date="2026-03-13T00:00:00+00:00" summary="Add more database logging."/>
       </c:changes>
     </c:release>
-    <c:release date="2026-03-13T15:15:41+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="23.2.0">
-      <c:changes/>
+    <c:release date="2026-04-16T11:52:27+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="24.0.0">
+      <c:changes>
+        <c:change date="2026-04-16T00:00:00+00:00" summary="Require player instances to have unique IDs."/>
+        <c:change date="2026-04-16T00:00:00+00:00" summary="Ensure closed player references are never externally exposed."/>
+        <c:change date="2026-04-16T11:52:27+00:00" summary="Publish more metadata from the PlayerMediaFacade."/>
+      </c:changes>
     </c:release>
   </c:releases>
   <c:ticket-systems>

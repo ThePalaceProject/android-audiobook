@@ -4,6 +4,7 @@ import org.librarysimplified.audiobook.api.PlayerBookCredentialsType
 import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentError
 import org.librarysimplified.audiobook.parser.api.ParseError
 
@@ -38,7 +39,7 @@ sealed class PlayerModelState {
   ) : PlayerModelState()
 
   data class PlayerOpen(
-    val player: PlayerBookAndPlayer,
+    val palaceId: PlayerPalaceID,
     val positionOnOpen: PlayerPosition?
   ) : PlayerModelState()
 }

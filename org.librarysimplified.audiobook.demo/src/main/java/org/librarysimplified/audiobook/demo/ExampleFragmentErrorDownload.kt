@@ -39,8 +39,8 @@ class ExampleFragmentErrorDownload : Fragment() {
     this.errorLog.setHorizontallyScrolling(true)
 
     try {
-      val book = PlayerModel.book()
-      for (e in book?.downloadTasks ?: listOf()) {
+      val tasks = PlayerModel.downloadTasksFailed()
+      for (e in tasks) {
         val status = e.status
         if (status is PlayerDownloadTaskStatus.Failed) {
           this.errorLog.append("Download of item ${e.playbackURI} failed.\n")

@@ -3,12 +3,14 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:scrollbarAlwaysDrawHorizontalTrack="false"
+    android:scrollbarAlwaysDrawVerticalTrack="true">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/exLocationLabel"
@@ -43,8 +45,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:background="@drawable/ex_spinner_border"
-            android:entries="@array/exTargetTypes"
-             />
+            android:entries="@array/exTargetTypes" />
 
         <EditText
             android:id="@+id/exLCPPassphrase"
@@ -54,8 +55,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:hint="@string/exLCPPassphrase"
-            android:inputType="text"
-             />
+            android:inputType="text" />
 
         <TextView
             android:id="@+id/exAuthentication"
@@ -341,9 +341,9 @@
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/exPermitCellular"
-            android:layout_margin="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="16dp"
             android:text="Permit networking on cellular"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -353,8 +353,8 @@
             android:id="@+id/exButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/exPermitCellular">
@@ -382,7 +382,7 @@
 
         <TextView
             android:id="@+id/exPresetsLabel"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
@@ -397,7 +397,7 @@
 
         <Spinner
             android:id="@+id/exPresets"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="64dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"

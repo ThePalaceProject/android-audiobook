@@ -10,7 +10,6 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
-import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerAudioEngineRequest
 import org.librarysimplified.audiobook.api.PlayerAudioEngines
 import org.librarysimplified.audiobook.api.PlayerAuthorizationHandlerDelegating
@@ -20,7 +19,9 @@ import org.librarysimplified.audiobook.api.PlayerBookID
 import org.librarysimplified.audiobook.api.PlayerBookSource
 import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerBookmarkKind
+import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
+import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventPlaybackRateChanged
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventChapterCompleted
@@ -28,9 +29,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerPauseReason
-import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
-import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
@@ -50,6 +49,8 @@ import org.librarysimplified.audiobook.license_check.api.LicenseChecks
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProviderType
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckStatus
 import org.librarysimplified.audiobook.manifest.api.PlayerManifest
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
@@ -80,6 +81,7 @@ import java.io.File
 import java.net.URI
 import java.nio.file.Path
 import java.util.ServiceLoader
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
@@ -123,8 +125,8 @@ object PlayerModel {
 
   val playbackRate: PlayerPlaybackRate
     get() = try {
-      this.playerAndBookField?.player?.playbackRate ?: PlayerPlaybackRate.NORMAL_TIME
-    } catch (e: Exception) {
+      PlayerReference.opPlaybackRate()
+    } catch (_: Exception) {
       PlayerPlaybackRate.NORMAL_TIME
     }
 
@@ -169,9 +171,6 @@ object PlayerModel {
   }
 
   private class OperationFailedException : Exception()
-
-  @Volatile
-  private var playerAndBookField: PlayerBookAndPlayer? = null
 
   @Volatile
   private var stateField: PlayerModelState =
@@ -298,7 +297,7 @@ object PlayerModel {
 
     this.stateEvents.ofType(PlayerModelState.PlayerOpen::class.java)
       .subscribe { e ->
-        this.timeTracker.bookOpened(e.player.audioBook.palaceId)
+        this.timeTracker.bookOpened(e.palaceId)
       }
 
     this.stateEvents.ofType(PlayerBookOpenFailed::class.java)
@@ -835,6 +834,7 @@ object PlayerModel {
     context: Application,
     httpClient: LSHTTPClientType,
     manifest: PlayerManifest,
+    playerID: UUID,
     fetchAll: Boolean,
     bookCredentials: PlayerBookCredentialsType,
     bookSource: PlayerBookSource,
@@ -861,14 +861,16 @@ object PlayerModel {
         bookSource = bookSource,
         context = context,
         fetchAll = fetchAll,
-        manifest = manifest,
         httpClient = httpClient,
+        manifest = manifest,
+        playerID = playerID,
       )
     }
   }
 
   private fun opOpenPlayerForManifest(
     manifest: PlayerManifest,
+    playerID: UUID,
     httpClient: LSHTTPClientType,
     context: Application,
     fetchAll: Boolean,
@@ -885,15 +887,7 @@ object PlayerModel {
         extensions = authorizationHandlerExtensions
       )
     PlayerObservableAuthorizationHandler.setHandler(authorizationHandler)
-
-    val existingPlayer = this.playerAndBookField
-    if (existingPlayer != null) {
-      this.logger.debug("Closing old player instance")
-      existingPlayer.close()
-    } else {
-      this.logger.debug("No existing player instance is present")
-    }
-    this.playerAndBookField = null
+    PlayerReference.opPlayerClose()
 
     this.openDatabase(context.filesDir.toPath().resolve("palace-audiobook-persistence.db"))
 
@@ -961,7 +955,7 @@ object PlayerModel {
     val newBook =
       (bookResult as PlayerResult.Success).result
     val newPlayer =
-      newBook.createPlayer()
+      newBook.createPlayer(playerID)
     val newPair =
       PlayerBookAndPlayer(newBook, newPlayer)
 
@@ -998,11 +992,11 @@ object PlayerModel {
       }
     }
 
-    this.playerAndBookField = newPair
+    PlayerReference.opNewPlayer(newPair)
 
     this.setNewState(
       PlayerModelState.PlayerOpen(
-        player = newPair,
+        palaceId = newPair.audioBook.palaceId,
         positionOnOpen = this.playerStartingPosition
       )
     )
@@ -1171,12 +1165,7 @@ object PlayerModel {
       this.setCoverImage(null)
     }
 
-    try {
-      this.playerAndBookField?.close()
-    } catch (e: Throwable) {
-      this.logger.error("Failed to close player: ", e)
-    }
-
+    PlayerReference.opPlayerClose()
     this.setNewState(PlayerModelState.PlayerClosed)
   }
 
@@ -1192,7 +1181,7 @@ object PlayerModel {
       return when (event) {
         PlayerSleepTimerEvent.PlayerSleepTimerFinished -> {
           this.logger.debug("Sleep timer finished: Pausing player")
-          this.playerAndBookField?.player?.pause(PlayerPauseReason.PAUSE_REASON_SLEEP_TIMER)
+          PlayerReference.opPause(PlayerPauseReason.PAUSE_REASON_SLEEP_TIMER)
           Unit
         }
 
@@ -1207,7 +1196,7 @@ object PlayerModel {
 
   fun play() {
     try {
-      this.playerAndBookField?.player?.play()
+      PlayerReference.opPlay()
 
       when (PlayerSleepTimer.status) {
         is PlayerSleepTimerType.Status.Paused -> PlayerSleepTimer.unpause()
@@ -1234,11 +1223,7 @@ object PlayerModel {
   fun pause(
     reason: PlayerPauseReason
   ) {
-    try {
-      this.playerAndBookField?.player?.pause(reason)
-    } catch (e: Exception) {
-      this.logger.error("Pause: ", e)
-    }
+    PlayerReference.opPause(reason)
 
     try {
       PlayerSleepTimer.pause()
@@ -1250,82 +1235,43 @@ object PlayerModel {
   fun playOrPauseAsAppropriate(
     reason: PlayerPauseReason
   ) {
-    val playerCurrent = this.playerAndBookField?.player
-    when (playerCurrent?.playbackIntention) {
-      PlayerPlaybackIntention.SHOULD_BE_PLAYING -> this.pause(reason)
-      PlayerPlaybackIntention.SHOULD_BE_STOPPED -> this.play()
-      null -> {
-        // Nothing to do.
-      }
-    }
+    PlayerReference.opPlayOrPauseAsAppropriate(reason)
   }
 
   fun skipForward() {
-    try {
-      this.playerAndBookField?.player?.skipPlayhead(this.seekIncrement())
-    } catch (e: Exception) {
-      this.logger.error("skipForward: ", e)
-    }
+    PlayerReference.opSkipPlayhead(this.seekIncrement())
   }
 
   fun skipBack() {
-    try {
-      this.playerAndBookField?.player?.skipPlayhead(-this.seekIncrement())
-    } catch (e: Exception) {
-      this.logger.error("skipBack: ", e)
-    }
-  }
-
-  fun book(): PlayerAudioBookType? {
-    return this.playerAndBookField?.audioBook
+    PlayerReference.opSkipPlayhead(-this.seekIncrement())
   }
 
   fun movePlayheadTo(playerPosition: PlayerPosition) {
-    try {
-      this.playerAndBookField?.player?.movePlayheadToLocation(playerPosition)
-    } catch (e: Exception) {
-      this.logger.error("movePlayheadTo: ", e)
-    }
+    PlayerReference.opMovePlayheadTo(playerPosition)
   }
 
   fun movePlayheadToAbsoluteTime(newOffset: PlayerMillisecondsAbsolute) {
-    try {
-      this.playerAndBookField?.player?.movePlayheadToAbsoluteTime(newOffset)
-    } catch (e: Exception) {
-      this.logger.error("movePlayheadToAbsoluteTime: ", e)
-    }
+    PlayerReference.opMovePlayheadToAbsoluteTime(newOffset)
   }
 
   fun manifest(): PlayerManifest? {
-    return this.playerAndBookField?.audioBook?.manifest
+    return PlayerReference.opManifest()
   }
 
   fun bookmarkCreate() {
-    try {
-      this.playerAndBookField?.player?.bookmark()
-    } catch (e: Exception) {
-      this.logger.error("bookmarkCreate: ", e)
-    }
+    PlayerReference.opBookmarkCreate()
   }
 
   fun bookmarkDelete(bookmark: PlayerBookmark) {
-    try {
-      this.playerAndBookField?.player?.bookmarkDelete(bookmark)
-    } catch (e: Exception) {
-      this.logger.error("bookmarkDelete: ", e)
-    }
+    PlayerReference.opBookmarkDelete(bookmark)
   }
 
-  fun setPlaybackRate(item: PlayerPlaybackRate) {
-    try {
-      this.playerAndBookField?.player?.playbackRate = item
-    } catch (e: Exception) {
-      this.logger.error("setPlaybackRate: ", e)
-    }
+  fun setPlaybackRate(rate: PlayerPlaybackRate) {
+    PlayerReference.opPlaybackRateSet(rate)
   }
 
   val isPlaying: Boolean
-    get() = this.playerAndBookField?.player?.playbackStatus != PlayerPlaybackStatus.PAUSED
+    get() = PlayerReference.opIsPlaying()
 
   fun setCoverImage(image: Bitmap?) {
     this.coverImageField = image
@@ -1333,62 +1279,22 @@ object PlayerModel {
   }
 
   val isBuffering: Boolean
-    get() = this.playerAndBookField?.player?.playbackStatus == PlayerPlaybackStatus.BUFFERING
+    get() = PlayerReference.opIsBuffering()
 
   fun isDownloading(): Boolean {
-    return try {
-      val book = this.playerAndBookField?.audioBook
-      if (book != null) {
-        return book.downloadTasks.any { t -> t.status is PlayerDownloadTaskStatus.Downloading }
-      } else {
-        false
-      }
-    } catch (e: Exception) {
-      this.logger.error("isDownloading: ", e)
-      false
-    }
+    return PlayerReference.opIsDownloading()
   }
 
   fun isDownloadingCompleted(): Boolean {
-    return try {
-      val book = this.playerAndBookField?.audioBook
-      if (book != null) {
-        return book.downloadTasks.all { t -> t.status is PlayerDownloadTaskStatus.IdleDownloaded }
-      } else {
-        false
-      }
-    } catch (e: Exception) {
-      this.logger.error("isDownloadingCompleted: ", e)
-      false
-    }
+    return PlayerReference.opIsDownloadingCompleted()
   }
 
   fun isAnyDownloadingFailed(): Boolean {
-    return try {
-      val book = this.playerAndBookField?.audioBook
-      if (book != null) {
-        return book.downloadTasks.any { t -> t.status is PlayerDownloadTaskStatus.Failed }
-      } else {
-        false
-      }
-    } catch (e: Exception) {
-      this.logger.error("isAnyDownloadingFailed: ", e)
-      false
-    }
+    return PlayerReference.opIsDownloadingAnyFailed()
   }
 
   fun isStreamingSupported(): Boolean {
-    return try {
-      val playerAndBook = this.playerAndBookField
-      if (playerAndBook != null) {
-        return playerAndBook.audioBook.supportsStreaming
-      } else {
-        false
-      }
-    } catch (e: Exception) {
-      this.logger.error("isStreamingSupportedAndPermitted: ", e)
-      false
-    }
+    return PlayerReference.opIsStreamingSupported()
   }
 
   fun start(
@@ -1404,22 +1310,7 @@ object PlayerModel {
   fun chapterTitleFor(
     position: PlayerPosition
   ): String {
-    return try {
-      val book = this.playerAndBookField?.audioBook
-      if (book != null) {
-        val item =
-          book.tableOfContents.lookupTOCItem(
-            id = position.readingOrderID,
-            offset = position.offsetMilliseconds
-          )
-        return item.title
-      } else {
-        ""
-      }
-    } catch (e: Exception) {
-      this.logger.error("chapterTitleFor: ", e)
-      ""
-    }
+    return PlayerReference.opChapterTitleFor(position)
   }
 
   /**
@@ -1535,5 +1426,45 @@ object PlayerModel {
       )
       throw e
     }
+  }
+
+  fun downloadAll() {
+    PlayerReference.opDownloadAll()
+  }
+
+  fun findDownloadingProgressIfAny(): PlayerDownloadProgress? {
+    return PlayerReference.opFindDownloadingProgressIfAny()
+  }
+
+  fun findDownloadingStatusIfAny(): PlayerDownloadTaskStatus.Downloading? {
+    return PlayerReference.opFindDownloadingStatusIfAny()
+  }
+
+  fun downloadProgress(): PlayerDownloadProgress {
+    return PlayerReference.opDownloadProgress()
+  }
+
+  fun isOpen(): Boolean {
+    return PlayerReference.opIsOpen()
+  }
+
+  fun tableOfContents(): PlayerManifestTOC? {
+    return PlayerReference.opTableOfContent()
+  }
+
+  fun readingOrder(): List<PlayerReadingOrderItemType> {
+    return PlayerReference.opReadingOrder()
+  }
+
+  fun readingOrderByID(): Map<PlayerManifestReadingOrderID, PlayerReadingOrderItemType> {
+    return PlayerReference.opReadingOrderByID()
+  }
+
+  fun downloadTasksFailed(): List<PlayerDownloadTaskType> {
+    return PlayerReference.opDownloadTasksFailed()
+  }
+
+  fun playerID(): UUID? {
+    return PlayerReference.opPlayerID()
   }
 }

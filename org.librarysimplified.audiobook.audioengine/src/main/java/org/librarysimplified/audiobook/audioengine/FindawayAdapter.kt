@@ -29,6 +29,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.Logger
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -38,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class FindawayAdapter(
   private val logger: Logger,
-  private val id: String,
+  private val id: UUID,
   private val book: FindawayAudioBook,
   private val events: Subject<PlayerEvent>,
   private val engine: AudioEngine,

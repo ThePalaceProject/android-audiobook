@@ -13,6 +13,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
 import java.net.URI
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -74,7 +75,7 @@ class MockingAudioBook(
   override val manifest: PlayerManifest
     get() = TODO("Not yet implemented")
 
-  override fun createPlayer(): MockingPlayer {
+  override fun createPlayer(id: UUID): MockingPlayer {
     check(!this.isClosed) { "Audio book has been closed" }
 
     return this.players.invoke(this)

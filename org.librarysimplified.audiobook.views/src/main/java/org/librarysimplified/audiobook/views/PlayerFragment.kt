@@ -281,8 +281,6 @@ class PlayerFragment : PlayerBaseFragment() {
 
   @UiThread
   private fun onDownloadEvent() {
-    val tasks = PlayerModel.book()?.downloadTasks ?: return
-
     /*
      * First, search for a task that is downloading with an available progress value. This
      * is the task that's going to be most interesting in terms of what's going on in the
@@ -292,28 +290,15 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerDownloadMessage.text = ""
     this.playerDownloadProgressTotal.visibility = INVISIBLE
 
-    for (task in tasks) {
-      when (val st = task.status) {
-        is PlayerDownloadTaskStatus.Downloading -> {
-          val progress = st.progress
-          if (progress != null) {
-            this.playerDownloadMessage.text =
-              this.resources.getString(R.string.audiobook_player_downloading_minimal)
-            this.playerDownloadProgressTotal.visibility = VISIBLE
-            this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).asPercent()
-            return
-          }
-        }
+    val progress: PlayerDownloadProgress? =
+      PlayerModel.findDownloadingProgressIfAny()
 
-        is PlayerDownloadTaskStatus.Failed -> {
-          // Nothing important to say here.
-        }
-
-        PlayerDownloadTaskStatus.IdleDownloaded,
-        PlayerDownloadTaskStatus.IdleNotDownloaded -> {
-          // Nothing important to say here.
-        }
-      }
+    if (progress != null) {
+      this.playerDownloadMessage.text =
+        this.resources.getString(R.string.audiobook_player_downloading_minimal)
+      this.playerDownloadProgressTotal.visibility = VISIBLE
+      this.playerDownloadProgressTotal.progress = PlayerModel.downloadProgress().asPercent()
+      return
     }
 
     /*
@@ -323,28 +308,15 @@ class PlayerFragment : PlayerBaseFragment() {
      * for the server to respond.
      */
 
-    for (task in tasks) {
-      when (val st = task.status) {
-        is PlayerDownloadTaskStatus.Downloading -> {
-          val progress = st.progress
-          if (progress == null) {
-            this.playerDownloadMessage.text =
-              this.resources.getString(R.string.audiobook_player_downloading_minimal)
-            this.playerDownloadProgressTotal.visibility = VISIBLE
-            this.playerDownloadProgressTotal.progress = this.downloadProgressTotal(tasks).asPercent()
-            return
-          }
-        }
+    val status: PlayerDownloadTaskStatus.Downloading? =
+      PlayerModel.findDownloadingStatusIfAny()
 
-        is PlayerDownloadTaskStatus.Failed -> {
-          // Nothing important to say here.
-        }
-
-        PlayerDownloadTaskStatus.IdleDownloaded,
-        PlayerDownloadTaskStatus.IdleNotDownloaded -> {
-          // Nothing important to say here.
-        }
-      }
+    if (status != null) {
+      this.playerDownloadMessage.text =
+        this.resources.getString(R.string.audiobook_player_downloading_minimal)
+      this.playerDownloadProgressTotal.visibility = VISIBLE
+      this.playerDownloadProgressTotal.progress = PlayerModel.downloadProgress().asPercent()
+      return
     }
   }
 
@@ -567,7 +539,11 @@ class PlayerFragment : PlayerBaseFragment() {
     try {
       this.playerStatusIcon.setImageResource(R.drawable.player_status_error)
       this.publishStatusAreaMessage(
-        this.resources.getString(R.string.audiobook_player_error, event.errorCodeName, event.errorCode)
+        this.resources.getString(
+          R.string.audiobook_player_error,
+          event.errorCodeName,
+          event.errorCode
+        )
       )
     } catch (_: Throwable) {
       // Nothing we can do about failures here.
@@ -593,17 +569,21 @@ class PlayerFragment : PlayerBaseFragment() {
       PlayerPauseReason.PAUSE_REASON_INITIALLY_PAUSED -> {
         this.playerPauseReason.text = ""
       }
+
       PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED -> {
         this.playerPauseReason.text = ""
       }
+
       PlayerPauseReason.PAUSE_REASON_BLUETOOTH_DEVICE_CHANGED -> {
         this.playerPauseReason.text =
           this.getString(R.string.audiobook_player_pause_reason_bluetooth)
       }
+
       PlayerPauseReason.PAUSE_REASON_AUDIO_FOCUS_LOST -> {
         this.playerPauseReason.text =
           this.getString(R.string.audiobook_player_pause_reason_focus)
       }
+
       PlayerPauseReason.PAUSE_REASON_SLEEP_TIMER -> {
         this.playerPauseReason.text =
           this.getString(R.string.audiobook_player_pause_sleep_timer)
@@ -652,11 +632,14 @@ class PlayerFragment : PlayerBaseFragment() {
     when (event.reason) {
       NETWORK_SETTINGS_DO_NOT_PERMIT_DOWNLOADS_OR_STREAMING -> {
         this.publishStatusAreaMessage(
-          this.resources.getString(R.string.audiobook_player_waiting_network_denied))
+          this.resources.getString(R.string.audiobook_player_waiting_network_denied)
+        )
       }
+
       NETWORK_UNAVAILABLE -> {
         this.publishStatusAreaMessage(
-          this.resources.getString(R.string.audiobook_player_waiting_network_unavailable))
+          this.resources.getString(R.string.audiobook_player_waiting_network_unavailable)
+        )
       }
     }
 

@@ -100,11 +100,7 @@ class PlayerTOCFragment : PlayerBaseFragment() {
       Toast.LENGTH_SHORT
     ).show()
 
-    try {
-      PlayerModel.book()?.wholeBookDownloadTask?.fetch()
-    } catch (e: Throwable) {
-      this.logger.debug("onMenuRefreshAllSelected: ", e)
-    }
+    PlayerModel.downloadAll()
   }
 
   override fun onStart() {

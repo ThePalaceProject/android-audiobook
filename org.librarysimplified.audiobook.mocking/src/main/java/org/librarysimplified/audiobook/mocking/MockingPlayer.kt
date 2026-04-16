@@ -8,22 +8,26 @@ import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStarted
 import org.librarysimplified.audiobook.api.PlayerPauseReason
-import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
-import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
 import org.librarysimplified.audiobook.api.PlayerType
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestPositionMetadata
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 /**
  * A player that does nothing.
  */
 
-class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
+class MockingPlayer(
+  override val id: UUID,
+  private val book: MockingAudioBook
+) : PlayerType {
 
   private val log = LoggerFactory.getLogger(MockingPlayer::class.java)
 
@@ -88,7 +92,8 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
   override fun movePlayheadToBookStart() {
     this.log.debug("movePlayheadToBookStart")
     this.movePlayheadToLocation(
-      PlayerPosition(this.book.spineItems.first().id, PlayerMillisecondsReadingOrderItem(0L)))
+      PlayerPosition(this.book.spineItems.first().id, PlayerMillisecondsReadingOrderItem(0L))
+    )
   }
 
   override fun movePlayheadToAbsoluteTime(milliseconds: PlayerMillisecondsAbsolute) {
@@ -103,7 +108,10 @@ class MockingPlayer(private val book: MockingAudioBook) : PlayerType {
     this.log.debug("bookmarkDelete")
   }
 
-  private fun goToChapter(id: PlayerManifestReadingOrderID, offset: PlayerMillisecondsReadingOrderItem) {
+  private fun goToChapter(
+    id: PlayerManifestReadingOrderID,
+    offset: PlayerMillisecondsReadingOrderItem
+  ) {
     val element = this.book.spineItems.find { element -> element.id == id }
     if (element != null) {
       this.statusEvents.onNext(

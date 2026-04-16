@@ -24,6 +24,7 @@ import org.librarysimplified.http.api.LSHTTPClientType
 import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
@@ -61,7 +62,7 @@ class ExoAudioBook private constructor(
   override val wholeBookDownloadTask: PlayerDownloadWholeBookTaskType =
     ExoDownloadWholeBookTask(this)
 
-  override fun createPlayer(): PlayerType {
+  override fun createPlayer(id: UUID): PlayerType {
     check(!this.isClosed) { "Audio book has been closed" }
 
     return ExoAudioBookPlayer.create(
@@ -69,6 +70,7 @@ class ExoAudioBook private constructor(
       book = this,
       context = this.context,
       dataSourceFactory = this.dataSourceFactory,
+      id = id,
       manifestUpdates = this.manifestUpdates,
       networkAccess = this.networkAccess,
     )

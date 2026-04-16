@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 import java.util.SortedMap
 import java.util.TreeMap
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -59,8 +60,8 @@ class FindawayAudioBook private constructor(
   override val manifest: PlayerManifest =
     this.findawayManifest.manifest
 
-  override fun createPlayer(): PlayerType =
-    FindawayPlayer(this, this.engine)
+  override fun createPlayer(id: UUID): PlayerType =
+    FindawayPlayer(id = id, this, this.engine)
 
   override fun replaceManifest(
     manifest: PlayerManifest

@@ -68,6 +68,7 @@ import org.slf4j.Logger
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URI
+import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
@@ -216,7 +217,7 @@ abstract class ExoEngineProviderContract {
 
     val book = this.createBook("ok_minimal_0.json")
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     Assertions.assertFalse(player.isClosed, "Player is open")
     player.close()
     Assertions.assertTrue(player.isClosed, "Player is closed")
@@ -232,7 +233,7 @@ abstract class ExoEngineProviderContract {
 
     val book = this.createBook("ok_minimal_0.json")
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     Assertions.assertFalse(player.isClosed, "Player is open")
     player.close()
 
@@ -253,7 +254,7 @@ abstract class ExoEngineProviderContract {
 
     val book = this.createBook("ok_minimal_0.json")
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     val waitLatch = CountDownLatch(1)
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
@@ -292,7 +293,7 @@ abstract class ExoEngineProviderContract {
         )
       )
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     val waitLatch = CountDownLatch(1)
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
@@ -353,7 +354,7 @@ abstract class ExoEngineProviderContract {
         )
       )
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     val waitLatch = CountDownLatch(1)
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
@@ -400,7 +401,7 @@ abstract class ExoEngineProviderContract {
         )
       )
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     val waitLatch = CountDownLatch(1)
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
@@ -459,7 +460,7 @@ abstract class ExoEngineProviderContract {
         )
       )
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     val waitLatch = CountDownLatch(1)
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
@@ -523,7 +524,7 @@ abstract class ExoEngineProviderContract {
         )
       )
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     val waitLatch = CountDownLatch(1)
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
@@ -576,7 +577,7 @@ abstract class ExoEngineProviderContract {
         )
       )
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     val waitLatch = CountDownLatch(1)
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
@@ -636,7 +637,7 @@ abstract class ExoEngineProviderContract {
         )
       )
 
-    val player = book.createPlayer()
+    val player = book.createPlayer(UUID.randomUUID())
     val waitLatch = CountDownLatch(1)
     val events = ArrayList<String>()
     this.subscribeToEvents(player, events, waitLatch)
@@ -1084,7 +1085,7 @@ abstract class ExoEngineProviderContract {
     val audioBook =
       (result as PlayerResult.Success).result
     val player =
-      audioBook.createPlayer()
+      audioBook.createPlayer(UUID.randomUUID())
 
     val waitLatch = CountDownLatch(1)
     val events = ArrayList<String>()

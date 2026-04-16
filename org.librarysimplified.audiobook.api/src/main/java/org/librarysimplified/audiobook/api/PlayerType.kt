@@ -2,12 +2,19 @@ package org.librarysimplified.audiobook.api
 
 import io.reactivex.Observable
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
+import java.util.UUID
 
 /**
  * A player for a book.
  */
 
 interface PlayerType : AutoCloseable {
+
+  /**
+   * An ID value that uniquely identifies this player instance.
+   */
+
+  val id: UUID
 
   /**
    * Close this audio book player. All subsequent method calls on this player will throw

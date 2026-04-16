@@ -53,6 +53,7 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 import org.librarysimplified.audiobook.views.bluetooth.PlayerBluetoothWatcher
 import org.librarysimplified.audiobook.views.focus.PlayerFocusWatcher
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity) {
 
@@ -276,6 +277,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           context = ExampleApplication.application,
           fetchAll = true,
           httpClient = ExampleApplication.httpClient,
+          playerID = UUID.randomUUID(),
           manifest = state.manifest,
         )
       }

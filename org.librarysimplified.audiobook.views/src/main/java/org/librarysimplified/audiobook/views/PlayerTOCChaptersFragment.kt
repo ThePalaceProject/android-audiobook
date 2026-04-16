@@ -64,8 +64,13 @@ class PlayerTOCChaptersFragment : Fragment() {
      * If there is no book open, then the TOC should not be open.
      */
 
-    val book = PlayerModel.book()
-    if (book == null) {
+    if (!PlayerModel.isOpen()) {
+      PlayerModel.submitViewCommand(PlayerViewCommand.PlayerViewNavigationTOCClose)
+      return
+    }
+
+    val tableOfContents = PlayerModel.tableOfContents()
+    if (tableOfContents == null) {
       PlayerModel.submitViewCommand(PlayerViewCommand.PlayerViewNavigationTOCClose)
       return
     }
@@ -73,7 +78,9 @@ class PlayerTOCChaptersFragment : Fragment() {
     this.adapter =
       PlayerTOCChapterAdapter(
         context = this.requireContext(),
-        book = book,
+        tableOfContents = tableOfContents,
+        readingOrder = PlayerModel.readingOrder(),
+        readingOrderByID = PlayerModel.readingOrderByID(),
         onSelect = { item -> this.onTOCItemSelected(item) }
       )
     this.list.adapter = this.adapter

@@ -57,6 +57,7 @@ import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType.LSHTTPNetw
 import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType.LSHTTPNetworkAvailability.NETWORK_AVAILABLE
 import org.librarysimplified.http.api.LSHTTPNetworkAccessReadableType.LSHTTPNetworkAvailability.NETWORK_NOT_PERMITTED
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -67,6 +68,7 @@ import java.util.concurrent.atomic.AtomicReference
  */
 
 class ExoAudioBookPlayer private constructor(
+  override val id: UUID,
   private val book: ExoAudioBook,
   private val dataSourceFactory: Factory,
   private val exoPlayer: ExoPlayer,
@@ -379,6 +381,7 @@ class ExoAudioBookPlayer private constructor(
   companion object {
 
     fun create(
+      id: UUID,
       authorizationHandler: PlayerAuthorizationHandlerType,
       book: ExoAudioBook,
       context: Application,
@@ -391,6 +394,7 @@ class ExoAudioBookPlayer private constructor(
           .toSerialized()
 
       return ExoAudioBookPlayer(
+        id = id,
         authorizationHandler = authorizationHandler,
         book = book,
         dataSourceFactory = dataSourceFactory,

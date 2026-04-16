@@ -21,6 +21,7 @@ import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsoluteInterval
 import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsReadingOrderItem
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference
  */
 
 class FindawayPlayer(
+  override val id: UUID,
   private val book: FindawayAudioBook,
   private val engine: AudioEngine
 ) : PlayerType {
@@ -60,7 +62,6 @@ class FindawayPlayer(
     BehaviorSubject.create<PlayerEvent>().toSerialized()
 
   private val resources = CompositeDisposable()
-  private val id: String
 
   /**
    * The state the user has asked the player to be in.
@@ -78,9 +79,6 @@ class FindawayPlayer(
 
   init {
     this.resources.add(Disposables.fromAction(this.statusExecutor::shutdown))
-
-    this.id =
-      Integer.toString(this.hashCode(), 16)
 
     this.engineAdapter =
       FindawayAdapter(

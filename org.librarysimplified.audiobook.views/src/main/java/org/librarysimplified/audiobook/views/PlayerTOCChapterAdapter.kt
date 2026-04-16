@@ -11,15 +11,19 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.joda.time.Duration
-import org.librarysimplified.audiobook.api.PlayerAudioBookType
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloaded
+import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
 import org.librarysimplified.audiobook.api.PlayerUIThread
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
+import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOC
 import org.librarysimplified.audiobook.manifest.api.PlayerManifestTOCItem
 
 class PlayerTOCChapterAdapter(
   private val context: Context,
-  private val book: PlayerAudioBookType,
+  private val tableOfContents: PlayerManifestTOC,
+  private val readingOrder: List<PlayerReadingOrderItemType>,
+  private val readingOrderByID: Map<PlayerManifestReadingOrderID, PlayerReadingOrderItemType>,
   private val onSelect: (PlayerManifestTOCItem) -> Unit,
 ) : RecyclerView.Adapter<PlayerTOCChapterAdapter.ViewHolder>() {
 
@@ -44,7 +48,7 @@ class PlayerTOCChapterAdapter(
   }
 
   override fun getItemCount(): Int {
-    return this.book.tableOfContents.tocItemsInOrder.size
+    return this.tableOfContents.tocItemsInOrder.size
   }
 
   override fun onBindViewHolder(
@@ -54,7 +58,7 @@ class PlayerTOCChapterAdapter(
     PlayerUIThread.checkIsUIThread()
 
     val tocItem =
-      this.book.tableOfContents.tocItemsInOrder[position]
+      this.tableOfContents.tocItemsInOrder[position]
 
     holder.durationText.text =
       PlayerTimeStrings.durationText(tocItem.duration)
@@ -70,10 +74,10 @@ class PlayerTOCChapterAdapter(
       if (PlayerModel.isStreamingSupported()) {
         true
       } else {
-        this.book.tableOfContents.readingOrderItemTree
+        this.tableOfContents.readingOrderItemTree
           .overlapping(tocItem.intervalAbsoluteMilliseconds)
-          .mapNotNull { interval -> this.book.tableOfContents.readingOrderItemsByInterval[interval] }
-          .mapNotNull { id -> this.book.readingOrderByID[id] }
+          .mapNotNull { interval -> this.tableOfContents.readingOrderItemsByInterval[interval] }
+          .mapNotNull { id -> this.readingOrderByID[id] }
           .all { item -> item.downloadStatus is PlayerReadingOrderItemDownloaded }
       }
 
@@ -154,8 +158,8 @@ class PlayerTOCChapterAdapter(
   }
 
   private fun findIndex(status: PlayerReadingOrderItemDownloadStatus): Int? {
-    for (index in 0 until book.readingOrder.size) {
-      if (book.readingOrder[index].id == status.readingOrderItem.id) {
+    for (index in 0 until this.readingOrder.size) {
+      if (this.readingOrder[index].id == status.readingOrderItem.id) {
         return index
       }
     }
