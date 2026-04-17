@@ -112,6 +112,9 @@ object PlayerMediaFacade : Player {
   @Volatile
   private var listeners: List<Player.Listener> = listOf()
 
+  private val timeline =
+    PlayerMediaTimeline()
+
   init {
     PlayerModel.viewCommands.subscribe(this::onViewCommand)
     PlayerModel.playerEvents.subscribe(this::onPlayerEvent)
@@ -745,8 +748,8 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getCurrentTimeline(): Timeline {
-    this.warnNotImplemented("getCurrentTimeline")
-    return Timeline.EMPTY
+    this.logger.debug("getCurrentTimeline")
+    return this.timeline
   }
 
   override fun getCurrentPeriodIndex(): Int {
