@@ -40,6 +40,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackWaitingForAction
 import org.librarysimplified.audiobook.api.PlayerPauseReason
+import org.librarysimplified.audiobook.manifest.api.PlayerMillisecondsAbsolute
 import org.librarysimplified.audiobook.views.PlayerModel
 import org.librarysimplified.audiobook.views.PlayerModelState
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerBookOpenFailed
@@ -83,10 +84,13 @@ object PlayerMediaFacade : Player {
     Player.Commands.Builder()
       .add(Player.COMMAND_GET_CURRENT_MEDIA_ITEM)
       .add(Player.COMMAND_GET_METADATA)
+      .add(Player.COMMAND_GET_TIMELINE)
       .add(Player.COMMAND_PLAY_PAUSE)
       .add(Player.COMMAND_SEEK_BACK)
       .add(Player.COMMAND_SEEK_FORWARD)
       .add(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
+      .add(Player.COMMAND_SEEK_TO_NEXT)
+      .add(Player.COMMAND_SEEK_TO_PREVIOUS)
       .add(Player.COMMAND_SET_MEDIA_ITEM)
       .build()
 
@@ -95,6 +99,12 @@ object PlayerMediaFacade : Player {
     MediaMetadata.Builder()
       .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
       .setTitle("No audiobook is currently open.")
+      .build()
+
+  @Volatile
+  private var mediaItemLatest: MediaItem =
+    MediaItem.Builder()
+      .setMediaMetadata(this.mediaMetadataFake)
       .build()
 
   @Volatile
@@ -119,6 +129,7 @@ object PlayerMediaFacade : Player {
     PlayerModel.viewCommands.subscribe(this::onViewCommand)
     PlayerModel.playerEvents.subscribe(this::onPlayerEvent)
     PlayerModel.stateEvents.subscribe(this::onStateEvent)
+    this.timeline.setMetadataItem(this.mediaItemLatest, this.latestChapterDuration)
   }
 
   fun start(
@@ -224,12 +235,22 @@ object PlayerMediaFacade : Player {
           .setArtist(PlayerModel.bookAuthor)
           .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
           .setTitle(title)
+          .setIsPlayable(true)
           .setWriter(PlayerModel.bookAuthor)
 
       val coverData = coverImageData()
       setCoverImageFor(coverData, builder)
-      this.mediaMetadataLatest = builder.build()
+      this.mediaMetadataLatest =
+        builder.build()
+      this.mediaItemLatest =
+        MediaItem.Builder()
+          .setMediaMetadata(this.mediaMetadataLatest)
+          .build()
 
+      this.timeline.setMetadataItem(
+        this.mediaItemLatest,
+        this.latestChapterDuration
+      )
       this.listeners.forEach { listener ->
         listener.onMediaMetadataChanged(this.mediaMetadataLatest)
       }
@@ -578,15 +599,19 @@ object PlayerMediaFacade : Player {
     this.warnNotImplemented("seekToDefaultPosition")
   }
 
-  override fun seekTo(positionMs: Long) {
-    this.warnNotImplemented("seekTo")
+  override fun seekTo(
+    positionMs: Long
+  ) {
+    this.logger.debug("seekTo {}", positionMs)
+    PlayerModel.movePlayheadToAbsoluteTime(PlayerMillisecondsAbsolute(positionMs))
   }
 
   override fun seekTo(
     mediaItemIndex: Int,
     positionMs: Long
   ) {
-    this.warnNotImplemented("seekTo")
+    this.logger.debug("seekTo {} {}", mediaItemIndex, positionMs)
+    PlayerModel.movePlayheadToAbsoluteTime(PlayerMillisecondsAbsolute(positionMs))
   }
 
   override fun getSeekBackIncrement(): Long {
@@ -624,7 +649,8 @@ object PlayerMediaFacade : Player {
 
   @Deprecated("Deprecated in Java")
   override fun previous() {
-    this.warnNotImplemented("previous")
+    this.logger.debug("previous")
+    this.seekToPreviousMediaItem()
   }
 
   @Deprecated("Deprecated in Java")
@@ -633,7 +659,8 @@ object PlayerMediaFacade : Player {
   }
 
   override fun seekToPreviousMediaItem() {
-    this.warnNotImplemented("seekToPreviousMediaItem")
+    this.logger.debug("seekToPreviousMediaItem")
+    PlayerModel.chapterPrevious()
   }
 
   override fun getMaxSeekToPreviousPosition(): Long {
@@ -642,7 +669,8 @@ object PlayerMediaFacade : Player {
   }
 
   override fun seekToPrevious() {
-    this.warnNotImplemented("seekToPrevious")
+    this.logger.debug("seekToPrevious")
+    this.seekToPreviousMediaItem()
   }
 
   @Deprecated("Deprecated in Java")
@@ -664,7 +692,8 @@ object PlayerMediaFacade : Player {
 
   @Deprecated("Deprecated in Java")
   override fun next() {
-    this.warnNotImplemented("next")
+    this.logger.debug("next")
+    this.seekToNextMediaItem()
   }
 
   @Deprecated("Deprecated in Java")
@@ -673,11 +702,13 @@ object PlayerMediaFacade : Player {
   }
 
   override fun seekToNextMediaItem() {
-    this.warnNotImplemented("seekToNextMediaItem")
+    this.logger.debug("seekToNextMediaItem")
+    PlayerModel.chapterNext()
   }
 
   override fun seekToNext() {
-    this.warnNotImplemented("seekToNext")
+    this.logger.debug("seekToNext")
+    this.seekToNextMediaItem()
   }
 
   override fun setPlaybackParameters(
@@ -748,12 +779,10 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getCurrentTimeline(): Timeline {
-    this.logger.debug("getCurrentTimeline")
     return this.timeline
   }
 
   override fun getCurrentPeriodIndex(): Int {
-    this.warnNotImplemented("getCurrentPeriodIndex")
     return 0
   }
 
@@ -788,9 +817,7 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getCurrentMediaItem(): MediaItem {
-    return MediaItem.Builder()
-      .setMediaMetadata(this.mediaMetadataLatest)
-      .build()
+    return this.mediaItemLatest
   }
 
   override fun getMediaItemCount(): Int {
@@ -800,7 +827,7 @@ object PlayerMediaFacade : Player {
   override fun getMediaItemAt(
     index: Int
   ): MediaItem {
-    return MediaItem.EMPTY
+    return this.mediaItemLatest
   }
 
   override fun getDuration(): Long {

@@ -157,4 +157,16 @@ interface PlayerType : AutoCloseable {
    */
 
   fun bookmarkDelete(bookmark: PlayerBookmark)
+
+  /**
+   * Skip to the next chapter, if any.
+   */
+
+  fun chapterNext()
+
+  /**
+   * Skip to the previous chapter, if any.
+   */
+
+  fun chapterPrevious()
 }

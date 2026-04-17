@@ -351,6 +351,22 @@ class FindawayPlayer(
     }
   }
 
+  override fun chapterNext() {
+    this.checkNotClosed()
+
+    runOnUIThread {
+      this.opSkipToNextChapter(0L)
+    }
+  }
+
+  override fun chapterPrevious() {
+    this.checkNotClosed()
+
+    runOnUIThread {
+      this.opSkipToPreviousChapter(0L)
+    }
+  }
+
   override val isClosed: Boolean
     get() = this.closed.get() != null
 

@@ -1467,4 +1467,12 @@ object PlayerModel {
   fun playerID(): UUID? {
     return PlayerReference.opPlayerID()
   }
+
+  fun chapterPrevious() {
+    PlayerReference.opChapterPrevious()
+  }
+
+  fun chapterNext() {
+    PlayerReference.opChapterNext()
+  }
 }

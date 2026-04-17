@@ -1,32 +1,37 @@
 package org.librarysimplified.audiobook.views.mediacontrols;
 
+import androidx.media3.common.MediaItem;
 import androidx.media3.common.Timeline;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class PlayerMediaTimeline extends Timeline {
+public final class PlayerMediaTimeline
+  extends Timeline {
 
   private static final Logger LOG =
     LoggerFactory.getLogger(PlayerMediaTimeline.class);
 
-  PlayerMediaTimeline() {
+  private MediaItem mediaItem;
+  private Window window;
 
+  PlayerMediaTimeline() {
+    this.window = new Window();
+    this.window.isSeekable = true;
+    this.window.mediaItem = this.mediaItem;
   }
 
   @Override
   public int getWindowCount() {
-    LOG.debug("getWindowCount");
-    return 0;
+    return 1;
   }
 
   @Override
   public Window getWindow(
     int windowIndex,
-    Window window,
+    Window newWindow,
     long defaultPositionProjectionUs) {
-    LOG.debug("getWindow {} {} {}", windowIndex, window, defaultPositionProjectionUs);
-    return null;
+    return this.window;
   }
 
   @Override
@@ -56,5 +61,13 @@ public final class PlayerMediaTimeline extends Timeline {
     int periodIndex) {
     LOG.debug("getUidOfPeriod {}", periodIndex);
     return null;
+  }
+
+  public void setMetadataItem(
+    final MediaItem mediaItem,
+    final long durationMs) {
+    this.mediaItem = mediaItem;
+    this.window.durationUs = durationMs * 1000L;
+    this.window.mediaItem = this.mediaItem;
   }
 }

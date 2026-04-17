@@ -108,6 +108,14 @@ class MockingPlayer(
     this.log.debug("bookmarkDelete")
   }
 
+  override fun chapterNext() {
+    this.log.debug("chapterNext")
+  }
+
+  override fun chapterPrevious() {
+    this.log.debug("chapterPrevious")
+  }
+
   private fun goToChapter(
     id: PlayerManifestReadingOrderID,
     offset: PlayerMillisecondsReadingOrderItem

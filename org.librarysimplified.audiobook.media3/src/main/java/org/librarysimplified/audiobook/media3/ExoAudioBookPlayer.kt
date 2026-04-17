@@ -484,7 +484,9 @@ class ExoAudioBookPlayer private constructor(
     this.exoPlayer.seekTo(0L)
   }
 
-  private fun playNextSpineElementIfAvailable(element: ExoReadingOrderItemHandle): SkipChapterStatus {
+  private fun playNextSpineElementIfAvailable(
+    element: ExoReadingOrderItemHandle
+  ): SkipChapterStatus {
     this.log.debug("playNextSpineElementIfAvailable: {}", element.itemManifest.item.id)
     PlayerUIThread.checkIsUIThread()
 
@@ -497,6 +499,26 @@ class ExoAudioBookPlayer private constructor(
     return this.preparePlayer(
       CurrentPlaybackTarget(
         readingOrderItem = next,
+        readingOrderItemTargetOffsetMilliseconds = PlayerMillisecondsReadingOrderItem(0L)
+      )
+    )
+  }
+
+  private fun playPreviousSpineElementIfAvailable(
+    element: ExoReadingOrderItemHandle
+  ): SkipChapterStatus {
+    this.log.debug("playPreviousSpineElementIfAvailable: {}", element.itemManifest.item.id)
+    PlayerUIThread.checkIsUIThread()
+
+    val previous = element.previous
+    if (previous == null) {
+      this.log.debug("reading order item {} has no previous element", element.index)
+      return SKIP_TO_CHAPTER_NONEXISTENT
+    }
+
+    return this.preparePlayer(
+      CurrentPlaybackTarget(
+        readingOrderItem = previous,
         readingOrderItemTargetOffsetMilliseconds = PlayerMillisecondsReadingOrderItem(0L)
       )
     )
@@ -863,6 +885,18 @@ class ExoAudioBookPlayer private constructor(
     )
   }
 
+  private fun opChapterNext() {
+    this.log.debug("opChapterNext")
+    PlayerUIThread.checkIsUIThread()
+    this.playNextSpineElementIfAvailable(this.currentReadingOrderElement.readingOrderItem)
+  }
+
+  private fun opChapterPrevious() {
+    this.log.debug("opChapterPrevious")
+    PlayerUIThread.checkIsUIThread()
+    this.playPreviousSpineElementIfAvailable(this.currentReadingOrderElement.readingOrderItem)
+  }
+
   private fun opClose() {
     this.log.debug("opClose")
     PlayerUIThread.checkIsUIThread()
@@ -1050,6 +1084,22 @@ class ExoAudioBookPlayer private constructor(
 
     runOnUIThread {
       this.opBookmarkDelete(bookmark)
+    }
+  }
+
+  override fun chapterNext() {
+    this.checkNotClosed()
+
+    runOnUIThread {
+      this.opChapterNext()
+    }
+  }
+
+  override fun chapterPrevious() {
+    this.checkNotClosed()
+
+    runOnUIThread {
+      this.opChapterPrevious()
     }
   }
 

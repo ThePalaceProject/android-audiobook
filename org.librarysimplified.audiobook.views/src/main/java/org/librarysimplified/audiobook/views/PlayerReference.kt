@@ -483,4 +483,16 @@ internal object PlayerReference {
       defaultValue = null
     )
   }
+
+  fun opChapterPrevious() {
+    this.withPlayerIfPresent { r ->
+      r.player.chapterPrevious()
+    }
+  }
+
+  fun opChapterNext() {
+    this.withPlayerIfPresent { r ->
+      r.player.chapterNext()
+    }
+  }
 }
