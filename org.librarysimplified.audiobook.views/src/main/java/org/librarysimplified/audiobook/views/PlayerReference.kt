@@ -495,4 +495,22 @@ internal object PlayerReference {
       r.player.chapterNext()
     }
   }
+
+  fun onDownloadCancelAll() {
+    return this.withPlayerIfPresent { r ->
+      try {
+        r.audioBook.wholeBookDownloadTask.cancel()
+      } catch (e: Throwable) {
+        this.logger.debug("onDownloadCancelAll: ", e)
+      }
+
+      r.audioBook.downloadTasks.forEach { task ->
+        try {
+          task.cancel()
+        } catch (e: Throwable) {
+          this.logger.debug("onDownloadCancelAll: ", e)
+        }
+      }
+    }
+  }
 }

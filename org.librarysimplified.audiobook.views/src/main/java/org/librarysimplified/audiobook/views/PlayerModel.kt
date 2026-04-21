@@ -1114,7 +1114,13 @@ object PlayerModel {
 
   private fun opCloseBookOrDismissError() {
     this.currentFuture?.cancel(true)
+
+    /*
+     * Stop any downloads.
+     */
+
     this.downloadProvider.cancelAll()
+    PlayerReference.onDownloadCancelAll()
 
     /*
      * Stop the focus watcher.

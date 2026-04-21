@@ -115,7 +115,7 @@ class DownloadProvider private constructor(
       } catch (e: Throwable) {
         this.log.debug("Failed to cancel download tasks: ", e)
       } finally {
-        this.cancelling.set(true)
+        this.cancelling.set(false)
       }
     }
   }
