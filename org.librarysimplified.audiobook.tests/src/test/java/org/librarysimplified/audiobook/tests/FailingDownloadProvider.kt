@@ -17,4 +17,12 @@ class FailingDownloadProvider : PlayerDownloadProviderType {
     future.completeExceptionally(ParseException("Error!", 0))
     return future
   }
+
+  override fun cancelAll() {
+    // Nothing
+  }
+
+  override fun close() {
+    // Nothing
+  }
 }

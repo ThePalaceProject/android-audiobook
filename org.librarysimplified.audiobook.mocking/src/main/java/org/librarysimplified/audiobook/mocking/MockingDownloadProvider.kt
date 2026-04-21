@@ -36,6 +36,10 @@ class MockingDownloadProvider(
     return result
   }
 
+  override fun cancelAll() {
+    // Nothing
+  }
+
   private fun reportProgress(request: PlayerDownloadRequest, percent: Int) {
     try {
       request.onProgress(percent)
@@ -58,5 +62,9 @@ class MockingDownloadProvider(
       Thread.sleep(100L)
     }
     return
+  }
+
+  override fun close() {
+    // Nothing
   }
 }

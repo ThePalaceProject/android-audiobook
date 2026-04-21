@@ -164,4 +164,12 @@ class ResourceDownloadProvider private constructor(
     }
     outputStream.flush()
   }
+
+  override fun cancelAll() {
+    // Nothing
+  }
+
+  override fun close() {
+    // Nothing
+  }
 }

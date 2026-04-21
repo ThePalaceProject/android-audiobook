@@ -51,6 +51,14 @@ abstract class FeedbooksExtensionContract {
       this.requests.add(request)
       return CompletableFuture.completedFuture(Unit)
     }
+
+    override fun cancelAll() {
+      // Nothing
+    }
+
+    override fun close() {
+      // Nothing
+    }
   }
 
   @AfterEach

@@ -16,17 +16,25 @@ import java.io.InputStream
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 /*
  * A simple download provider.
  */
 
 class DownloadProvider private constructor(
-  private val executor: ExecutorService
+  private val requests: LinkedBlockingQueue<Request>
 ) : PlayerDownloadProviderType {
 
   private val log =
     LoggerFactory.getLogger(DownloadProvider::class.java)
+
+  private val closed =
+    AtomicBoolean(false)
+  private val cancelling =
+    AtomicBoolean(false)
 
   companion object {
 
@@ -36,28 +44,80 @@ class DownloadProvider private constructor(
      * @param executor A listening executor that will be used for download tasks
      */
 
-    fun create(executor: ExecutorService): PlayerDownloadProviderType {
-      return DownloadProvider(executor)
+    fun create(
+      executor: ExecutorService
+    ): PlayerDownloadProviderType {
+      val provider = DownloadProvider(LinkedBlockingQueue())
+      executor.execute(provider::start)
+      return provider
     }
   }
 
-  override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
-    val result = CompletableFuture<Unit>()
+  private data class Request(
+    val downloadRequest: PlayerDownloadRequest,
+    val future: CompletableFuture<Unit>
+  )
 
-    this.reportProgress(request, 0)
-
-    this.executor.submit {
+  private fun start() {
+    while (!this.closed.get()) {
       try {
-        result.complete(doDownload(request, result))
-      } catch (_: CancellationException) {
-        doCleanUp(request)
-        result.cancel(true)
+        val request = this.requests.poll(1L, TimeUnit.SECONDS)
+        if (request != null) {
+          this.executeRequest(request)
+        }
       } catch (e: Throwable) {
-        result.completeExceptionally(e)
-        doCleanUp(request)
+        this.log.debug("Download request processing error: ", e)
       }
     }
-    return result
+  }
+
+  private fun executeRequest(
+    request: Request
+  ) {
+    this.reportProgress(request.downloadRequest, 0)
+
+    try {
+      request.future.complete(this.doDownload(request.downloadRequest, request.future))
+    } catch (_: CancellationException) {
+      this.doCleanUp(request.downloadRequest)
+      request.future.cancel(true)
+    } catch (e: Throwable) {
+      request.future.completeExceptionally(e)
+      this.doCleanUp(request.downloadRequest)
+    }
+  }
+
+  override fun download(
+    request: PlayerDownloadRequest
+  ): CompletableFuture<Unit> {
+    val result = CompletableFuture<Unit>()
+    return if (!this.cancelling.get()) {
+      this.reportProgress(request, 0)
+      this.requests.add(Request(request, result))
+      result
+    } else {
+      result.cancel(true)
+      result
+    }
+  }
+
+  override fun cancelAll() {
+    if (this.cancelling.compareAndSet(false, true)) {
+      try {
+        for (request in this.requests) {
+          try {
+            request.future.cancel(true)
+          } catch (e: Throwable) {
+            this.log.debug("Failed to cancel download task: ", e)
+          }
+        }
+        this.requests.clear()
+      } catch (e: Throwable) {
+        this.log.debug("Failed to cancel download tasks: ", e)
+      } finally {
+        this.cancelling.set(true)
+      }
+    }
   }
 
   private fun reportProgress(
@@ -67,12 +127,12 @@ class DownloadProvider private constructor(
     try {
       request.onProgress(percent)
     } catch (e: Throwable) {
-      this.log.error("ignored onProgress exception: ", e)
+      this.log.error("Ignored onProgress exception: ", e)
     }
   }
 
   private fun doCleanUp(request: PlayerDownloadRequest) {
-    this.log.debug("cleaning up output file {}", request.outputFile)
+    this.log.debug("Cleaning up output file {}", request.outputFile)
     DownloadFileIO.fileDelete(request.outputFile)
   }
 
@@ -99,9 +159,11 @@ class DownloadProvider private constructor(
       NETWORK_UNAVAILABLE -> {
         throw IOException("The network is currently unavailable.")
       }
+
       NETWORK_AVAILABLE -> {
         this.log.debug("Downloads are permitted by network access.")
       }
+
       NETWORK_NOT_PERMITTED -> {
         throw IOException("Downloads are not permitted by the current network settings.")
       }
@@ -120,6 +182,7 @@ class DownloadProvider private constructor(
       is LSHTTPResponseStatus.Failed -> {
         throw status.exception
       }
+
       is LSHTTPResponseStatus.Responded.Error -> {
         if (status.properties.status == 401) {
           request.authorizationHandler.onAuthorizationIsInvalid(
@@ -144,6 +207,7 @@ class DownloadProvider private constructor(
             .toString()
         )
       }
+
       is LSHTTPResponseStatus.Responded.OK -> {
         this.handleSuccessfulResponse(status, request, result)
       }
@@ -270,5 +334,11 @@ class DownloadProvider private constructor(
 
     this.reportProgress(request, 100)
     outputStream.flush()
+  }
+
+  override fun close() {
+    if (this.closed.compareAndSet(false, true)) {
+      this.cancelAll()
+    }
   }
 }

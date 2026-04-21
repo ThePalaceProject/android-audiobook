@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture
  * used in any backend that requires one.
  */
 
-interface PlayerDownloadProviderType {
+interface PlayerDownloadProviderType : AutoCloseable {
 
   /**
    * Begin a download of the specified request as soon as possible. Implementors should provide
@@ -30,4 +30,10 @@ interface PlayerDownloadProviderType {
    */
 
   fun download(request: PlayerDownloadRequest): CompletableFuture<Unit>
+
+  /**
+   * Cancel all pending downloads as quickly as possible.
+   */
+
+  fun cancelAll()
 }

@@ -141,6 +141,9 @@ object PlayerModel {
       thread
     }
 
+  private val downloadProvider =
+    DownloadProvider.create(this.downloadExecutor)
+
   private val taskExecutor =
     Executors.newFixedThreadPool(1) { r: Runnable ->
       val thread = Thread(r)
@@ -905,7 +908,7 @@ object PlayerModel {
         PlayerAudioEngineRequest(
           manifest = manifest,
           filter = { true },
-          downloadProvider = DownloadProvider.create(this.downloadExecutor),
+          downloadProvider = this.downloadProvider,
           httpClient = httpClient,
           bookCredentials = bookCredentials,
           bookSource = bookSource,
@@ -1111,6 +1114,7 @@ object PlayerModel {
 
   private fun opCloseBookOrDismissError() {
     this.currentFuture?.cancel(true)
+    this.downloadProvider.cancelAll()
 
     /*
      * Stop the focus watcher.

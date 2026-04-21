@@ -18,4 +18,12 @@ class DishonestDownloadProvider : PlayerDownloadProviderType {
       request.onProgress.invoke(100)
     }
   }
+
+  override fun cancelAll() {
+    // Nothing
+  }
+
+  override fun close() {
+    // Nothing
+  }
 }

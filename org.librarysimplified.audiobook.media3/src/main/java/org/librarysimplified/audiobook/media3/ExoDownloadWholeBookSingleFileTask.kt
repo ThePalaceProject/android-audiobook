@@ -132,6 +132,7 @@ internal class ExoDownloadWholeBookSingleFileTask(
 
   override fun cancel() {
     this.logger.debug("[{}] cancel", this.readingOrderItem.id)
+    this.sharedState.downloadProvider.cancelAll()
     this.sharedState.downloading?.cancel(true)
   }
 
