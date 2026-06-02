@@ -39,7 +39,6 @@ import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestLice
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestOK
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerManifestParseFailed
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerOpen
-import org.librarysimplified.audiobook.views.PlayerPlaybackRateFragment
 import org.librarysimplified.audiobook.views.PlayerSleepTimerFragment
 import org.librarysimplified.audiobook.views.PlayerTOCFragment
 import org.librarysimplified.audiobook.views.PlayerViewCommand
@@ -331,7 +330,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       PlayerViewNavigationPlaybackRateMenuOpen -> {
-        this.popupFragment(PlayerPlaybackRateFragment())
+        // Nothing required.
       }
 
       PlayerViewNavigationSleepMenuOpen -> {

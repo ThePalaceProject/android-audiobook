@@ -63,12 +63,12 @@ internal object PlayerReference {
     return this.withPlayer { r ->
       try {
         if (r == null) {
-          return@withPlayer PlayerPlaybackRate.NORMAL_TIME
+          return@withPlayer PlayerPlaybackRate(1.0)
         }
         val player = r.player
         player.playbackRate
       } catch (_: Throwable) {
-        PlayerPlaybackRate.NORMAL_TIME
+        PlayerPlaybackRate(1.0)
       }
     }
   }

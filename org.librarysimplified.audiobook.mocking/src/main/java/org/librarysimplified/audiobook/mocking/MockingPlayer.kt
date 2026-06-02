@@ -33,7 +33,7 @@ class MockingPlayer(
 
   private val callEvents = PublishSubject.create<String>()
   private val statusEvents = BehaviorSubject.create<PlayerEvent>()
-  private var rate: PlayerPlaybackRate = PlayerPlaybackRate.NORMAL_TIME
+  private var rate: PlayerPlaybackRate = PlayerPlaybackRate(1.0)
 
   val calls: Observable<String> = this.callEvents
 

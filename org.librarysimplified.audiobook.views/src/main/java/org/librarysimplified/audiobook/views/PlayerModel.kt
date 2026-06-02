@@ -30,6 +30,7 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackStopped
 import org.librarysimplified.audiobook.api.PlayerPauseReason
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_1
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemType
@@ -127,7 +128,7 @@ object PlayerModel {
     get() = try {
       PlayerReference.opPlaybackRate()
     } catch (_: Exception) {
-      PlayerPlaybackRate.NORMAL_TIME
+      RATE_1
     }
 
   private val logger =

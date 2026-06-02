@@ -70,6 +70,12 @@
       Accessibility strings.
       -->
 
+    <string name="audiobook_accessibility_playback_rate_open">Open The Playback Rate Controls Drawer</string>
+    <string name="audiobook_accessibility_playback_rate_close">Close The Playback Rate Controls Drawer</string>
+    <string name="audiobook_accessibility_playback_rate_increase">Increase Playback Rate</string>
+    <string name="audiobook_accessibility_playback_rate_decrease">Decrease Playback Rate</string>
+    <string name="audiobook_accessibility_playback_rate_adjust">Adjust Playback Rate</string>
+
     <string name="audiobook_accessibility_hours">Hours</string>
     <string name="audiobook_accessibility_minutes">Minutes</string>
     <string name="audiobook_accessibility_seconds">Seconds</string>
@@ -110,7 +116,7 @@
     <string name="audiobook_accessibility_menu_playback_speed_2">200 percent</string>
 
     <string name="audiobook_accessibility_playback_speed_currently">Playback Speed Is Currently Set To</string>
-    <string name="audiobook_accessibility_playback_speed_set_to">Set Playback Speed To</string>
+    <string name="audiobook_accessibility_playback_speed_set_to">Set Playback Speed To %1$s</string>
     <string name="audiobook_accessibility_playback_speed_has_been_set">Playback speed has been set to</string>
     <string name="audiobook_accessibility_playback_speed_is_selected">This Is The Currently Selected Playback Rate</string>
 

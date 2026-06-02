@@ -21,7 +21,6 @@ import io.reactivex.disposables.CompositeDisposable
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
-import org.librarysimplified.audiobook.api.PlayerDownloadTaskType
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerAccessibilityEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventDeleteBookmark
@@ -41,6 +40,14 @@ import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.P
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerWaitReason.NETWORK_SETTINGS_DO_NOT_PERMIT_DOWNLOADS_OR_STREAMING
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerWaitReason.NETWORK_UNAVAILABLE
 import org.librarysimplified.audiobook.api.PlayerPauseReason
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_0_5
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_1
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_1_25
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_1_5
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_2
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_MAX
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_MIN
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.EndOfChapter
 import org.librarysimplified.audiobook.api.PlayerSleepTimerConfiguration.Off
@@ -61,9 +68,29 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
+import org.slf4j.LoggerFactory
+import kotlin.math.max
+import kotlin.math.min
 
 class PlayerFragment : PlayerBaseFragment() {
 
+  private lateinit var playerRateDrawerViews: Set<View>
+  private val logger =
+    LoggerFactory.getLogger(PlayerFragment::class.java)
+
+  private lateinit var playerRate: ViewGroup
+  private lateinit var playerRateMinus: View
+  private lateinit var playerRatePlus: View
+  private lateinit var playerRateText: TextView
+  private lateinit var playerRate2p0: Button
+  private lateinit var playerRate1p5: Button
+  private lateinit var playerRate1p25: Button
+  private lateinit var playerRate1p0: Button
+  private lateinit var playerRate0p5: Button
+  private lateinit var playerRateSeekBar: SeekBar
+  private var playerRateSeekBarChangingProgrammatically = false
+  private lateinit var bottomSheet: PlayerBottomSheet
+  private lateinit var bottomSheetDarken: View
   private lateinit var playerStatusButton: Button
   private lateinit var playerPauseReason: TextView
   private lateinit var coverView: ImageView
@@ -98,6 +125,7 @@ class PlayerFragment : PlayerBaseFragment() {
   private var playerPositionDragging: Boolean = false
   private var menuPlaybackRateText: TextView? = null
   private var menuSleepText: TextView? = null
+  private val bottomSheetDarkenOpacityMax = 1.0f
 
   /*
    * Unfortunately, at API level 24, we can't store the minimum player position in the player
@@ -191,6 +219,87 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerPosition.setOnTouchListener { _, event -> this.handleTouchOnSeekbar(event) }
 
+    this.bottomSheet =
+      view.findViewById(R.id.playerBottomSheet)
+    this.bottomSheetDarken =
+      view.findViewById(R.id.playerBottomSheetDarken)
+
+    this.playerRate =
+      this.bottomSheet.findViewById(R.id.playerRate)
+    this.playerRateSeekBar =
+      this.bottomSheet.findViewById(R.id.playerRateSeekBar)
+    this.playerRateText =
+      this.bottomSheet.findViewById(R.id.playerRateText)
+    this.playerRate0p5 =
+      this.bottomSheet.findViewById(R.id.playerRate0p5)
+    this.playerRate1p0 =
+      this.bottomSheet.findViewById(R.id.playerRate1p0)
+    this.playerRate1p25 =
+      this.bottomSheet.findViewById(R.id.playerRate1p25)
+    this.playerRate1p5 =
+      this.bottomSheet.findViewById(R.id.playerRate1p5)
+    this.playerRate2p0 =
+      this.bottomSheet.findViewById(R.id.playerRate2p0)
+    this.playerRatePlus =
+      this.bottomSheet.findViewById(R.id.playerRateButtonPlus)
+    this.playerRateMinus =
+      this.bottomSheet.findViewById(R.id.playerRateButtonMinus)
+
+    this.playerRate0p5.contentDescription =
+      this.getString(R.string.audiobook_accessibility_playback_speed_set_to, RATE_0_5.formatted)
+    this.playerRate1p0.contentDescription =
+      this.getString(R.string.audiobook_accessibility_playback_speed_set_to, RATE_1.formatted)
+    this.playerRate1p25.contentDescription =
+      this.getString(R.string.audiobook_accessibility_playback_speed_set_to, RATE_1_25.formatted)
+    this.playerRate1p5.contentDescription =
+      this.getString(R.string.audiobook_accessibility_playback_speed_set_to, RATE_1_5.formatted)
+    this.playerRate2p0.contentDescription =
+      this.getString(R.string.audiobook_accessibility_playback_speed_set_to, RATE_2.formatted)
+
+    this.playerRate0p5.setOnClickListener {
+      PlayerModel.setPlaybackRate(RATE_0_5)
+    }
+    this.playerRate1p0.setOnClickListener {
+      PlayerModel.setPlaybackRate(RATE_1)
+    }
+    this.playerRate1p25.setOnClickListener {
+      PlayerModel.setPlaybackRate(RATE_1_25)
+    }
+    this.playerRate1p5.setOnClickListener {
+      PlayerModel.setPlaybackRate(RATE_1_5)
+    }
+    this.playerRate2p0.setOnClickListener {
+      PlayerModel.setPlaybackRate(RATE_2)
+    }
+    this.playerRatePlus.setOnClickListener {
+      PlayerModel.setPlaybackRate(
+        PlayerPlaybackRate(
+          min(RATE_MAX.speed, PlayerModel.playbackRate.speed + 0.1)
+        )
+      )
+    }
+    this.playerRateMinus.setOnClickListener {
+      PlayerModel.setPlaybackRate(
+        PlayerPlaybackRate(
+          max(RATE_MIN.speed, PlayerModel.playbackRate.speed - 0.1)
+        )
+      )
+    }
+
+    this.playerRateDrawerViews =
+      setOf<View>(
+        this.playerRate,
+        this.playerRate0p5,
+        this.playerRate1p25,
+        this.playerRate1p0,
+        this.playerRate1p5,
+        this.playerRate2p0,
+        this.playerRateMinus,
+        this.playerRatePlus,
+        this.playerRateSeekBar,
+        this.playerRateText,
+      )
+
     this.playerDebugStatus.alpha = 0.0f
     this.playerStatusArea.alpha = 0.0f
     this.playerStatusButton.visibility = GONE
@@ -200,6 +309,11 @@ class PlayerFragment : PlayerBaseFragment() {
 
   override fun onStart() {
     super.onStart()
+
+    this.requireActivity().window.decorView.viewTreeObserver
+      .addOnGlobalFocusChangeListener { oldFocus, newFocus ->
+        this.onFocusChanged(oldFocus, newFocus)
+      }
 
     this.timeStrings =
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
@@ -221,6 +335,128 @@ class PlayerFragment : PlayerBaseFragment() {
       this.onOnCredentialsValid(event)
     })
     this.setPlayPauseButtonAppropriately()
+
+    /*
+     * Control the opacity of a full-screen darkening view based on the bottom sheet. When the
+     * bottom sheet is fully expanded, the darkening view is mostly opaque. When the bottom sheet
+     * is fully collapsed, the darkening view is transparent.
+     */
+
+    this.bottomSheetDarken.alpha = 0.0f
+    this.bottomSheet.drawerCloseInstantly()
+    this.bottomSheet.drawerSetHandleAccessibilityStrings(
+      openHandle = R.string.audiobook_accessibility_playback_rate_open,
+      closeHandle = R.string.audiobook_accessibility_playback_rate_close
+    )
+
+    this.playerRateViewsLock()
+
+    this.bottomSheet.setOpenListener(object : PlayerBottomSheetType.SheetOpenListenerType {
+      override fun onOpenChanged(state: Double) {
+        val c = this@PlayerFragment
+        c.bottomSheetDarken.alpha = (c.bottomSheetDarkenOpacityMax * state).toFloat()
+
+        /*
+         * If the drawer is fully open, make all the other views disabled. If the drawer is
+         * fully closed, make all the views have their normal accessibility values. We use
+         * a so-called "scrim" view - a translucent view that intercepts all click events -
+         * to stop the user clicking on things in the background.
+         */
+
+        if (state >= 0.99) {
+          c.bottomSheetDarken.setOnClickListener {
+            c.bottomSheet.drawerClose()
+          }
+          c.bottomSheetDarken.isClickable = true
+          c.playerRateViewsUnlock()
+        } else if (state <= 0.01) {
+          c.bottomSheetDarken.setOnClickListener(null)
+          c.bottomSheetDarken.isClickable = false
+          c.playerRateViewsLock()
+        }
+      }
+    })
+
+    this.playerRateSeekBar.progress = 100
+    this.playerRateSeekBar.setOnSeekBarChangeListener(
+      object : SeekBar.OnSeekBarChangeListener {
+        override fun onProgressChanged(
+          p0: SeekBar?,
+          p1: Int,
+          p2: Boolean
+        ) {
+          if (this@PlayerFragment.playerRateSeekBarChangingProgrammatically) {
+            return
+          }
+        }
+
+        override fun onStartTrackingTouch(p0: SeekBar?) {
+          if (this@PlayerFragment.playerRateSeekBarChangingProgrammatically) {
+            return
+          }
+        }
+
+        override fun onStopTrackingTouch(p0: SeekBar) {
+          if (this@PlayerFragment.playerRateSeekBarChangingProgrammatically) {
+            return
+          }
+          PlayerModel.setPlaybackRate(PlayerPlaybackRate(p0.progress.toDouble() / 100.0))
+        }
+      })
+
+    this.onPlayerEventPlaybackRateChanged()
+  }
+
+  private fun onFocusChanged(
+    oldFocus: View?,
+    newFocus: View?
+  ) {
+    val oldClass: String?
+    val oldName: String?
+    val newClass: String?
+    val newName: String?
+
+    if (oldFocus != null) {
+      oldClass = oldFocus.javaClass.simpleName
+      oldName = oldFocus.resources.getResourceName(oldFocus.id)
+    } else {
+      oldClass = null
+      oldName = null
+    }
+
+    if (newFocus != null) {
+      newClass = newFocus.javaClass.simpleName
+      newName = newFocus.resources.getResourceName(newFocus.id)
+    } else {
+      newClass = null
+      newName = null
+    }
+
+    this.logger.debug("Focus: Now {}:{} (was: {}:{})", newName, newClass, oldName, oldClass)
+    this.logger.debug(
+      "Focus: {} {} {}",
+      newFocus?.isClickable,
+      newFocus?.isFocusable,
+      newFocus?.isEnabled
+    )
+  }
+
+  private fun playerRateViewsLock() {
+    this.logger.debug("PlayerRateViews: lock")
+    for (v in this.playerRateDrawerViews) {
+      v.isEnabled = false
+      v.isFocusable = false
+      v.isClickable = false
+    }
+  }
+
+  private fun playerRateViewsUnlock() {
+    this.logger.debug("PlayerRateViews: unlock")
+    for (v in this.playerRateDrawerViews) {
+      v.isEnabled = true
+      v.isFocusable = true
+      v.isClickable = true
+    }
   }
 
   /**
@@ -320,17 +556,6 @@ class PlayerFragment : PlayerBaseFragment() {
     }
   }
 
-  private fun downloadProgressTotal(
-    tasks: List<PlayerDownloadTaskType>
-  ): PlayerDownloadProgress {
-    val totalPossible =
-      tasks.sumOf { task -> 1.0 }
-    val totalAchieved =
-      tasks.sumOf { task -> task.progress.value }
-
-    return PlayerDownloadProgress.normalClamp(totalAchieved / totalPossible)
-  }
-
   @UiThread
   private fun onPlayerViewCommand(event: PlayerViewCommand) {
     return when (event) {
@@ -338,10 +563,13 @@ class PlayerFragment : PlayerBaseFragment() {
         this.coverView.setImageBitmap(PlayerModel.coverImage)
       }
 
+      PlayerViewNavigationPlaybackRateMenuOpen -> {
+        this.bottomSheet.drawerOpen()
+      }
+
       PlayerViewLoginOpen,
       PlayerViewErrorsDownloadOpen,
       PlayerViewNavigationCloseAll,
-      PlayerViewNavigationPlaybackRateMenuOpen,
       PlayerViewNavigationSleepMenuOpen,
       PlayerViewNavigationTOCClose,
       PlayerViewNavigationTOCOpen -> {
@@ -592,8 +820,19 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   private fun onPlayerEventPlaybackRateChanged() {
-    this.menuPlaybackRateText?.text =
-      PlayerPlaybackRateAdapter.textOfRate(PlayerModel.playbackRate)
+    try {
+      val rate = PlayerModel.playbackRate
+      val speed = rate.speed
+
+      this.playerRateSeekBarChangingProgrammatically = true
+      this.playerRateSeekBar.progress = (speed * 100.0).toInt()
+      this.playerRateText.text = rate.formatted
+      this.playerRateText.contentDescription = this.playbackRateIsCurrentlySetTo()
+      this.playerRateSeekBar.contentDescription = this.playbackRateContentDescription()
+      this.menuPlaybackRateText?.text = rate.formatted
+    } finally {
+      this.playerRateSeekBarChangingProgrammatically = false
+    }
   }
 
   @UiThread
@@ -823,9 +1062,7 @@ class PlayerFragment : PlayerBaseFragment() {
       this.playbackRateContentDescription()
     this.menuPlaybackRateText =
       this.menuPlaybackRate.actionView?.findViewById(R.id.player_menu_playback_rate_text)
-
-    this.menuPlaybackRateText?.text =
-      PlayerPlaybackRateAdapter.textOfRate(PlayerModel.playbackRate)
+    this.menuPlaybackRateText?.text = PlayerModel.playbackRate.formatted
 
     /*
      * On API versions older than 23, playback rate changes will have no effect. There is no
@@ -878,15 +1115,19 @@ class PlayerFragment : PlayerBaseFragment() {
     return builder.toString()
   }
 
+  private fun playbackRateIsCurrentlySetTo(): String {
+    val builder = java.lang.StringBuilder(128)
+    builder.append(this.resources.getString(R.string.audiobook_accessibility_playback_speed_currently))
+    builder.append(" ")
+    builder.append(PlayerModel.playbackRate.formatted)
+    return builder.toString()
+  }
+
   private fun playbackRateContentDescription(): String {
     val builder = java.lang.StringBuilder(128)
     builder.append(this.resources.getString(R.string.audiobook_accessibility_menu_playback_speed_icon))
     builder.append(". ")
-    builder.append(this.resources.getString(R.string.audiobook_accessibility_playback_speed_currently))
-    builder.append(" ")
-    builder.append(
-      PlayerPlaybackRateAdapter.contentDescriptionOfRate(this.resources, PlayerModel.playbackRate)
-    )
+    builder.append(this.playbackRateIsCurrentlySetTo())
     return builder.toString()
   }
 
