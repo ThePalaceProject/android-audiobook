@@ -51,7 +51,7 @@ class FindawayAdapter(
 
   @Volatile
   private var currentPlaybackRateField: PlayerPlaybackRate =
-    PlayerPlaybackRate.NORMAL_TIME
+    PlayerPlaybackRate(1.0)
 
   val currentPlaybackRate: PlayerPlaybackRate
     get() = this.currentPlaybackRateField
@@ -341,28 +341,10 @@ class FindawayAdapter(
   private fun playbackRateFromSpeed(
     speed: Float?
   ): PlayerPlaybackRate {
-    fun almostEqual(
-      value: Float,
-      other: Float
-    ): Boolean {
-      return Math.abs(value - other) < 0.1
-    }
-
     if (speed != null) {
-      if (almostEqual(speed, 0.75f)) {
-        return PlayerPlaybackRate.THREE_QUARTERS_TIME
-      }
-      if (almostEqual(speed, 1.25f)) {
-        return PlayerPlaybackRate.ONE_AND_A_QUARTER_TIME
-      }
-      if (almostEqual(speed, 1.5f)) {
-        return PlayerPlaybackRate.ONE_AND_A_HALF_TIME
-      }
-      if (almostEqual(speed, 2.0f)) {
-        return PlayerPlaybackRate.DOUBLE_TIME
-      }
+      return PlayerPlaybackRate(speed.toDouble())
     }
-    return PlayerPlaybackRate.NORMAL_TIME
+    return PlayerPlaybackRate(1.0)
   }
 
   private fun onPlaybackEventBufferingEnded() {

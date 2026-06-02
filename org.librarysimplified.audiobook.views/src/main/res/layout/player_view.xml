@@ -76,6 +76,7 @@
         android:layout_marginEnd="16dp"
         android:progress="0"
         android:scaleY="2"
+        android:nextFocusDown="@id/player_play_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/player_remaining_book_time" />
@@ -131,6 +132,8 @@
             android:layout_height="64dp"
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/audiobook_accessibility_play"
+            android:nextFocusUp="@id/player_progress"
+            android:nextFocusDown="@id/playerBottomSheet"
             android:src="@drawable/baseline_play_arrow_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -297,5 +300,34 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:text="Very, very, very long placeholder text that should never be seen in practice." />
+
+    <View
+        android:id="@+id/playerBottomSheetDarken"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#7f000000"
+        android:elevation="10dp"
+        android:clickable="true"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        tools:visibility="gone" />
+
+    <!-- Bottom sheet. -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="20dp">
+
+        <org.librarysimplified.audiobook.views.PlayerBottomSheet
+            android:id="@+id/playerBottomSheet"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <include layout="@layout/player_rate2" />
+        </org.librarysimplified.audiobook.views.PlayerBottomSheet>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

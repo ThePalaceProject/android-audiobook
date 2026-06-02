@@ -34,7 +34,6 @@ import org.librarysimplified.audiobook.api.PlayerPlaybackIntention
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_PLAYING
 import org.librarysimplified.audiobook.api.PlayerPlaybackIntention.SHOULD_BE_STOPPED
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate
-import org.librarysimplified.audiobook.api.PlayerPlaybackRate.NORMAL_TIME
 import org.librarysimplified.audiobook.api.PlayerPlaybackStatus
 import org.librarysimplified.audiobook.api.PlayerPosition
 import org.librarysimplified.audiobook.api.PlayerReadingOrderItemDownloadStatus
@@ -99,7 +98,7 @@ class ExoAudioBookPlayer private constructor(
 
   @Volatile
   private var currentPlaybackRate: PlayerPlaybackRate =
-    NORMAL_TIME
+    PlayerPlaybackRate(1.0)
 
   /**
    * The current intended playback target. This refers to a reading order item and an offset
