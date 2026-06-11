@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -59,6 +60,13 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
   private val logger =
     LoggerFactory.getLogger(ExamplePlayerActivity::class.java)
 
+  private val backCallback =
+    object : OnBackPressedCallback(true) {
+      override fun handleOnBackPressed() {
+        handleBack()
+      }
+    }
+
   private var fragmentNow: Fragment = ExampleFragmentError()
   private var subscriptions: CompositeDisposable = CompositeDisposable()
 
@@ -88,6 +96,11 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
     PlayerBluetoothWatcher.enable(ExampleApplication.application)
     PlayerFocusWatcher.enable(ExampleApplication.application)
+
+    this.onBackPressedDispatcher.addCallback(
+      this,
+      this.backCallback
+    )
   }
 
   override fun onStop() {
@@ -114,8 +127,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
     fragment.show(this.supportFragmentManager, fragment.tag)
   }
 
-  @Deprecated("Deprecated in Java")
-  override fun onBackPressed() {
+  private fun handleBack() {
     return when (val f = this.fragmentNow) {
       is ExampleFragmentError -> {
         this.close()
@@ -130,7 +142,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       is ExampleFragmentSelectBook -> {
-        super.onBackPressed()
+        this.finish()
       }
 
       is PlayerBaseFragment -> {
@@ -143,10 +155,6 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
             this.switchFragment(PlayerFragment())
           }
         }
-      }
-
-      null -> {
-        super.onBackPressed()
       }
 
       else -> {
@@ -181,8 +189,9 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
         PlayerUIThread.runOnUIThread {
           try {
-            Toast.makeText(this, "" +
-              "Created bookmark",
+            Toast.makeText(
+              this, "" +
+                "Created bookmark",
               Toast.LENGTH_LONG
             ).show()
           } catch (e: Throwable) {
@@ -207,8 +216,9 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
         PlayerUIThread.runOnUIThread {
           try {
-            Toast.makeText(this, "" +
-              "Deleted bookmark",
+            Toast.makeText(
+              this, "" +
+                "Deleted bookmark",
               Toast.LENGTH_LONG
             ).show()
           } catch (e: Throwable) {
@@ -290,7 +300,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         if (manifest != null) {
           PlayerModel.setCoverImage(
             BitmapFactory.decodeResource(
-              resources,
+              this.resources,
               R.drawable.example_cover
             )
           )
@@ -301,8 +311,9 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         val start = state.positionOnOpen
         if (start != null) {
           try {
-            Toast.makeText(this, "" +
-              "Starting at saved position: ${start.readingOrderID.text} ${start.offsetMilliseconds.value}",
+            Toast.makeText(
+              this, "" +
+                "Starting at saved position: ${start.readingOrderID.text} ${start.offsetMilliseconds.value}",
               Toast.LENGTH_LONG
             ).show()
           } catch (e: Throwable) {
@@ -355,7 +366,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
           Toast.makeText(
             this,
             "In a real application, a login screen would have opened here.",
-            Toast.LENGTH_LONG)
+            Toast.LENGTH_LONG
+          )
             .show()
         }
       }
@@ -371,8 +383,9 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
     PlayerUIThread.runOnUIThread {
       try {
-        Toast.makeText(this, "" +
-          "Time tracked: ${time.duration.toSeconds()} (Total seconds: ${ExampleTimeTracking.timeSecondsTracked})",
+        Toast.makeText(
+          this, "" +
+            "Time tracked: ${time.duration.toSeconds()} (Total seconds: ${ExampleTimeTracking.timeSecondsTracked})",
           Toast.LENGTH_LONG
         ).show()
       } catch (e: Throwable) {

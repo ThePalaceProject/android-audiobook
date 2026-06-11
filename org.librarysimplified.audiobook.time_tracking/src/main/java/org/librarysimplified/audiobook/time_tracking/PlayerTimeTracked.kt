@@ -9,6 +9,7 @@ import java.util.UUID
  * A segment of time the user spent listening to a book.
  */
 
+@ConsistentCopyVisibility
 data class PlayerTimeTracked private constructor(
   val id: UUID,
   val bookTrackingId: PlayerPalaceID,

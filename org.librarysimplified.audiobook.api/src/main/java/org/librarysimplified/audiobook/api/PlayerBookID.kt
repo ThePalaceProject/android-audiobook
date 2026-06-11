@@ -8,6 +8,7 @@ import java.security.MessageDigest
  * consisting only of characters that are safe for use in filenames.
  */
 
+@ConsistentCopyVisibility
 data class PlayerBookID private constructor(val value: String) {
 
   companion object {
