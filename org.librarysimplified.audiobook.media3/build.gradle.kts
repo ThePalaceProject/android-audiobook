@@ -1,6 +1,9 @@
-import com.android.build.gradle.internal.tasks.factory.dependsOn
 import java.io.FileOutputStream
 import java.util.Properties
+
+plugins {
+    id("org.thepalaceproject.build.aar")
+}
 
 dependencies {
     coreLibraryDesugaring(libs.android.desugaring)
@@ -41,12 +44,15 @@ dependencies {
  * Generate a properties file based on various settings.
  */
 
-project.task("GeneratePropertiesResources") {
-    val directory = File(project.projectDir, "src/main/resources/org/librarysimplified/audiobook/media3").absoluteFile
+project.tasks.register("GeneratePropertiesResources", Task::class.java) {
+    val subdir =
+        "src/main/resources/org/librarysimplified/audiobook/media3"
+    val directory =
+        File("${project.projectDir}/$subdir")
+
     directory.mkdirs()
     val file = File(directory, "provider.properties")
     file.createNewFile()
-
     val properties = Properties()
     val versionName: String = project.version as String
     val major = versionName.split(".")[0]
@@ -58,5 +64,6 @@ project.task("GeneratePropertiesResources") {
     properties.store(FileOutputStream(file), "Automatically generated - DO NOT EDIT")
 }
 
-project.tasks.named("preBuild")
-    .dependsOn("GeneratePropertiesResources")
+project.tasks.named("preBuild") {
+    this.dependsOn("GeneratePropertiesResources")
+}

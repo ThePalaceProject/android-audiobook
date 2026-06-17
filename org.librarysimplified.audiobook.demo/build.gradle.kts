@@ -1,3 +1,7 @@
+plugins {
+    id("org.thepalaceproject.build.apk")
+}
+
 val lcpDRM =
     project.findProperty("org.thepalaceproject.lcp.enabled") == "true"
 val findawayDRM =

@@ -1,3 +1,6 @@
+plugins {
+    id("org.thepalaceproject.build.aar")
+}
 val dependencyObjects = listOf(
     libs.androidx.activity,
     libs.androidx.activity.ktx,
@@ -60,6 +63,7 @@ val dependencyObjects = listOf(
     libs.junit.jupiter.vintage,
     libs.junit.platform.commons,
     libs.junit.platform.engine,
+    libs.junit.platform.launcher,
     libs.kabstand,
     libs.kotlin.reflect,
     libs.kotlin.stdlib,
@@ -134,6 +138,6 @@ dependencies {
 }
 
 afterEvaluate {
-    tasks.matching { task -> task.name.contains("UnitTest") }
+    tasks.matching { task -> task.name.contains("Test") }
         .forEach { task -> task.enabled = true }
 }
