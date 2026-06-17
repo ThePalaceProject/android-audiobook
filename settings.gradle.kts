@@ -134,6 +134,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "org.librarysimplified.audiobook"
 
+includeBuild("palace-build-conventions")
+
 include(":org.librarysimplified.audiobook.api")
 include(":org.librarysimplified.audiobook.demo")
 include(":org.librarysimplified.audiobook.downloads")
