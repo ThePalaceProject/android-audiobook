@@ -46,6 +46,8 @@ import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_1
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_1_25
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_1_5
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_2
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_2_5
+import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_3
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_MAX
 import org.librarysimplified.audiobook.api.PlayerPlaybackRate.Companion.RATE_MIN
 import org.librarysimplified.audiobook.api.PlayerSleepTimer
@@ -82,6 +84,8 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var playerRateMinus: View
   private lateinit var playerRatePlus: View
   private lateinit var playerRateText: TextView
+  private lateinit var playerRate3p0: Button
+  private lateinit var playerRate2p5: Button
   private lateinit var playerRate2p0: Button
   private lateinit var playerRate1p5: Button
   private lateinit var playerRate1p25: Button
@@ -238,6 +242,10 @@ class PlayerFragment : PlayerBaseFragment() {
       this.bottomSheet.findViewById(R.id.playerRate1p25)
     this.playerRate1p5 =
       this.bottomSheet.findViewById(R.id.playerRate1p5)
+    this.playerRate2p5 =
+      this.bottomSheet.findViewById(R.id.playerRate2p5)
+    this.playerRate3p0 =
+      this.bottomSheet.findViewById(R.id.playerRate3)
     this.playerRate2p0 =
       this.bottomSheet.findViewById(R.id.playerRate2p0)
     this.playerRatePlus =
@@ -255,6 +263,10 @@ class PlayerFragment : PlayerBaseFragment() {
       this.getString(R.string.audiobook_accessibility_playback_speed_set_to, RATE_1_5.formatted)
     this.playerRate2p0.contentDescription =
       this.getString(R.string.audiobook_accessibility_playback_speed_set_to, RATE_2.formatted)
+    this.playerRate2p5.contentDescription =
+      this.getString(R.string.audiobook_accessibility_playback_speed_set_to, PlayerPlaybackRate.RATE_2_5.formatted)
+    this.playerRate3p0.contentDescription =
+      this.getString(R.string.audiobook_accessibility_playback_speed_set_to, PlayerPlaybackRate.RATE_3.formatted)
 
     this.playerRate0p5.setOnClickListener {
       PlayerModel.setPlaybackRate(RATE_0_5)
@@ -270,6 +282,12 @@ class PlayerFragment : PlayerBaseFragment() {
     }
     this.playerRate2p0.setOnClickListener {
       PlayerModel.setPlaybackRate(RATE_2)
+    }
+    this.playerRate2p5.setOnClickListener {
+      PlayerModel.setPlaybackRate(RATE_2_5)
+    }
+    this.playerRate3p0.setOnClickListener {
+      PlayerModel.setPlaybackRate(RATE_3)
     }
     this.playerRatePlus.setOnClickListener {
       PlayerModel.setPlaybackRate(
@@ -294,6 +312,8 @@ class PlayerFragment : PlayerBaseFragment() {
         this.playerRate1p0,
         this.playerRate1p5,
         this.playerRate2p0,
+        this.playerRate2p5,
+        this.playerRate3p0,
         this.playerRateMinus,
         this.playerRatePlus,
         this.playerRateSeekBar,

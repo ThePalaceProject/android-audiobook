@@ -18,8 +18,10 @@ data class PlayerPlaybackRate(
     val RATE_1_25 = PlayerPlaybackRate(1.25)
     val RATE_1_5 = PlayerPlaybackRate(1.5)
     val RATE_2 = PlayerPlaybackRate(2.0)
+    val RATE_2_5 = PlayerPlaybackRate(2.5)
+    val RATE_3 = PlayerPlaybackRate(3.0)
 
     val RATE_MIN = RATE_0_5
-    val RATE_MAX = RATE_2
+    val RATE_MAX = RATE_3
   }
 }
