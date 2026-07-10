@@ -685,7 +685,7 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2026-06-25T12:55:15+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="24.1.0">
+    <c:release date="2026-07-10T12:06:22+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="24.1.0">
       <c:changes>
         <c:change date="2026-06-02T00:00:00+00:00" summary="Move playback rates to a bottom drawer.">
           <c:tickets>
@@ -697,7 +697,7 @@
             <c:ticket id="PP-4426"/>
           </c:tickets>
         </c:change>
-        <c:change date="2026-06-25T12:55:15+00:00" summary="Allow playback rates as high as 3.0x.">
+        <c:change date="2026-06-25T00:00:00+00:00" summary="Allow playback rates as high as 3.0x.">
           <c:tickets>
             <c:ticket id="PP-4519"/>
           </c:tickets>
