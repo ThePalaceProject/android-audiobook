@@ -123,11 +123,15 @@ object PlayerModel {
   @Volatile
   private lateinit var application: Application
 
-  private val seekIncrementAttributeSrc =
+  private val seekIncrementForwardAttributeSrc =
+    this.attributes.withValue(30_000L)
+  private val seekIncrementBackwardAttributeSrc =
     this.attributes.withValue(30_000L)
 
-  val seekIncrementMs: AttributeReadableType<Long> =
-    this.seekIncrementAttributeSrc
+  val seekIncrementForwardMs: AttributeReadableType<Long> =
+    this.seekIncrementForwardAttributeSrc
+  val seekIncrementBackwardMs: AttributeReadableType<Long> =
+    this.seekIncrementBackwardAttributeSrc
 
   /**
    * The cover image for the audio book.
@@ -1261,11 +1265,11 @@ object PlayerModel {
   }
 
   fun skipForward() {
-    PlayerReference.opSkipPlayhead(this.seekIncrement())
+    PlayerReference.opSkipPlayhead(this.seekIncrementForward())
   }
 
   fun skipBack() {
-    PlayerReference.opSkipPlayhead(-this.seekIncrement())
+    PlayerReference.opSkipPlayhead(-this.seekIncrementBackward())
   }
 
   fun movePlayheadTo(playerPosition: PlayerPosition) {
@@ -1325,8 +1329,12 @@ object PlayerModel {
     this.application = application
   }
 
-  fun seekIncrement(): Long {
-    return seekIncrementMs.get()
+  fun seekIncrementForward(): Long {
+    return seekIncrementForwardMs.get()
+  }
+
+  fun seekIncrementBackward(): Long {
+    return seekIncrementBackwardMs.get()
   }
 
   fun chapterTitleFor(

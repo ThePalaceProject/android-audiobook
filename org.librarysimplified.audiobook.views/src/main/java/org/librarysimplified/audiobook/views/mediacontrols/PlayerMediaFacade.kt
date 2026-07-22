@@ -615,7 +615,7 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getSeekBackIncrement(): Long {
-    return PlayerModel.seekIncrement()
+    return PlayerModel.seekIncrementBackward()
   }
 
   override fun seekBack() {
@@ -623,7 +623,7 @@ object PlayerMediaFacade : Player {
   }
 
   override fun getSeekForwardIncrement(): Long {
-    return PlayerModel.seekIncrement()
+    return PlayerModel.seekIncrementForward()
   }
 
   override fun seekForward() {

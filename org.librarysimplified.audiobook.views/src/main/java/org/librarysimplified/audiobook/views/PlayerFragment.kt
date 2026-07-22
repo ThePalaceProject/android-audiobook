@@ -364,9 +364,16 @@ class PlayerFragment : PlayerBaseFragment() {
     })
 
     run {
-      val sub = PlayerModel.seekIncrementMs.subscribe { oldMs, newMs ->
+      val sub = PlayerModel.seekIncrementBackwardMs.subscribe { _, newMs ->
         val sec = TimeUnit.SECONDS.convert(newMs, TimeUnit.MILLISECONDS)
         this.playerSkipBackwardButtonText.setText(sec.toString())
+      }
+      this.subscriptions.add(Disposables.fromAction(sub::close))
+    }
+
+    run {
+      val sub = PlayerModel.seekIncrementForwardMs.subscribe { _, newMs ->
+        val sec = TimeUnit.SECONDS.convert(newMs, TimeUnit.MILLISECONDS)
         this.playerSkipForwardButtonText.setText(sec.toString())
       }
       this.subscriptions.add(Disposables.fromAction(sub::close))

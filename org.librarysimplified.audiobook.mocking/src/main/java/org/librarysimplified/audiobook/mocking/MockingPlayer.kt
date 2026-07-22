@@ -74,16 +74,6 @@ class MockingPlayer(
     this.callEvents.onNext("pause $reason")
   }
 
-  override fun skipForward() {
-    this.log.debug("skipForward")
-    this.callEvents.onNext("skipForward")
-  }
-
-  override fun skipBack() {
-    this.log.debug("skipBack")
-    this.callEvents.onNext("skipBack")
-  }
-
   override fun skipPlayhead(milliseconds: Long) {
     this.log.debug("skipPlayhead {}", milliseconds)
     this.callEvents.onNext("skipPlayhead $milliseconds")
