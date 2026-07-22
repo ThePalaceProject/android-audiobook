@@ -685,7 +685,7 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2026-07-10T13:08:17+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="24.1.0">
+    <c:release date="2026-07-10T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="24.1.0">
       <c:changes>
         <c:change date="2026-06-02T00:00:00+00:00" summary="Move playback rates to a bottom drawer.">
           <c:tickets>
@@ -700,6 +700,15 @@
         <c:change date="2026-06-25T00:00:00+00:00" summary="Allow playback rates as high as 3.0x.">
           <c:tickets>
             <c:ticket id="PP-4519"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2026-07-22T13:56:39+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="24.2.0">
+      <c:changes>
+        <c:change date="2026-07-22T13:56:39+00:00" summary="Skip interval is now configurable.">
+          <c:tickets>
+            <c:ticket id="PP-4713"/>
           </c:tickets>
         </c:change>
       </c:changes>

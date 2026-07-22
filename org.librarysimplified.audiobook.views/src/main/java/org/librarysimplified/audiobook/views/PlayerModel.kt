@@ -6,6 +6,8 @@ import android.media.AudioManager
 import androidx.annotation.GuardedBy
 import androidx.annotation.UiThread
 import androidx.core.content.getSystemService
+import com.io7m.jattribute.core.AttributeReadableType
+import com.io7m.jattribute.core.Attributes
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
@@ -88,6 +90,12 @@ import java.util.concurrent.Executors
 
 object PlayerModel {
 
+  private val logger =
+    LoggerFactory.getLogger(PlayerModel::class.java)
+
+  private val attributes =
+    Attributes.create { ex -> this.logger.debug("Attribute error: ", ex) }
+
   /**
    * The last-read position of the current book when the book was opened.
    */
@@ -115,6 +123,12 @@ object PlayerModel {
   @Volatile
   private lateinit var application: Application
 
+  private val seekIncrementAttributeSrc =
+    this.attributes.withValue(30_000L)
+
+  val seekIncrementMs: AttributeReadableType<Long> =
+    this.seekIncrementAttributeSrc
+
   /**
    * The cover image for the audio book.
    */
@@ -130,9 +144,6 @@ object PlayerModel {
     } catch (_: Exception) {
       RATE_1
     }
-
-  private val logger =
-    LoggerFactory.getLogger(PlayerModel::class.java)
 
   private val downloadExecutor =
     Executors.newFixedThreadPool(1) { r: Runnable ->
@@ -1315,7 +1326,7 @@ object PlayerModel {
   }
 
   fun seekIncrement(): Long {
-    return 30_000L
+    return seekIncrementMs.get()
   }
 
   fun chapterTitleFor(

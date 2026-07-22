@@ -93,26 +93,6 @@ interface PlayerType : AutoCloseable {
   fun skipPlayhead(milliseconds: Long)
 
   /**
-   * Skip forward 30 seconds and start playback
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
-   */
-
-  fun skipForward() {
-    this.skipPlayhead(30_000L)
-  }
-
-  /**
-   * Skip back 30 seconds and start playback
-   *
-   * @throws java.lang.IllegalStateException If and only if the player is closed
-   */
-
-  fun skipBack() {
-    this.skipPlayhead(-30_000L)
-  }
-
-  /**
    * Move playhead but do not change whether the player is playing or not. This is useful for state
    * restoration where we want to prepare for playback at a specific point, but playback has not yet
    * been requested.

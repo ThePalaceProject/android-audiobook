@@ -18,6 +18,7 @@ import android.widget.TextView
 import androidx.annotation.UiThread
 import androidx.appcompat.widget.Toolbar
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposables
 import org.joda.time.Duration
 import org.librarysimplified.audiobook.api.PlayerDownloadProgress
 import org.librarysimplified.audiobook.api.PlayerDownloadTaskStatus
@@ -71,6 +72,7 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCOpen
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
 
@@ -117,6 +119,8 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var playerRemainingBookTime: TextView
   private lateinit var playerSkipBackwardButton: ImageView
   private lateinit var playerSkipForwardButton: ImageView
+  private lateinit var playerSkipBackwardButtonText: TextView
+  private lateinit var playerSkipForwardButtonText: TextView
   private lateinit var playerStatusArea: View
   private lateinit var playerStatusText: TextView
   private lateinit var playerStatusIcon: ImageView
@@ -171,8 +175,12 @@ class PlayerFragment : PlayerBaseFragment() {
       view.findViewById(R.id.player_play_button)!!
     this.playerSkipForwardButton =
       view.findViewById(R.id.player_jump_forwards)
+    this.playerSkipForwardButtonText =
+      view.findViewById(R.id.player_jump_forwards_text)
     this.playerSkipBackwardButton =
       view.findViewById(R.id.player_jump_backwards)
+    this.playerSkipBackwardButtonText =
+      view.findViewById(R.id.player_jump_backwards_text)
     this.playerTimeCurrent =
       view.findViewById(R.id.player_time)!!
     this.playerTimeRemaining =
@@ -305,7 +313,7 @@ class PlayerFragment : PlayerBaseFragment() {
     }
 
     this.playerRateDrawerViews =
-      setOf<View>(
+      setOf(
         this.playerRate,
         this.playerRate0p5,
         this.playerRate1p25,
@@ -354,6 +362,16 @@ class PlayerFragment : PlayerBaseFragment() {
     this.subscriptions.add(PlayerObservableAuthorizationHandler.credentialsEvents.subscribe { event ->
       this.onOnCredentialsValid(event)
     })
+
+    run {
+      val sub = PlayerModel.seekIncrementMs.subscribe { oldMs, newMs ->
+        val sec = TimeUnit.SECONDS.convert(newMs, TimeUnit.MILLISECONDS)
+        this.playerSkipBackwardButtonText.setText(sec.toString())
+        this.playerSkipForwardButtonText.setText(sec.toString())
+      }
+      this.subscriptions.add(Disposables.fromAction(sub::close))
+    }
+
     this.setPlayPauseButtonAppropriately()
 
     /*

@@ -74,9 +74,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
+        android:nextFocusDown="@id/player_play_button"
         android:progress="0"
         android:scaleY="2"
-        android:nextFocusDown="@id/player_play_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/player_remaining_book_time" />
@@ -131,7 +131,10 @@
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginBottom="16dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
             android:contentDescription="@string/audiobook_accessibility_play"
+            android:focusable="true"
             android:nextFocusUp="@id/player_progress"
             android:nextFocusDown="@id/playerBottomSheet"
             android:src="@drawable/baseline_play_arrow_24"
@@ -146,12 +149,33 @@
             android:layout_height="64dp"
             android:layout_marginEnd="32dp"
             android:layout_marginBottom="16dp"
-            android:contentDescription="@string/audiobook_accessibility_backward_15"
-            android:src="@drawable/round_replay_30_24"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/circle_left"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/player_play_button"
             app:layout_constraintStart_toStartOf="parent"
             app:tint="@color/PalacePrimaryForegroundColor" />
+
+        <TextView
+            android:id="@+id/player_jump_backwards_text"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:autoSizeMaxTextSize="20sp"
+            android:autoSizeTextType="uniform"
+            android:clickable="false"
+            android:focusable="false"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            android:textStyle="bold"
+            android:translationY="3dp"
+            app:layout_constraintBottom_toBottomOf="@id/player_jump_backwards"
+            app:layout_constraintEnd_toEndOf="@id/player_jump_backwards"
+            app:layout_constraintStart_toStartOf="@id/player_jump_backwards"
+            app:layout_constraintTop_toTopOf="@id/player_jump_backwards"
+            app:tint="@color/PalacePrimaryForegroundColor"
+            tools:text="30" />
 
         <ImageView
             android:id="@+id/player_jump_forwards"
@@ -159,12 +183,33 @@
             android:layout_height="64dp"
             android:layout_marginStart="32dp"
             android:layout_marginBottom="16dp"
-            android:contentDescription="@string/audiobook_accessibility_forward_15"
-            android:src="@drawable/round_forward_30_24"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/circle_right"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/player_play_button"
             app:tint="@color/PalacePrimaryForegroundColor" />
+
+        <TextView
+            android:id="@+id/player_jump_forwards_text"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:autoSizeMaxTextSize="20sp"
+            android:autoSizeTextType="uniform"
+            android:clickable="false"
+            android:focusable="false"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            android:textStyle="bold"
+            android:translationY="3dp"
+            app:layout_constraintBottom_toBottomOf="@id/player_jump_forwards"
+            app:layout_constraintEnd_toEndOf="@id/player_jump_forwards"
+            app:layout_constraintStart_toStartOf="@id/player_jump_forwards"
+            app:layout_constraintTop_toTopOf="@id/player_jump_forwards"
+            app:tint="@color/PalacePrimaryForegroundColor"
+            tools:text="30" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -306,8 +351,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#7f000000"
-        android:elevation="10dp"
         android:clickable="true"
+        android:elevation="10dp"
         android:focusable="false"
         android:importantForAccessibility="no"
         tools:visibility="gone" />
