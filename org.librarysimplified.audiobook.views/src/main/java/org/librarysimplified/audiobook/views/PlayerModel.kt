@@ -1329,6 +1329,18 @@ object PlayerModel {
     this.application = application
   }
 
+  fun setSeekIncrementForwardMs(ms: Long) {
+    PlayerUIThread.runOnUIThread {
+      this.seekIncrementForwardAttributeSrc.set(ms)
+    }
+  }
+
+  fun setSeekIncrementBackwardMs(ms: Long) {
+    PlayerUIThread.runOnUIThread {
+      this.seekIncrementBackwardAttributeSrc.set(ms)
+    }
+  }
+
   fun seekIncrementForward(): Long {
     return seekIncrementForwardMs.get()
   }
