@@ -14,7 +14,6 @@ class MockingDownloadWholeBookTask(
   private val audioBook: MockingAudioBook,
   override val playbackURI: URI
 ) : PlayerDownloadWholeBookTaskType {
-
   override fun fetch() {
     this.audioBook.downloadTasks.forEach { task ->
       task.fetch()

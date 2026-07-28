@@ -11,7 +11,6 @@ import java.util.regex.Pattern
  */
 
 object PlayerManifestTOCs {
-
   fun createTOC(
     manifest: PlayerManifest,
     defaultTrackTitle: (Int) -> String
@@ -57,10 +56,6 @@ object PlayerManifestTOCs {
      *
      * 3. When we know which TOC item `u` falls within, we can get the relative offset of `u`
      *    by subtracting the absolute start time of the TOC item from `u`.
-     */
-
-    /*
-     * Recursively flatten the TOC, associating each item with its parent item.
      */
 
     val tocItemsFlattened = arrayListOf<TOCMember>()
@@ -329,9 +324,7 @@ object PlayerManifestTOCs {
   private val uriFragmentOffsetPattern =
     Pattern.compile("t=([0-9]+)")
 
-  private fun extractURIOffset(
-    uri: URI
-  ): URIWithOffset {
+  private fun extractURIOffset(uri: URI): URIWithOffset {
     val fragment =
       uri.fragment
     val withoutOffset =
@@ -436,11 +429,10 @@ object PlayerManifestTOCs {
     item: PlayerManifestReadingOrderItem,
     defaultTrackTitle: (Int) -> String,
     index: Int
-  ): String {
-    return if (!item.link.title.isNullOrBlank()) {
+  ): String =
+    if (!item.link.title.isNullOrBlank()) {
       item.link.title
     } else {
       defaultTrackTitle.invoke(index + 1)
     }
-  }
 }

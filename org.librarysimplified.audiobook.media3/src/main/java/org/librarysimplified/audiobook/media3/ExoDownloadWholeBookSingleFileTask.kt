@@ -25,19 +25,22 @@ internal class ExoDownloadWholeBookSingleFileTask(
   private val sharedState: SharedState,
   override val playbackURI: URI
 ) : PlayerDownloadTaskType {
-
   private val logger =
     LoggerFactory.getLogger(ExoDownloadWholeBookSingleFileTask::class.java)
 
   internal sealed class State {
     data object Initial : State()
+
     data class Failed(
       val message: String,
       val exception: Exception
     ) : State()
 
     data object Downloaded : State()
-    data class Downloading(val future: CompletableFuture<Unit>) : State()
+
+    data class Downloading(
+      val future: CompletableFuture<Unit>
+    ) : State()
   }
 
   internal class SharedState(
@@ -67,13 +70,9 @@ internal class ExoDownloadWholeBookSingleFileTask(
         }
       }
 
-    internal fun progress(): PlayerDownloadProgress {
-      return this.progressValue.get()
-    }
+    internal fun progress(): PlayerDownloadProgress = this.progressValue.get()
 
-    internal fun stateCurrent(): State {
-      return synchronized(this.stateLock) { this.state }
-    }
+    internal fun stateCurrent(): State = synchronized(this.stateLock) { this.state }
 
     internal fun stateSet(newState: State) {
       synchronized(this.stateLock) {
@@ -91,22 +90,32 @@ internal class ExoDownloadWholeBookSingleFileTask(
   }
 
   override val status: PlayerDownloadTaskStatus
-    get() = when (val s = this.stateGetCurrent()) {
-      State.Downloaded -> PlayerDownloadTaskStatus.IdleDownloaded
-      is State.Downloading -> PlayerDownloadTaskStatus.Downloading(
-        if (this.progress.value == 0.0) {
-          null
-        } else {
-          this.progress
+    get() =
+      when (val s = this.stateGetCurrent()) {
+        State.Downloaded -> {
+          PlayerDownloadTaskStatus.IdleDownloaded
         }
-      )
 
-      State.Initial -> PlayerDownloadTaskStatus.IdleNotDownloaded
-      is State.Failed -> PlayerDownloadTaskStatus.Failed(s.message, s.exception)
-    }
+        is State.Downloading -> {
+          PlayerDownloadTaskStatus.Downloading(
+            if (this.progress.value == 0.0) {
+              null
+            } else {
+              this.progress
+            }
+          )
+        }
 
-  private fun stateGetCurrent() =
-    this.sharedState.stateCurrent()
+        State.Initial -> {
+          PlayerDownloadTaskStatus.IdleNotDownloaded
+        }
+
+        is State.Failed -> {
+          PlayerDownloadTaskStatus.Failed(s.message, s.exception)
+        }
+      }
+
+  private fun stateGetCurrent() = this.sharedState.stateCurrent()
 
   override fun fetch() {
     this.logger.debug("[{}] fetch", this.readingOrderItem.id)
@@ -176,9 +185,7 @@ internal class ExoDownloadWholeBookSingleFileTask(
     }
   }
 
-  private fun onDeleteDownloading(
-    state: State.Downloading
-  ) {
+  private fun onDeleteDownloading(state: State.Downloading) {
     this.logger.debug("onDeleteDownloading")
 
     state.future.cancel(true)
@@ -186,9 +193,7 @@ internal class ExoDownloadWholeBookSingleFileTask(
     this.onDeleteDownloaded()
   }
 
-  private fun onDownloadFailed(
-    exception: Exception
-  ) {
+  private fun onDownloadFailed(exception: Exception) {
     this.logger.debug("onDownloadFailed: ", exception)
     this.readingOrderItem.setDownloadStatus(
       PlayerReadingOrderItemDownloadStatus.PlayerReadingOrderItemDownloadFailed(
@@ -199,9 +204,7 @@ internal class ExoDownloadWholeBookSingleFileTask(
     )
   }
 
-  private fun onDownloading(
-    progress: PlayerDownloadProgress
-  ) {
+  private fun onDownloading(progress: PlayerDownloadProgress) {
     this.logger.debug("onDownloading: {}", progress)
     this.sharedState.progressSet(progress)
     this.readingOrderItem.setDownloadStatus(
@@ -260,9 +263,7 @@ internal class ExoDownloadWholeBookSingleFileTask(
     return future
   }
 
-  private fun createDownloadingRequest(
-    future: CompletableFuture<Unit>
-  ) {
+  private fun createDownloadingRequest(future: CompletableFuture<Unit>) {
     this.sharedState.stateSet(State.Downloading(future))
     this.onBroadcastState()
 
@@ -276,8 +277,9 @@ internal class ExoDownloadWholeBookSingleFileTask(
           this@ExoDownloadWholeBookSingleFileTask.onDownloadCompleted()
         }
 
-        is CancellationException ->
+        is CancellationException -> {
           this@ExoDownloadWholeBookSingleFileTask.onDownloadCancelled()
+        }
 
         else -> {
           this@ExoDownloadWholeBookSingleFileTask.onDownloadFailed(Exception(exception))

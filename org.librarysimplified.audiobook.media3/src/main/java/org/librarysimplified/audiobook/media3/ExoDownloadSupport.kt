@@ -7,7 +7,6 @@ import java.net.URI
  */
 
 sealed class ExoDownloadSupport {
-
   /**
    * The entire book can be downloaded a single file from the given URI.
    */

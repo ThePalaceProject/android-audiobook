@@ -8,11 +8,8 @@ import org.librarysimplified.http.downloads.LSHTTPDownloadState.LSHTTPDownloadRe
 import org.librarysimplified.http.downloads.LSHTTPDownloadState.LSHTTPDownloadResult.DownloadFailed
 
 object ManifestFulfillmentEvents {
-
-  fun ofDownloadState(
-    state: LSHTTPDownloadState
-  ): ManifestFulfillmentEvent {
-    return when (state) {
+  fun ofDownloadState(state: LSHTTPDownloadState): ManifestFulfillmentEvent =
+    when (state) {
       is DownloadReceiving -> {
         ManifestFulfillmentEvent(
           "Downloading: ${state.receivedSize} / ${state.expectedSize} (${state.bytesPerSecond} B/s)"
@@ -43,5 +40,4 @@ object ManifestFulfillmentEvents {
         ManifestFulfillmentEvent("Download failed: Unacceptable mime type.")
       }
     }
-  }
 }

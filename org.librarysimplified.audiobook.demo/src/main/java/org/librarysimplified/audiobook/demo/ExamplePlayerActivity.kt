@@ -56,7 +56,6 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity) {
-
   private val logger =
     LoggerFactory.getLogger(ExamplePlayerActivity::class.java)
 
@@ -118,7 +117,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
   private fun switchFragment(fragment: Fragment) {
     this.fragmentNow = fragment
-    this.supportFragmentManager.beginTransaction()
+    this.supportFragmentManager
+      .beginTransaction()
       .replace(R.id.example_player_fragment_holder, fragment)
       .commit()
   }
@@ -127,8 +127,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
     fragment.show(this.supportFragmentManager, fragment.tag)
   }
 
-  private fun handleBack() {
-    return when (val f = this.fragmentNow) {
+  private fun handleBack() =
+    when (val f = this.fragmentNow) {
       is ExampleFragmentError -> {
         this.close()
       }
@@ -161,7 +161,6 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         throw IllegalStateException("Unrecognized fragment: $f")
       }
     }
-  }
 
   @UiThread
   private fun onPlayerEvent(event: PlayerEvent) {
@@ -189,11 +188,13 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
         PlayerUIThread.runOnUIThread {
           try {
-            Toast.makeText(
-              this, "" +
-                "Created bookmark",
-              Toast.LENGTH_LONG
-            ).show()
+            Toast
+              .makeText(
+                this,
+                "" +
+                  "Created bookmark",
+                Toast.LENGTH_LONG
+              ).show()
           } catch (e: Throwable) {
             // Don't care
           }
@@ -216,11 +217,13 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
         PlayerUIThread.runOnUIThread {
           try {
-            Toast.makeText(
-              this, "" +
-                "Deleted bookmark",
-              Toast.LENGTH_LONG
-            ).show()
+            Toast
+              .makeText(
+                this,
+                "" +
+                  "Deleted bookmark",
+                Toast.LENGTH_LONG
+              ).show()
           } catch (e: Throwable) {
             // Don't care
           }
@@ -311,11 +314,13 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         val start = state.positionOnOpen
         if (start != null) {
           try {
-            Toast.makeText(
-              this, "" +
-                "Starting at saved position: ${start.readingOrderID.text} ${start.offsetMilliseconds.value}",
-              Toast.LENGTH_LONG
-            ).show()
+            Toast
+              .makeText(
+                this,
+                "" +
+                  "Starting at saved position: ${start.readingOrderID.text} ${start.offsetMilliseconds.value}",
+                Toast.LENGTH_LONG
+              ).show()
           } catch (e: Throwable) {
             // Don't care
           }
@@ -330,8 +335,8 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
     }
   }
 
-  private fun onPlayerViewCommand(command: PlayerViewCommand) {
-    return when (command) {
+  private fun onPlayerViewCommand(command: PlayerViewCommand) =
+    when (command) {
       PlayerViewNavigationTOCClose -> {
         this.switchFragment(PlayerFragment())
       }
@@ -363,31 +368,30 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
       PlayerViewCommand.PlayerViewLoginOpen -> {
         PlayerUIThread.runOnUIThread {
-          Toast.makeText(
-            this,
-            "In a real application, a login screen would have opened here.",
-            Toast.LENGTH_LONG
-          )
-            .show()
+          Toast
+            .makeText(
+              this,
+              "In a real application, a login screen would have opened here.",
+              Toast.LENGTH_LONG
+            ).show()
         }
       }
     }
-  }
 
-  private fun onTimeTracked(
-    time: PlayerTimeTracked
-  ) {
+  private fun onTimeTracked(time: PlayerTimeTracked) {
     this.logger.debug("TimeTracked: {}", time)
 
     ExampleTimeTracking.timeSecondsTracked += time.duration.toSeconds()
 
     PlayerUIThread.runOnUIThread {
       try {
-        Toast.makeText(
-          this, "" +
-            "Time tracked: ${time.duration.toSeconds()} (Total seconds: ${ExampleTimeTracking.timeSecondsTracked})",
-          Toast.LENGTH_LONG
-        ).show()
+        Toast
+          .makeText(
+            this,
+            "" +
+              "Time tracked: ${time.duration.toSeconds()} (Total seconds: ${ExampleTimeTracking.timeSecondsTracked})",
+            Toast.LENGTH_LONG
+          ).show()
       } catch (e: Throwable) {
         // Don't care
       }

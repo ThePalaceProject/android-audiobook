@@ -12,7 +12,6 @@ import net.jcip.annotations.ThreadSafe
 
 @ThreadSafe
 interface PlayerSleepTimerType {
-
   /**
    * Start the timer. If a duration has been given, the timer will count down over the given duration
    * and will periodically publish events giving the remaining time. If no duration is given, the

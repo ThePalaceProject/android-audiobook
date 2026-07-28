@@ -9,7 +9,6 @@ import java.io.Closeable
  */
 
 interface LicenseCheckType : Closeable {
-
   /**
    * An observable stream of status events representing the license check in progress.
    */

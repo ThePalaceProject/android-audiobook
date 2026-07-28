@@ -51,7 +51,6 @@ import java.util.zip.ZipOutputStream
 import kotlin.coroutines.cancellation.CancellationException
 
 object LCPDownloads {
-
   private val logger =
     LoggerFactory.getLogger(LCPDownloads::class.java)
 
@@ -99,10 +98,8 @@ object LCPDownloads {
    * Parse a license file.
    */
 
-  fun parseLicense(
-    data: ByteArray
-  ): PlayerResult<LCPLicenseAndBytes, ManifestFulfillmentError> {
-    return when (val result = LicenseDocument.fromBytes(data)) {
+  fun parseLicense(data: ByteArray): PlayerResult<LCPLicenseAndBytes, ManifestFulfillmentError> =
+    when (val result = LicenseDocument.fromBytes(data)) {
       is Try.Failure -> {
         this.logger.debug("Failed to parse LCP license: {}", result.value.message)
         PlayerResult.Failure(
@@ -124,7 +121,6 @@ object LCPDownloads {
         )
       }
     }
-  }
 
   /**
    * Download an LCP publication.
@@ -282,19 +278,20 @@ object LCPDownloads {
     license: LicenseDocument,
     authorizationHandler: PlayerAuthorizationHandlerType,
     receiver: (ManifestFulfillmentEvent) -> Unit
-  ): PlayerResult<ManifestFulfilled, ManifestFulfillmentError> {
-    return runBlocking {
-      when (val r = this@LCPDownloads.downloadManifestTextFromLicenseFile(
-        context,
-        license,
-        authorizationHandler,
-        receiver
-      )) {
+  ): PlayerResult<ManifestFulfilled, ManifestFulfillmentError> =
+    runBlocking {
+      when (val r =
+        this@LCPDownloads.downloadManifestTextFromLicenseFile(
+          context,
+          license,
+          authorizationHandler,
+          receiver
+        )
+      ) {
         is PlayerResult.Failure -> PlayerResult.Failure(r.failure)
         is PlayerResult.Success -> r
       }
     }
-  }
 
   private suspend fun downloadManifestTextFromLicenseFile(
     context: Application,
@@ -324,40 +321,44 @@ object LCPDownloads {
       authorizationHandler.onConfigureAuthorizationFor(link, MANIFEST)
 
     val httpClient =
-      DefaultHttpClient(callback = object : DefaultHttpClient.Callback {
-        override suspend fun onRecoverRequest(
-          request: HttpRequest,
-          error: HttpError
-        ): HttpTry<HttpRequest> {
-          this@LCPDownloads.logger.debug("HTTP request failed ({})", error)
-          return when (error) {
-            is HttpError.ErrorResponse -> {
-              if (error.status == HttpStatus.Unauthorized) {
-                if (credentials != null) {
-                  this@LCPDownloads.logger.debug("Retrying request with added credentials.")
-                  val newRequest: HttpRequest = request.copy {
-                    this.headers.put("Authorization", mutableListOf(credentials.toHeaderValue()))
+      DefaultHttpClient(callback =
+        object : DefaultHttpClient.Callback {
+          override suspend fun onRecoverRequest(
+            request: HttpRequest,
+            error: HttpError
+          ): HttpTry<HttpRequest> {
+            this@LCPDownloads.logger.debug("HTTP request failed ({})", error)
+            return when (error) {
+              is HttpError.ErrorResponse -> {
+                if (error.status == HttpStatus.Unauthorized) {
+                  if (credentials != null) {
+                    this@LCPDownloads.logger.debug("Retrying request with added credentials.")
+                    val newRequest: HttpRequest =
+                      request.copy {
+                        this.headers.put("Authorization", mutableListOf(credentials.toHeaderValue()))
+                      }
+                    Try.success(newRequest)
+                  } else {
+                    this@LCPDownloads.logger.debug("We have no credentials with which to retry the request.")
+                    Try.failure(error)
                   }
-                  Try.success(newRequest)
                 } else {
-                  this@LCPDownloads.logger.debug("We have no credentials with which to retry the request.")
                   Try.failure(error)
                 }
-              } else {
+              }
+
+              is HttpError.IO,
+              is HttpError.MalformedResponse,
+              is HttpError.Redirection,
+              is HttpError.SslHandshake,
+              is HttpError.Timeout,
+              is HttpError.Unreachable -> {
                 Try.failure(error)
               }
             }
-
-            is HttpError.IO,
-            is HttpError.MalformedResponse,
-            is HttpError.Redirection,
-            is HttpError.SslHandshake,
-            is HttpError.Timeout,
-            is HttpError.Unreachable ->
-              Try.failure(error)
           }
         }
-      })
+      )
 
     val assetRetriever =
       AssetRetriever(
@@ -440,9 +441,7 @@ object LCPDownloads {
     }
   }
 
-  private fun accumulateErrorMessages(
-    failure: Try.Failure<*, Error>
-  ): List<String> {
+  private fun accumulateErrorMessages(failure: Try.Failure<*, Error>): List<String> {
     val messages = mutableListOf<String>()
     var errorNow: Error? = failure.value
     while (true) {
@@ -476,8 +475,8 @@ object LCPDownloads {
     context: Application,
     bookFile: File,
     receiver: (ManifestFulfillmentEvent) -> Unit
-  ): PlayerResult<ManifestFulfilled, ManifestFulfillmentError> {
-    return runBlocking {
+  ): PlayerResult<ManifestFulfilled, ManifestFulfillmentError> =
+    runBlocking {
       val assetRetriever =
         AssetRetriever(
           DefaultResourceFactory(context.contentResolver, DefaultHttpClient()),
@@ -503,5 +502,4 @@ object LCPDownloads {
         }
       }
     }
-  }
 }

@@ -26,7 +26,6 @@ class PlayerTimeTracker private constructor(
   val frequency: Duration,
   val clock: () -> OffsetDateTime
 ) : PlayerTimeTrackerType {
-
   private val oneMinuteMilliseconds =
     60L * 1000L
 
@@ -87,23 +86,16 @@ class PlayerTimeTracker private constructor(
     fun create(
       frequency: Duration,
       clock: () -> OffsetDateTime
-    ): PlayerTimeTrackerType {
-      return PlayerTimeTracker(frequency, clock)
-    }
+    ): PlayerTimeTrackerType = PlayerTimeTracker(frequency, clock)
 
-    fun create(
-      clock: () -> OffsetDateTime
-    ): PlayerTimeTrackerType {
-      return this.create(Duration.ofSeconds(1L), clock)
-    }
+    fun create(clock: () -> OffsetDateTime): PlayerTimeTrackerType = this.create(Duration.ofSeconds(1L), clock)
 
-    fun create(): PlayerTimeTrackerType {
-      return this.create { OffsetDateTime.now() }
-    }
+    fun create(): PlayerTimeTrackerType = this.create { OffsetDateTime.now() }
   }
 
   private val timeTrackedSubject =
-    PublishSubject.create<PlayerTimeTracked>()
+    PublishSubject
+      .create<PlayerTimeTracked>()
       .toSerialized()
 
   private val debugTicks =
@@ -144,21 +136,27 @@ class PlayerTimeTracker private constructor(
           is Command.ShutDown -> {
             this.opShutdown()
           }
+
           is Command.BookOpened -> {
             this.opBookOpened(command)
           }
+
           is Command.BookPlaybackPaused -> {
             this.opBookPaused(command)
           }
+
           is Command.BookPlaybackRateChanged -> {
             this.opBookRateChanged(command)
           }
+
           is Command.BookPlaybackStarted -> {
             this.opBookStarted(command)
           }
+
           is Command.BookClosed -> {
             this.opBookClosed()
           }
+
           null -> {
             // Nothing to do.
           }
@@ -191,9 +189,7 @@ class PlayerTimeTracker private constructor(
     }
   }
 
-  fun debugTicks(): Long {
-    return this.debugTicks.get()
-  }
+  fun debugTicks(): Long = this.debugTicks.get()
 
   private fun opBookClosed() {
     this.logger.debug("Book closed")
@@ -201,51 +197,46 @@ class PlayerTimeTracker private constructor(
     this.state = State.NoBook
   }
 
-  private fun opBookStarted(
-    command: Command.BookPlaybackStarted
-  ) {
+  private fun opBookStarted(command: Command.BookPlaybackStarted) {
     this.logger.debug("Book started ({})", command.trackingId)
     this.publishTimeSegments()
-    this.state = State.Playing(
-      bookTrackingId = command.trackingId,
-      startedAt = this.clock.invoke(),
-      rate = command.rate
-    )
+    this.state =
+      State.Playing(
+        bookTrackingId = command.trackingId,
+        startedAt = this.clock.invoke(),
+        rate = command.rate
+      )
   }
 
-  private fun opBookRateChanged(
-    command: Command.BookPlaybackRateChanged
-  ) {
+  private fun opBookRateChanged(command: Command.BookPlaybackRateChanged) {
     this.logger.debug("Book rate changed ({})", command.trackingId)
     this.publishTimeSegments()
-    this.state = State.Playing(
-      bookTrackingId = command.trackingId,
-      startedAt = this.clock.invoke(),
-      rate = command.rate
-    )
+    this.state =
+      State.Playing(
+        bookTrackingId = command.trackingId,
+        startedAt = this.clock.invoke(),
+        rate = command.rate
+      )
   }
 
-  private fun opBookPaused(
-    command: Command.BookPlaybackPaused
-  ) {
+  private fun opBookPaused(command: Command.BookPlaybackPaused) {
     this.logger.debug("Book paused ({})", command.trackingId)
     this.publishTimeSegments()
-    this.state = State.Paused(
-      bookTrackingId = command.trackingId,
-      rate = command.rate
-    )
+    this.state =
+      State.Paused(
+        bookTrackingId = command.trackingId,
+        rate = command.rate
+      )
   }
 
-  private fun opBookOpened(
-    command: Command.BookOpened
-  ) {
+  private fun opBookOpened(command: Command.BookOpened) {
     this.logger.debug("Book opened ({})", command.trackingId)
     this.publishTimeSegments()
     this.state = State.Paused(command.trackingId, rate = 1.0)
   }
 
-  private fun publishTimeSegments() {
-    return when (val stateNow = this.state) {
+  private fun publishTimeSegments() =
+    when (val stateNow = this.state) {
       State.NoBook,
       is State.Paused -> {
         // Nothing to publish
@@ -290,11 +281,8 @@ class PlayerTimeTracker private constructor(
         this.logger.debug("Published {} time segments", count)
       }
     }
-  }
 
-  private fun publishTimeSegment(
-    segment: PlayerTimeTracked
-  ) {
+  private fun publishTimeSegment(segment: PlayerTimeTracked) {
     this.logger.debug("Publishing time segment.")
     this.timeTrackedSubject.onNext(segment)
   }

@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.license_check.spi
  */
 
 interface SingleLicenseCheckType {
-
   /**
    * Execute the license check.
    */

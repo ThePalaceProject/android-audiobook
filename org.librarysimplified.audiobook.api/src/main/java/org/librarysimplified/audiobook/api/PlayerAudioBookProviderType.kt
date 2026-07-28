@@ -7,7 +7,6 @@ import android.app.Application
  */
 
 interface PlayerAudioBookProviderType {
-
   /**
    * Create a new instance of an audio book.
    *

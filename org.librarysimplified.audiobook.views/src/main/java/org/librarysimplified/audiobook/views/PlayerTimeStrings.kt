@@ -8,56 +8,47 @@ import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
 
 object PlayerTimeStrings {
-
   /**
    * Spoken translations for words.
    */
 
   data class SpokenTranslations(
-
     /**
      * The word for "hours" in the current language.
      */
 
     val hoursText: String,
-
     /**
      * The word for "hour" in the current language.
      */
 
     val hourText: String,
-
     /**
      * The word for "minutes" in the current language.
      */
 
     val minutesText: String,
-
     /**
      * The word for "minute" in the current language.
      */
 
     val minuteText: String,
-
     /**
      * The word for "seconds" in the current language.
      */
 
     val secondsText: String,
-
     /**
      * The word for "second" in the current language.
      */
 
     val secondText: String,
-
     /**
      * The phrase for "remaining in chapter" in the current language, as in
      * "2 minutes remaining in chapter"
      */
 
     val remainingInChapter: String,
-
     /**
      * The phrase for "elapsed in chapter" in the current language, as in
      * "2 minutes elapsed in chapter"
@@ -65,20 +56,15 @@ object PlayerTimeStrings {
 
     val elapsedInChapter: String
   ) {
+    fun minutes(minutes: Long): String = if (minutes > 1) this.minutesText else this.minuteText
 
-    fun minutes(minutes: Long): String =
-      if (minutes > 1) this.minutesText else this.minuteText
+    fun hours(hours: Long): String = if (hours > 1) this.hoursText else this.hourText
 
-    fun hours(hours: Long): String =
-      if (hours > 1) this.hoursText else this.hourText
-
-    fun seconds(seconds: Long): String =
-      if (seconds > 1) this.secondsText else this.secondText
+    fun seconds(seconds: Long): String = if (seconds > 1) this.secondsText else this.secondText
 
     companion object {
-
-      fun createFromResources(resources: Resources): SpokenTranslations {
-        return SpokenTranslations(
+      fun createFromResources(resources: Resources): SpokenTranslations =
+        SpokenTranslations(
           hoursText = resources.getString(R.string.audiobook_accessibility_hours),
           hourText = resources.getString(R.string.audiobook_accessibility_hour),
           minutesText = resources.getString(R.string.audiobook_accessibility_minutes),
@@ -88,7 +74,6 @@ object PlayerTimeStrings {
           remainingInChapter = resources.getString(R.string.audiobook_accessibility_remaining_in_chapter),
           elapsedInChapter = resources.getString(R.string.audiobook_accessibility_elapsed_in_chapter),
         )
-      }
     }
   }
 
@@ -103,9 +88,9 @@ object PlayerTimeStrings {
       .appendSeconds()
       .toFormatter()
 
-  fun hourMinuteSecondTextFromMilliseconds(milliseconds: Long): String {
-    return this.hourMinuteSecondFormatter.print(Duration.millis(milliseconds).toPeriod())
-  }
+  fun hourMinuteSecondTextFromMilliseconds(milliseconds: Long): String =
+    this.hourMinuteSecondFormatter
+      .print(Duration.millis(milliseconds).toPeriod())
 
   fun remainingBookTime(
     context: Context,
@@ -132,15 +117,9 @@ object PlayerTimeStrings {
     )
   }
 
-  fun durationText(duration: Duration): String {
-    return this.hourMinuteSecondFormatter.print(duration.toPeriod())
-  }
+  fun durationText(duration: Duration): String = this.hourMinuteSecondFormatter.print(duration.toPeriod())
 
-  fun remainingTOCItemTime(
-    time: Duration
-  ): String {
-    return this.hourMinuteSecondFormatter.print(time.toPeriod())
-  }
+  fun remainingTOCItemTime(time: Duration): String = this.hourMinuteSecondFormatter.print(time.toPeriod())
 
   fun remainingTOCItemTimeSpoken(
     translations: SpokenTranslations,
@@ -152,11 +131,7 @@ object PlayerTimeStrings {
     return builder.toString().trim()
   }
 
-  fun elapsedTOCItemTime(
-    time: Duration
-  ): CharSequence {
-    return this.hourMinuteSecondFormatter.print(time.toPeriod())
-  }
+  fun elapsedTOCItemTime(time: Duration): CharSequence = this.hourMinuteSecondFormatter.print(time.toPeriod())
 
   fun elapsedTOCItemTimeSpoken(
     translations: SpokenTranslations,
@@ -206,7 +181,5 @@ object PlayerTimeStrings {
   fun durationSpoken(
     timeStrings: SpokenTranslations,
     duration: Duration
-  ): String {
-    return this.durationSpokenBase(timeStrings, duration).toString().trim()
-  }
+  ): String = this.durationSpokenBase(timeStrings, duration).toString().trim()
 }

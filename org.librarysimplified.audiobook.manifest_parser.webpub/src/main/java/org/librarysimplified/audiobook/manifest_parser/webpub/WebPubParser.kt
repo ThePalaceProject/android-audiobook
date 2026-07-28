@@ -21,18 +21,19 @@ class WebPubParser(
   private val palaceId: PlayerPalaceID,
   private val uri: URI
 ) : ManifestParserType {
-
   override fun parse(): ParseResult<PlayerManifest> {
     val result =
-      this.parsers.createParser(
-        uri = this.uri,
-        stream = this.stream,
-        rootParser = WebPubManifestParser(
-          palaceId = this.palaceId,
-          extensions = this.extensions,
-          originalBytes = this.originalBytes
-        )
-      ).parse()
+      this.parsers
+        .createParser(
+          uri = this.uri,
+          stream = this.stream,
+          rootParser =
+            WebPubManifestParser(
+              palaceId = this.palaceId,
+              extensions = this.extensions,
+              originalBytes = this.originalBytes
+            )
+        ).parse()
 
     return when (result) {
       is FRParseSucceeded -> {
@@ -41,6 +42,7 @@ class WebPubParser(
           result = result.result
         )
       }
+
       is FRParseFailed -> {
         ParseResult.Failure(
           warnings = listOf(),
@@ -51,15 +53,14 @@ class WebPubParser(
     }
   }
 
-  private fun toParseError(error: FRParseError): ParseError {
-    return ParseError(
+  private fun toParseError(error: FRParseError): ParseError =
+    ParseError(
       source = error.position.source,
       message = error.message,
       line = error.position.line,
       column = error.position.column,
       exception = error.exception
     )
-  }
 
   override fun close() {
     this.stream.close()

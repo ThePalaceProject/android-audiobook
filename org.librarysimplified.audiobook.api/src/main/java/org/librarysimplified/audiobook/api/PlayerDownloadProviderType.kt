@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture
  */
 
 interface PlayerDownloadProviderType : AutoCloseable {
-
   /**
    * Begin a download of the specified request as soon as possible. Implementors should provide
    * progress updates to the callback given in the request.

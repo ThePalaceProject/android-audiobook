@@ -21,16 +21,13 @@ class WebPubMetadataParser(
   private val onExtensionValueProvided: (PlayerManifestExtensionValueType) -> Unit,
   onReceive: (FRParserContextType, PlayerManifestMetadata) -> Unit = FRValueParsers.ignoringReceiverWithContext()
 ) : FRAbstractParserObject<PlayerManifestMetadata>(onReceive) {
-
   private var encrypted: PlayerManifestEncrypted? = null
   private lateinit var identifier: String
   private lateinit var title: String
   private val errors = mutableListOf<FRParseError>()
 
-  override fun onCompleted(
-    context: FRParserContextType
-  ): FRParseResult<PlayerManifestMetadata> {
-    return FRParseResult.errorsOr(listOf(), this.errors) {
+  override fun onCompleted(context: FRParserContextType): FRParseResult<PlayerManifestMetadata> =
+    FRParseResult.errorsOr(listOf(), this.errors) {
       FRParseResult.succeed(
         PlayerManifestMetadata(
           title = this.title,
@@ -39,7 +36,6 @@ class WebPubMetadataParser(
         )
       )
     }
-  }
 
   override fun schema(context: FRParserContextType): FRParserObjectSchema {
     val titleSchema =

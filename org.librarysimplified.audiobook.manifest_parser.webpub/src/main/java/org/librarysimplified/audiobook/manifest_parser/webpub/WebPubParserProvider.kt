@@ -17,7 +17,6 @@ import java.net.URI
  */
 
 class WebPubParserProvider : ManifestParserProviderType {
-
   private val logger =
     LoggerFactory.getLogger(WebPubParserProvider::class.java)
 
@@ -32,11 +31,10 @@ class WebPubParserProvider : ManifestParserProviderType {
       "https://readium.org/webpub-manifest/context.jsonld",
     )
 
-  private fun isRecognizedContextType(type: String): Boolean =
-    this.contextTypes.contains(type)
+  private fun isRecognizedContextType(type: String): Boolean = this.contextTypes.contains(type)
 
   override val format: String =
-    WebPub.baseFormat
+    WebPub.BASE_FORMAT
 
   override fun canParse(
     uri: URI,
@@ -88,8 +86,8 @@ class WebPubParserProvider : ManifestParserProviderType {
     input: ManifestUnparsed,
     extensions: List<ManifestParserExtensionType>,
     warningsAsErrors: Boolean
-  ): ParserType<PlayerManifest> {
-    return WebPubParser(
+  ): ParserType<PlayerManifest> =
+    WebPubParser(
       extensions = extensions,
       palaceId = input.palaceId,
       originalBytes = input.data,
@@ -97,5 +95,4 @@ class WebPubParserProvider : ManifestParserProviderType {
       stream = ByteArrayInputStream(input.data),
       uri = uri,
     )
-  }
 }

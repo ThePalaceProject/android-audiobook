@@ -13,7 +13,6 @@ import java.io.PrintWriter
 import java.io.StringWriter
 
 class ExampleFragmentErrorDownload : Fragment() {
-
   private lateinit var errorMessage: TextView
   private lateinit var errorLog: EditText
 

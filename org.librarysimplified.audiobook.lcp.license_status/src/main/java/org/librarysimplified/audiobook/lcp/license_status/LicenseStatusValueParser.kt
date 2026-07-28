@@ -13,13 +13,13 @@ import one.irradia.fieldrush.vanilla.FRValueParserScalar
 class LicenseStatusValueParser(
   onReceive: (FRParserContextType, LicenseStatusDocument.Status) -> Unit
 ) : FRValueParserScalar<LicenseStatusDocument.Status>(onReceive) {
-
   override fun ofText(
     context: FRParserContextType,
     text: String
   ): FRParseResult<LicenseStatusDocument.Status> {
-    val value = LicenseStatusDocument.Status.ofString(text)
-      ?: return context.failureOf("Expected a 'status' value, received $text")
+    val value =
+      LicenseStatusDocument.Status.ofString(text)
+        ?: return context.failureOf("Expected a 'status' value, received $text")
     return FRParseResult.succeed(value)
   }
 }

@@ -17,9 +17,7 @@ data class ExoManifest(
   val toc: PlayerManifestTOC,
   val readingOrderItems: List<ExoManifestMutableReadingOrderItem>
 ) {
-
   companion object {
-
     /**
      * Parse an ExoPlayer manifest from the given raw manifest.
      */
@@ -39,10 +37,11 @@ data class ExoManifest(
           ExoManifest(
             bookID = bookID,
             originalManifest = manifest,
-            toc = PlayerManifestTOCs.createTOC(
-              manifest,
-              defaultTrackTitle = { index -> missingTrackNames.generateName(index) }
-            ),
+            toc =
+              PlayerManifestTOCs.createTOC(
+                manifest,
+                defaultTrackTitle = { index -> missingTrackNames.generateName(index) }
+              ),
             readingOrderItems = readingOrderItems
           )
         )

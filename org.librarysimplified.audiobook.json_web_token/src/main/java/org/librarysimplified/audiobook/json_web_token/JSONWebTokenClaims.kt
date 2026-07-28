@@ -22,7 +22,6 @@ import java.net.URI
 data class JSONWebTokenClaims(
   val claims: Map<String, String>
 ) {
-
   /**
    * Identifies principal that issued the JWT.
    */
@@ -87,14 +86,11 @@ data class JSONWebTokenClaims(
   val contentType: String? = this.claims["cty"]
 
   companion object {
-
     /**
      * Serialize the given claims to a JSON object.
      */
 
-    fun toObjectNode(
-      claims: JSONWebTokenClaims
-    ): ObjectNode {
+    fun toObjectNode(claims: JSONWebTokenClaims): ObjectNode {
       val mapper = ObjectMapper()
       val objectNode = mapper.createObjectNode()
       for (claimEntry in claims.claims) {
@@ -107,13 +103,12 @@ data class JSONWebTokenClaims(
      * Encode the given claims to a Base64URL string.
      */
 
-    fun encode(claims: JSONWebTokenClaims): JSONBase64String {
-      return JSONBase64String.encode(
+    fun encode(claims: JSONWebTokenClaims): JSONBase64String =
+      JSONBase64String.encode(
         JSONCanonicalization.canonicalize(
           toObjectNode(claims)
         )
       )
-    }
 
     /**
      * Decode and parse a JOSE header from the given Base64URL string.
@@ -122,9 +117,7 @@ data class JSONWebTokenClaims(
     fun decode(
       uri: URI,
       text: JSONBase64String
-    ): ParseResult<JSONWebTokenClaims> {
-      return parse(uri, text.decode())
-    }
+    ): ParseResult<JSONWebTokenClaims> = parse(uri, text.decode())
 
     /**
      * Parse a JOSE header from the given byte array. The byte array is assumed to represent
@@ -140,11 +133,12 @@ data class JSONWebTokenClaims(
           .createParser(
             uri = uri,
             stream = ByteArrayInputStream(data),
-            rootParser = FRValueParsers.forObjectMap(
-              forKey = {
-                FRValueParsers.acceptingNull(FRValueParsers.forString())
-              }
-            )
+            rootParser =
+              FRValueParsers.forObjectMap(
+                forKey = {
+                  FRValueParsers.acceptingNull(FRValueParsers.forString())
+                }
+              )
           )
 
       return when (val result = parser.parse()) {
@@ -154,6 +148,7 @@ data class JSONWebTokenClaims(
             result = JSONWebTokenClaims(JSONUtilities.filterNotNull(result.result))
           )
         }
+
         is FRParseResult.FRParseFailed -> {
           return ParseResult.Failure(
             warnings = listOf(),

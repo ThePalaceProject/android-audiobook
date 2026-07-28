@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.parser.api
  */
 
 sealed class ParseResult<T> {
-
   /**
    * The parse succeeded.
    */

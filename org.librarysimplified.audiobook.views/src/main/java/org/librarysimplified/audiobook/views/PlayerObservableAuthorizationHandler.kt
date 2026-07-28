@@ -14,7 +14,6 @@ import org.librarysimplified.http.api.LSHTTPAuthorizationType
  */
 
 object PlayerObservableAuthorizationHandler : PlayerAuthorizationHandlerType {
-
   @Volatile
   private var delegate: PlayerAuthorizationHandlerType? = null
 
@@ -22,7 +21,8 @@ object PlayerObservableAuthorizationHandler : PlayerAuthorizationHandlerType {
   private var credentialsValid: Boolean = false
 
   private val credentialsEventSubject =
-    PublishSubject.create<Boolean>()
+    PublishSubject
+      .create<Boolean>()
       .toSerialized()
 
   /**
@@ -36,13 +36,9 @@ object PlayerObservableAuthorizationHandler : PlayerAuthorizationHandlerType {
    * @return {@code true} if the current credentials are believed to be valid
    */
 
-  fun areCredentialsValid(): Boolean {
-    return this.credentialsValid
-  }
+  fun areCredentialsValid(): Boolean = this.credentialsValid
 
-  internal fun setHandler(
-    delegate: PlayerAuthorizationHandlerType
-  ) {
+  internal fun setHandler(delegate: PlayerAuthorizationHandlerType) {
     this.delegate = delegate
     this.credentialsValid = true
     this.credentialsEventSubject.onNext(this.areCredentialsValid())
@@ -69,9 +65,7 @@ object PlayerObservableAuthorizationHandler : PlayerAuthorizationHandlerType {
   override fun onConfigureAuthorizationFor(
     source: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind
-  ): LSHTTPAuthorizationType? {
-    return this.delegate?.onConfigureAuthorizationFor(source, kind)
-  }
+  ): LSHTTPAuthorizationType? = this.delegate?.onConfigureAuthorizationFor(source, kind)
 
   override fun <T : Any> onRequireCustomCredentialsFor(
     providerName: String,

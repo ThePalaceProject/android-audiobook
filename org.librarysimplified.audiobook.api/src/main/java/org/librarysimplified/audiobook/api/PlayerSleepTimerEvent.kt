@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.api
  */
 
 sealed class PlayerSleepTimerEvent {
-
   /**
    * The sleep timer is currently running. This state will be published frequently while the sleep
    * timer is counting down. If a duration was specified when the timer was started, the given

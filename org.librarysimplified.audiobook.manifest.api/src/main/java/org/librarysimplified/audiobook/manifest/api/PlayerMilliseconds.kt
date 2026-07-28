@@ -11,10 +11,6 @@ import com.io7m.kabstand.core.IntervalType
  * prevents us from mixing them up.
  */
 
-/**
- * A millisecond value on the absolute timeline.
- */
-
 data class PlayerMillisecondsAbsolute(
   val value: Long
 ) : Comparable<PlayerMillisecondsAbsolute> {
@@ -24,57 +20,36 @@ data class PlayerMillisecondsAbsolute(
     }
   }
 
-  operator fun plus(x: PlayerMillisecondsReadingOrderItem): PlayerMillisecondsAbsolute {
-    return PlayerMillisecondsAbsolute(this.value.plus(x.value))
-  }
+  operator fun plus(x: PlayerMillisecondsReadingOrderItem): PlayerMillisecondsAbsolute =
+    PlayerMillisecondsAbsolute(this.value.plus(x.value))
 
-  operator fun plus(x: PlayerMillisecondsAbsolute): PlayerMillisecondsAbsolute {
-    return PlayerMillisecondsAbsolute(this.value.plus(x.value))
-  }
+  operator fun plus(x: PlayerMillisecondsAbsolute): PlayerMillisecondsAbsolute = PlayerMillisecondsAbsolute(this.value.plus(x.value))
 
-  operator fun minus(x: PlayerMillisecondsAbsolute): PlayerMillisecondsAbsolute {
-    return PlayerMillisecondsAbsolute(this.value.minus(x.value))
-  }
+  operator fun minus(x: PlayerMillisecondsAbsolute): PlayerMillisecondsAbsolute = PlayerMillisecondsAbsolute(this.value.minus(x.value))
 
-  override fun compareTo(other: PlayerMillisecondsAbsolute): Int {
-    return this.value.compareTo(other.value)
-  }
+  override fun compareTo(other: PlayerMillisecondsAbsolute): Int = this.value.compareTo(other.value)
 
-  override fun toString(): String {
-    return this.value.toString()
-  }
+  override fun toString(): String = this.value.toString()
 }
 
 data class PlayerMillisecondsAbsoluteInterval(
   val lower: PlayerMillisecondsAbsolute,
   val upper: PlayerMillisecondsAbsolute
 ) : IntervalType<PlayerMillisecondsAbsolute> {
-  override fun lower(): PlayerMillisecondsAbsolute {
-    return this.lower
-  }
+  override fun lower(): PlayerMillisecondsAbsolute = this.lower
 
-  override fun size(): PlayerMillisecondsAbsolute {
-    return PlayerMillisecondsAbsolute(1L + (this.upper.value - this.lower.value))
-  }
+  override fun size(): PlayerMillisecondsAbsolute = PlayerMillisecondsAbsolute(1L + (this.upper.value - this.lower.value))
 
-  override fun upper(): PlayerMillisecondsAbsolute {
-    return this.upper
-  }
+  override fun upper(): PlayerMillisecondsAbsolute = this.upper
 
-  override fun upperMaximum(
-    other: IntervalType<PlayerMillisecondsAbsolute>
-  ): IntervalType<PlayerMillisecondsAbsolute> {
-    return PlayerMillisecondsAbsoluteInterval(
+  override fun upperMaximum(other: IntervalType<PlayerMillisecondsAbsolute>): IntervalType<PlayerMillisecondsAbsolute> =
+    PlayerMillisecondsAbsoluteInterval(
       this.lower,
       PlayerMillisecondsAbsolute(Math.max(this.upper.value, other.upper().value))
     )
-  }
 
-  override fun overlaps(
-    other: IntervalType<PlayerMillisecondsAbsolute>
-  ): Boolean {
-    return (this.lower <= other.upper() && other.lower() <= this.upper)
-  }
+  override fun overlaps(other: IntervalType<PlayerMillisecondsAbsolute>): Boolean =
+    (this.lower <= other.upper() && other.lower() <= this.upper)
 }
 
 /**
@@ -84,21 +59,13 @@ data class PlayerMillisecondsAbsoluteInterval(
 data class PlayerMillisecondsTOC(
   val value: Long
 ) : Comparable<PlayerMillisecondsTOC> {
-  override fun compareTo(other: PlayerMillisecondsTOC): Int {
-    return this.value.compareTo(other.value)
-  }
+  override fun compareTo(other: PlayerMillisecondsTOC): Int = this.value.compareTo(other.value)
 
-  operator fun plus(x: PlayerMillisecondsTOC): PlayerMillisecondsTOC {
-    return PlayerMillisecondsTOC(this.value.plus(x.value))
-  }
+  operator fun plus(x: PlayerMillisecondsTOC): PlayerMillisecondsTOC = PlayerMillisecondsTOC(this.value.plus(x.value))
 
-  operator fun minus(x: PlayerMillisecondsTOC): PlayerMillisecondsTOC {
-    return PlayerMillisecondsTOC(this.value.minus(x.value))
-  }
+  operator fun minus(x: PlayerMillisecondsTOC): PlayerMillisecondsTOC = PlayerMillisecondsTOC(this.value.minus(x.value))
 
-  override fun toString(): String {
-    return this.value.toString()
-  }
+  override fun toString(): String = this.value.toString()
 }
 
 /**
@@ -108,19 +75,19 @@ data class PlayerMillisecondsTOC(
 data class PlayerMillisecondsReadingOrderItem(
   val value: Long
 ) : Comparable<PlayerMillisecondsReadingOrderItem> {
-  override fun compareTo(other: PlayerMillisecondsReadingOrderItem): Int {
-    return this.value.compareTo(other.value)
-  }
+  override fun compareTo(other: PlayerMillisecondsReadingOrderItem): Int = this.value.compareTo(other.value)
 
-  operator fun plus(x: PlayerMillisecondsReadingOrderItem): PlayerMillisecondsReadingOrderItem {
-    return PlayerMillisecondsReadingOrderItem(this.value.plus(x.value))
-  }
+  operator fun plus(x: PlayerMillisecondsReadingOrderItem): PlayerMillisecondsReadingOrderItem =
+    PlayerMillisecondsReadingOrderItem(
+      this.value
+        .plus(x.value)
+    )
 
-  operator fun minus(x: PlayerMillisecondsReadingOrderItem): PlayerMillisecondsReadingOrderItem {
-    return PlayerMillisecondsReadingOrderItem(this.value.minus(x.value))
-  }
+  operator fun minus(x: PlayerMillisecondsReadingOrderItem): PlayerMillisecondsReadingOrderItem =
+    PlayerMillisecondsReadingOrderItem(
+      this.value
+        .minus(x.value)
+    )
 
-  override fun toString(): String {
-    return this.value.toString()
-  }
+  override fun toString(): String = this.value.toString()
 }

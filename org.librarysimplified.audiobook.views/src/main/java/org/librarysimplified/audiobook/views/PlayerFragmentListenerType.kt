@@ -15,7 +15,6 @@ import java.util.concurrent.ScheduledExecutorService
  */
 
 interface PlayerFragmentListenerType {
-
   /**
    * Called when the player wants access to a player instance. The player should be created once
    * by the hosting activity and the same instance should be returned here each time this method

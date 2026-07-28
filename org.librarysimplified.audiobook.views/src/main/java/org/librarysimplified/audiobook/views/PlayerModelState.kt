@@ -9,7 +9,6 @@ import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentE
 import org.librarysimplified.audiobook.parser.api.ParseError
 
 sealed class PlayerModelState {
-
   data object PlayerClosed : PlayerModelState()
 
   data object PlayerManifestInProgress : PlayerModelState()

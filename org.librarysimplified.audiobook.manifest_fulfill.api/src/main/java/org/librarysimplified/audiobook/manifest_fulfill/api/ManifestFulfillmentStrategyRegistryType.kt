@@ -7,12 +7,9 @@ import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentS
  */
 
 interface ManifestFulfillmentStrategyRegistryType {
-
   /**
    * Find a fulfillment strategy that implements the given interface.
    */
 
-  fun <T : ManifestFulfillmentStrategyProviderType<*>> findStrategy(
-    clazz: Class<T>
-  ): T?
+  fun <T : ManifestFulfillmentStrategyProviderType<*>> findStrategy(clazz: Class<T>): T?
 }

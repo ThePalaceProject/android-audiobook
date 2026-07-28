@@ -9,12 +9,9 @@ import java.util.concurrent.CompletableFuture
  */
 
 interface PlayerTimeTrackerType : AutoCloseable {
-
   val timeSegments: Observable<PlayerTimeTracked>
 
-  fun bookOpened(
-    bookTrackingId: PlayerPalaceID
-  ): CompletableFuture<Void>
+  fun bookOpened(bookTrackingId: PlayerPalaceID): CompletableFuture<Void>
 
   fun bookClosed(): CompletableFuture<Void>
 

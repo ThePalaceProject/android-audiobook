@@ -16,7 +16,6 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestLinkProperties
 class WebPubLinkPropertiesParser(
   onReceive: (FRParserContextType, PlayerManifestLinkProperties) -> Unit = FRValueParsers.ignoringReceiverWithContext()
 ) : FRAbstractParserObject<PlayerManifestLinkProperties>(onReceive) {
-
   private var encrypted: PlayerManifestEncrypted? = null
 
   override fun schema(context: FRParserContextType): FRParserObjectSchema {
@@ -38,11 +37,10 @@ class WebPubLinkPropertiesParser(
     )
   }
 
-  override fun onCompleted(context: FRParserContextType): FRParseResult<PlayerManifestLinkProperties> {
-    return FRParseResult.succeed(
+  override fun onCompleted(context: FRParserContextType): FRParseResult<PlayerManifestLinkProperties> =
+    FRParseResult.succeed(
       PlayerManifestLinkProperties(
         encrypted = this.encrypted
       )
     )
-  }
 }

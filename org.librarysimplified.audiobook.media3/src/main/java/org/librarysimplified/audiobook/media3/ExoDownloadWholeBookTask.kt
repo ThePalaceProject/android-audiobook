@@ -14,7 +14,6 @@ import java.net.URI
 class ExoDownloadWholeBookTask(
   private val audioBook: ExoAudioBook
 ) : PlayerDownloadWholeBookTaskType {
-
   override fun fetch() {
     this.audioBook.downloadTasks.forEach(PlayerDownloadTaskType::fetch)
   }

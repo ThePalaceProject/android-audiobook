@@ -8,7 +8,6 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestReadingOrderID
  */
 
 interface PlayerReadingOrderItemType {
-
   /**
    * The book to which this reading order element belongs.
    */

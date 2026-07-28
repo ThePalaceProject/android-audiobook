@@ -8,7 +8,6 @@ import java.net.URI
  */
 
 interface PlayerDownloadTaskType {
-
   /**
    * The URI that must be passed to the player to play the content associated with this download
    * item. This might refer to a remote resource, or it might be a file:// URI, or even something

@@ -1,7 +1,6 @@
 package org.librarysimplified.audiobook.api
 
 sealed class PlayerDownloadTaskStatus {
-
   data object IdleNotDownloaded : PlayerDownloadTaskStatus()
 
   data object IdleDownloaded : PlayerDownloadTaskStatus()

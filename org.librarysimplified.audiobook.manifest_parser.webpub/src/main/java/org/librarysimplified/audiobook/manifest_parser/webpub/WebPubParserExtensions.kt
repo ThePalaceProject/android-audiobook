@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory
  */
 
 object WebPubParserExtensions {
-
   private val logger =
     LoggerFactory.getLogger(WebPubParserExtensions::class.java)
 
@@ -41,12 +40,12 @@ object WebPubParserExtensions {
     var extensionObjectsAvailable = 0
     var extensionObjectsUsed = 0
     for (extension in extensions) {
-      if (extension.format != WebPub.baseFormat) {
+      if (extension.format != WebPub.BASE_FORMAT) {
         onError.invoke(
           FRParseError(
             extension.name,
             context.jsonStream.currentPosition,
-            "The extension ${extension.name} has format ${extension.format}, which is not compatible with ${WebPub.baseFormat}",
+            "The extension ${extension.name} has format ${extension.format}, which is not compatible with ${WebPub.BASE_FORMAT}",
             IllegalStateException()
           )
         )

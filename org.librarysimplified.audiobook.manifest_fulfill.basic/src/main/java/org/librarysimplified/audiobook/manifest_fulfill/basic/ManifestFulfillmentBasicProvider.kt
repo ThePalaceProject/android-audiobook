@@ -9,12 +9,8 @@ import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentS
  */
 
 class ManifestFulfillmentBasicProvider : ManifestFulfillmentBasicType {
-
-  override fun create(
-    configuration: ManifestFulfillmentBasicParameters
-  ): ManifestFulfillmentStrategyType {
-    return ManifestFulfillmentBasic(
+  override fun create(configuration: ManifestFulfillmentBasicParameters): ManifestFulfillmentStrategyType =
+    ManifestFulfillmentBasic(
       configuration = configuration
     )
-  }
 }

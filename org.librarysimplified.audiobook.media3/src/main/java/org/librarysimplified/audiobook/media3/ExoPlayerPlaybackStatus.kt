@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.media3
  */
 
 enum class ExoPlayerPlaybackStatus {
-
   /**
    * The player is in the initialized state.
    */

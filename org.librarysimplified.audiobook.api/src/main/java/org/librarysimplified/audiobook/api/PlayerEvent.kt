@@ -9,7 +9,6 @@ import org.librarysimplified.audiobook.manifest.api.PlayerPalaceID
  */
 
 sealed class PlayerEvent {
-
   /**
    * The raw OPDS ID of the book to which the event refers.
    */
@@ -48,7 +47,6 @@ sealed class PlayerEvent {
   ) : PlayerEvent()
 
   sealed class PlayerEventWithPosition : PlayerEvent() {
-
     /**
      * The reading order item to which this event refers.
      */
@@ -234,7 +232,6 @@ sealed class PlayerEvent {
    */
 
   sealed class PlayerAccessibilityEvent : PlayerEvent() {
-
     /**
      * A localized accessibility message suitable for direct use with a screen reader.
      */

@@ -7,7 +7,6 @@ import android.app.Application
  */
 
 interface PlayerAudioEnginesType {
-
   /**
    * Find all providers that can handle the given request.
    */
@@ -22,9 +21,10 @@ interface PlayerAudioEnginesType {
    * highest version number.
    */
 
-  fun findBestFor(request: PlayerAudioEngineRequest): PlayerEngineAndBookProvider? {
-    return findAllFor(request).sortedBy { pair -> pair.engineProvider.version() }.lastOrNull()
-  }
+  fun findBestFor(request: PlayerAudioEngineRequest): PlayerEngineAndBookProvider? =
+    findAllFor(request)
+      .sortedBy { pair -> pair.engineProvider.version() }
+      .lastOrNull()
 
   /**
    * Instruct all engine providers to delete any and all book data they may have for the given

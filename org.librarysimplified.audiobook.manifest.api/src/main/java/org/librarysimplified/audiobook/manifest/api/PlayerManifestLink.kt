@@ -8,7 +8,6 @@ import java.net.URI
  */
 
 sealed class PlayerManifestLink {
-
   /**
    * The MIME type of the link content.
    */

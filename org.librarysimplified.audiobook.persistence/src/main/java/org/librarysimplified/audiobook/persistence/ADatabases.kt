@@ -10,9 +10,5 @@ import java.nio.file.Path
 
 object ADatabases : ADatabaseFactoryType {
   @Throws(IOException::class)
-  override fun open(
-    file: Path
-  ): ADatabaseType {
-    return ADatabase.open(file)
-  }
+  override fun open(file: Path): ADatabaseType = ADatabase.open(file)
 }

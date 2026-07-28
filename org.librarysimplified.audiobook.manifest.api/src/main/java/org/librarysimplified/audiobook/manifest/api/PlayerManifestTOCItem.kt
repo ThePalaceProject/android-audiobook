@@ -10,18 +10,16 @@ data class PlayerManifestTOCItem(
   val title: String,
   val index: Int,
   val chapter: Int,
-
   /**
    * The interval covered by this TOC item on the absolute timeline.
    */
 
   val intervalAbsoluteMilliseconds: PlayerMillisecondsAbsoluteInterval
 ) : Comparable<PlayerManifestTOCItem> {
-
-  override fun compareTo(other: PlayerManifestTOCItem): Int {
-    return Comparator.comparing(PlayerManifestTOCItem::index)
+  override fun compareTo(other: PlayerManifestTOCItem): Int =
+    Comparator
+      .comparing(PlayerManifestTOCItem::index)
       .compare(this, other)
-  }
 
   val duration: Duration
     get() = Duration.millis(this.durationMilliseconds)

@@ -11,7 +11,6 @@ import org.librarysimplified.audiobook.views.PlayerModel
 import org.librarysimplified.audiobook.views.PlayerModelState
 
 class ExampleFragmentError : Fragment() {
-
   private lateinit var errorMessage: TextView
   private lateinit var errorLog: EditText
 
@@ -39,14 +38,17 @@ class ExampleFragmentError : Fragment() {
         this.populateErrorLog(current.message)
         this.errorMessage.text = current.message
       }
+
       is PlayerModelState.PlayerManifestDownloadFailed -> {
         this.populateErrorLog(current.failure.message)
         this.errorMessage.text = current.failure.message
       }
+
       is PlayerModelState.PlayerManifestLicenseChecksFailed -> {
         this.populateErrorLog("License check failed.")
         this.errorMessage.text = "License check failed."
       }
+
       is PlayerModelState.PlayerManifestParseFailed -> {
         this.populateErrorLog("Manifest parsing failed.")
         this.errorMessage.text = "Manifest parsing failed."

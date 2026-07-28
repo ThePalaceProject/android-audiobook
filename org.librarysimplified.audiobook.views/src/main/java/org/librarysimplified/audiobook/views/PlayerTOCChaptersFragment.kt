@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
 class PlayerTOCChaptersFragment : Fragment() {
-
   private val logger =
     LoggerFactory.getLogger(PlayerTOCChaptersFragment::class.java)
 

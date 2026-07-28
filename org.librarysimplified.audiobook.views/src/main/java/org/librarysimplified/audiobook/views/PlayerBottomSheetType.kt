@@ -3,7 +3,6 @@ package org.librarysimplified.audiobook.views
 import androidx.annotation.StringRes
 
 interface PlayerBottomSheetType {
-
   fun drawerSetHandleAccessibilityStrings(
     @StringRes openHandle: Int,
     @StringRes closeHandle: Int

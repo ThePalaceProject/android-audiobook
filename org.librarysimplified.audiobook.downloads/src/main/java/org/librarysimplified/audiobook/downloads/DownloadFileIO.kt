@@ -9,7 +9,6 @@ import java.security.SecureRandom
  */
 
 internal object DownloadFileIO {
-
   /**
    * Delete the file `f` if it exists.
    *

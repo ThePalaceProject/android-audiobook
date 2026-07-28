@@ -16,7 +16,6 @@ class MockingDownloadProvider(
   private val shouldFail: (PlayerDownloadRequest) -> Boolean,
   private val executorService: ListeningExecutorService
 ) : PlayerDownloadProviderType {
-
   override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
     val result = CompletableFuture<Unit>()
 
@@ -40,7 +39,10 @@ class MockingDownloadProvider(
     // Nothing
   }
 
-  private fun reportProgress(request: PlayerDownloadRequest, percent: Int) {
+  private fun reportProgress(
+    request: PlayerDownloadRequest,
+    percent: Int
+  ) {
     try {
       request.onProgress(percent)
     } catch (e: Throwable) {
@@ -48,8 +50,16 @@ class MockingDownloadProvider(
     }
   }
 
-  private fun doDownload(request: PlayerDownloadRequest, result: CompletableFuture<Unit>) {
-    val time = Math.max(1, request.link.hrefURI!!.rawSchemeSpecificPart.toInt()) * 10
+  private fun doDownload(
+    request: PlayerDownloadRequest,
+    result: CompletableFuture<Unit>
+  ) {
+    val time =
+      Math.max(1,
+        request.link.hrefURI!!
+          .rawSchemeSpecificPart
+          .toInt()
+      ) * 10
 
     request.onProgress(0)
     for (i in 0..time) {

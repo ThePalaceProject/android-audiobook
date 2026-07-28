@@ -11,12 +11,12 @@ import java.util.concurrent.TimeUnit
  */
 
 object AudioBookHTTPClients {
-
   private val logger =
     LoggerFactory.getLogger(AudioBookHTTPClients::class.java)
 
   private val defaultClient =
-    OkHttpClient.Builder()
+    OkHttpClient
+      .Builder()
       .connectTimeout(3L, TimeUnit.MINUTES)
       .callTimeout(3L, TimeUnit.MINUTES)
       .addInterceptor(AudioBookHTTPInterceptor(this.logger))
@@ -28,8 +28,7 @@ object AudioBookHTTPClients {
    * The default HTTP client.
    */
 
-  fun defaultClient(): OkHttpClient =
-    this.defaultClient
+  fun defaultClient(): OkHttpClient = this.defaultClient
 
   /**
    * A caching HTTP client.
@@ -47,7 +46,8 @@ object AudioBookHTTPClients {
 
     // Otherwise, configure a caching client based on the default client, and memoize it.
 
-    return defaultClient.newBuilder()
+    return defaultClient
+      .newBuilder()
       .cache(
         Cache(
           File(cacheDirectory, "audiobook-http"),

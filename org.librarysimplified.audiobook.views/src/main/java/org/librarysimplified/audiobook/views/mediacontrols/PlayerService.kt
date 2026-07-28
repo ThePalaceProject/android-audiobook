@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicReference
  */
 
 class PlayerService : MediaSessionService() {
-
   private val sessionID: String =
     "palace-audiobook-${sessionIdNext.getAndIncrement()}"
 
@@ -24,7 +23,8 @@ class PlayerService : MediaSessionService() {
 
   companion object {
     private val sessionIdNext =
-      java.util.concurrent.atomic.AtomicLong()
+      java.util.concurrent.atomic
+        .AtomicLong()
   }
 
   override fun onCreate() {
@@ -32,7 +32,8 @@ class PlayerService : MediaSessionService() {
     this.logger.debug("{}: onCreate", this)
 
     this.session.set(
-      MediaSession.Builder(this, PlayerMediaFacade)
+      MediaSession
+        .Builder(this, PlayerMediaFacade)
         .setId(this.sessionID)
         .setCallback(PlayerMediaSessionCallback)
         .build()
@@ -41,20 +42,14 @@ class PlayerService : MediaSessionService() {
     PlayerMediaFacade.playerServiceAssign(this)
   }
 
-  override fun toString(): String {
-    return "[PlayerService ${this.sessionID}]"
-  }
+  override fun toString(): String = "[PlayerService ${this.sessionID}]"
 
-  override fun onBind(
-    intent: Intent?
-  ): IBinder? {
+  override fun onBind(intent: Intent?): IBinder? {
     this.logger.debug("{}: onBind: {}", this, intent)
     return super.onBind(intent)
   }
 
-  override fun onUnbind(
-    intent: Intent?
-  ): Boolean {
+  override fun onUnbind(intent: Intent?): Boolean {
     this.logger.debug("{}: onUnbind: {}", this, intent)
     return super.onUnbind(intent)
   }
@@ -65,9 +60,7 @@ class PlayerService : MediaSessionService() {
     super.onDestroy()
   }
 
-  override fun onGetSession(
-    controllerInfo: MediaSession.ControllerInfo
-  ): MediaSession? {
+  override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
     this.logger.debug("{}: onGetSession: {}", this, controllerInfo)
     val sessionNow = this.session.get()
     if (sessionNow == null) {

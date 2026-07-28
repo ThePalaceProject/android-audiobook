@@ -15,52 +15,57 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestScalar.PlayerM
  */
 
 object WebPubScalarParsers {
-
-  private fun textToScalar(
-    text: String
-  ): FRParseResult<PlayerManifestScalar> {
-    return FRParseResult.succeed(
+  private fun textToScalar(text: String): FRParseResult<PlayerManifestScalar> =
+    FRParseResult.succeed(
       if (text.startsWith("0")) {
         // If the text begins with "0", parse it into a string to ensure that the leading "0" is retained.
         PlayerManifestScalarString(text)
       } else {
         when (val integer = text.toIntOrNull()) {
-          null ->
+          null -> {
             when (val double = text.toDoubleOrNull()) {
-              null ->
+              null -> {
                 when (text) {
-                  "true" ->
+                  "true" -> {
                     PlayerManifestScalarBoolean(true)
-                  "false" ->
+                  }
+
+                  "false" -> {
                     PlayerManifestScalarBoolean(false)
-                  else ->
+                  }
+
+                  else -> {
                     PlayerManifestScalarString(text)
+                  }
                 }
-              else ->
+              }
+
+              else -> {
                 PlayerManifestScalarReal(double)
+              }
             }
-          else ->
+          }
+
+          else -> {
             PlayerManifestScalarInteger(integer)
+          }
         }
       }
     )
-  }
 
   fun forManifestScalar(
     receiver: (PlayerManifestScalar) -> Unit = FRValueParsers.ignoringReceiver()
-  ): FRValueParserType<PlayerManifestScalar> {
-    return FRValueParsers.forScalar(
+  ): FRValueParserType<PlayerManifestScalar> =
+    FRValueParsers.forScalar(
       validator = ::textToScalar,
       receiver = receiver
     )
-  }
 
   fun forMap(
     receiver: (Map<String, PlayerManifestScalar>) -> Unit = FRValueParsers.ignoringReceiver()
-  ): FRParserObjectMapType<PlayerManifestScalar> {
-    return FRValueParsers.forObjectMap(
+  ): FRParserObjectMapType<PlayerManifestScalar> =
+    FRValueParsers.forObjectMap(
       forKey = { forManifestScalar() },
       receiver = receiver
     )
-  }
 }

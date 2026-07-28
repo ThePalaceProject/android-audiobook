@@ -10,30 +10,30 @@ import org.librarysimplified.http.network_access.LSHTTPNetworkAvailabilityServic
 import org.librarysimplified.http.vanilla.LSHTTPClients
 
 class ExampleApplication : Application() {
-
   private lateinit var databaseField: ExampleBookmarkDatabase
 
   val bookmarkDatabase: ExampleBookmarkDatabase
     get() = this.databaseField
 
   companion object {
-    private lateinit var INSTANCE: ExampleApplication
+    private lateinit var instance: ExampleApplication
 
     @JvmStatic
     val application: ExampleApplication
-      get() = this.INSTANCE
+      get() = this.instance
 
     val httpClient: LSHTTPClientType
-      get() = LSHTTPClients()
-        .create(
-          this.INSTANCE,
-          LSHTTPClientConfiguration("AudioBookDemo", "1.0.0", networkAccess = LSHTTPNetworkAccess)
-        )
+      get() =
+        LSHTTPClients()
+          .create(
+            this.instance,
+            LSHTTPClientConfiguration("AudioBookDemo", "1.0.0", networkAccess = LSHTTPNetworkAccess)
+          )
   }
 
   override fun onCreate() {
     super.onCreate()
-    INSTANCE = this
+    instance = this
     this.databaseField = ExampleBookmarkDatabase(this)
 
     System.out.println("Package name: ${this.packageName}")

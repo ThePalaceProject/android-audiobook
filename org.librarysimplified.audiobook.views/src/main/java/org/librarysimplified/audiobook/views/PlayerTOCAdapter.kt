@@ -12,15 +12,9 @@ class PlayerTOCAdapter(
   private val fragments: List<Fragment>,
   private val fragmentTitles: List<String>
 ) : FragmentStateAdapter(parentFragment) {
-  override fun getItemCount(): Int {
-    return fragments.size
-  }
+  override fun getItemCount(): Int = fragments.size
 
-  override fun createFragment(position: Int): Fragment {
-    return fragments[position]
-  }
+  override fun createFragment(position: Int): Fragment = fragments[position]
 
-  fun getTitle(position: Int): String {
-    return fragmentTitles[position]
-  }
+  fun getTitle(position: Int): String = fragmentTitles[position]
 }

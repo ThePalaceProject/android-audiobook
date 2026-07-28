@@ -8,7 +8,6 @@ import org.librarysimplified.audiobook.api.PlayerBookmark
 import org.slf4j.LoggerFactory
 
 object PlayerBookmarkModel {
-
   private val logger =
     LoggerFactory.getLogger(PlayerBookmarkModel::class.java)
 
@@ -16,7 +15,8 @@ object PlayerBookmarkModel {
   private var bookmarksNow: List<PlayerBookmark> = listOf<PlayerBookmark>()
 
   private val bookmarksSubject: Subject<List<PlayerBookmark>> =
-    BehaviorSubject.create<List<PlayerBookmark>>()
+    BehaviorSubject
+      .create<List<PlayerBookmark>>()
       .toSerialized()
 
   /**
@@ -57,7 +57,5 @@ object PlayerBookmarkModel {
    * List the current bookmarks.
    */
 
-  fun bookmarks(): List<PlayerBookmark> {
-    return this.bookmarksNow.toList()
-  }
+  fun bookmarks(): List<PlayerBookmark> = this.bookmarksNow.toList()
 }

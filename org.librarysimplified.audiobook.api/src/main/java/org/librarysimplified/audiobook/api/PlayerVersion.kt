@@ -9,7 +9,6 @@ data class PlayerVersion(
   val minor: Int,
   val patch: Int
 ) : Comparable<PlayerVersion> {
-
   override fun compareTo(other: PlayerVersion): Int {
     val cMajor = this.major.compareTo(other.major)
     if (cMajor == 0) {
@@ -26,7 +25,5 @@ data class PlayerVersion(
     return cMajor
   }
 
-  override fun toString(): String {
-    return "${this.major}.${this.minor}.${this.patch}"
-  }
+  override fun toString(): String = "${this.major}.${this.minor}.${this.patch}"
 }

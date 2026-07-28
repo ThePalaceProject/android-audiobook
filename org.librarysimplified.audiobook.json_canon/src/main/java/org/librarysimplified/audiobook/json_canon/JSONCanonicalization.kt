@@ -13,7 +13,6 @@ import java.io.OutputStream
  */
 
 object JSONCanonicalization {
-
   /**
    * Serialize the given JSON node as canonical JSON.
    */
@@ -34,10 +33,9 @@ object JSONCanonicalization {
    * Serialize the given JSON node as canonical JSON.
    */
 
-  fun canonicalize(objectNode: ObjectNode): ByteArray {
-    return ByteArrayOutputStream().use { stream ->
+  fun canonicalize(objectNode: ObjectNode): ByteArray =
+    ByteArrayOutputStream().use { stream ->
       canonicalize(objectNode, stream)
       stream.toByteArray()
     }
-  }
 }

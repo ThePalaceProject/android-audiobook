@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory
  */
 
 class PlayerSleepTimerFragment : DialogFragment() {
-
   private val log =
     LoggerFactory.getLogger(PlayerSleepTimerFragment::class.java)
 
@@ -71,8 +70,10 @@ class PlayerSleepTimerFragment : DialogFragment() {
 
   private fun enabledSleepTimerConfigurations(): List<PlayerSleepTimerConfigurationPreset> {
     val nowEnabled =
-      this.requireContext()
-        .resources.getBoolean(R.bool.audiobook_player_debug_sleep_timer_now_enabled)
+      this
+        .requireContext()
+        .resources
+        .getBoolean(R.bool.audiobook_player_debug_sleep_timer_now_enabled)
 
     return PlayerSleepTimerConfigurationPreset.entries.filter { configuration ->
       when (configuration) {
@@ -82,6 +83,7 @@ class PlayerSleepTimerFragment : DialogFragment() {
         MINUTES_60,
         OFF,
         END_OF_CHAPTER -> true
+
         NOW -> nowEnabled
       }
     }

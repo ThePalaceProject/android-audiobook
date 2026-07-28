@@ -1,3 +1,3 @@
 package org.librarysimplified.audiobook.feedbooks
 
-class CertificateRetrievalException() : Exception()
+class CertificateRetrievalException : Exception()

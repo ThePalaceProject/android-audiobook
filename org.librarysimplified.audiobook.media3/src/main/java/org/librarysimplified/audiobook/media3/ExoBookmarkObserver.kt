@@ -36,7 +36,6 @@ class ExoBookmarkObserver private constructor(
   private val onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit,
   private val isStreamingNow: () -> Boolean,
 ) : AutoCloseable {
-
   private val logger =
     LoggerFactory.getLogger(ExoBookmarkObserver::class.java)
 
@@ -50,8 +49,8 @@ class ExoBookmarkObserver private constructor(
     this.subscription = this.player.events.subscribe(this::onPlayerEvent)
   }
 
-  private fun onPlayerEvent(event: PlayerEvent) {
-    return when (event) {
+  private fun onPlayerEvent(event: PlayerEvent) =
+    when (event) {
       is PlayerEventPlaybackProgressUpdate -> {
         if (!this.player.isClosed) {
           this.onPlayerProgressUpdate(event)
@@ -73,10 +72,10 @@ class ExoBookmarkObserver private constructor(
       is PlayerEventPlaybackPaused,
       is PlayerEventPlaybackStarted,
       is PlayerEventPlaybackStopped,
-      is PlayerEventPlaybackWaitingForAction ->
+      is PlayerEventPlaybackWaitingForAction -> {
         Unit
+      }
     }
-  }
 
   private fun onPlayerProgressUpdate(event: PlayerEventPlaybackProgressUpdate) {
     /*
@@ -124,13 +123,12 @@ class ExoBookmarkObserver private constructor(
       player: PlayerType,
       onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit,
       isStreamingNow: () -> Boolean
-    ): ExoBookmarkObserver {
-      return ExoBookmarkObserver(
+    ): ExoBookmarkObserver =
+      ExoBookmarkObserver(
         player = player,
         onBookmarkCreate = onBookmarkCreate,
         isStreamingNow = isStreamingNow
       )
-    }
   }
 
   override fun close() {

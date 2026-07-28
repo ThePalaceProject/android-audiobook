@@ -11,9 +11,7 @@ import java.net.URI
 data class PlayerManifestReadingOrderID(
   val text: String
 ) {
-
   companion object {
-
     /**
      * Create a reading order item identifier from the possibly null URI.
      *
@@ -25,18 +23,15 @@ data class PlayerManifestReadingOrderID(
     fun create(
       index: Int,
       uri: URI?
-    ): PlayerManifestReadingOrderID {
-      return if (uri != null) {
+    ): PlayerManifestReadingOrderID =
+      if (uri != null) {
         PlayerManifestReadingOrderID(uri.toString())
       } else {
         PlayerManifestReadingOrderID(
           "urn:org.thepalaceproject:readingOrderItem:$index"
         )
       }
-    }
   }
 
-  override fun toString(): String {
-    return this.text
-  }
+  override fun toString(): String = this.text
 }

@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 class DownloadProvider private constructor(
   private val requests: LinkedBlockingQueue<Request>
 ) : PlayerDownloadProviderType {
-
   private val log =
     LoggerFactory.getLogger(DownloadProvider::class.java)
 
@@ -37,16 +36,13 @@ class DownloadProvider private constructor(
     AtomicBoolean(false)
 
   companion object {
-
     /**
      * Create a new download provider.
      *
      * @param executor A listening executor that will be used for download tasks
      */
 
-    fun create(
-      executor: ExecutorService
-    ): PlayerDownloadProviderType {
+    fun create(executor: ExecutorService): PlayerDownloadProviderType {
       val provider = DownloadProvider(LinkedBlockingQueue())
       executor.execute(provider::start)
       return provider
@@ -71,9 +67,7 @@ class DownloadProvider private constructor(
     }
   }
 
-  private fun executeRequest(
-    request: Request
-  ) {
+  private fun executeRequest(request: Request) {
     this.reportProgress(request.downloadRequest, 0)
 
     try {
@@ -87,9 +81,7 @@ class DownloadProvider private constructor(
     }
   }
 
-  override fun download(
-    request: PlayerDownloadRequest
-  ): CompletableFuture<Unit> {
+  override fun download(request: PlayerDownloadRequest): CompletableFuture<Unit> {
     val result = CompletableFuture<Unit>()
     return if (!this.cancelling.get()) {
       this.reportProgress(request, 0)

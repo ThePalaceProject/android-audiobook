@@ -12,12 +12,11 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestScalar
  */
 
 object WebPubEncryptedParsers {
-
   fun forEncrypted(
     context: FRParserContextType,
     receiver: (PlayerManifestEncrypted) -> Unit = FRValueParsers.ignoringReceiver()
-  ): FRValueParserType<PlayerManifestEncrypted> {
-    return WebPubScalarParsers.forMap().flatMap { keys ->
+  ): FRValueParserType<PlayerManifestEncrypted> =
+    WebPubScalarParsers.forMap().flatMap { keys ->
       val scheme = keys["scheme"]
       if (scheme is PlayerManifestScalar.PlayerManifestScalarString) {
         val encrypted =
@@ -34,5 +33,4 @@ object WebPubEncryptedParsers {
         )
       }
     }
-  }
 }

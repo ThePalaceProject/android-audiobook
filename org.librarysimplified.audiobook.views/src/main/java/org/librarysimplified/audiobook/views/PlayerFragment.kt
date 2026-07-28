@@ -77,7 +77,6 @@ import kotlin.math.max
 import kotlin.math.min
 
 class PlayerFragment : PlayerBaseFragment() {
-
   private lateinit var playerRateDrawerViews: Set<View>
   private val logger =
     LoggerFactory.getLogger(PlayerFragment::class.java)
@@ -338,7 +337,9 @@ class PlayerFragment : PlayerBaseFragment() {
   override fun onStart() {
     super.onStart()
 
-    this.requireActivity().window.decorView.viewTreeObserver
+    this
+      .requireActivity()
+      .window.decorView.viewTreeObserver
       .addOnGlobalFocusChangeListener { oldFocus, newFocus ->
         this.onFocusChanged(oldFocus, newFocus)
       }
@@ -347,35 +348,47 @@ class PlayerFragment : PlayerBaseFragment() {
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
 
     this.subscriptions = CompositeDisposable()
-    this.subscriptions.add(PlayerModel.playerEvents.subscribe { event ->
-      this.onPlayerEvent(event)
-    })
-    this.subscriptions.add(PlayerSleepTimer.events.subscribe { event ->
-      this.onSleepTimerEvent(event)
-    })
-    this.subscriptions.add(PlayerModel.viewCommands.subscribe { event ->
-      this.onPlayerViewCommand(event)
-    })
-    this.subscriptions.add(PlayerModel.downloadEvents.subscribe { event ->
-      this.onDownloadEvent()
-    })
-    this.subscriptions.add(PlayerObservableAuthorizationHandler.credentialsEvents.subscribe { event ->
-      this.onOnCredentialsValid(event)
-    })
+    this.subscriptions.add(
+      PlayerModel.playerEvents.subscribe { event ->
+        this.onPlayerEvent(event)
+      }
+    )
+    this.subscriptions.add(
+      PlayerSleepTimer.events.subscribe { event ->
+        this.onSleepTimerEvent(event)
+      }
+    )
+    this.subscriptions.add(
+      PlayerModel.viewCommands.subscribe { event ->
+        this.onPlayerViewCommand(event)
+      }
+    )
+    this.subscriptions.add(
+      PlayerModel.downloadEvents.subscribe { event ->
+        this.onDownloadEvent()
+      }
+    )
+    this.subscriptions.add(
+      PlayerObservableAuthorizationHandler.credentialsEvents.subscribe { event ->
+        this.onOnCredentialsValid(event)
+      }
+    )
 
     run {
-      val sub = PlayerModel.seekIncrementBackwardMs.subscribe { _, newMs ->
-        val sec = TimeUnit.SECONDS.convert(newMs, TimeUnit.MILLISECONDS)
-        this.playerSkipBackwardButtonText.setText(sec.toString())
-      }
+      val sub =
+        PlayerModel.seekIncrementBackwardMs.subscribe { _, newMs ->
+          val sec = TimeUnit.SECONDS.convert(newMs, TimeUnit.MILLISECONDS)
+          this.playerSkipBackwardButtonText.setText(sec.toString())
+        }
       this.subscriptions.add(Disposables.fromAction(sub::close))
     }
 
     run {
-      val sub = PlayerModel.seekIncrementForwardMs.subscribe { _, newMs ->
-        val sec = TimeUnit.SECONDS.convert(newMs, TimeUnit.MILLISECONDS)
-        this.playerSkipForwardButtonText.setText(sec.toString())
-      }
+      val sub =
+        PlayerModel.seekIncrementForwardMs.subscribe { _, newMs ->
+          val sec = TimeUnit.SECONDS.convert(newMs, TimeUnit.MILLISECONDS)
+          this.playerSkipForwardButtonText.setText(sec.toString())
+        }
       this.subscriptions.add(Disposables.fromAction(sub::close))
     }
 
@@ -396,10 +409,11 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.playerRateViewsLock()
 
-    this.bottomSheet.setOpenListener(object : PlayerBottomSheetType.SheetOpenListenerType {
-      override fun onOpenChanged(state: Double) {
-        val c = this@PlayerFragment
-        c.bottomSheetDarken.alpha = (c.bottomSheetDarkenOpacityMax * state).toFloat()
+    this.bottomSheet.setOpenListener(
+      object : PlayerBottomSheetType.SheetOpenListenerType {
+        override fun onOpenChanged(state: Double) {
+          val c = this@PlayerFragment
+          c.bottomSheetDarken.alpha = (c.bottomSheetDarkenOpacityMax * state).toFloat()
 
         /*
          * If the drawer is fully open, make all the other views disabled. If the drawer is
@@ -408,19 +422,20 @@ class PlayerFragment : PlayerBaseFragment() {
          * to stop the user clicking on things in the background.
          */
 
-        if (state >= 0.99) {
-          c.bottomSheetDarken.setOnClickListener {
-            c.bottomSheet.drawerClose()
+          if (state >= 0.99) {
+            c.bottomSheetDarken.setOnClickListener {
+              c.bottomSheet.drawerClose()
+            }
+            c.bottomSheetDarken.isClickable = true
+            c.playerRateViewsUnlock()
+          } else if (state <= 0.01) {
+            c.bottomSheetDarken.setOnClickListener(null)
+            c.bottomSheetDarken.isClickable = false
+            c.playerRateViewsLock()
           }
-          c.bottomSheetDarken.isClickable = true
-          c.playerRateViewsUnlock()
-        } else if (state <= 0.01) {
-          c.bottomSheetDarken.setOnClickListener(null)
-          c.bottomSheetDarken.isClickable = false
-          c.playerRateViewsLock()
         }
       }
-    })
+    )
 
     this.playerRateSeekBar.progress = 100
     this.playerRateSeekBar.setOnSeekBarChangeListener(
@@ -447,7 +462,8 @@ class PlayerFragment : PlayerBaseFragment() {
           }
           PlayerModel.setPlaybackRate(PlayerPlaybackRate(p0.progress.toDouble() / 100.0))
         }
-      })
+      }
+    )
 
     this.onPlayerEventPlaybackRateChanged()
   }
@@ -544,9 +560,7 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onOnCredentialsValid(
-    valid: Boolean
-  ) {
+  private fun onOnCredentialsValid(valid: Boolean) {
     if (valid) {
       this.playerStatusArea.alpha = 0.0f
       this.playerStatusButton.visibility = GONE
@@ -602,8 +616,8 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerViewCommand(event: PlayerViewCommand) {
-    return when (event) {
+  private fun onPlayerViewCommand(event: PlayerViewCommand) =
+    when (event) {
       PlayerViewCoverImageChanged -> {
         this.coverView.setImageBitmap(PlayerModel.coverImage)
       }
@@ -621,13 +635,10 @@ class PlayerFragment : PlayerBaseFragment() {
         // Nothing to do
       }
     }
-  }
 
   @UiThread
-  private fun onSleepTimerEvent(
-    event: PlayerSleepTimerEvent
-  ) {
-    return when (event) {
+  private fun onSleepTimerEvent(event: PlayerSleepTimerEvent) =
+    when (event) {
       PlayerSleepTimerFinished -> {
         // Nothing to do
       }
@@ -636,18 +647,14 @@ class PlayerFragment : PlayerBaseFragment() {
         this.onPlayerSleepTimerStatusChanged(event)
       }
     }
-  }
 
   @UiThread
-  private fun onPlayerSleepTimerStatusChanged(
-    event: PlayerSleepTimerStatusChanged
-  ) {
-    return when (val s = event.newStatus) {
+  private fun onPlayerSleepTimerStatusChanged(event: PlayerSleepTimerStatusChanged) =
+    when (val s = event.newStatus) {
       is Paused -> this.onPlayerSleepTimerStatusPaused(s)
       is Running -> this.onPlayerSleepTimerStatusRunning(s)
       is Stopped -> this.onPlayerSleepTimerStatusStopped()
     }
-  }
 
   @UiThread
   private fun onPlayerSleepTimerStatusStopped() {
@@ -657,10 +664,8 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerSleepTimerStatusPaused(
-    status: Paused
-  ) {
-    return when (val c = status.configuration) {
+  private fun onPlayerSleepTimerStatusPaused(status: Paused) =
+    when (val c = status.configuration) {
       EndOfChapter -> {
         this.menuSleep.actionView?.contentDescription =
           this.sleepTimerContentDescriptionEndOfChapter()
@@ -682,13 +687,10 @@ class PlayerFragment : PlayerBaseFragment() {
         this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
     }
-  }
 
   @UiThread
-  private fun onPlayerSleepTimerStatusRunning(
-    status: Running
-  ) {
-    return when (val c = status.configuration) {
+  private fun onPlayerSleepTimerStatusRunning(status: Running) =
+    when (val c = status.configuration) {
       EndOfChapter -> {
         this.menuSleep.actionView?.contentDescription =
           this.sleepTimerContentDescriptionEndOfChapter()
@@ -710,7 +712,6 @@ class PlayerFragment : PlayerBaseFragment() {
         this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
     }
-  }
 
   private fun sleepTimerContentDescriptionEndOfChapter(): String {
     val builder = java.lang.StringBuilder(128)
@@ -740,10 +741,8 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEvent(
-    event: PlayerEvent
-  ) {
-    return when (event) {
+  private fun onPlayerEvent(event: PlayerEvent) =
+    when (event) {
       is PlayerAccessibilityEvent -> {
         // Nothing to do
       }
@@ -804,11 +803,8 @@ class PlayerFragment : PlayerBaseFragment() {
         this.onPlayerEventPlaybackPreparing(event)
       }
     }
-  }
 
-  private fun showError(
-    event: PlayerEventError
-  ) {
+  private fun showError(event: PlayerEventError) {
     try {
       this.playerStatusIcon.setImageResource(R.drawable.player_status_error)
       this.publishStatusAreaMessage(
@@ -823,21 +819,18 @@ class PlayerFragment : PlayerBaseFragment() {
     }
   }
 
-  private fun publishStatusAreaMessage(
-    message: String
-  ) {
+  private fun publishStatusAreaMessage(message: String) {
     this.playerStatusText.text = message
     this.playerStatusArea.alpha = 1.0f
     this.playerStatusButton.visibility = GONE
-    this.playerStatusArea.animate()
+    this.playerStatusArea
+      .animate()
       .alpha(0.0f)
       .setDuration(30000L)
       .start()
   }
 
-  private fun publishPauseReason(
-    reason: PlayerPauseReason
-  ) {
+  private fun publishPauseReason(reason: PlayerPauseReason) {
     when (reason) {
       PlayerPauseReason.PAUSE_REASON_INITIALLY_PAUSED -> {
         this.playerPauseReason.text = ""
@@ -881,16 +874,12 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackProgressUpdate(
-    event: PlayerEventPlaybackProgressUpdate
-  ) {
+  private fun onPlayerEventPlaybackProgressUpdate(event: PlayerEventPlaybackProgressUpdate) {
     this.onEventUpdateTimeRelatedUI(event.positionMetadata)
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackStarted(
-    event: PlayerEventPlaybackStarted
-  ) {
+  private fun onPlayerEventPlaybackStarted(event: PlayerEventPlaybackStarted) {
     this.playerDebugStatus.text = "Started"
 
     this.playerBusy.visibility = GONE
@@ -906,9 +895,7 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackChapterWaiting(
-    event: PlayerEventChapterWaiting
-  ) {
+  private fun onPlayerEventPlaybackChapterWaiting(event: PlayerEventChapterWaiting) {
     this.playerDebugStatus.text = "Waiting for chapter to download…"
 
     this.playerStatusIcon.setImageResource(R.drawable.player_status_download)
@@ -934,9 +921,7 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackBuffering(
-    event: PlayerEventPlaybackBuffering
-  ) {
+  private fun onPlayerEventPlaybackBuffering(event: PlayerEventPlaybackBuffering) {
     this.playerDebugStatus.text = "Buffering…"
 
     this.playerBusy.visibility = VISIBLE
@@ -947,9 +932,7 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackPreparing(
-    event: PlayerEventPlaybackPreparing
-  ) {
+  private fun onPlayerEventPlaybackPreparing(event: PlayerEventPlaybackPreparing) {
     this.playerDebugStatus.text = "Preparing…"
 
     this.playerBusy.visibility = VISIBLE
@@ -960,9 +943,7 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackStopped(
-    event: PlayerEventPlaybackStopped
-  ) {
+  private fun onPlayerEventPlaybackStopped(event: PlayerEventPlaybackStopped) {
     this.playerDebugStatus.text = "Stopped"
 
     this.playerBusy.visibility = GONE
@@ -974,9 +955,7 @@ class PlayerFragment : PlayerBaseFragment() {
   }
 
   @UiThread
-  private fun onPlayerEventPlaybackPaused(
-    event: PlayerEventPlaybackPaused
-  ) {
+  private fun onPlayerEventPlaybackPaused(event: PlayerEventPlaybackPaused) {
     this.playerDebugStatus.text = "Paused"
 
     this.playerBusy.visibility = GONE
@@ -993,8 +972,8 @@ class PlayerFragment : PlayerBaseFragment() {
     this.subscriptions.dispose()
   }
 
-  private fun handleTouchOnSeekbar(event: MotionEvent?): Boolean {
-    return when (event?.action) {
+  private fun handleTouchOnSeekbar(event: MotionEvent?): Boolean =
+    when (event?.action) {
       MotionEvent.ACTION_DOWN -> {
         this.playerPositionDragging = true
         this.playerPosition.onTouchEvent(event)
@@ -1017,7 +996,6 @@ class PlayerFragment : PlayerBaseFragment() {
         this.playerPosition.onTouchEvent(event)
       }
     }
-  }
 
   private fun onReleasedPlayerPositionBar() {
     val tocItemOffsetMilliseconds =
@@ -1028,13 +1006,14 @@ class PlayerFragment : PlayerBaseFragment() {
     PlayerModel.movePlayheadToAbsoluteTime(newOffset)
   }
 
-  private fun onEventUpdateTimeRelatedUI(
-    positionMetadata: PlayerManifestPositionMetadata,
-  ) {
+  private fun onEventUpdateTimeRelatedUI(positionMetadata: PlayerManifestPositionMetadata,) {
     val lower =
       positionMetadata.tocItem.intervalAbsoluteMilliseconds.lower()
     val upperRelative =
-      positionMetadata.tocItem.intervalAbsoluteMilliseconds.size().value.toInt()
+      positionMetadata.tocItem.intervalAbsoluteMilliseconds
+        .size()
+        .value
+        .toInt()
     val progress =
       positionMetadata.tocItemPosition.millis.toInt()
 

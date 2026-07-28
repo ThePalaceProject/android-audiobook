@@ -8,13 +8,10 @@ package org.librarysimplified.audiobook.license_check.api
  */
 
 interface LicenseCheckProviderType {
-
   /**
    * Construct a new license check, using checks from the given providers and operating on
    * the given manifest.
    */
 
-  fun createLicenseCheck(
-    parameters: LicenseCheckParameters
-  ): LicenseCheckType
+  fun createLicenseCheck(parameters: LicenseCheckParameters): LicenseCheckType
 }

@@ -7,7 +7,6 @@ import org.joda.time.Duration
  */
 
 sealed class PlayerSleepTimerConfiguration {
-
   /**
    * The sleep timer will be completed when the given duration has elapsed.
    */

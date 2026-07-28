@@ -9,20 +9,13 @@ import org.librarysimplified.audiobook.media3.ExoEngineProvider.Companion.LCP_SC
  */
 
 object ExoLCP {
-
   /**
    * @return `true` if the given manifest implies LCP encryption is used
    */
 
-  fun isLCP(
-    manifest: PlayerManifest
-  ): Boolean {
-    return manifest.readingOrder.any { item -> this.isLCPLink(item.link) }
-  }
+  fun isLCP(manifest: PlayerManifest): Boolean = manifest.readingOrder.any { item -> this.isLCPLink(item.link) }
 
-  private fun isLCPLink(
-    link: PlayerManifestLink.LinkBasic
-  ): Boolean {
+  private fun isLCPLink(link: PlayerManifestLink.LinkBasic): Boolean {
     val enc = link.properties.encrypted
     if (enc != null) {
       return enc.scheme == LCP_SCHEME

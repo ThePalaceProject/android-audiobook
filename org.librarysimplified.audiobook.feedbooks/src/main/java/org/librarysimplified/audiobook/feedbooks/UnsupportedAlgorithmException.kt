@@ -1,3 +1,5 @@
 package org.librarysimplified.audiobook.feedbooks
 
-class UnsupportedAlgorithmException(message: String?) : Exception(message)
+class UnsupportedAlgorithmException(
+  message: String?
+) : Exception(message)

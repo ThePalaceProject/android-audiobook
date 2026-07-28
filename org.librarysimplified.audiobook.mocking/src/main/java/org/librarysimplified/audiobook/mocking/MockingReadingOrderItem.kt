@@ -20,7 +20,6 @@ class MockingReadingOrderItem(
   override val duration: Duration,
   override val id: PlayerManifestReadingOrderID
 ) : PlayerReadingOrderItemType {
-
   var downloadTasksAreSupported = true
 
   override val downloadTasksSupported: Boolean

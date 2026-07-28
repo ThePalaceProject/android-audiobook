@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory
 class ManifestFulfillmentBasic(
   private val configuration: ManifestFulfillmentBasicParameters
 ) : ManifestFulfillmentStrategyType {
-
   private val logger =
     LoggerFactory.getLogger(ManifestFulfillmentBasic::class.java)
 
@@ -95,13 +94,14 @@ class ManifestFulfillmentBasic(
           ManifestFulfillmentError(
             message = responseMessage,
             extraMessages = listOf(),
-            serverData = ManifestFulfillmentError.ServerData(
-              uri = this.configuration.uri,
-              code = responseCode,
-              receivedBody = status.bodyStream?.readBytes() ?: ByteArray(0),
-              receivedContentType = contentType,
-              problemReport = status.properties.problemReport
-            )
+            serverData =
+              ManifestFulfillmentError.ServerData(
+                uri = this.configuration.uri,
+                code = responseCode,
+                receivedBody = status.bodyStream?.readBytes() ?: ByteArray(0),
+                receivedContentType = contentType,
+                problemReport = status.properties.problemReport
+              )
           )
         )
       }
@@ -113,13 +113,14 @@ class ManifestFulfillmentBasic(
           ManifestFulfillmentError(
             message = responseMessage,
             extraMessages = listOf(),
-            serverData = ManifestFulfillmentError.ServerData(
-              uri = this.configuration.uri,
-              code = responseCode,
-              receivedBody = ByteArray(0),
-              receivedContentType = contentType,
-              problemReport = status.properties?.problemReport
-            )
+            serverData =
+              ManifestFulfillmentError.ServerData(
+                uri = this.configuration.uri,
+                code = responseCode,
+                receivedBody = ByteArray(0),
+                receivedContentType = contentType,
+                problemReport = status.properties?.problemReport
+              )
           )
         )
       }

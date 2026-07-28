@@ -9,7 +9,6 @@ import java.security.SecureRandom
  */
 
 object ExoFileIO {
-
   /**
    * Delete the file `f` if it exists.
    *

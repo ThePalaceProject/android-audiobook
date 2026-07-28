@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 internal class LicenseCheck internal constructor(
   private val parameters: LicenseCheckParameters
 ) : LicenseCheckType {
-
   private val logger =
     LoggerFactory.getLogger(LicenseChecks::class.java)
 
@@ -25,24 +24,25 @@ internal class LicenseCheck internal constructor(
     for (checkProvider in this.parameters.checks) {
       this.logger.debug("[{}]: executing", checkProvider.name)
 
-      val checkResult = try {
-        val singleCheck =
-          checkProvider.createLicenseCheck(
-            SingleLicenseCheckParameters(
-              manifest = this.parameters.manifest,
-              httpClient = this.parameters.httpClient,
-              onStatusChanged = this.eventSubject::onNext,
-              cacheDirectory = this.parameters.cacheDirectory
+      val checkResult =
+        try {
+          val singleCheck =
+            checkProvider.createLicenseCheck(
+              SingleLicenseCheckParameters(
+                manifest = this.parameters.manifest,
+                httpClient = this.parameters.httpClient,
+                onStatusChanged = this.eventSubject::onNext,
+                cacheDirectory = this.parameters.cacheDirectory
+              )
             )
+          singleCheck.execute()
+        } catch (e: Exception) {
+          this.logger.error("[{}]: failed: ", checkProvider.name, e)
+          SingleLicenseCheckResult.Failed(
+            e.message ?: e.javaClass.name,
+            e
           )
-        singleCheck.execute()
-      } catch (e: Exception) {
-        this.logger.error("[{}]: failed: ", checkProvider.name, e)
-        SingleLicenseCheckResult.Failed(
-          e.message ?: e.javaClass.name,
-          e
-        )
-      }
+        }
 
       this.logger.debug(
         "[{}]: result: {} - {}",

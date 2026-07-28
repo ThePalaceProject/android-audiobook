@@ -21,7 +21,6 @@ import java.util.concurrent.ScheduledExecutorService
 class ExoEngineProvider(
   private val threadFactory: (Runnable) -> ExoEngineThread
 ) : PlayerAudioEngineProviderType {
-
   companion object {
     val LCP_SCHEME =
       "http://readium.org/2014/01/lcp"
@@ -49,9 +48,7 @@ class ExoEngineProvider(
   private val engineExecutor: ScheduledExecutorService =
     Executors.newSingleThreadScheduledExecutor(this.threadFactory::invoke)
 
-  override fun tryRequest(
-    request: PlayerAudioEngineRequest
-  ): PlayerAudioBookProviderType? {
+  override fun tryRequest(request: PlayerAudioEngineRequest): PlayerAudioBookProviderType? {
     val manifest = request.manifest
     for (item in manifest.readingOrder) {
       val link = item.link
@@ -88,6 +85,7 @@ class ExoEngineProvider(
         is PlayerBookSource.PlayerBookSourceLicenseFile -> {
           // At least one of these is required.
         }
+
         PlayerBookSource.PlayerBookSourceManifestOnly -> {
           this.log.debug("LCP audiobooks must either have a book file, or a license file.")
         }
@@ -116,16 +114,12 @@ class ExoEngineProvider(
     )
   }
 
-  override fun name(): String {
-    return "org.librarysimplified.audiobook.media3"
-  }
+  override fun name(): String = "org.librarysimplified.audiobook.media3"
 
-  override fun version(): PlayerVersion {
-    return this.version
-  }
+  override fun version(): PlayerVersion = this.version
 
-  override fun toString(): String {
-    return StringBuilder(32)
+  override fun toString(): String =
+    StringBuilder(32)
       .append(this.name())
       .append(':')
       .append(this.version.major)
@@ -134,5 +128,4 @@ class ExoEngineProvider(
       .append('.')
       .append(this.version.patch)
       .toString()
-  }
 }

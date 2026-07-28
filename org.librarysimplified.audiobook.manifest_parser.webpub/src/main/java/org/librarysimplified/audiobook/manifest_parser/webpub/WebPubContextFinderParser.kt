@@ -17,14 +17,13 @@ import org.slf4j.LoggerFactory
 class WebPubContextFinderParser(
   onReceive: (FRParserContextType, List<String>) -> Unit = FRValueParsers.ignoringReceiverWithContext()
 ) : FRAbstractParserObject<List<String>>(onReceive) {
-
   private val logger =
     LoggerFactory.getLogger(WebPubContextFinderParser::class.java)
   private val contextValues =
     mutableListOf<String>()
 
-  override fun schema(context: FRParserContextType): FRParserObjectSchema {
-    return FRParserObjectSchema(
+  override fun schema(context: FRParserContextType): FRParserObjectSchema =
+    FRParserObjectSchema(
       listOf(
         FRParserObjectFieldSchema(
           name = "@context",
@@ -33,7 +32,6 @@ class WebPubContextFinderParser(
         )
       )
     )
-  }
 
   /**
    * Create a parser that parses a `@context` field. A `@context` field may either have
@@ -42,8 +40,8 @@ class WebPubContextFinderParser(
    * are interested in all of the strings.
    */
 
-  private fun createContextValueParser(): FRParserArrayOrSingleType<String> {
-    return FRValueParsers.forArrayOrSingle(
+  private fun createContextValueParser(): FRParserArrayOrSingleType<String> =
+    FRValueParsers.forArrayOrSingle(
       forItem = {
         FRValueParsers.forScalarOrObject(
           forScalar = {
@@ -58,8 +56,6 @@ class WebPubContextFinderParser(
         )
       }
     )
-  }
 
-  override fun onCompleted(context: FRParserContextType): FRParseResult<List<String>> =
-    FRParseResult.succeed(this.contextValues.toList())
+  override fun onCompleted(context: FRParserContextType): FRParseResult<List<String>> = FRParseResult.succeed(this.contextValues.toList())
 }

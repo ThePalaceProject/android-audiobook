@@ -6,5 +6,4 @@ import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentS
  * The type of providers that download manifests directly using HTTP Basic authentication.
  */
 
-interface ManifestFulfillmentBasicType :
-  ManifestFulfillmentStrategyProviderType<ManifestFulfillmentBasicParameters>
+interface ManifestFulfillmentBasicType : ManifestFulfillmentStrategyProviderType<ManifestFulfillmentBasicParameters>

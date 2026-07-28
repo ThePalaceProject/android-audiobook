@@ -8,7 +8,6 @@ import org.librarysimplified.http.api.LSHTTPAuthorizationType
  */
 
 object PlayerAuthorizationHandlerNoOp : PlayerAuthorizationHandlerType {
-
   override fun onAuthorizationIsNoLongerInvalid(
     source: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind
@@ -26,15 +25,11 @@ object PlayerAuthorizationHandlerNoOp : PlayerAuthorizationHandlerType {
   override fun onConfigureAuthorizationFor(
     source: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind
-  ): LSHTTPAuthorizationType? {
-    return null
-  }
+  ): LSHTTPAuthorizationType? = null
 
   override fun <T : Any> onRequireCustomCredentialsFor(
     providerName: String,
     kind: PlayerDownloadRequest.Kind,
     credentialsType: Class<T>
-  ): T {
-    throw UnsupportedOperationException("No available credentials of type $credentialsType")
-  }
+  ): T = throw UnsupportedOperationException("No available credentials of type $credentialsType")
 }

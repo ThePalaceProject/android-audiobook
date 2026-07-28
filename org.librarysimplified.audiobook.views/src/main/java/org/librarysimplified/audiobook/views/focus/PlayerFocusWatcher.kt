@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 
 object PlayerFocusWatcher {
-
   private var focusRequest: AudioFocusRequest? = null
 
   private lateinit var context: Application
@@ -28,9 +27,7 @@ object PlayerFocusWatcher {
   private val wasPaused =
     AtomicBoolean(false)
 
-  fun enable(
-    newContext: Application
-  ) {
+  fun enable(newContext: Application) {
     this.context = newContext
     if (this.enabled.compareAndSet(false, true)) {
       this.logger.debug("Audio focus watcher enabled.")
@@ -57,7 +54,8 @@ object PlayerFocusWatcher {
         }
 
       this.focusRequest =
-        AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+        AudioFocusRequest
+          .Builder(AudioManager.AUDIOFOCUS_GAIN)
           .setOnAudioFocusChangeListener(afChangeListener)
           .build()
 

@@ -9,7 +9,6 @@ import java.util.UUID
  */
 
 interface PlayerType : AutoCloseable {
-
   /**
    * An ID value that uniquely identifies this player instance.
    */

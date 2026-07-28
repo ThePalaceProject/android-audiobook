@@ -10,7 +10,6 @@ import java.util.Properties
  */
 
 object PlayerVersions {
-
   private val logger =
     LoggerFactory.getLogger(PlayerVersions::class.java)
 
@@ -57,14 +56,13 @@ object PlayerVersions {
    * Load version information from the given stream, logging errors and returning `null` on failure.
    */
 
-  fun ofPropertiesStreamOrNull(stream: InputStream): PlayerVersion? {
-    return try {
+  fun ofPropertiesStreamOrNull(stream: InputStream): PlayerVersion? =
+    try {
       this.ofPropertiesStream(stream)
     } catch (e: Exception) {
       this.logger.error("could not load property stream: ", e)
       null
     }
-  }
 
   /**
    * Load version information from the given properties.

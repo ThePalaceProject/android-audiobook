@@ -8,5 +8,4 @@ import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentS
  * @see "https://developer.overdrive.com/apis/patron-auth"
  */
 
-interface OPAManifestFulfillmentStrategyProviderType :
-  ManifestFulfillmentStrategyProviderType<OPAParameters>
+interface OPAManifestFulfillmentStrategyProviderType : ManifestFulfillmentStrategyProviderType<OPAParameters>

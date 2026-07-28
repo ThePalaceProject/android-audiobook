@@ -36,7 +36,6 @@ class FindawayPlayer(
   private val book: FindawayAudioBook,
   private val engine: AudioEngine
 ) : PlayerType {
-
   private val log =
     LoggerFactory.getLogger(FindawayPlayer::class.java)
 
@@ -73,7 +72,7 @@ class FindawayPlayer(
 
   private val engineAdapter: FindawayAdapter
 
-  /**
+  /*
    * The "constructor" for the class.
    */
 
@@ -134,9 +133,7 @@ class FindawayPlayer(
     this.engineAdapter.playFromCurrentPosition()
   }
 
-  private fun opEnginePause(
-    reason: PlayerPauseReason
-  ) {
+  private fun opEnginePause(reason: PlayerPauseReason) {
     this.log.debug("[{}]: opEnginePause {}", this.id, reason)
     PlayerUIThread.checkIsUIThread()
 
@@ -144,9 +141,7 @@ class FindawayPlayer(
     this.engine.playbackEngine.pause()
   }
 
-  private fun opEngineStop(
-    reason: PlayerPauseReason
-  ) {
+  private fun opEngineStop(reason: PlayerPauseReason) {
     this.log.debug("[{}]: opEngineStop {}", this.id, reason)
     PlayerUIThread.checkIsUIThread()
 
@@ -158,9 +153,7 @@ class FindawayPlayer(
     PlayerBlame.checkNotClosed(this.closed)
   }
 
-  private fun opSkipForward(
-    milliseconds: Long
-  ) {
+  private fun opSkipForward(milliseconds: Long) {
     this.log.debug("[{}]: opSkipForward: {}", this.id, milliseconds)
     PlayerUIThread.checkIsUIThread()
 
@@ -174,18 +167,14 @@ class FindawayPlayer(
     this.engineAdapter.skipBack(milliseconds)
   }
 
-  private fun opSkipToPreviousChapter(
-    offset: Long
-  ) {
+  private fun opSkipToPreviousChapter(offset: Long) {
     this.log.debug("[{}]: opSkipToPreviousChapter: {}", this.id, offset)
     PlayerUIThread.checkIsUIThread()
 
     this.engineAdapter.skipToPreviousChapter()
   }
 
-  private fun opSkipToNextChapter(
-    offset: Long
-  ) {
+  private fun opSkipToNextChapter(offset: Long) {
     this.log.debug("[{}]: opSkipToNextChapter: {}", this.id, offset)
     PlayerUIThread.checkIsUIThread()
 
@@ -223,9 +212,7 @@ class FindawayPlayer(
     }
   }
 
-  override fun pause(
-    reason: PlayerPauseReason
-  ) {
+  override fun pause(reason: PlayerPauseReason) {
     this.checkNotClosed()
     this.log.debug("[{}]: pause", this.id)
 
@@ -237,9 +224,7 @@ class FindawayPlayer(
     }
   }
 
-  override fun skipPlayhead(
-    milliseconds: Long
-  ) {
+  override fun skipPlayhead(milliseconds: Long) {
     this.checkNotClosed()
     this.log.debug("[{}]: skipPlayhead: {}", this.id, milliseconds)
 
@@ -269,9 +254,7 @@ class FindawayPlayer(
   override val playbackIntention: PlayerPlaybackIntention
     get() = this.intention
 
-  override fun movePlayheadToLocation(
-    location: PlayerPosition
-  ) {
+  override fun movePlayheadToLocation(location: PlayerPosition) {
     this.checkNotClosed()
 
     runOnUIThread {
@@ -329,7 +312,11 @@ class FindawayPlayer(
     this.checkNotClosed()
 
     runOnUIThread {
-      this.engineAdapter.movePlayheadToLocation(this.book.readingOrder.first().startingPosition)
+      this.engineAdapter.movePlayheadToLocation(
+        this.book.readingOrder
+          .first()
+          .startingPosition
+      )
     }
   }
 
@@ -341,9 +328,7 @@ class FindawayPlayer(
     }
   }
 
-  override fun bookmarkDelete(
-    bookmark: PlayerBookmark
-  ) {
+  override fun bookmarkDelete(bookmark: PlayerBookmark) {
     this.checkNotClosed()
 
     runOnUIThread {

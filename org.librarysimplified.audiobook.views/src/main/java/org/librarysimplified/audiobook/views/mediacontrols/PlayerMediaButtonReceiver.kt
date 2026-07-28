@@ -6,7 +6,6 @@ import androidx.media.session.MediaButtonReceiver
 import org.slf4j.LoggerFactory
 
 class PlayerMediaButtonReceiver : MediaButtonReceiver() {
-
   private val logger =
     LoggerFactory.getLogger(PlayerMediaButtonReceiver::class.java)
 

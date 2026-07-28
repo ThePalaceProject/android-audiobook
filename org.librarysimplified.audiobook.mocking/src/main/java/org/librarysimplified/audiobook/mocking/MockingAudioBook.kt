@@ -26,7 +26,6 @@ class MockingAudioBook(
   override val id: PlayerBookID,
   val players: (MockingAudioBook) -> MockingPlayer
 ) : PlayerAudioBookType {
-
   val statusEvents: BehaviorSubject<PlayerReadingOrderItemDownloadStatus> = BehaviorSubject.create()
   val spineItems: MutableList<MockingReadingOrderItem> = mutableListOf()
 
@@ -61,9 +60,7 @@ class MockingAudioBook(
   override val wholeBookDownloadTask: PlayerDownloadWholeBookTaskType
     get() = this.wholeTask
 
-  override fun replaceManifest(
-    manifest: PlayerManifest
-  ): CompletableFuture<Unit> {
+  override fun replaceManifest(manifest: PlayerManifest): CompletableFuture<Unit> {
     val future = CompletableFuture<Unit>()
     future.complete(Unit)
     return future

@@ -7,7 +7,6 @@ import android.app.Application
  */
 
 interface PlayerAudioEngineProviderType {
-
   /**
    * @return The name of the audio engine provider as a reverse-DNS style name
    */

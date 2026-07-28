@@ -17,7 +17,6 @@ import java.util.UUID
  */
 
 class FeedbooksPlayerExtension : PlayerAuthorizationHandlerExtensionType {
-
   /**
    * The configuration data required for operation. If no configuration information
    * is provided, the extension is disabled.
@@ -36,37 +35,39 @@ class FeedbooksPlayerExtension : PlayerAuthorizationHandlerExtensionType {
     link: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind,
     authorization: LSHTTPAuthorizationType?
-  ): PlayerAuthorizationHandlerExtensionType.AuthenticationOverrideType {
-    return when (kind) {
-      PlayerDownloadRequest.Kind.CHAPTER ->
+  ): PlayerAuthorizationHandlerExtensionType.AuthenticationOverrideType =
+    when (kind) {
+      PlayerDownloadRequest.Kind.CHAPTER -> {
         this.onOverrideAuthorizationForChapter(link)
+      }
 
-      PlayerDownloadRequest.Kind.MANIFEST ->
+      PlayerDownloadRequest.Kind.MANIFEST -> {
         PlayerAuthorizationHandlerExtensionType.OverrideNotApplicable
+      }
 
-      PlayerDownloadRequest.Kind.WHOLE_BOOK ->
+      PlayerDownloadRequest.Kind.WHOLE_BOOK -> {
         PlayerAuthorizationHandlerExtensionType.OverrideNotApplicable
+      }
 
-      PlayerDownloadRequest.Kind.LICENSE ->
+      PlayerDownloadRequest.Kind.LICENSE -> {
         PlayerAuthorizationHandlerExtensionType.OverrideNotApplicable
+      }
     }
-  }
 
   private fun onOverrideAuthorizationForChapter(
     link: PlayerManifestLink
-  ): PlayerAuthorizationHandlerExtensionType.AuthenticationOverrideType {
-    return when (link.properties.encrypted?.scheme) {
-      "http://www.feedbooks.com/audiobooks/access-restriction" ->
+  ): PlayerAuthorizationHandlerExtensionType.AuthenticationOverrideType =
+    when (link.properties.encrypted?.scheme) {
+      "http://www.feedbooks.com/audiobooks/access-restriction" -> {
         this.generateBearerTokenForChapter(link)
+      }
 
-      else ->
+      else -> {
         PlayerAuthorizationHandlerExtensionType.OverrideNotApplicable
+      }
     }
-  }
 
-  private fun generateBearerTokenForChapter(
-    link: PlayerManifestLink
-  ): PlayerAuthorizationHandlerExtensionType.AuthenticationOverrideType {
+  private fun generateBearerTokenForChapter(link: PlayerManifestLink): PlayerAuthorizationHandlerExtensionType.AuthenticationOverrideType {
     val currentConfiguration = this.configuration
     if (currentConfiguration == null) {
       val message =
@@ -104,9 +105,10 @@ class FeedbooksPlayerExtension : PlayerAuthorizationHandlerExtensionType {
 
     val token =
       JSONWebSignature.create(
-        algorithm = JSONWebSignatureAlgorithmHMACSha256.withSecret(
-          currentConfiguration.bearerTokenSecret
-        ),
+        algorithm =
+          JSONWebSignatureAlgorithmHMACSha256.withSecret(
+            currentConfiguration.bearerTokenSecret
+          ),
         header = tokenHeader,
         payload = tokenClaims
       )

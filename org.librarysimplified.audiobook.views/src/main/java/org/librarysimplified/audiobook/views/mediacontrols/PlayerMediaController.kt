@@ -9,7 +9,6 @@ import com.google.common.util.concurrent.MoreExecutors
 import org.slf4j.LoggerFactory
 
 object PlayerMediaController {
-
   private val logger =
     LoggerFactory.getLogger(PlayerMediaController::class.java)
 
@@ -22,17 +21,16 @@ object PlayerMediaController {
     PlayerMediaFacade.start(context)
 
     val future =
-      MediaController.Builder(
-        context,
-        SessionToken(context, ComponentName(context, PlayerService::class.java))
-      ).buildAsync()
+      MediaController
+        .Builder(
+          context,
+          SessionToken(context, ComponentName(context, PlayerService::class.java))
+        ).buildAsync()
 
     future.addListener({ this.startCompleted(future) }, MoreExecutors.directExecutor())
   }
 
-  private fun startCompleted(
-    future: ListenableFuture<MediaController>
-  ) {
+  private fun startCompleted(future: ListenableFuture<MediaController>) {
     try {
       this.logger.debug("Media controller startup completed")
       this.controller = future.get()

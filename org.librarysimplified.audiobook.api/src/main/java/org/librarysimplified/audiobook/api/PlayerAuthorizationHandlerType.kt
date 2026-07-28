@@ -11,7 +11,6 @@ import org.librarysimplified.http.api.LSHTTPAuthorizationType
  */
 
 interface PlayerAuthorizationHandlerType {
-
   /**
    * If an authorization seems to have expired for requests of the given kind, then dismiss
    * any error that is still present. This method will

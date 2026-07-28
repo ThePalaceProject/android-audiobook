@@ -26,7 +26,6 @@ class PlayerTOCChapterAdapter(
   private val readingOrderByID: Map<PlayerManifestReadingOrderID, PlayerReadingOrderItemType>,
   private val onSelect: (PlayerManifestTOCItem) -> Unit,
 ) : RecyclerView.Adapter<PlayerTOCChapterAdapter.ViewHolder>() {
-
   private var currentTOCIndex: Int = -1
 
   private val listener: View.OnClickListener =
@@ -41,15 +40,14 @@ class PlayerTOCChapterAdapter(
     PlayerUIThread.checkIsUIThread()
 
     val view =
-      LayoutInflater.from(parent.context)
+      LayoutInflater
+        .from(parent.context)
         .inflate(R.layout.player_toc_chapter_item_view, parent, false)
 
     return this.ViewHolder(view)
   }
 
-  override fun getItemCount(): Int {
-    return this.tableOfContents.tocItemsInOrder.size
-  }
+  override fun getItemCount(): Int = this.tableOfContents.tocItemsInOrder.size
 
   override fun onBindViewHolder(
     holder: ViewHolder,

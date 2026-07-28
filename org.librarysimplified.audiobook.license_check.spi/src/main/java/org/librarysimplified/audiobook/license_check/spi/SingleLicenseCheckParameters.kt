@@ -9,25 +9,21 @@ import java.io.File
  */
 
 data class SingleLicenseCheckParameters(
-
   /**
    * The manifest upon which the license check will be evaluated.
    */
 
   val manifest: PlayerManifest,
-
   /**
    * The HTTP client used to make HTTP requests.
    */
 
   val httpClient: LSHTTPClientType,
-
   /**
    * A function that will receive the results of license checking.
    */
 
   val onStatusChanged: (SingleLicenseCheckStatus) -> Unit,
-
   /**
    * The directory in which to store cache files.
    */

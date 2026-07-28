@@ -12,9 +12,8 @@ import org.librarysimplified.audiobook.manifest_parser.webpub.WebPub
  */
 
 class FeedbooksParserExtensions : ManifestParserExtensionType {
-
   override val format: String =
-    WebPub.baseFormat
+    WebPub.BASE_FORMAT
 
   override val name: String =
     "https://www.feedbooks.com"
@@ -27,9 +26,7 @@ class FeedbooksParserExtensions : ManifestParserExtensionType {
 
   override fun topLevelObjectSchemas(
     onReceive: (PlayerManifestExtensionValueType) -> Unit
-  ): List<FRParserObjectFieldSchema<out PlayerManifestExtensionValueType>> {
-    return listOf()
-  }
+  ): List<FRParserObjectFieldSchema<out PlayerManifestExtensionValueType>> = listOf()
 
   override fun metadataObjectSchemas(
     onReceive: (PlayerManifestExtensionValueType) -> Unit

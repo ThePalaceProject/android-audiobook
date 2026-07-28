@@ -14,20 +14,18 @@ import java.util.ServiceLoader
  */
 
 object ManifestParsers : ManifestParsersType {
-
   private val logger =
     LoggerFactory.getLogger(ManifestParsers::class.java)
 
   override fun parse(
     uri: URI,
     input: ManifestUnparsed,
-  ): ParseResult<PlayerManifest> {
-    return this.parse(
+  ): ParseResult<PlayerManifest> =
+    this.parse(
       uri = uri,
       input = input,
       extensions = ServiceLoader.load(ManifestParserExtensionType::class.java).toList()
     )
-  }
 
   override fun parse(
     uri: URI,
@@ -36,7 +34,8 @@ object ManifestParsers : ManifestParsersType {
   ): ParseResult<PlayerManifest> {
     try {
       val providers: List<ManifestParserProviderType> =
-        ServiceLoader.load(ManifestParserProviderType::class.java)
+        ServiceLoader
+          .load(ManifestParserProviderType::class.java)
           .toList()
 
       for (provider in providers) {
@@ -48,25 +47,28 @@ object ManifestParsers : ManifestParsersType {
 
         if (provider.canParse(uri, input)) {
           this.logger.debug("parsing with provider {}", provider.javaClass.canonicalName)
-          return provider.createParser(
-            uri = uri,
-            input = input,
-            extensions = extensions.filter { extension ->
-              extension.format == provider.format
-            },
-            warningsAsErrors = false
-          ).parse()
+          return provider
+            .createParser(
+              uri = uri,
+              input = input,
+              extensions =
+                extensions.filter { extension ->
+                  extension.format == provider.format
+                },
+              warningsAsErrors = false
+            ).parse()
         }
       }
 
       return ParseResult.Failure(
         warnings = listOf(),
-        errors = listOf(
-          errorOfException(
-            uri,
-            IOException("Could not find a usable parser provider for the given manifest")
-          )
-        ),
+        errors =
+          listOf(
+            errorOfException(
+              uri,
+              IOException("Could not find a usable parser provider for the given manifest")
+            )
+          ),
         result = null
       )
     } catch (e: Exception) {
@@ -81,13 +83,12 @@ object ManifestParsers : ManifestParsersType {
   private fun errorOfException(
     uri: URI,
     exception: Exception
-  ): ParseError {
-    return ParseError(
+  ): ParseError =
+    ParseError(
       source = uri,
       message = exception.message ?: exception.javaClass.name,
       line = 0,
       column = 0,
       exception = exception
     )
-  }
 }

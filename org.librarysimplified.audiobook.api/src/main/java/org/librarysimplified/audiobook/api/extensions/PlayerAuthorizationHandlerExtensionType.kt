@@ -9,7 +9,6 @@ import org.librarysimplified.http.api.LSHTTPAuthorizationType
  */
 
 interface PlayerAuthorizationHandlerExtensionType {
-
   /**
    * The name of the extension. Conventionally, this is the fully-qualified name of the
    * extension class.

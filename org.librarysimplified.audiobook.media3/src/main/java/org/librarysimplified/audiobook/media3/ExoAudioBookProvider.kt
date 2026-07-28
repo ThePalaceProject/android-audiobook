@@ -48,15 +48,12 @@ class ExoAudioBookProvider(
   private val engineExecutor: ScheduledExecutorService,
   private val manifest: PlayerManifest,
 ) : PlayerAudioBookProviderType {
-
   private val logger =
     LoggerFactory.getLogger(ExoAudioBookProvider::class.java)
 
   private var missingTrackGenerator: PlayerMissingTrackNameGeneratorType? = null
 
-  fun setMissingTrackNameGenerator(
-    generator: PlayerMissingTrackNameGeneratorType
-  ) {
+  fun setMissingTrackNameGenerator(generator: PlayerMissingTrackNameGeneratorType) {
     this.missingTrackGenerator = generator
   }
 
@@ -109,12 +106,17 @@ class ExoAudioBookProvider(
                   )
                   ExoDownloadSupport.DownloadUnsupported
                 }
+
                 is PlayerResult.Success -> {
                   this.logger.debug(
                     "Successfully parsed license: Downloading entire books is supported."
                   )
                   ExoDownloadSupport.DownloadEntireBookAsFile(
-                    targetURI = URI.create(license.result.license.publicationLink.href.toString()),
+                    targetURI =
+                      URI.create(
+                        license.result.license.publicationLink.href
+                          .toString()
+                      ),
                     licenseBytes = licenseBytes
                   )
                 }
@@ -155,17 +157,17 @@ class ExoAudioBookProvider(
 
       val missingTrackNameGenerator =
         this.missingTrackGenerator ?: object : PlayerMissingTrackNameGeneratorType {
-          override fun generateName(trackIndex: Int): String {
-            return context.getString(R.string.audiobook_player_toc_track_n, trackIndex)
-          }
+          override fun generateName(trackIndex: Int): String = context.getString(R.string.audiobook_player_toc_track_n, trackIndex)
         }
 
-      return when (val parsed = ExoManifest.transform(
-        bookID = id,
-        manifest = this.manifest,
-        missingTrackNames = missingTrackNameGenerator
-      )) {
-        is PlayerResult.Success ->
+      return when (val parsed =
+        ExoManifest.transform(
+          bookID = id,
+          manifest = this.manifest,
+          missingTrackNames = missingTrackNameGenerator
+        )
+      ) {
+        is PlayerResult.Success -> {
           PlayerResult.Success(
             ExoAudioBook.create(
               authorizationHandler = this.request.authorizationHandler,
@@ -179,9 +181,11 @@ class ExoAudioBookProvider(
               supportsDownloads = downloadSupport,
             )
           )
+        }
 
-        is Failure ->
+        is Failure -> {
           Failure(parsed.failure)
+        }
       }
     } catch (e: Exception) {
       return Failure(e)
@@ -210,8 +214,8 @@ class ExoAudioBookProvider(
     context: Application,
     bookSource: PlayerBookSource,
     bookFile: File
-  ): DataSource.Factory {
-    return when (bookSource) {
+  ): DataSource.Factory =
+    when (bookSource) {
       is PlayerBookSourceLicenseFile -> {
         if (bookFile.isFile) {
           this.logger.debug("Creating LCP datasource from packaged book file {}", bookFile)
@@ -251,7 +255,6 @@ class ExoAudioBookProvider(
         )
       }
     }
-  }
 
   private data class ExoPublicationOpenError(
     override val message: String
@@ -294,22 +297,24 @@ class ExoAudioBookProvider(
     }
 
     this.logger.debug("Creating LCP content protection.")
-    val contentProtection = lcpService.contentProtection(
-      object : LcpAuthenticating {
-        override suspend fun retrievePassphrase(
-          license: LcpAuthenticating.AuthenticatedLicense,
-          reason: LcpAuthenticating.AuthenticationReason,
-          allowUserInteraction: Boolean
-        ): String? {
-          return credentialsText
+    val contentProtection =
+      lcpService.contentProtection(
+        object : LcpAuthenticating {
+          override suspend fun retrievePassphrase(
+            license: LcpAuthenticating.AuthenticatedLicense,
+            reason: LcpAuthenticating.AuthenticationReason,
+            allowUserInteraction: Boolean
+          ): String? = credentialsText
         }
-      }
-    )
+      )
 
     this.logger.debug("Created LCP content protection.")
     return runBlocking {
       when (val assetR = assetRetriever.retrieve(file)) {
-        is Try.Failure -> throw ErrorException(assetR.value)
+        is Try.Failure -> {
+          throw ErrorException(assetR.value)
+        }
+
         is Try.Success -> {
           this@ExoAudioBookProvider.openPublicationFromAsset(
             context,
@@ -351,11 +356,13 @@ class ExoAudioBookProvider(
         },
       )
 
-    return when (val pubR = publicationOpener.open(
-      asset = asset,
-      credentials = credentialsText,
-      allowUserInteraction = false,
-    )) {
+    return when (val pubR =
+      publicationOpener.open(
+        asset = asset,
+        credentials = credentialsText,
+        allowUserInteraction = false,
+      )
+    ) {
       is Try.Failure -> {
         this.logger.error("Failed to open publication: {}", pubR.value)
         throw ErrorException(pubR.value)

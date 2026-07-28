@@ -22,7 +22,6 @@ import java.net.URI
 class WebPubLinkParser(
   onReceive: (FRParserContextType, PlayerManifestLink) -> Unit = FRValueParsers.ignoringReceiverWithContext()
 ) : FRAbstractParserObject<PlayerManifestLink>(onReceive) {
-
   private val logger =
     LoggerFactory.getLogger(WebPubLinkParser::class.java)
 
@@ -187,20 +186,21 @@ class WebPubLinkParser(
       )
 
     return FRParserObjectSchema(
-      fields = listOf(
-        alternatesSchema,
-        bitrateSchema,
-        childrenSchema,
-        durationSchema,
-        heightSchema,
-        hrefSchema,
-        propertiesSchema,
-        relSchema,
-        templatedSchema,
-        titleSchema,
-        typeSchema,
-        widthSchema
-      ),
+      fields =
+        listOf(
+          alternatesSchema,
+          bitrateSchema,
+          childrenSchema,
+          durationSchema,
+          heightSchema,
+          hrefSchema,
+          propertiesSchema,
+          relSchema,
+          templatedSchema,
+          titleSchema,
+          typeSchema,
+          widthSchema
+        ),
       unknownField = { _, name ->
         WebPubScalarParsers.forManifestScalar { scalar ->
           this.extras[name] = scalar

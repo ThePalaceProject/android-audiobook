@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.api
  */
 
 sealed class PlayerReadingOrderItemDownloadStatus {
-
   /**
    * The spine element to which this download status refers.
    */

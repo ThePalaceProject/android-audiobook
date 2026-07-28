@@ -5,11 +5,10 @@ package org.librarysimplified.audiobook.manifest_parser.webpub
  */
 
 object WebPub {
-
   /**
    * The base format name.
    */
 
-  const val baseFormat =
+  const val BASE_FORMAT =
     "https://readium.org/webpub-manifest/"
 }

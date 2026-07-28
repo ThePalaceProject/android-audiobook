@@ -9,8 +9,9 @@ import java.security.MessageDigest
  */
 
 @ConsistentCopyVisibility
-data class PlayerBookID private constructor(val value: String) {
-
+data class PlayerBookID private constructor(
+  val value: String
+) {
   companion object {
     fun transform(id: String): PlayerBookID {
       val digest = MessageDigest.getInstance("SHA-256")
@@ -23,7 +24,5 @@ data class PlayerBookID private constructor(val value: String) {
     }
   }
 
-  override fun toString(): String {
-    return this.value
-  }
+  override fun toString(): String = this.value
 }

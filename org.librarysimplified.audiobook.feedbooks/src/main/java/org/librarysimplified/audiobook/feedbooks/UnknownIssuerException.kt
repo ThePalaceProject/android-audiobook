@@ -1,3 +1,5 @@
 package org.librarysimplified.audiobook.feedbooks
 
-class UnknownIssuerException(message: String?) : Exception(message)
+class UnknownIssuerException(
+  message: String?
+) : Exception(message)

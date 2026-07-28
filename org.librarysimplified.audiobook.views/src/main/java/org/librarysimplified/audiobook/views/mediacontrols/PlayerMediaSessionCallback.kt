@@ -4,7 +4,6 @@ import androidx.media3.session.MediaSession
 import org.slf4j.LoggerFactory
 
 object PlayerMediaSessionCallback : MediaSession.Callback {
-
   private val logger =
     LoggerFactory.getLogger(PlayerMediaSessionCallback::class.java)
 

@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.license_check.spi
  */
 
 interface SingleLicenseCheckProviderType {
-
   /**
    * The name of the check provider.
    */
@@ -17,7 +16,5 @@ interface SingleLicenseCheckProviderType {
    * publishing events to the given event receiver.
    */
 
-  fun createLicenseCheck(
-    parameters: SingleLicenseCheckParameters
-  ): SingleLicenseCheckType
+  fun createLicenseCheck(parameters: SingleLicenseCheckParameters): SingleLicenseCheckType
 }

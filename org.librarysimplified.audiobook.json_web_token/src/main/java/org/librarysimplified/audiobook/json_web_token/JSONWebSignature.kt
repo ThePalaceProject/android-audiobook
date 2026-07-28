@@ -11,7 +11,6 @@ data class JSONWebSignature(
   val payload: ByteArray,
   val signature: JSONBase64String
 ) {
-
   /**
    * Encode the signature as a JWT.
    *
@@ -34,9 +33,7 @@ data class JSONWebSignature(
    * @return `true` iff the signature is valid
    */
 
-  fun verify(
-    algorithm: JSONWebSignatureAlgorithmType
-  ): Boolean {
+  fun verify(algorithm: JSONWebSignatureAlgorithmType): Boolean {
     val headerText = JOSEHeader.encode(header)
     val data = headerText.text + "." + JSONBase64String.encode(payload).text
     val newSignature = algorithm.sign(data.toByteArray())
@@ -45,18 +42,16 @@ data class JSONWebSignature(
   }
 
   companion object {
-
     fun create(
       algorithm: JSONWebSignatureAlgorithmType,
       header: JOSEHeader,
       payload: JSONWebTokenClaims
-    ): JSONWebSignature {
-      return this.create(
+    ): JSONWebSignature =
+      this.create(
         algorithm = algorithm,
         header = header,
         payloadText = JSONWebTokenClaims.encode(payload)
       )
-    }
 
     fun create(
       algorithm: JSONWebSignatureAlgorithmType,

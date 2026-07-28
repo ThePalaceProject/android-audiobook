@@ -8,30 +8,24 @@ import org.librarysimplified.audiobook.parser.api.ParseError
  */
 
 internal object JSONUtilities {
-
   /**
    * Convert a fieldrush parse error to one of our parse errors.
    */
 
-  internal fun toParseError(
-    error: FRParseError
-  ): ParseError {
-    return ParseError(
+  internal fun toParseError(error: FRParseError): ParseError =
+    ParseError(
       source = error.position.source,
       message = error.message,
       line = error.position.line,
       column = error.position.column,
       exception = error.exception
     )
-  }
 
   /**
    * Return a map with all null values removed (ignoring keys).
    */
 
-  internal fun filterNotNull(
-    values: Map<String, String?>
-  ): Map<String, String> {
+  internal fun filterNotNull(values: Map<String, String?>): Map<String, String> {
     val copy = mutableMapOf<String, String>()
     for (entry in values) {
       val value = entry.value

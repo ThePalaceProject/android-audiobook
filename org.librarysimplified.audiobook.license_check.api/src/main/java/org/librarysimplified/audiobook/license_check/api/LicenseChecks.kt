@@ -5,10 +5,5 @@ package org.librarysimplified.audiobook.license_check.api
  */
 
 object LicenseChecks : LicenseCheckProviderType {
-
-  override fun createLicenseCheck(
-    parameters: LicenseCheckParameters
-  ): LicenseCheckType {
-    return LicenseCheck(parameters)
-  }
+  override fun createLicenseCheck(parameters: LicenseCheckParameters): LicenseCheckType = LicenseCheck(parameters)
 }

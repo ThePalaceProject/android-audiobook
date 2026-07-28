@@ -10,13 +10,10 @@ import javax.crypto.spec.SecretKeySpec
 class JSONWebSignatureAlgorithmHMACSha256 private constructor(
   private val secret: ByteArray
 ) : JSONWebSignatureAlgorithmType {
-
   override val name: String =
     "HmacSHA256"
 
-  override fun sign(
-    data: ByteArray
-  ): ByteArray {
+  override fun sign(data: ByteArray): ByteArray {
     val mac =
       Mac.getInstance("HmacSHA256")
     val secretKey =
@@ -27,13 +24,10 @@ class JSONWebSignatureAlgorithmHMACSha256 private constructor(
   }
 
   companion object {
-
     /**
      * Create a new signature algorithm based on the given secret.
      */
 
-    fun withSecret(secret: ByteArray): JSONWebSignatureAlgorithmType {
-      return JSONWebSignatureAlgorithmHMACSha256(secret)
-    }
+    fun withSecret(secret: ByteArray): JSONWebSignatureAlgorithmType = JSONWebSignatureAlgorithmHMACSha256(secret)
   }
 }

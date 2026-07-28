@@ -9,7 +9,6 @@ import org.librarysimplified.audiobook.manifest.api.PlayerManifestExtensionValue
  */
 
 interface ManifestParserExtensionType {
-
   /**
    * The base format supported by this extension provider. The extension can only be
    * used with manifest parsers that support the same base format.

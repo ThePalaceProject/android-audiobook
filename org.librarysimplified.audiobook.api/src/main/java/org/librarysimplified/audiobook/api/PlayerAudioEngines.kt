@@ -9,7 +9,6 @@ import java.util.ServiceLoader
  */
 
 object PlayerAudioEngines : PlayerAudioEnginesType {
-
   private val logger = LoggerFactory.getLogger(PlayerAudioEngines::class.java)
 
   private val providers: MutableList<PlayerAudioEngineProviderType> =
@@ -54,10 +53,11 @@ object PlayerAudioEngines : PlayerAudioEnginesType {
     var deleted = false
     for (provider in this.providers) {
       try {
-        deleted = deleted or provider.tryDeleteRequest(
-          context = context,
-          request = request
-        )
+        deleted = deleted or
+          provider.tryDeleteRequest(
+            context = context,
+            request = request
+          )
       } catch (e: Exception) {
         this.logger.debug("Engine raised an exception: ", e)
       }

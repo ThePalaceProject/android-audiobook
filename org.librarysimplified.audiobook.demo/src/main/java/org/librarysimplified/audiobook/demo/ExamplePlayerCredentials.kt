@@ -4,7 +4,6 @@ import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAPassword
 import java.io.Serializable
 
 sealed class ExamplePlayerCredentials : Serializable {
-
   data class None(
     val unused: Int
   ) : ExamplePlayerCredentials()

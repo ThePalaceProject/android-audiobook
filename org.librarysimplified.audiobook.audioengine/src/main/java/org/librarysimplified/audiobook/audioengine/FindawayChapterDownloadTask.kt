@@ -16,7 +16,6 @@ class FindawayChapterDownloadTask(
   override val playbackURI: URI,
   private val readingOrderItem: FindawayReadingOrderItem
 ) : PlayerDownloadTaskType {
-
   override fun fetch() {
     // Nothing
   }
@@ -32,53 +31,64 @@ class FindawayChapterDownloadTask(
   fun setStatus(status: PlayerDownloadTaskStatus) {
     this.readingOrderItem.setDownloadStatus(
       when (status) {
-        is PlayerDownloadTaskStatus.Downloading ->
+        is PlayerDownloadTaskStatus.Downloading -> {
           PlayerReadingOrderItemDownloading(
             readingOrderItem = this.readingOrderItem,
             progress = status.progress ?: PlayerDownloadProgress(0.0)
           )
+        }
 
-        is PlayerDownloadTaskStatus.Failed ->
+        is PlayerDownloadTaskStatus.Failed -> {
           PlayerReadingOrderItemDownloadFailed(
             readingOrderItem = this.readingOrderItem,
             exception = status.exception,
             message = status.message
           )
+        }
 
-        PlayerDownloadTaskStatus.IdleDownloaded ->
+        PlayerDownloadTaskStatus.IdleDownloaded -> {
           PlayerReadingOrderItemDownloaded(this.readingOrderItem)
+        }
 
-        PlayerDownloadTaskStatus.IdleNotDownloaded ->
+        PlayerDownloadTaskStatus.IdleNotDownloaded -> {
           PlayerReadingOrderItemNotDownloaded(this.readingOrderItem)
+        }
       }
     )
   }
 
   override val status: PlayerDownloadTaskStatus
-    get() = when (val s = this.readingOrderItem.downloadStatus) {
-      is PlayerReadingOrderItemDownloadExpired ->
-        PlayerDownloadTaskStatus.IdleNotDownloaded
+    get() =
+      when (val s = this.readingOrderItem.downloadStatus) {
+        is PlayerReadingOrderItemDownloadExpired -> {
+          PlayerDownloadTaskStatus.IdleNotDownloaded
+        }
 
-      is PlayerReadingOrderItemDownloadFailed ->
-        PlayerDownloadTaskStatus.Failed(s.message, s.exception)
+        is PlayerReadingOrderItemDownloadFailed -> {
+          PlayerDownloadTaskStatus.Failed(s.message, s.exception)
+        }
 
-      is PlayerReadingOrderItemDownloaded ->
-        PlayerDownloadTaskStatus.IdleDownloaded
+        is PlayerReadingOrderItemDownloaded -> {
+          PlayerDownloadTaskStatus.IdleDownloaded
+        }
 
-      is PlayerReadingOrderItemDownloading ->
-        PlayerDownloadTaskStatus.Downloading(s.progress)
+        is PlayerReadingOrderItemDownloading -> {
+          PlayerDownloadTaskStatus.Downloading(s.progress)
+        }
 
-      is PlayerReadingOrderItemNotDownloaded ->
-        PlayerDownloadTaskStatus.IdleNotDownloaded
-    }
+        is PlayerReadingOrderItemNotDownloaded -> {
+          PlayerDownloadTaskStatus.IdleNotDownloaded
+        }
+      }
 
   override val progress: PlayerDownloadProgress
-    get() = when (val s = this.status) {
-      is PlayerDownloadTaskStatus.Downloading -> s.progress ?: PlayerDownloadProgress(0.0)
-      is PlayerDownloadTaskStatus.Failed -> PlayerDownloadProgress(0.0)
-      PlayerDownloadTaskStatus.IdleDownloaded -> PlayerDownloadProgress(1.0)
-      PlayerDownloadTaskStatus.IdleNotDownloaded -> PlayerDownloadProgress(0.0)
-    }
+    get() =
+      when (val s = this.status) {
+        is PlayerDownloadTaskStatus.Downloading -> s.progress ?: PlayerDownloadProgress(0.0)
+        is PlayerDownloadTaskStatus.Failed -> PlayerDownloadProgress(0.0)
+        PlayerDownloadTaskStatus.IdleDownloaded -> PlayerDownloadProgress(1.0)
+        PlayerDownloadTaskStatus.IdleNotDownloaded -> PlayerDownloadProgress(0.0)
+      }
 
   override val readingOrderItems: List<PlayerReadingOrderItemType>
     get() = listOf(this.readingOrderItem)

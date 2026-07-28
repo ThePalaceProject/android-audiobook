@@ -10,9 +10,7 @@ import java.net.URI
  * The type of manifest parser providers.
  */
 
-interface ManifestParserProviderType :
-  ParserProviderType<ManifestUnparsed, ManifestParserExtensionType, PlayerManifest> {
-
+interface ManifestParserProviderType : ParserProviderType<ManifestUnparsed, ManifestParserExtensionType, PlayerManifest> {
   /**
    * The base format supported by this parser provider.
    */

@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.audioengine
  */
 
 enum class FindawayPlayerPlaybackStatus {
-
   /**
    * The player is in the initialized state.
    */

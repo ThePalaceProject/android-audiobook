@@ -7,7 +7,6 @@ import java.net.URI
  */
 
 interface ParserProviderType<S, E, T> {
-
   /**
    * Create a new parser using the given input, and the given URI for diagnostic purposes.
    */

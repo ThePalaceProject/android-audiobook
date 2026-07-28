@@ -28,7 +28,6 @@ class FindawayDownloadWholeBookTask(
   private val downloadEngine: FindawayDownloadEngineType,
   override val playbackURI: URI
 ) : PlayerDownloadWholeBookTaskType {
-
   private val log =
     LoggerFactory.getLogger(FindawayDownloadWholeBookTask::class.java)
 
@@ -38,8 +37,12 @@ class FindawayDownloadWholeBookTask(
     DownloadRequest(
       contentId = this.audioBook.findawayManifest.fulfillmentId,
       licenseId = this.audioBook.findawayManifest.licenseId,
-      chapter = this.audioBook.readingOrder[0].itemManifest.sequence,
-      part = this.audioBook.readingOrder[0].itemManifest.part,
+      chapter =
+        this.audioBook.readingOrder[0]
+          .itemManifest.sequence,
+      part =
+        this.audioBook.readingOrder[0]
+          .itemManifest.part,
       type = DownloadRequest.Type.TO_END
     )
 
@@ -149,9 +152,7 @@ class FindawayDownloadWholeBookTask(
     return
   }
 
-  private fun onDownloadEvent(
-    event: DownloadEvent
-  ) {
+  private fun onDownloadEvent(event: DownloadEvent) {
     val chapter = event.chapter
     if (chapter != null) {
       val part = chapter.part
@@ -237,9 +238,11 @@ class FindawayDownloadWholeBookTask(
             "[{} {}]: onDownloadEvent: progress update {} ", part, chap, percentage
           )
 
-          if (percentage >= 100 || downloadTaskWithElement.readingOrderItems.all { taskElement ->
+          if (percentage >= 100 ||
+            downloadTaskWithElement.readingOrderItems.all { taskElement ->
               taskElement.downloadStatus is PlayerReadingOrderItemDownloaded
-            }) {
+            }
+          ) {
             this.log.trace(
               "[{} {}]: onDownloadEvent: ignoring irrelevant progress update", part, chap
             )

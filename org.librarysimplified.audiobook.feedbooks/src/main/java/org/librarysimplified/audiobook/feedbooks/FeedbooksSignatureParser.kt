@@ -14,20 +14,18 @@ import one.irradia.fieldrush.vanilla.FRValueParsers
 class FeedbooksSignatureParser(
   onReceive: (FRParserContextType, FeedbooksSignature) -> Unit = FRValueParsers.ignoringReceiverWithContext()
 ) : FRAbstractParserObject<FeedbooksSignature>(onReceive) {
-
   private lateinit var value: String
   private var issuer: String? = null
   private lateinit var algorithm: String
 
-  override fun onCompleted(context: FRParserContextType): FRParseResult<FeedbooksSignature> {
-    return FRParseResult.succeed(
+  override fun onCompleted(context: FRParserContextType): FRParseResult<FeedbooksSignature> =
+    FRParseResult.succeed(
       FeedbooksSignature(
         algorithm = this.algorithm,
         issuer = this.issuer,
         value = this.value
       )
     )
-  }
 
   override fun schema(context: FRParserContextType): FRParserObjectSchema {
     val algoSchema =

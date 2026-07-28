@@ -39,7 +39,6 @@ class ExoDownloadTask(
   override val index: Int,
   private val httpClient: LSHTTPClientType
 ) : PlayerDownloadTaskType {
-
   private val log =
     LoggerFactory.getLogger(ExoDownloadTask::class.java)
 
@@ -59,20 +58,22 @@ class ExoDownloadTask(
 
   private sealed class State {
     data object Initial : State()
+
     data class Failed(
       val message: String,
       val exception: Exception
     ) : State()
 
     data object Downloaded : State()
-    data class Downloading(val future: CompletableFuture<Unit>) : State()
+
+    data class Downloading(
+      val future: CompletableFuture<Unit>
+    ) : State()
   }
 
-  private fun stateGetCurrent() =
-    synchronized(this.stateLock) { this.state }
+  private fun stateGetCurrent() = synchronized(this.stateLock) { this.state }
 
-  private fun stateSetCurrent(newState: State) =
-    synchronized(this.stateLock) { this.state = newState }
+  private fun stateSetCurrent(newState: State) = synchronized(this.stateLock) { this.state = newState }
 
   private fun onBroadcastState() {
     when (val s = this.stateGetCurrent()) {
@@ -90,9 +91,7 @@ class ExoDownloadTask(
     )
   }
 
-  private fun onDownloading(
-    progress: PlayerDownloadProgress
-  ) {
+  private fun onDownloading(progress: PlayerDownloadProgress) {
     this.log.debug("[{}] onDownloading {}", this.readingOrderItem.id, progress)
 
     this.progressValue = progress
@@ -123,8 +122,9 @@ class ExoDownloadTask(
           this@ExoDownloadTask.onDownloadCompleted()
         }
 
-        is CancellationException ->
+        is CancellationException -> {
           this@ExoDownloadTask.onDownloadCancelled()
+        }
 
         else -> {
           if (targetLink.expires) {
@@ -228,27 +228,39 @@ class ExoDownloadTask(
   }
 
   override val playbackURI: URI
-    get() = when (this.stateGetCurrent()) {
-      Downloaded -> this.partFile.toURI()
-      is Downloading -> this.originalLink.hrefURI!!
-      is Failed -> this.originalLink.hrefURI!!
-      Initial -> this.originalLink.hrefURI!!
-    }
+    get() =
+      when (this.stateGetCurrent()) {
+        Downloaded -> this.partFile.toURI()
+        is Downloading -> this.originalLink.hrefURI!!
+        is Failed -> this.originalLink.hrefURI!!
+        Initial -> this.originalLink.hrefURI!!
+      }
 
   override val status: PlayerDownloadTaskStatus
-    get() = when (val s = this.stateGetCurrent()) {
-      Downloaded -> PlayerDownloadTaskStatus.IdleDownloaded
-      is Downloading -> PlayerDownloadTaskStatus.Downloading(
-        if (this.progress.value == 0.0) {
-          null
-        } else {
-          this.progress
+    get() =
+      when (val s = this.stateGetCurrent()) {
+        Downloaded -> {
+          PlayerDownloadTaskStatus.IdleDownloaded
         }
-      )
 
-      Initial -> PlayerDownloadTaskStatus.IdleNotDownloaded
-      is Failed -> PlayerDownloadTaskStatus.Failed(s.message, s.exception)
-    }
+        is Downloading -> {
+          PlayerDownloadTaskStatus.Downloading(
+            if (this.progress.value == 0.0) {
+              null
+            } else {
+              this.progress
+            }
+          )
+        }
+
+        Initial -> {
+          PlayerDownloadTaskStatus.IdleNotDownloaded
+        }
+
+        is Failed -> {
+          PlayerDownloadTaskStatus.Failed(s.message, s.exception)
+        }
+      }
 
   override fun fetch() {
     this.log.debug("[{}] Fetch", this.readingOrderItem.id)

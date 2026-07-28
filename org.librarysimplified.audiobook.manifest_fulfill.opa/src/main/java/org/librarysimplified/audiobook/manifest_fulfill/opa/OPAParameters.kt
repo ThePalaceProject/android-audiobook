@@ -16,24 +16,20 @@ data class OPAParameters(
    */
 
   val authorizationHandler: PlayerAuthorizationHandlerType,
-
   /**
    * The client key that is baked into the application.
    */
 
   val clientKey: String?,
-
   /**
    * The client password that is baked into the application.
    */
 
   val clientPass: String?,
-
   /**
    * The target URI of the manifest.
    */
 
   val targetURI: OPAManifestURI,
-
   override val httpClient: LSHTTPClientType
 ) : ManifestFulfillmentStrategyParametersType

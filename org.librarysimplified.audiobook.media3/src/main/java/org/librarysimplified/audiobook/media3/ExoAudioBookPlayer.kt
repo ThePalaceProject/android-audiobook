@@ -76,7 +76,6 @@ class ExoAudioBookPlayer private constructor(
   private val authorizationHandler: PlayerAuthorizationHandlerType,
   private val networkAccess: LSHTTPNetworkAccessReadableType,
 ) : PlayerType {
-
   private var pauseReason: PlayerPauseReason =
     PlayerPauseReason.PAUSE_REASON_INITIALLY_PAUSED
 
@@ -219,14 +218,14 @@ class ExoAudioBookPlayer private constructor(
      * Subscribe to manifest updates; links in manifests can be replaced.
      */
 
-    this.resources.add(manifestUpdates.subscribe {
-      this.onManifestUpdated()
-    })
+    this.resources.add(
+      manifestUpdates.subscribe {
+        this.onManifestUpdated()
+      }
+    )
   }
 
-  private fun onPlayerStateChanged(
-    state: ExoPlayerPlaybackStatusTransition
-  ) {
+  private fun onPlayerStateChanged(state: ExoPlayerPlaybackStatusTransition) {
     PlayerUIThread.checkIsUIThread()
 
     when (state.newState) {
@@ -378,7 +377,6 @@ class ExoAudioBookPlayer private constructor(
   }
 
   companion object {
-
     fun create(
       id: UUID,
       authorizationHandler: PlayerAuthorizationHandlerType,
@@ -389,7 +387,8 @@ class ExoAudioBookPlayer private constructor(
       networkAccess: LSHTTPNetworkAccessReadableType,
     ): ExoAudioBookPlayer {
       val statusEvents =
-        BehaviorSubject.create<PlayerEvent>()
+        BehaviorSubject
+          .create<PlayerEvent>()
           .toSerialized()
 
       return ExoAudioBookPlayer(
@@ -483,9 +482,7 @@ class ExoAudioBookPlayer private constructor(
     this.exoPlayer.seekTo(0L)
   }
 
-  private fun playNextSpineElementIfAvailable(
-    element: ExoReadingOrderItemHandle
-  ): SkipChapterStatus {
+  private fun playNextSpineElementIfAvailable(element: ExoReadingOrderItemHandle): SkipChapterStatus {
     this.log.debug("playNextSpineElementIfAvailable: {}", element.itemManifest.item.id)
     PlayerUIThread.checkIsUIThread()
 
@@ -503,9 +500,7 @@ class ExoAudioBookPlayer private constructor(
     )
   }
 
-  private fun playPreviousSpineElementIfAvailable(
-    element: ExoReadingOrderItemHandle
-  ): SkipChapterStatus {
+  private fun playPreviousSpineElementIfAvailable(element: ExoReadingOrderItemHandle): SkipChapterStatus {
     this.log.debug("playPreviousSpineElementIfAvailable: {}", element.itemManifest.item.id)
     PlayerUIThread.checkIsUIThread()
 
@@ -523,9 +518,7 @@ class ExoAudioBookPlayer private constructor(
     )
   }
 
-  private fun preparePlayer(
-    target: CurrentPlaybackTarget
-  ): SkipChapterStatus {
+  private fun preparePlayer(target: CurrentPlaybackTarget): SkipChapterStatus {
     this.log.debug(
       "preparePlayer: [{}] (offset {})",
       target.readingOrderItem.id,
@@ -675,7 +668,6 @@ class ExoAudioBookPlayer private constructor(
    */
 
   private enum class SkipChapterStatus {
-
     /**
      * The chapter is not downloaded and therefore cannot be played at the moment.
      */
@@ -695,9 +687,7 @@ class ExoAudioBookPlayer private constructor(
     SKIP_TO_CHAPTER_READY
   }
 
-  private fun opPause(
-    reason: PlayerPauseReason
-  ) {
+  private fun opPause(reason: PlayerPauseReason) {
     this.log.debug("opPause {}", reason)
     PlayerUIThread.checkIsUIThread()
 
@@ -778,9 +768,7 @@ class ExoAudioBookPlayer private constructor(
     }
   }
 
-  private fun handleFarSeek(
-    milliseconds: Long
-  ): Boolean {
+  private fun handleFarSeek(milliseconds: Long): Boolean {
     /*
      * First, get the current playback position as a position on the absolute timeline.
      */
@@ -866,9 +854,7 @@ class ExoAudioBookPlayer private constructor(
     return true
   }
 
-  private fun opMovePlayheadToLocation(
-    location: PlayerPosition
-  ) {
+  private fun opMovePlayheadToLocation(location: PlayerPosition) {
     this.log.debug("opMovePlayheadToLocation: {}", location)
     PlayerUIThread.checkIsUIThread()
 
@@ -945,9 +931,7 @@ class ExoAudioBookPlayer private constructor(
     )
   }
 
-  private fun opMovePlayheadToAbsoluteTime(
-    milliseconds: PlayerMillisecondsAbsolute
-  ) {
+  private fun opMovePlayheadToAbsoluteTime(milliseconds: PlayerMillisecondsAbsolute) {
     this.log.debug("opMovePlayheadToAbsoluteTime")
 
     val readingOrderItems =
@@ -1026,9 +1010,7 @@ class ExoAudioBookPlayer private constructor(
     }
   }
 
-  override fun pause(
-    reason: PlayerPauseReason
-  ) {
+  override fun pause(reason: PlayerPauseReason) {
     this.checkNotClosed()
 
     runOnUIThread {
@@ -1056,13 +1038,15 @@ class ExoAudioBookPlayer private constructor(
     this.checkNotClosed()
 
     runOnUIThread {
-      this.opMovePlayheadToLocation(this.book.readingOrder.first().startingPosition)
+      this.opMovePlayheadToLocation(
+        this.book.readingOrder
+          .first()
+          .startingPosition
+      )
     }
   }
 
-  override fun movePlayheadToAbsoluteTime(
-    milliseconds: PlayerMillisecondsAbsolute
-  ) {
+  override fun movePlayheadToAbsoluteTime(milliseconds: PlayerMillisecondsAbsolute) {
     this.checkNotClosed()
 
     runOnUIThread {
@@ -1114,13 +1098,14 @@ class ExoAudioBookPlayer private constructor(
   }
 
   override val playbackStatus: PlayerPlaybackStatus
-    get() = when (this.exoAdapter.state) {
-      ExoPlayerPlaybackStatus.INITIAL -> PlayerPlaybackStatus.PAUSED
-      ExoPlayerPlaybackStatus.BUFFERING -> PlayerPlaybackStatus.BUFFERING
-      ExoPlayerPlaybackStatus.PLAYING -> PlayerPlaybackStatus.PLAYING
-      ExoPlayerPlaybackStatus.PAUSED -> PlayerPlaybackStatus.PAUSED
-      ExoPlayerPlaybackStatus.CHAPTER_ENDED -> PlayerPlaybackStatus.PAUSED
-    }
+    get() =
+      when (this.exoAdapter.state) {
+        ExoPlayerPlaybackStatus.INITIAL -> PlayerPlaybackStatus.PAUSED
+        ExoPlayerPlaybackStatus.BUFFERING -> PlayerPlaybackStatus.BUFFERING
+        ExoPlayerPlaybackStatus.PLAYING -> PlayerPlaybackStatus.PLAYING
+        ExoPlayerPlaybackStatus.PAUSED -> PlayerPlaybackStatus.PAUSED
+        ExoPlayerPlaybackStatus.CHAPTER_ENDED -> PlayerPlaybackStatus.PAUSED
+      }
 
   override val playbackIntention: PlayerPlaybackIntention
     get() = this.intention

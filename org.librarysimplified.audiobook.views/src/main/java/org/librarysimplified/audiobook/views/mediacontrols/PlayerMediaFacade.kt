@@ -74,14 +74,14 @@ import java.io.ByteArrayOutputStream
  */
 
 object PlayerMediaFacade : Player {
-
   private var playerServiceNow: PlayerService? = null
 
   private val logger =
     LoggerFactory.getLogger(PlayerMediaFacade::class.java)
 
   private val supportedCommands =
-    Player.Commands.Builder()
+    Player.Commands
+      .Builder()
       .add(Player.COMMAND_GET_CURRENT_MEDIA_ITEM)
       .add(Player.COMMAND_GET_METADATA)
       .add(Player.COMMAND_GET_TIMELINE)
@@ -96,14 +96,16 @@ object PlayerMediaFacade : Player {
 
   @Volatile
   private var mediaMetadataFake =
-    MediaMetadata.Builder()
+    MediaMetadata
+      .Builder()
       .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
       .setTitle("No audiobook is currently open.")
       .build()
 
   @Volatile
   private var mediaItemLatest: MediaItem =
-    MediaItem.Builder()
+    MediaItem
+      .Builder()
       .setMediaMetadata(this.mediaMetadataFake)
       .build()
 
@@ -132,11 +134,10 @@ object PlayerMediaFacade : Player {
     this.timeline.setMetadataItem(this.mediaItemLatest, this.latestChapterDuration)
   }
 
-  fun start(
-    application: Application
-  ) {
+  fun start(application: Application) {
     this.mediaMetadataFake =
-      MediaMetadata.Builder()
+      MediaMetadata
+        .Builder()
         .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
         .setTitle(application.getString(R.string.audiobook_not_open))
         .build()
@@ -144,9 +145,7 @@ object PlayerMediaFacade : Player {
     this.mediaMetadataLatest = this.mediaMetadataFake
   }
 
-  private fun onStateEvent(
-    event: PlayerModelState
-  ) {
+  private fun onStateEvent(event: PlayerModelState) {
     this.logger.debug("onStateEvent: {}", event)
     return when (event) {
       is PlayerBookOpenFailed,
@@ -185,9 +184,7 @@ object PlayerMediaFacade : Player {
     builder.setArtworkData(data, PICTURE_TYPE_MEDIA)
   }
 
-  private fun onViewCommand(
-    command: PlayerViewCommand
-  ) {
+  private fun onViewCommand(command: PlayerViewCommand) {
     when (command) {
       PlayerViewCoverImageChanged -> {
         val coverData = coverImageData()
@@ -201,11 +198,17 @@ object PlayerMediaFacade : Player {
       }
 
       PlayerViewErrorsDownloadOpen -> {}
+
       PlayerViewLoginOpen -> {}
+
       PlayerViewNavigationCloseAll -> {}
+
       PlayerViewNavigationPlaybackRateMenuOpen -> {}
+
       PlayerViewNavigationSleepMenuOpen -> {}
+
       PlayerViewNavigationTOCClose -> {}
+
       PlayerViewNavigationTOCOpen -> {}
     }
   }
@@ -229,7 +232,8 @@ object PlayerMediaFacade : Player {
         }
 
       val builder =
-        MediaMetadata.Builder()
+        MediaMetadata
+          .Builder()
           .setAlbumTitle(title)
           .setAlbumArtist(PlayerModel.bookAuthor)
           .setArtist(PlayerModel.bookAuthor)
@@ -243,7 +247,8 @@ object PlayerMediaFacade : Player {
       this.mediaMetadataLatest =
         builder.build()
       this.mediaItemLatest =
-        MediaItem.Builder()
+        MediaItem
+          .Builder()
           .setMediaMetadata(this.mediaMetadataLatest)
           .build()
 
@@ -334,19 +339,13 @@ object PlayerMediaFacade : Player {
     }
   }
 
-  private fun warnNotImplemented(
-    name: String
-  ) {
+  private fun warnNotImplemented(name: String) {
     this.logger.warn("[{}] Facade method does nothing", name)
   }
 
-  override fun getApplicationLooper(): Looper {
-    return Looper.getMainLooper()
-  }
+  override fun getApplicationLooper(): Looper = Looper.getMainLooper()
 
-  override fun addListener(
-    listener: Player.Listener
-  ) {
+  override fun addListener(listener: Player.Listener) {
     this.logger.debug("addListener: {}", listener)
     this.listeners = this.listeners.plus(listener)
     this.logger.debug("addListener: {} listeners now", this.listeners.size)
@@ -354,17 +353,13 @@ object PlayerMediaFacade : Player {
     listener.onIsPlayingChanged(PlayerModel.isPlaying)
   }
 
-  override fun removeListener(
-    listener: Player.Listener
-  ) {
+  override fun removeListener(listener: Player.Listener) {
     this.logger.debug("removeListener: {}", listener)
     this.listeners = this.listeners.minus(listener)
     this.logger.debug("removeListener: {} listeners now", this.listeners.size)
   }
 
-  override fun setMediaItems(
-    mediaItems: MutableList<MediaItem>
-  ) {
+  override fun setMediaItems(mediaItems: MutableList<MediaItem>) {
     this.warnNotImplemented("setMediaItems")
   }
 
@@ -399,9 +394,7 @@ object PlayerMediaFacade : Player {
     )
   }
 
-  override fun setMediaItem(
-    mediaItem: MediaItem
-  ) {
+  override fun setMediaItem(mediaItem: MediaItem) {
     this.warnNotImplemented("setMediaItem")
     this.logMediaItem(mediaItem)
   }
@@ -422,9 +415,7 @@ object PlayerMediaFacade : Player {
     this.logMediaItem(mediaItem)
   }
 
-  override fun addMediaItem(
-    mediaItem: MediaItem
-  ) {
+  override fun addMediaItem(mediaItem: MediaItem) {
     this.warnNotImplemented("addMediaItem")
   }
 
@@ -435,9 +426,7 @@ object PlayerMediaFacade : Player {
     this.warnNotImplemented("addMediaItem")
   }
 
-  override fun addMediaItems(
-    mediaItems: MutableList<MediaItem>
-  ) {
+  override fun addMediaItems(mediaItems: MutableList<MediaItem>) {
     this.warnNotImplemented("addMediaItems")
   }
 
@@ -478,9 +467,7 @@ object PlayerMediaFacade : Player {
     this.warnNotImplemented("replaceMediaItems")
   }
 
-  override fun removeMediaItem(
-    index: Int
-  ) {
+  override fun removeMediaItem(index: Int) {
     this.warnNotImplemented("removeMediaItem")
   }
 
@@ -495,42 +482,31 @@ object PlayerMediaFacade : Player {
     this.warnNotImplemented("clearMediaItems")
   }
 
-  override fun isCommandAvailable(
-    command: Int
-  ): Boolean {
-    return this.supportedCommands.contains(command)
-  }
+  override fun isCommandAvailable(command: Int): Boolean = this.supportedCommands.contains(command)
 
   override fun canAdvertiseSession(): Boolean {
     this.logger.info("canAdvertiseSession: returning true")
     return true
   }
 
-  override fun getAvailableCommands(): Player.Commands {
-    return this.supportedCommands
-  }
+  override fun getAvailableCommands(): Player.Commands = this.supportedCommands
 
   override fun prepare() {
     this.warnNotImplemented("prepare")
   }
 
-  override fun getPlaybackState(): Int {
-    return if (PlayerModel.isPlaying) {
+  override fun getPlaybackState(): Int =
+    if (PlayerModel.isPlaying) {
       Player.STATE_READY
     } else if (PlayerModel.isBuffering) {
       Player.STATE_BUFFERING
     } else {
       Player.STATE_IDLE
     }
-  }
 
-  override fun getPlaybackSuppressionReason(): Int {
-    return Player.PLAYBACK_SUPPRESSION_REASON_NONE
-  }
+  override fun getPlaybackSuppressionReason(): Int = Player.PLAYBACK_SUPPRESSION_REASON_NONE
 
-  override fun isPlaying(): Boolean {
-    return PlayerModel.isPlaying
-  }
+  override fun isPlaying(): Boolean = PlayerModel.isPlaying
 
   override fun getPlayerError(): PlaybackException? {
     val existing = this.latestException
@@ -548,9 +524,7 @@ object PlayerMediaFacade : Player {
     PlayerModel.pause(PlayerPauseReason.PAUSE_REASON_USER_EXPLICITLY_PAUSED)
   }
 
-  override fun setPlayWhenReady(
-    playWhenReady: Boolean
-  ) {
+  override fun setPlayWhenReady(playWhenReady: Boolean) {
     this.logger.debug("setPlayWhenReady {}", playWhenReady)
     if (playWhenReady) {
       this.play()
@@ -559,13 +533,9 @@ object PlayerMediaFacade : Player {
     }
   }
 
-  override fun getPlayWhenReady(): Boolean {
-    return PlayerModel.isPlaying
-  }
+  override fun getPlayWhenReady(): Boolean = PlayerModel.isPlaying
 
-  override fun setRepeatMode(
-    repeatMode: Int
-  ) {
+  override fun setRepeatMode(repeatMode: Int) {
     this.warnNotImplemented("setRepeatMode")
   }
 
@@ -574,9 +544,7 @@ object PlayerMediaFacade : Player {
     return Player.REPEAT_MODE_OFF
   }
 
-  override fun setShuffleModeEnabled(
-    shuffleModeEnabled: Boolean
-  ) {
+  override fun setShuffleModeEnabled(shuffleModeEnabled: Boolean) {
     this.warnNotImplemented("setShuffleModeEnabled")
   }
 
@@ -585,23 +553,17 @@ object PlayerMediaFacade : Player {
     return false
   }
 
-  override fun isLoading(): Boolean {
-    return PlayerModel.isBuffering
-  }
+  override fun isLoading(): Boolean = PlayerModel.isBuffering
 
   override fun seekToDefaultPosition() {
     this.warnNotImplemented("seekToDefaultPosition")
   }
 
-  override fun seekToDefaultPosition(
-    mediaItemIndex: Int
-  ) {
+  override fun seekToDefaultPosition(mediaItemIndex: Int) {
     this.warnNotImplemented("seekToDefaultPosition")
   }
 
-  override fun seekTo(
-    positionMs: Long
-  ) {
+  override fun seekTo(positionMs: Long) {
     this.logger.debug("seekTo {}", positionMs)
     PlayerModel.movePlayheadToAbsoluteTime(PlayerMillisecondsAbsolute(positionMs))
   }
@@ -614,17 +576,13 @@ object PlayerMediaFacade : Player {
     PlayerModel.movePlayheadToAbsoluteTime(PlayerMillisecondsAbsolute(positionMs))
   }
 
-  override fun getSeekBackIncrement(): Long {
-    return PlayerModel.seekIncrementBackward()
-  }
+  override fun getSeekBackIncrement(): Long = PlayerModel.seekIncrementBackward()
 
   override fun seekBack() {
     PlayerModel.skipBack()
   }
 
-  override fun getSeekForwardIncrement(): Long {
-    return PlayerModel.seekIncrementForward()
-  }
+  override fun getSeekForwardIncrement(): Long = PlayerModel.seekIncrementForward()
 
   override fun seekForward() {
     PlayerModel.skipForward()
@@ -711,24 +669,18 @@ object PlayerMediaFacade : Player {
     this.seekToNextMediaItem()
   }
 
-  override fun setPlaybackParameters(
-    playbackParameters: PlaybackParameters
-  ) {
+  override fun setPlaybackParameters(playbackParameters: PlaybackParameters) {
     this.warnNotImplemented("setPlaybackParameters")
   }
 
-  override fun setPlaybackSpeed(
-    speed: Float
-  ) {
+  override fun setPlaybackSpeed(speed: Float) {
     this.warnNotImplemented("setPlaybackSpeed")
   }
 
   private val playbackParameters =
     PlaybackParameters(1.0f, 1.0f)
 
-  override fun getPlaybackParameters(): PlaybackParameters {
-    return this.playbackParameters
-  }
+  override fun getPlaybackParameters(): PlaybackParameters = this.playbackParameters
 
   override fun stop() {
     this.logger.debug("stop")
@@ -749,27 +701,22 @@ object PlayerMediaFacade : Player {
     return TrackSelectionParameters.DEFAULT_WITHOUT_CONTEXT
   }
 
-  override fun setTrackSelectionParameters(
-    parameters: TrackSelectionParameters
-  ) {
+  override fun setTrackSelectionParameters(parameters: TrackSelectionParameters) {
     this.warnNotImplemented("setTrackSelectionParameters")
   }
 
-  override fun getMediaMetadata(): MediaMetadata {
-    return this.mediaMetadataLatest
-  }
+  override fun getMediaMetadata(): MediaMetadata = this.mediaMetadataLatest
 
   override fun getPlaylistMetadata(): MediaMetadata {
     this.logger.debug("getPlaylistMetadata")
-    return MediaMetadata.Builder()
+    return MediaMetadata
+      .Builder()
       .setTitle("Audiobooks")
       .setIsBrowsable(true)
       .build()
   }
 
-  override fun setPlaylistMetadata(
-    mediaMetadata: MediaMetadata
-  ) {
+  override fun setPlaylistMetadata(mediaMetadata: MediaMetadata) {
     this.warnNotImplemented("setPlaylistMetadata")
   }
 
@@ -778,13 +725,9 @@ object PlayerMediaFacade : Player {
     return null
   }
 
-  override fun getCurrentTimeline(): Timeline {
-    return this.timeline
-  }
+  override fun getCurrentTimeline(): Timeline = this.timeline
 
-  override fun getCurrentPeriodIndex(): Int {
-    return 0
-  }
+  override fun getCurrentPeriodIndex(): Int = 0
 
   @Deprecated("Deprecated in Java")
   override fun getCurrentWindowIndex(): Int {
@@ -792,9 +735,7 @@ object PlayerMediaFacade : Player {
     return 0
   }
 
-  override fun getCurrentMediaItemIndex(): Int {
-    return 0
-  }
+  override fun getCurrentMediaItemIndex(): Int = 0
 
   @Deprecated("Deprecated in Java")
   override fun getNextWindowIndex(): Int {
@@ -802,9 +743,7 @@ object PlayerMediaFacade : Player {
     return 0
   }
 
-  override fun getNextMediaItemIndex(): Int {
-    return C.INDEX_UNSET
-  }
+  override fun getNextMediaItemIndex(): Int = C.INDEX_UNSET
 
   @Deprecated("Deprecated in Java")
   override fun getPreviousWindowIndex(): Int {
@@ -812,43 +751,23 @@ object PlayerMediaFacade : Player {
     return 0
   }
 
-  override fun getPreviousMediaItemIndex(): Int {
-    return C.INDEX_UNSET
-  }
+  override fun getPreviousMediaItemIndex(): Int = C.INDEX_UNSET
 
-  override fun getCurrentMediaItem(): MediaItem {
-    return this.mediaItemLatest
-  }
+  override fun getCurrentMediaItem(): MediaItem = this.mediaItemLatest
 
-  override fun getMediaItemCount(): Int {
-    return 1
-  }
+  override fun getMediaItemCount(): Int = 1
 
-  override fun getMediaItemAt(
-    index: Int
-  ): MediaItem {
-    return this.mediaItemLatest
-  }
+  override fun getMediaItemAt(index: Int): MediaItem = this.mediaItemLatest
 
-  override fun getDuration(): Long {
-    return this.latestChapterDuration
-  }
+  override fun getDuration(): Long = this.latestChapterDuration
 
-  override fun getCurrentPosition(): Long {
-    return this.latestChapterPosition
-  }
+  override fun getCurrentPosition(): Long = this.latestChapterPosition
 
-  override fun getBufferedPosition(): Long {
-    return this.latestChapterPosition
-  }
+  override fun getBufferedPosition(): Long = this.latestChapterPosition
 
-  override fun getBufferedPercentage(): Int {
-    return 0
-  }
+  override fun getBufferedPercentage(): Int = 0
 
-  override fun getTotalBufferedDuration(): Long {
-    return 0L
-  }
+  override fun getTotalBufferedDuration(): Long = 0L
 
   @Deprecated("Deprecated in Java")
   override fun isCurrentWindowDynamic(): Boolean {
@@ -856,9 +775,7 @@ object PlayerMediaFacade : Player {
     return false
   }
 
-  override fun isCurrentMediaItemDynamic(): Boolean {
-    return false
-  }
+  override fun isCurrentMediaItemDynamic(): Boolean = false
 
   @Deprecated("Deprecated in Java")
   override fun isCurrentWindowLive(): Boolean {
@@ -866,13 +783,9 @@ object PlayerMediaFacade : Player {
     return false
   }
 
-  override fun isCurrentMediaItemLive(): Boolean {
-    return false
-  }
+  override fun isCurrentMediaItemLive(): Boolean = false
 
-  override fun getCurrentLiveOffset(): Long {
-    return 0L
-  }
+  override fun getCurrentLiveOffset(): Long = 0L
 
   @Deprecated("Deprecated in Java")
   override fun isCurrentWindowSeekable(): Boolean {
@@ -880,33 +793,19 @@ object PlayerMediaFacade : Player {
     return false
   }
 
-  override fun isCurrentMediaItemSeekable(): Boolean {
-    return false
-  }
+  override fun isCurrentMediaItemSeekable(): Boolean = false
 
-  override fun isPlayingAd(): Boolean {
-    return false
-  }
+  override fun isPlayingAd(): Boolean = false
 
-  override fun getCurrentAdGroupIndex(): Int {
-    return C.INDEX_UNSET
-  }
+  override fun getCurrentAdGroupIndex(): Int = C.INDEX_UNSET
 
-  override fun getCurrentAdIndexInAdGroup(): Int {
-    return C.INDEX_UNSET
-  }
+  override fun getCurrentAdIndexInAdGroup(): Int = C.INDEX_UNSET
 
-  override fun getContentDuration(): Long {
-    return this.latestChapterDuration
-  }
+  override fun getContentDuration(): Long = this.latestChapterDuration
 
-  override fun getContentPosition(): Long {
-    return this.latestChapterPosition
-  }
+  override fun getContentPosition(): Long = this.latestChapterPosition
 
-  override fun getContentBufferedPosition(): Long {
-    return this.latestChapterPosition
-  }
+  override fun getContentBufferedPosition(): Long = this.latestChapterPosition
 
   override fun getAudioAttributes(): AudioAttributes {
     this.warnNotImplemented("getAudioAttributes")
@@ -926,51 +825,35 @@ object PlayerMediaFacade : Player {
     this.warnNotImplemented("clearVideoSurface")
   }
 
-  override fun clearVideoSurface(
-    surface: Surface?
-  ) {
+  override fun clearVideoSurface(surface: Surface?) {
     this.warnNotImplemented("clearVideoSurface")
   }
 
-  override fun setVideoSurface(
-    surface: Surface?
-  ) {
+  override fun setVideoSurface(surface: Surface?) {
     this.warnNotImplemented("setVideoSurface")
   }
 
-  override fun setVideoSurfaceHolder(
-    surfaceHolder: SurfaceHolder?
-  ) {
+  override fun setVideoSurfaceHolder(surfaceHolder: SurfaceHolder?) {
     this.warnNotImplemented("setVideoSurfaceHolder")
   }
 
-  override fun clearVideoSurfaceHolder(
-    surfaceHolder: SurfaceHolder?
-  ) {
+  override fun clearVideoSurfaceHolder(surfaceHolder: SurfaceHolder?) {
     this.warnNotImplemented("clearVideoSurfaceHolder")
   }
 
-  override fun setVideoSurfaceView(
-    surfaceView: SurfaceView?
-  ) {
+  override fun setVideoSurfaceView(surfaceView: SurfaceView?) {
     this.warnNotImplemented("setVideoSurfaceView")
   }
 
-  override fun clearVideoSurfaceView(
-    surfaceView: SurfaceView?
-  ) {
+  override fun clearVideoSurfaceView(surfaceView: SurfaceView?) {
     this.warnNotImplemented("clearVideoSurfaceView")
   }
 
-  override fun setVideoTextureView(
-    textureView: TextureView?
-  ) {
+  override fun setVideoTextureView(textureView: TextureView?) {
     this.warnNotImplemented("setVideoTextureView")
   }
 
-  override fun clearVideoTextureView(
-    textureView: TextureView?
-  ) {
+  override fun clearVideoTextureView(textureView: TextureView?) {
     this.warnNotImplemented("clearVideoTextureView")
   }
 
@@ -1009,7 +892,10 @@ object PlayerMediaFacade : Player {
     this.warnNotImplemented("setDeviceVolume")
   }
 
-  override fun setDeviceVolume(volume: Int, flags: Int) {
+  override fun setDeviceVolume(
+    volume: Int,
+    flags: Int
+  ) {
     this.warnNotImplemented("setDeviceVolume")
   }
 
@@ -1027,16 +913,12 @@ object PlayerMediaFacade : Player {
     this.warnNotImplemented("decreaseDeviceVolume")
   }
 
-  override fun decreaseDeviceVolume(
-    flags: Int
-  ) {
+  override fun decreaseDeviceVolume(flags: Int) {
     this.warnNotImplemented("decreaseDeviceVolume")
   }
 
   @Deprecated("Deprecated in Java")
-  override fun setDeviceMuted(
-    muted: Boolean
-  ) {
+  override fun setDeviceMuted(muted: Boolean) {
     this.warnNotImplemented("setDeviceMuted")
   }
 
@@ -1054,9 +936,7 @@ object PlayerMediaFacade : Player {
     this.warnNotImplemented("setAudioAttributes")
   }
 
-  fun playerServiceAssign(
-    playerService: PlayerService
-  ) {
+  fun playerServiceAssign(playerService: PlayerService) {
     this.logger.debug("playerServiceAssign: {}", playerService)
     this.playerServiceNow = playerService
   }

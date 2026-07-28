@@ -16,7 +16,6 @@ class ExoDownloadAlwaysSucceededTask(
   private val readingOrderItem: ExoReadingOrderItemHandle,
   override val playbackURI: URI,
 ) : PlayerDownloadTaskType {
-
   init {
     this.readingOrderItem.setDownloadStatus(PlayerReadingOrderItemDownloaded(this.readingOrderItem))
   }

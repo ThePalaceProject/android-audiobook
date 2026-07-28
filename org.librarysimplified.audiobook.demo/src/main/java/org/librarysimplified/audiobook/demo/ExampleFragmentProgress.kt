@@ -13,7 +13,6 @@ import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentE
 import org.librarysimplified.audiobook.views.PlayerModel
 
 class ExampleFragmentProgress : Fragment() {
-
   private var subscriptions: CompositeDisposable = CompositeDisposable()
   private lateinit var statusMessage: TextView
   private lateinit var progressLog: EditText
@@ -49,15 +48,11 @@ class ExampleFragmentProgress : Fragment() {
     this.subscriptions.dispose()
   }
 
-  private fun onLicenseEvent(
-    event: SingleLicenseCheckStatus
-  ) {
+  private fun onLicenseEvent(event: SingleLicenseCheckStatus) {
     this.populateProgressLog(event.message)
   }
 
-  private fun onManifestEvent(
-    event: ManifestFulfillmentEvent
-  ) {
+  private fun onManifestEvent(event: ManifestFulfillmentEvent) {
     this.populateProgressLog(event.message)
   }
 

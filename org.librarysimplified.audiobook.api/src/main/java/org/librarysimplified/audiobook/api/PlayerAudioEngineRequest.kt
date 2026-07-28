@@ -13,13 +13,11 @@ data class PlayerAudioEngineRequest(
    */
 
   val manifest: PlayerManifest,
-
   /**
    * The HTTP client used to make HTTP requests.
    */
 
   val httpClient: LSHTTPClientType,
-
   /**
    * A filter for audio engine providers. If the function returns `true`, then the engine provider
    * is included in the list of providers that can service the given request.
@@ -29,7 +27,6 @@ data class PlayerAudioEngineRequest(
     {
       true
     },
-
   /**
    * A provider of downloads for book parts. Depending on the audio engine used, this provider
    * may not actually be used (some audio engines implement their own downloading and don't
@@ -37,19 +34,16 @@ data class PlayerAudioEngineRequest(
    */
 
   val downloadProvider: PlayerDownloadProviderType,
-
   /**
    * The source of the book data.
    */
 
   val bookSource: PlayerBookSource,
-
   /**
    * The credentials required to open the book.
    */
 
   val bookCredentials: PlayerBookCredentialsType,
-
   /**
    * The handler used for authenticated requests.
    */

@@ -6,5 +6,4 @@ import org.librarysimplified.audiobook.parser.api.ParserProviderType
  * A provider of license status document parsers.
  */
 
-interface LicenseStatusParserProviderType :
-  ParserProviderType<ByteArray, Any, LicenseStatusDocument>
+interface LicenseStatusParserProviderType : ParserProviderType<ByteArray, Any, LicenseStatusDocument>

@@ -23,16 +23,14 @@ class FindawayReadingOrderItem(
   var prevElement: PlayerReadingOrderItemType?,
   val interval: PlayerMillisecondsAbsoluteInterval
 ) : PlayerReadingOrderItemType {
-
-  override fun toString(): String {
-    return StringBuilder(128)
+  override fun toString(): String =
+    StringBuilder(128)
       .append("[FindawayReadingOrderItem ")
       .append(this.index)
       .append(' ')
       .append(this.itemManifest)
       .append(']')
       .toString()
-  }
 
   /**
    * The current download status of the spine element.
@@ -81,10 +79,11 @@ class FindawayReadingOrderItem(
     true
 
   override val startingPosition: PlayerPosition
-    get() = PlayerPosition(
-      readingOrderID = this.itemManifest.id,
-      offsetMilliseconds = PlayerMillisecondsReadingOrderItem(0L)
-    )
+    get() =
+      PlayerPosition(
+        readingOrderID = this.itemManifest.id,
+        offsetMilliseconds = PlayerMillisecondsReadingOrderItem(0L)
+      )
 
   override val downloadStatus: PlayerReadingOrderItemDownloadStatus
     get() = synchronized(this.statusLock) { this.statusNow }

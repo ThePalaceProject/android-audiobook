@@ -45,7 +45,6 @@ class FindawayAdapter(
   private val engine: AudioEngine,
   private val intention: () -> PlayerPlaybackIntention,
 ) : AutoCloseable {
-
   var pauseReason: PlayerPauseReason =
     PlayerPauseReason.PAUSE_REASON_INITIALLY_PAUSED
 
@@ -69,7 +68,8 @@ class FindawayAdapter(
     CompositeDisposable()
 
   private val stateSubject =
-    BehaviorSubject.create<FindawayPlayerPlaybackStatusTransition>()
+    BehaviorSubject
+      .create<FindawayPlayerPlaybackStatusTransition>()
       .toSerialized()
 
   @Volatile
@@ -91,9 +91,20 @@ class FindawayAdapter(
       FindawayPlayerPosition(
         readingOrderItem = this.book.readingOrder.first(),
         readingOrderItemOffsetMilliseconds = PlayerMillisecondsReadingOrderItem(0L),
-        part = this.book.readingOrder.first().itemManifest.part,
-        chapter = this.book.readingOrder.first().itemManifest.sequence,
-        tocItem = this.tocItemFor(this.book.readingOrder.first().id, PlayerMillisecondsReadingOrderItem(0L)),
+        part =
+          this.book.readingOrder
+            .first()
+            .itemManifest.part,
+        chapter =
+          this.book.readingOrder
+            .first()
+            .itemManifest.sequence,
+        tocItem =
+          this.tocItemFor(
+            this.book.readingOrder
+              .first()
+              .id,
+            PlayerMillisecondsReadingOrderItem(0L)),
         totalBookDurationRemaining = Duration.millis(0L)
       )
 
@@ -123,9 +134,7 @@ class FindawayAdapter(
   private fun tocItemFor(
     readingOrderID: PlayerManifestReadingOrderID,
     offsetMilliseconds: PlayerMillisecondsReadingOrderItem
-  ): PlayerManifestTOCItem {
-    return this.book.tableOfContents.lookupTOCItem(readingOrderID, offsetMilliseconds)
-  }
+  ): PlayerManifestTOCItem = this.book.tableOfContents.lookupTOCItem(readingOrderID, offsetMilliseconds)
 
   private fun publishError(
     exception: Throwable?,
@@ -150,9 +159,7 @@ class FindawayAdapter(
     )
   }
 
-  private fun onPlaybackState(
-    state: PlayerState?
-  ) {
+  private fun onPlaybackState(state: PlayerState?) {
     if (state == null) {
       return
     }
@@ -204,9 +211,7 @@ class FindawayAdapter(
     }
   }
 
-  private fun onPlaybackError(
-    error: Throwable?
-  ) {
+  private fun onPlaybackError(error: Throwable?) {
     if (error == null) {
       return
     }
@@ -215,9 +220,7 @@ class FindawayAdapter(
     this.publishError(error, 0x4E590001)
   }
 
-  private fun onPlaybackEvent(
-    event: PlaybackEvent?
-  ) {
+  private fun onPlaybackEvent(event: PlaybackEvent?) {
     if (event == null) {
       return
     }
@@ -338,9 +341,7 @@ class FindawayAdapter(
     }
   }
 
-  private fun playbackRateFromSpeed(
-    speed: Float?
-  ): PlayerPlaybackRate {
+  private fun playbackRateFromSpeed(speed: Float?): PlayerPlaybackRate {
     if (speed != null) {
       return PlayerPlaybackRate(speed.toDouble())
     }
@@ -351,11 +352,11 @@ class FindawayAdapter(
     // Nothing to do
   }
 
-  private fun positionMetadataFor(
-    position: FindawayPlayerPosition
-  ): PlayerManifestPositionMetadata {
+  private fun positionMetadataFor(position: FindawayPlayerPosition): PlayerManifestPositionMetadata {
     val bookProgressEstimate =
-      position.readingOrderItem.index.toDouble() / this.book.readingOrder.size.toDouble()
+      position.readingOrderItem.index.toDouble() /
+        this.book.readingOrder.size
+          .toDouble()
 
     val itemPosition =
       Duration.millis(position.readingOrderItemOffsetMilliseconds.value)
@@ -602,9 +603,7 @@ class FindawayAdapter(
     )
   }
 
-  fun play(
-    playhead: PlayerPosition
-  ) {
+  fun play(playhead: PlayerPosition) {
     val item =
       this.book.readingOrderByID[playhead.readingOrderID]!!
 
@@ -650,9 +649,7 @@ class FindawayAdapter(
     )
   }
 
-  fun skipBack(
-    milliseconds: Long
-  ) {
+  fun skipBack(milliseconds: Long) {
     assert(milliseconds < 0) { "Milliseconds must be negative" }
 
     val position =
@@ -693,9 +690,7 @@ class FindawayAdapter(
     this.engine.playbackEngine.nextChapter()
   }
 
-  fun skipForward(
-    milliseconds: Long
-  ) {
+  fun skipForward(milliseconds: Long) {
     assert(milliseconds >= 0) { "Milliseconds must not be negative" }
 
     /*
@@ -736,9 +731,7 @@ class FindawayAdapter(
     this.seekTo(PlayerMillisecondsReadingOrderItem(nextMs))
   }
 
-  fun seekTo(
-    milliseconds: PlayerMillisecondsReadingOrderItem
-  ) {
+  fun seekTo(milliseconds: PlayerMillisecondsReadingOrderItem) {
     /*
      * The Findaway player will ignore seek requests if it isn't currently playing.
      *
@@ -792,7 +785,8 @@ class FindawayAdapter(
           this.engine.playbackEngine.seekTo(milliseconds.value)
           this.engine.playbackEngine.pause()
         } else {
-          this.engine.playbackEngine.play(request)
+          this.engine.playbackEngine
+            .play(request)
             .takeFirst { event -> event.code == PlaybackEvent.PLAYBACK_STARTED }
             .subscribe { _ ->
               this.logger.debug(
@@ -806,17 +800,13 @@ class FindawayAdapter(
     }
   }
 
-  fun setPlaybackRate(
-    value: PlayerPlaybackRate
-  ) {
+  fun setPlaybackRate(value: PlayerPlaybackRate) {
     this.currentPlaybackRateField = value
     this.engine.playbackEngine.speed = value.speed.toFloat()
     this.events.onNext(PlayerEvent.PlayerEventPlaybackRateChanged(palaceId = this.book.palaceId, value))
   }
 
-  fun movePlayheadToLocation(
-    location: PlayerPosition
-  ) {
+  fun movePlayheadToLocation(location: PlayerPosition) {
     val item =
       this.book.readingOrderByID[location.readingOrderID] ?: return
 

@@ -28,13 +28,14 @@ data class FindawayManifest(
   val toc: PlayerManifestTOC,
   val manifest: PlayerManifest
 ) {
-
   companion object {
-
     private val logger = LoggerFactory.getLogger(FindawayManifest::class.java)
 
-    private fun valueString(map: Map<String, PlayerManifestScalar>, key: String): String {
-      return (map[key] ?: throw IllegalArgumentException(
+    private fun valueString(
+      map: Map<String, PlayerManifestScalar>,
+      key: String
+    ): String =
+      (map[key] ?: throw IllegalArgumentException(
         StringBuilder(128)
           .append("Missing required key.\n")
           .append("  Key: ")
@@ -42,7 +43,6 @@ data class FindawayManifest(
           .append('\n')
           .toString()
       )).toString()
-    }
 
     private fun valueInt(
       map: Map<String, PlayerManifestScalar>,
@@ -75,8 +75,9 @@ data class FindawayManifest(
       manifest: PlayerManifest
     ): PlayerResult<FindawayManifest, Exception> {
       try {
-        val encrypted = manifest.metadata.encrypted
-          ?: throw IllegalArgumentException("Manifest is missing the required encrypted section")
+        val encrypted =
+          manifest.metadata.encrypted
+            ?: throw IllegalArgumentException("Manifest is missing the required encrypted section")
 
         if (encrypted.scheme != "http://librarysimplified.org/terms/drm/scheme/FAE") {
           throw IllegalArgumentException(
@@ -123,18 +124,18 @@ data class FindawayManifest(
 
         return PlayerResult.Success(
           result =
-          FindawayManifest(
-            accountId = this.valueString(encrypted.values, "findaway:accountId"),
-            checkoutId = this.valueString(encrypted.values, "findaway:checkoutId"),
-            fulfillmentId = this.valueString(encrypted.values, "findaway:fulfillmentId"),
-            id = bookID,
-            licenseId = this.valueString(encrypted.values, "findaway:licenseId"),
-            readingOrderItems = readingOrderItems,
-            sessionKey = this.valueString(encrypted.values, "findaway:sessionKey"),
-            title = manifestRewritten.metadata.title,
-            toc = tableOfContents,
-            manifest = manifestRewritten
-          )
+            FindawayManifest(
+              accountId = this.valueString(encrypted.values, "findaway:accountId"),
+              checkoutId = this.valueString(encrypted.values, "findaway:checkoutId"),
+              fulfillmentId = this.valueString(encrypted.values, "findaway:fulfillmentId"),
+              id = bookID,
+              licenseId = this.valueString(encrypted.values, "findaway:licenseId"),
+              readingOrderItems = readingOrderItems,
+              sessionKey = this.valueString(encrypted.values, "findaway:sessionKey"),
+              title = manifestRewritten.metadata.title,
+              toc = tableOfContents,
+              manifest = manifestRewritten
+            )
         )
       } catch (e: Exception) {
         this.logger.error("Parse error: ", e)
@@ -148,10 +149,8 @@ data class FindawayManifest(
      * @see "https://github.com/ThePalaceProject/mobile-specs/tree/main/audiobook-reading-order-ids"
      */
 
-    private fun transformReadingOrder(
-      readingOrder: List<PlayerManifestReadingOrderItem>
-    ): List<PlayerManifestReadingOrderItem> {
-      return readingOrder.map { item ->
+    private fun transformReadingOrder(readingOrder: List<PlayerManifestReadingOrderItem>): List<PlayerManifestReadingOrderItem> =
+      readingOrder.map { item ->
         val part =
           valueInt(item.link.properties.extras, "findaway:part")
         val sequence =
@@ -162,18 +161,16 @@ data class FindawayManifest(
           )
         PlayerManifestReadingOrderItem(id = id, link = item.link)
       }
-    }
 
     private fun makeTOC(
       manifest: PlayerManifest,
       context: Context
-    ): PlayerManifestTOC {
-      return PlayerManifestTOCs.createTOC(
+    ): PlayerManifestTOC =
+      PlayerManifestTOCs.createTOC(
         manifest,
         defaultTrackTitle = { index ->
           context.getString(R.string.player_manifest_audiobook_default_track_n, index + 1)
         }
       )
-    }
   }
 }

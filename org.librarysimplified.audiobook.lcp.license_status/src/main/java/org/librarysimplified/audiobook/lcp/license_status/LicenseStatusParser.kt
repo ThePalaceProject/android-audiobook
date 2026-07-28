@@ -18,41 +18,44 @@ class LicenseStatusParser(
   private val stream: InputStream,
   private val uri: URI
 ) : LicenseStatusParserType {
-
   override fun parse(): ParseResult<LicenseStatusDocument> {
     val result =
-      this.parsers.createParser(
-        uri = this.uri,
-        stream = this.stream,
-        rootParser = LicenseStatusDocumentParser(
-          valueParsers = FRValueParsers
-        )
-      ).parse()
+      this.parsers
+        .createParser(
+          uri = this.uri,
+          stream = this.stream,
+          rootParser =
+            LicenseStatusDocumentParser(
+              valueParsers = FRValueParsers
+            )
+        ).parse()
 
     return when (result) {
-      is FRParseResult.FRParseSucceeded ->
+      is FRParseResult.FRParseSucceeded -> {
         ParseResult.Success(
           warnings = listOf(),
           result = result.result
         )
-      is FRParseResult.FRParseFailed ->
+      }
+
+      is FRParseResult.FRParseFailed -> {
         ParseResult.Failure(
           warnings = listOf(),
           errors = result.errors.map { error -> this.toParseError(error) },
           result = null
         )
+      }
     }
   }
 
-  private fun toParseError(error: FRParseError): ParseError {
-    return ParseError(
+  private fun toParseError(error: FRParseError): ParseError =
+    ParseError(
       source = error.position.source,
       message = error.message,
       line = error.position.line,
       column = error.position.column,
       exception = error.exception
     )
-  }
 
   override fun close() {
     this.stream.close()

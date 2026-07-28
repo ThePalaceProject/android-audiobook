@@ -10,7 +10,6 @@ import java.io.Serializable
 data class JSONBase64String(
   val text: String
 ) : Serializable {
-
   init {
     mimeVariant.decode(this.text)
   }
@@ -19,20 +18,15 @@ data class JSONBase64String(
    * Decode the Base64URL string to a byte array.
    */
 
-  fun decode(): ByteArray {
-    return mimeVariant.decode(this.text)
-  }
+  fun decode(): ByteArray = mimeVariant.decode(this.text)
 
   companion object {
-
     private val mimeVariant = Base64Variants.MODIFIED_FOR_URL
 
     /**
      * Encode the byte array as a Base64URL string.
      */
 
-    fun encode(data: ByteArray): JSONBase64String {
-      return JSONBase64String(this.mimeVariant.encode(data))
-    }
+    fun encode(data: ByteArray): JSONBase64String = JSONBase64String(this.mimeVariant.encode(data))
   }
 }

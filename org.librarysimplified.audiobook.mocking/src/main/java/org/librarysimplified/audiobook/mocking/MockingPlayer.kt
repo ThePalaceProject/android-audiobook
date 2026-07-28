@@ -28,7 +28,6 @@ class MockingPlayer(
   override val id: UUID,
   private val book: MockingAudioBook
 ) : PlayerType {
-
   private val log = LoggerFactory.getLogger(MockingPlayer::class.java)
 
   private val callEvents = PublishSubject.create<String>()
@@ -67,9 +66,7 @@ class MockingPlayer(
     this.callEvents.onNext("play")
   }
 
-  override fun pause(
-    reason: PlayerPauseReason
-  ) {
+  override fun pause(reason: PlayerPauseReason) {
     this.log.debug("pause {}", reason)
     this.callEvents.onNext("pause $reason")
   }
@@ -82,7 +79,11 @@ class MockingPlayer(
   override fun movePlayheadToBookStart() {
     this.log.debug("movePlayheadToBookStart")
     this.movePlayheadToLocation(
-      PlayerPosition(this.book.spineItems.first().id, PlayerMillisecondsReadingOrderItem(0L))
+      PlayerPosition(
+        this.book.spineItems
+          .first()
+          .id,
+        PlayerMillisecondsReadingOrderItem(0L))
     )
   }
 
@@ -117,14 +118,17 @@ class MockingPlayer(
           palaceId = book.palaceId,
           readingOrderItem = element,
           offsetMilliseconds = offset,
-          positionMetadata = PlayerManifestPositionMetadata(
-            tocItem = this.book.tableOfContents.tocItemsInOrder.first(),
-            tocItemRemaining = Duration.millis(0),
-            tocItemPosition = Duration.millis(0),
-            totalRemainingBookTime = Duration.millis(0L),
-            chapterProgressEstimate = 0.0,
-            bookProgressEstimate = 0.0
-          ),
+          positionMetadata =
+            PlayerManifestPositionMetadata(
+              tocItem =
+                this.book.tableOfContents.tocItemsInOrder
+                  .first(),
+              tocItemRemaining = Duration.millis(0),
+              tocItemPosition = Duration.millis(0),
+              totalRemainingBookTime = Duration.millis(0L),
+              chapterProgressEstimate = 0.0,
+              bookProgressEstimate = 0.0
+            ),
           isStreaming = false
         )
       )

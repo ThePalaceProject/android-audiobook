@@ -36,7 +36,6 @@ import java.util.ServiceLoader
 import java.util.UUID
 
 class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
-
   private lateinit var authBasic: String
   private lateinit var authFeedbooks: String
   private lateinit var authItems: Array<String>
@@ -217,19 +216,20 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       )
 
     this.presets.adapter = presetAdapter
-    this.presets.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-      override fun onNothingSelected(parent: AdapterView<*>?) {
-      }
+    this.presets.onItemSelectedListener =
+      object : AdapterView.OnItemSelectedListener {
+        override fun onNothingSelected(parent: AdapterView<*>?) {
+        }
 
-      override fun onItemSelected(
-        parent: AdapterView<*>?,
-        view: View?,
-        position: Int,
-        id: Long
-      ) {
-        this@ExampleFragmentSelectBook.onSelectedPreset(presetList[position])
+        override fun onItemSelected(
+          parent: AdapterView<*>?,
+          view: View?,
+          position: Int,
+          id: Long
+        ) {
+          this@ExampleFragmentSelectBook.onSelectedPreset(presetList[position])
+        }
       }
-    }
 
     this.play.setOnClickListener {
       this.onSelectedPlay()
@@ -323,31 +323,30 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
     }
   }
 
-  private fun palaceId(
-    any: Any
-  ): PlayerPalaceID {
-    return PlayerPalaceID(
+  private fun palaceId(any: Any): PlayerPalaceID =
+    PlayerPalaceID(
       UUID.nameUUIDFromBytes(any.toString().toByteArray(StandardCharsets.UTF_8)).toString()
     )
-  }
 
-  private fun bookCredentials(): PlayerBookCredentialsType {
-    return when (val text = this.lcpPassphrase.text.trim().toString()) {
+  private fun bookCredentials(): PlayerBookCredentialsType =
+    when (val text =
+      this.lcpPassphrase.text
+        .trim()
+        .toString()
+    ) {
       "" -> PlayerBookCredentialsNone
       else -> PlayerBookCredentialsLCP(text)
     }
-  }
 
   private fun basicParametersForLCPLicense(
     sourceURI: URI,
     credentials: ExamplePlayerCredentials
-  ): ManifestFulfillmentBasicParameters {
-    return ManifestFulfillmentBasicParameters(
+  ): ManifestFulfillmentBasicParameters =
+    ManifestFulfillmentBasicParameters(
       uri = sourceURI,
       authorizationHandler = ExampleAuthorizationHandler,
       httpClient = ExampleApplication.httpClient,
     )
-  }
 
   private fun onSelectedType(type: String) {
     this.typeSelected = type

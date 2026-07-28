@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory
  */
 
 class FindawayEngineProvider : PlayerAudioEngineProviderType {
-
   private val version: PlayerVersion =
     PlayerVersions.ofPropertiesClassOrNull(
       clazz = FindawayEngineProvider::class.java,
@@ -54,16 +53,12 @@ class FindawayEngineProvider : PlayerAudioEngineProviderType {
     return false
   }
 
-  override fun name(): String {
-    return "org.librarysimplified.audiobook.audioengine"
-  }
+  override fun name(): String = "org.librarysimplified.audiobook.audioengine"
 
-  override fun version(): PlayerVersion {
-    return this.version
-  }
+  override fun version(): PlayerVersion = this.version
 
-  override fun toString(): String {
-    return StringBuilder(32)
+  override fun toString(): String =
+    StringBuilder(32)
       .append(this.name())
       .append(':')
       .append(this.version.major)
@@ -72,5 +67,4 @@ class FindawayEngineProvider : PlayerAudioEngineProviderType {
       .append('.')
       .append(this.version.patch)
       .toString()
-  }
 }

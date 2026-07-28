@@ -26,30 +26,30 @@ import java.util.UUID
  */
 
 internal object PlayerReference {
-
   private val logger =
     LoggerFactory.getLogger(PlayerReference::class.java)
 
   private val playerAndBookLock = Any()
   private var playerAndBookRef: PlayerBookAndPlayer? = null
 
-  fun <T> withPlayer(op: (PlayerBookAndPlayer?) -> T): T {
-    return synchronized(this.playerAndBookLock) {
+  fun <T> withPlayer(op: (PlayerBookAndPlayer?) -> T): T =
+    synchronized(this.playerAndBookLock) {
       op.invoke(this.playerAndBookRef)
     }
-  }
 
-  fun withPlayerIfPresent(op: (PlayerBookAndPlayer) -> Unit) {
-    return synchronized(this.playerAndBookLock) {
+  fun withPlayerIfPresent(op: (PlayerBookAndPlayer) -> Unit) =
+    synchronized(this.playerAndBookLock) {
       val r = this.playerAndBookRef
       if (r != null) {
         op.invoke(r)
       }
     }
-  }
 
-  fun <T> withPlayerIfPresentElse(op: (PlayerBookAndPlayer) -> T, defaultValue: T): T {
-    return synchronized(this.playerAndBookLock) {
+  fun <T> withPlayerIfPresentElse(
+    op: (PlayerBookAndPlayer) -> T,
+    defaultValue: T
+  ): T =
+    synchronized(this.playerAndBookLock) {
       val r = this.playerAndBookRef
       if (r != null) {
         op.invoke(r)
@@ -57,7 +57,6 @@ internal object PlayerReference {
         defaultValue
       }
     }
-  }
 
   fun opPlaybackRate(): PlayerPlaybackRate {
     return this.withPlayer { r ->
@@ -93,9 +92,7 @@ internal object PlayerReference {
     }
   }
 
-  fun opNewPlayer(
-    newPair: PlayerBookAndPlayer
-  ) {
+  fun opNewPlayer(newPair: PlayerBookAndPlayer) {
     this.withPlayer {
       check(!newPair.player.isClosed) {
         "New player instance ${newPair.player} must not be closed!"
@@ -117,8 +114,8 @@ internal object PlayerReference {
     }
   }
 
-  fun opIsStreamingSupported(): Boolean {
-    return this.withPlayerIfPresentElse(
+  fun opIsStreamingSupported(): Boolean =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           r.audioBook.supportsStreaming
@@ -129,7 +126,6 @@ internal object PlayerReference {
       },
       defaultValue = false
     )
-  }
 
   fun opSkipPlayhead(seekIncrement: Long) {
     this.withPlayerIfPresent { r ->
@@ -151,8 +147,8 @@ internal object PlayerReference {
     }
   }
 
-  fun opIsPlaying(): Boolean {
-    return this.withPlayerIfPresentElse(
+  fun opIsPlaying(): Boolean =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           when (r.player.playbackStatus) {
@@ -167,10 +163,9 @@ internal object PlayerReference {
       },
       defaultValue = false
     )
-  }
 
-  fun opIsBuffering(): Boolean {
-    return this.withPlayerIfPresentElse(
+  fun opIsBuffering(): Boolean =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           when (r.player.playbackStatus) {
@@ -185,50 +180,45 @@ internal object PlayerReference {
       },
       defaultValue = false
     )
-  }
 
-  fun opMovePlayheadTo(position: PlayerPosition) {
-    return this.withPlayerIfPresent { r ->
+  fun opMovePlayheadTo(position: PlayerPosition) =
+    this.withPlayerIfPresent { r ->
       try {
         r.player.movePlayheadToLocation(position)
       } catch (e: Throwable) {
         this.logger.debug("opMovePlayheadTo: ", e)
       }
     }
-  }
 
-  fun opMovePlayheadToAbsoluteTime(newOffset: PlayerMillisecondsAbsolute) {
-    return this.withPlayerIfPresent { r ->
+  fun opMovePlayheadToAbsoluteTime(newOffset: PlayerMillisecondsAbsolute) =
+    this.withPlayerIfPresent { r ->
       try {
         r.player.movePlayheadToAbsoluteTime(newOffset)
       } catch (e: Throwable) {
         this.logger.debug("opMovePlayheadToAbsoluteTime: ", e)
       }
     }
-  }
 
-  fun opBookmarkCreate() {
-    return this.withPlayerIfPresent { r ->
+  fun opBookmarkCreate() =
+    this.withPlayerIfPresent { r ->
       try {
         r.player.bookmark()
       } catch (e: Throwable) {
         this.logger.debug("opBookmarkCreate: ", e)
       }
     }
-  }
 
-  fun opBookmarkDelete(bookmark: PlayerBookmark) {
-    return this.withPlayerIfPresent { r ->
+  fun opBookmarkDelete(bookmark: PlayerBookmark) =
+    this.withPlayerIfPresent { r ->
       try {
         r.player.bookmarkDelete(bookmark)
       } catch (e: Throwable) {
         this.logger.debug("opBookmarkDelete: ", e)
       }
     }
-  }
 
-  fun opManifest(): PlayerManifest? {
-    return this.withPlayerIfPresentElse(
+  fun opManifest(): PlayerManifest? =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           r.audioBook.manifest
@@ -239,7 +229,6 @@ internal object PlayerReference {
       },
       defaultValue = null
     )
-  }
 
   fun opPlayOrPauseAsAppropriate(reason: PlayerPauseReason) {
     this.withPlayerIfPresent { r ->
@@ -254,8 +243,8 @@ internal object PlayerReference {
     }
   }
 
-  fun opIsDownloading(): Boolean {
-    return this.withPlayerIfPresentElse(
+  fun opIsDownloading(): Boolean =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           val book = r.audioBook
@@ -267,10 +256,9 @@ internal object PlayerReference {
       },
       defaultValue = false
     )
-  }
 
-  fun opIsDownloadingCompleted(): Boolean {
-    return this.withPlayerIfPresentElse(
+  fun opIsDownloadingCompleted(): Boolean =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           val book = r.audioBook
@@ -282,10 +270,9 @@ internal object PlayerReference {
       },
       defaultValue = false
     )
-  }
 
-  fun opIsDownloadingAnyFailed(): Boolean {
-    return this.withPlayerIfPresentElse(
+  fun opIsDownloadingAnyFailed(): Boolean =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           val book = r.audioBook
@@ -297,10 +284,9 @@ internal object PlayerReference {
       },
       defaultValue = false
     )
-  }
 
-  fun opChapterTitleFor(position: PlayerPosition): String {
-    return this.withPlayerIfPresentElse(
+  fun opChapterTitleFor(position: PlayerPosition): String =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           val book = r.audioBook
@@ -317,7 +303,6 @@ internal object PlayerReference {
       },
       defaultValue = ""
     )
-  }
 
   fun opDownloadAll() {
     this.withPlayerIfPresent { r ->
@@ -329,8 +314,8 @@ internal object PlayerReference {
     }
   }
 
-  fun opDownloadProgress(): PlayerDownloadProgress {
-    return this.withPlayerIfPresentElse(
+  fun opDownloadProgress(): PlayerDownloadProgress =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           val tasks = r.audioBook.downloadTasks
@@ -347,7 +332,6 @@ internal object PlayerReference {
       },
       defaultValue = PlayerDownloadProgress(0.0)
     )
-  }
 
   fun opFindDownloadingProgressIfAny(): PlayerDownloadProgress? {
     return this.withPlayerIfPresentElse(
@@ -410,15 +394,14 @@ internal object PlayerReference {
     )
   }
 
-  fun opIsOpen(): Boolean {
-    return this.withPlayerIfPresentElse(
+  fun opIsOpen(): Boolean =
+    this.withPlayerIfPresentElse(
       op = { r -> !r.player.isClosed },
       defaultValue = false
     )
-  }
 
-  fun opTableOfContent(): PlayerManifestTOC? {
-    return this.withPlayerIfPresentElse(
+  fun opTableOfContent(): PlayerManifestTOC? =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           r.audioBook.tableOfContents
@@ -428,10 +411,9 @@ internal object PlayerReference {
         }
       }, defaultValue = null
     )
-  }
 
-  fun opReadingOrder(): List<PlayerReadingOrderItemType> {
-    return this.withPlayerIfPresentElse(
+  fun opReadingOrder(): List<PlayerReadingOrderItemType> =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           r.audioBook.readingOrder
@@ -441,10 +423,9 @@ internal object PlayerReference {
         }
       }, defaultValue = listOf()
     )
-  }
 
-  fun opReadingOrderByID(): Map<PlayerManifestReadingOrderID, PlayerReadingOrderItemType> {
-    return this.withPlayerIfPresentElse(
+  fun opReadingOrderByID(): Map<PlayerManifestReadingOrderID, PlayerReadingOrderItemType> =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           r.audioBook.readingOrderByID
@@ -454,10 +435,9 @@ internal object PlayerReference {
         }
       }, defaultValue = mapOf()
     )
-  }
 
-  fun opDownloadTasksFailed(): List<PlayerDownloadTaskType> {
-    return this.withPlayerIfPresentElse(
+  fun opDownloadTasksFailed(): List<PlayerDownloadTaskType> =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           val tasks = r.audioBook.downloadTasks
@@ -468,10 +448,9 @@ internal object PlayerReference {
         }
       }, defaultValue = listOf()
     )
-  }
 
-  fun opPlayerID(): UUID? {
-    return this.withPlayerIfPresentElse(
+  fun opPlayerID(): UUID? =
+    this.withPlayerIfPresentElse(
       op = { r ->
         try {
           r.player.id
@@ -482,7 +461,6 @@ internal object PlayerReference {
       },
       defaultValue = null
     )
-  }
 
   fun opChapterPrevious() {
     this.withPlayerIfPresent { r ->
@@ -496,8 +474,8 @@ internal object PlayerReference {
     }
   }
 
-  fun onDownloadCancelAll() {
-    return this.withPlayerIfPresent { r ->
+  fun onDownloadCancelAll() =
+    this.withPlayerIfPresent { r ->
       try {
         r.audioBook.wholeBookDownloadTask.cancel()
       } catch (e: Throwable) {
@@ -512,5 +490,4 @@ internal object PlayerReference {
         }
       }
     }
-  }
 }

@@ -8,7 +8,6 @@ data class PlayerBookAndPlayer(
   val audioBook: PlayerAudioBookType,
   val player: PlayerType
 ) : AutoCloseable {
-
   private val logger =
     LoggerFactory.getLogger(PlayerBookAndPlayer::class.java)
 

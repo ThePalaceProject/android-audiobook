@@ -20,8 +20,9 @@ import java.util.concurrent.Executors
  * for audio books. This is simply for the sake of example, and should not be used in production.
  */
 
-class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable {
-
+class ExampleBookmarkDatabase(
+  private val context: Application
+) : AutoCloseable {
   private val logger =
     LoggerFactory.getLogger(ExampleBookmarkDatabase::class.java)
 
@@ -55,15 +56,14 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
     val bookProgressEstimate: Double,
     val totalRemainingBookTime: Duration
   ) : Serializable {
-    fun toMetadata(): PlayerBookmarkMetadata {
-      return PlayerBookmarkMetadata(
+    fun toMetadata(): PlayerBookmarkMetadata =
+      PlayerBookmarkMetadata(
         chapterTitle = this.chapterTitle,
         chapterProgressEstimate = this.chapterProgressEstimate,
         creationTime = this.creationTime,
         bookProgressEstimate = this.bookProgressEstimate,
         totalRemainingBookTime = this.totalRemainingBookTime
       )
-    }
   }
 
   private data class SerializableBookmark(
@@ -72,14 +72,13 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
     val position: SerializablePosition,
     val metadata: SerializableMetadata
   ) : Serializable {
-    fun toBookmark(): PlayerBookmark {
-      return PlayerBookmark(
+    fun toBookmark(): PlayerBookmark =
+      PlayerBookmark(
         kind = this.kind,
         readingOrderID = PlayerManifestReadingOrderID(this.position.id.value),
         offsetMilliseconds = PlayerMillisecondsReadingOrderItem(this.position.offset),
         metadata = this.metadata.toMetadata()
       )
-    }
   }
 
   private data class SerializableBookmarkCollection(
@@ -100,24 +99,19 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
     return count
   }
 
-  fun bookmarkListExplicits(
-    bookId: String
-  ): List<PlayerBookmark> {
+  fun bookmarkListExplicits(bookId: String): List<PlayerBookmark> {
     val serializableBookID =
       SerializableBookID(bookId)
     val explicitsForBook =
       this.bookmarks.bookmarksExplicit[serializableBookID] ?: mapOf()
 
-    return explicitsForBook.values.toList()
+    return explicitsForBook.values
+      .toList()
       .sortedBy { b -> b.metadata.creationTime }
       .map(SerializableBookmark::toBookmark)
   }
 
-  fun bookmarkFindLastRead(
-    bookId: String
-  ): PlayerBookmark? {
-    return this.bookmarks.bookmarksLastRead[SerializableBookID(bookId)]?.toBookmark()
-  }
+  fun bookmarkFindLastRead(bookId: String): PlayerBookmark? = this.bookmarks.bookmarksLastRead[SerializableBookID(bookId)]?.toBookmark()
 
   fun bookmarkDelete(
     bookId: String,
@@ -180,26 +174,27 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
   private fun toSerializable(
     bookId: String,
     bookmark: PlayerBookmark
-  ): SerializableBookmark {
-    return SerializableBookmark(
+  ): SerializableBookmark =
+    SerializableBookmark(
       kind = bookmark.kind,
       bookId = SerializableBookID(bookId),
-      position = SerializablePosition(
-        id = SerializableReadingOrderID(bookmark.readingOrderID.text),
-        offset = bookmark.offsetMilliseconds.value
-      ),
-      metadata = SerializableMetadata(
-        chapterTitle = bookmark.metadata.chapterTitle,
-        chapterProgressEstimate = bookmark.metadata.chapterProgressEstimate,
-        creationTime = bookmark.metadata.creationTime,
-        bookProgressEstimate = bookmark.metadata.bookProgressEstimate,
-        totalRemainingBookTime = bookmark.metadata.totalRemainingBookTime
-      )
+      position =
+        SerializablePosition(
+          id = SerializableReadingOrderID(bookmark.readingOrderID.text),
+          offset = bookmark.offsetMilliseconds.value
+        ),
+      metadata =
+        SerializableMetadata(
+          chapterTitle = bookmark.metadata.chapterTitle,
+          chapterProgressEstimate = bookmark.metadata.chapterProgressEstimate,
+          creationTime = bookmark.metadata.creationTime,
+          bookProgressEstimate = bookmark.metadata.bookProgressEstimate,
+          totalRemainingBookTime = bookmark.metadata.totalRemainingBookTime
+        )
     )
-  }
 
-  private fun loadCollection(): SerializableBookmarkCollection {
-    return try {
+  private fun loadCollection(): SerializableBookmarkCollection =
+    try {
       this.logger.debug("Loading bookmarks")
 
       val file = File(this.context.filesDir, "bookmarks.dat")
@@ -218,7 +213,6 @@ class ExampleBookmarkDatabase(private val context: Application) : AutoCloseable 
         bookmarksLastRead = mutableMapOf()
       )
     }
-  }
 
   private fun logBookmarks(bookmarkCollection: SerializableBookmarkCollection) {
     for (entry in bookmarkCollection.bookmarksExplicit) {

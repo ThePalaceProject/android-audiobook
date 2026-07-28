@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 
 object PlayerBluetoothWatcher {
-
   private val logger =
     LoggerFactory.getLogger(PlayerBluetoothWatcher::class.java)
 
@@ -50,9 +49,7 @@ object PlayerBluetoothWatcher {
     this.logger.debug("Bluetooth watcher disabled.")
   }
 
-  private fun onPlayerEvent(
-    event: PlayerEvent
-  ) {
+  private fun onPlayerEvent(event: PlayerEvent) {
     if (!this.enabled.get()) {
       return
     }
@@ -126,9 +123,7 @@ object PlayerBluetoothWatcher {
     return wasDisconnected
   }
 
-  private fun isBluetooth(
-    device: AudioDeviceInfo
-  ): Boolean {
+  private fun isBluetooth(device: AudioDeviceInfo): Boolean {
     val type = device.type
     return type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
   }

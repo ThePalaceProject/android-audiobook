@@ -14,7 +14,6 @@ data class ParseWarning(
   val column: Int = 0,
   val exception: Throwable? = null
 ) : Serializable {
-
   /**
    * Convert a parse warning to an error.
    */

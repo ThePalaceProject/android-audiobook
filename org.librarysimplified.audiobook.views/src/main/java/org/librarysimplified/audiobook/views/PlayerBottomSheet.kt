@@ -13,8 +13,9 @@ import androidx.annotation.AttrRes
 import org.slf4j.LoggerFactory
 import kotlin.math.abs
 
-class PlayerBottomSheet : FrameLayout, PlayerBottomSheetType {
-
+class PlayerBottomSheet :
+  FrameLayout,
+  PlayerBottomSheetType {
   private var handleCloseString: String = ""
   private var handleOpenString: String = ""
   private val ignoreOpenListener = IgnoreOpenListener()
@@ -50,9 +51,7 @@ class PlayerBottomSheet : FrameLayout, PlayerBottomSheetType {
     this.initializeLayout(context)
   }
 
-  private fun initializeLayout(
-    context: Context
-  ) {
+  private fun initializeLayout(context: Context) {
     inflate(context, R.layout.player_bottom_sheet, this)
   }
 
@@ -240,13 +239,9 @@ class PlayerBottomSheet : FrameLayout, PlayerBottomSheetType {
     this.broadcastOpenState()
   }
 
-  override fun isOpen(): Boolean {
-    return this.isOpen
-  }
+  override fun isOpen(): Boolean = this.isOpen
 
-  override fun setOpenListener(
-    listener: PlayerBottomSheetType.SheetOpenListenerType?
-  ) {
+  override fun setOpenListener(listener: PlayerBottomSheetType.SheetOpenListenerType?) {
     if (listener == null) {
       this.openListener = this.ignoreOpenListener
     } else {

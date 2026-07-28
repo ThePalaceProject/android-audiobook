@@ -8,19 +8,16 @@ import java.net.URI
  */
 
 data class ManifestFulfillmentError(
-
   /**
    * The error message associated with the error.
    */
 
   val message: String,
-
   /**
    * Supplementary error messages.
    */
 
   val extraMessages: List<String>,
-
   /**
    * The server data associated with the error, if any
    */

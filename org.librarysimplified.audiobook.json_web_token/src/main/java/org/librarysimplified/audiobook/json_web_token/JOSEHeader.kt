@@ -19,7 +19,6 @@ import java.net.URI
 data class JOSEHeader(
   val headers: Map<String, String>
 ) {
-
   /**
    * The "alg" (algorithm) Header Parameter identifies the cryptographic
    * algorithm used to secure the JWS.
@@ -28,14 +27,11 @@ data class JOSEHeader(
   val algorithm: String? = this.headers["alg"]
 
   companion object {
-
     /**
      * Serialize the given header to a JSON object.
      */
 
-    fun toObjectNode(
-      header: JOSEHeader
-    ): ObjectNode {
+    fun toObjectNode(header: JOSEHeader): ObjectNode {
       val mapper = ObjectMapper()
       val objectNode = mapper.createObjectNode()
       for (headerEntry in header.headers) {
@@ -48,13 +44,12 @@ data class JOSEHeader(
      * Encode the given header to a Base64URL string.
      */
 
-    fun encode(header: JOSEHeader): JSONBase64String {
-      return JSONBase64String.encode(
+    fun encode(header: JOSEHeader): JSONBase64String =
+      JSONBase64String.encode(
         JSONCanonicalization.canonicalize(
           toObjectNode(header)
         )
       )
-    }
 
     /**
      * Decode and parse a JOSE header from the given Base64URL string.
@@ -63,9 +58,7 @@ data class JOSEHeader(
     fun decode(
       uri: URI,
       text: JSONBase64String
-    ): ParseResult<JOSEHeader> {
-      return parse(uri, text.decode())
-    }
+    ): ParseResult<JOSEHeader> = parse(uri, text.decode())
 
     /**
      * Parse a JOSE header from the given byte array. The byte array is assumed to represent
@@ -81,11 +74,12 @@ data class JOSEHeader(
           .createParser(
             uri = uri,
             stream = ByteArrayInputStream(data),
-            rootParser = FRValueParsers.forObjectMap(
-              forKey = {
-                FRValueParsers.acceptingNull(FRValueParsers.forString())
-              }
-            )
+            rootParser =
+              FRValueParsers.forObjectMap(
+                forKey = {
+                  FRValueParsers.acceptingNull(FRValueParsers.forString())
+                }
+              )
           )
 
       return when (val result = parser.parse()) {
@@ -95,6 +89,7 @@ data class JOSEHeader(
             result = JOSEHeader(JSONUtilities.filterNotNull(result.result))
           )
         }
+
         is FRParseResult.FRParseFailed -> {
           return ParseResult.Failure(
             warnings = listOf(),

@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.api
  */
 
 enum class PlayerPlaybackStatus {
-
   /**
    * The player is currently buffering audio and can't play.
    */

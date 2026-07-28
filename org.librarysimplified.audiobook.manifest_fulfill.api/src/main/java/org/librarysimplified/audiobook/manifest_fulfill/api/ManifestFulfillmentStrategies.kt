@@ -9,13 +9,10 @@ import java.util.ServiceLoader
  */
 
 object ManifestFulfillmentStrategies : ManifestFulfillmentStrategyRegistryType {
-
   private val logger =
     LoggerFactory.getLogger(ManifestFulfillmentStrategies::class.java)
 
-  override fun <T : ManifestFulfillmentStrategyProviderType<*>> findStrategy(
-    clazz: Class<T>
-  ): T? {
+  override fun <T : ManifestFulfillmentStrategyProviderType<*>> findStrategy(clazz: Class<T>): T? {
     val candidates = ServiceLoader.load(clazz).toList()
     if (candidates.isEmpty()) {
       this.logger.error("no fulfillment strategies available of type {}", clazz)

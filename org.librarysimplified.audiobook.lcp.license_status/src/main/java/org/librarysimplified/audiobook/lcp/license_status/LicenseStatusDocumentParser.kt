@@ -15,23 +15,17 @@ class LicenseStatusDocumentParser(
   private val valueParsers: FRValueParserProviderType,
   onReceive: (FRParserContextType, LicenseStatusDocument) -> Unit = valueParsers.ignoringReceiverWithContext()
 ) : FRAbstractParserObject<LicenseStatusDocument>(onReceive) {
-
   private var status: LicenseStatusDocument.Status =
     LicenseStatusDocument.Status.ACTIVE
 
-  override fun onCompleted(
-    context: FRParserContextType
-  ): FRParseResult<LicenseStatusDocument> {
-    return FRParseResult.succeed(
+  override fun onCompleted(context: FRParserContextType): FRParseResult<LicenseStatusDocument> =
+    FRParseResult.succeed(
       LicenseStatusDocument(
         status = this.status
       )
     )
-  }
 
-  override fun schema(
-    context: FRParserContextType
-  ): FRParserObjectSchema {
+  override fun schema(context: FRParserContextType): FRParserObjectSchema {
     val statusSchema =
       FRParserObjectFieldSchema(
         name = "status",

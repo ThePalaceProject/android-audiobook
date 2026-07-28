@@ -10,7 +10,6 @@ class FeedbooksRightsCheck(
   private val parameters: SingleLicenseCheckParameters,
   private val timeNow: LocalDateTime
 ) : SingleLicenseCheckType {
-
   override fun execute(): SingleLicenseCheckResult {
     this.event("Started rights check…")
 

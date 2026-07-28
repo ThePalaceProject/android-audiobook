@@ -9,7 +9,6 @@ import org.librarysimplified.http.api.LSHTTPAuthorizationType
 import org.slf4j.LoggerFactory
 
 object ExampleAuthorizationHandler : PlayerAuthorizationHandlerType {
-
   private val logger =
     LoggerFactory.getLogger(ExampleAuthorizationHandler::class.java)
 
@@ -17,9 +16,7 @@ object ExampleAuthorizationHandler : PlayerAuthorizationHandlerType {
   private var credentials: ExamplePlayerCredentials =
     ExamplePlayerCredentials.None(0)
 
-  fun setCredentials(
-    credentials: ExamplePlayerCredentials
-  ) {
+  fun setCredentials(credentials: ExamplePlayerCredentials) {
     this.logger.debug("Credentials set to {}", credentials)
     this.credentials = credentials
   }
@@ -41,8 +38,8 @@ object ExampleAuthorizationHandler : PlayerAuthorizationHandlerType {
   override fun onConfigureAuthorizationFor(
     source: PlayerManifestLink,
     kind: PlayerDownloadRequest.Kind
-  ): LSHTTPAuthorizationType? {
-    return when (val c = this.credentials) {
+  ): LSHTTPAuthorizationType? =
+    when (val c = this.credentials) {
       is ExamplePlayerCredentials.Basic -> {
         LSHTTPAuthorizationBasic.ofUsernamePassword(
           userName = c.userName,
@@ -65,7 +62,6 @@ object ExampleAuthorizationHandler : PlayerAuthorizationHandlerType {
         throw UnsupportedOperationException("Overdrive must use custom credentials.")
       }
     }
-  }
 
   override fun <T : Any> onRequireCustomCredentialsFor(
     providerName: String,
@@ -75,10 +71,12 @@ object ExampleAuthorizationHandler : PlayerAuthorizationHandlerType {
     if (credentialsType == OPAUsernamePassword::class.java) {
       val current = this.credentials
       if (current is ExamplePlayerCredentials.Overdrive) {
-        return credentialsType.cast(OPAUsernamePassword(
-          current.userName,
-          current.password
-        ))
+        return credentialsType.cast(
+          OPAUsernamePassword(
+            current.userName,
+            current.password
+          )
+        )
       }
     }
     throw UnsupportedOperationException("No available credentials of type $credentialsType")

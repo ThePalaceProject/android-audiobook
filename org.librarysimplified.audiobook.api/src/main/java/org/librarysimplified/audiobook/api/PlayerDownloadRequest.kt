@@ -23,7 +23,6 @@ data class PlayerDownloadRequest(
    */
 
   enum class Kind {
-
     /** A manifest file. */
 
     MANIFEST,

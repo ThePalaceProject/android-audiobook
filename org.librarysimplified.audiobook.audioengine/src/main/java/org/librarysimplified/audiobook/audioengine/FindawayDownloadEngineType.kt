@@ -11,7 +11,6 @@ import io.reactivex.Observable
  */
 
 interface FindawayDownloadEngineType {
-
   /**
    * An observable that shows all download engine events.
    */
@@ -36,5 +35,9 @@ interface FindawayDownloadEngineType {
 
   fun delete(request: DownloadRequest)
 
-  fun status(contentId: String, part: Int, chapter: Int): Observable<DownloadStatus>
+  fun status(
+    contentId: String,
+    part: Int,
+    chapter: Int
+  ): Observable<DownloadStatus>
 }

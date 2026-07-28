@@ -19,7 +19,6 @@ import java.text.ParseException
 class FeedbooksSignatureCheck(
   private val parameters: SingleLicenseCheckParameters
 ) : SingleLicenseCheckType {
-
   private val logger =
     LoggerFactory.getLogger(FeedbooksSignatureCheck::class.java)
 
@@ -27,9 +26,10 @@ class FeedbooksSignatureCheck(
    * Map issuer URI to certificate URL.
    */
 
-  private val issuers = mapOf(
-    "https://www.cantookaudio.com" to "https://listen.cantookaudio.com/.well-known/jwks.json"
-  )
+  private val issuers =
+    mapOf(
+      "https://www.cantookaudio.com" to "https://listen.cantookaudio.com/.well-known/jwks.json"
+    )
 
   override fun execute(): SingleLicenseCheckResult {
     this.event("Started signature check…")
@@ -124,15 +124,14 @@ class FeedbooksSignatureCheck(
     }
   }
 
-  private fun retrieveCertificate(
-    signature: FeedbooksSignature
-  ): ByteArray {
+  private fun retrieveCertificate(signature: FeedbooksSignature): ByteArray {
     val certificateURL = this.getCertificateURL(signature.issuer)
 
     this.event("Retrieving certificate $certificateURL...")
 
     val request =
-      this.parameters.httpClient.newRequest(certificateURL.toURI())
+      this.parameters.httpClient
+        .newRequest(certificateURL.toURI())
         .build()
 
     val response =

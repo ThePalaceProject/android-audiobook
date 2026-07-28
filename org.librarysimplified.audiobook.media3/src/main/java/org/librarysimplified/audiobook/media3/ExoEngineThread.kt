@@ -17,18 +17,14 @@ import org.slf4j.LoggerFactory
 class ExoEngineThread private constructor(
   runnable: Runnable
 ) : Thread(runnable) {
-
   init {
     this.name = "org.librarysimplified.audiobook.open_access:engine:${this.id}"
   }
 
   companion object {
-
     private val logger = LoggerFactory.getLogger(ExoEngineThread::class.java)
 
-    fun createWithoutPreparation(
-      runnable: Runnable
-    ): ExoEngineThread {
+    fun createWithoutPreparation(runnable: Runnable): ExoEngineThread {
       val thread = ExoEngineThread(runnable)
       thread.setUncaughtExceptionHandler { t, e ->
         this.logger.error("uncaught exception on engine thread {}: ", t, e)
@@ -36,15 +32,14 @@ class ExoEngineThread private constructor(
       return thread
     }
 
-    fun create(
-      runnable: Runnable
-    ): ExoEngineThread {
-      val thread = ExoEngineThread(
-        Runnable {
-          Looper.prepare()
-          runnable.run()
-        }
-      )
+    fun create(runnable: Runnable): ExoEngineThread {
+      val thread =
+        ExoEngineThread(
+          Runnable {
+            Looper.prepare()
+            runnable.run()
+          }
+        )
 
       thread.setUncaughtExceptionHandler { t, e ->
         this.logger.error("uncaught exception on engine thread {}: ", t, e)
@@ -52,9 +47,7 @@ class ExoEngineThread private constructor(
       return thread
     }
 
-    fun isExoEngineThread(): Boolean {
-      return Thread.currentThread() is ExoEngineThread
-    }
+    fun isExoEngineThread(): Boolean = Thread.currentThread() is ExoEngineThread
 
     fun checkIsExoEngineThread() {
       if (!this.isExoEngineThread()) {

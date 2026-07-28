@@ -41,7 +41,6 @@ class FindawayAudioBook private constructor(
   internal val downloadEngine: FindawayDownloadEngineType,
   override val downloadTasksByID: Map<PlayerManifestReadingOrderID, PlayerDownloadTaskType>
 ) : PlayerAudioBookType {
-
   private val subscriptions: CompositeDisposable =
     CompositeDisposable()
 
@@ -60,12 +59,9 @@ class FindawayAudioBook private constructor(
   override val manifest: PlayerManifest =
     this.findawayManifest.manifest
 
-  override fun createPlayer(id: UUID): PlayerType =
-    FindawayPlayer(id = id, this, this.engine)
+  override fun createPlayer(id: UUID): PlayerType = FindawayPlayer(id = id, this, this.engine)
 
-  override fun replaceManifest(
-    manifest: PlayerManifest
-  ): CompletableFuture<Unit> {
+  override fun replaceManifest(manifest: PlayerManifest): CompletableFuture<Unit> {
     val future = CompletableFuture<Unit>()
     future.completeExceptionally(
       UnsupportedOperationException("Manifest reloading is not supported")
@@ -91,7 +87,6 @@ class FindawayAudioBook private constructor(
   }
 
   companion object {
-
     private val log = LoggerFactory.getLogger(FindawayAudioBook::class.java)
 
     /*
@@ -108,8 +103,9 @@ class FindawayAudioBook private constructor(
        * Initialize the audio engine.
        */
 
-      val engine = initializeAudioEngine(manifest, context)
-        ?: throw FindawayInitializationException("Could not initialize AudioEngine")
+      val engine =
+        initializeAudioEngine(manifest, context)
+          ?: throw FindawayInitializationException("Could not initialize AudioEngine")
 
       /*
        * Set up all the various bits of state required.

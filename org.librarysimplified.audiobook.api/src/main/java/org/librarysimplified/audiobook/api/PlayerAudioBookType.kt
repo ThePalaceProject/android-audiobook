@@ -14,7 +14,6 @@ import java.util.concurrent.CompletableFuture
  */
 
 interface PlayerAudioBookType : Closeable {
-
   /**
    * The raw OPDS ID of the book.
    */

@@ -89,7 +89,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
 object PlayerModel {
-
   private val logger =
     LoggerFactory.getLogger(PlayerModel::class.java)
 
@@ -108,7 +107,8 @@ object PlayerModel {
 
   @Volatile
   var authorizationHandlerExtensions: List<PlayerAuthorizationHandlerExtensionType> =
-    ServiceLoader.load(PlayerAuthorizationHandlerExtensionType::class.java)
+    ServiceLoader
+      .load(PlayerAuthorizationHandlerExtensionType::class.java)
       .toList()
 
   @Volatile
@@ -143,11 +143,12 @@ object PlayerModel {
   private var audioManagerService: AudioManager? = null
 
   val playbackRate: PlayerPlaybackRate
-    get() = try {
-      PlayerReference.opPlaybackRate()
-    } catch (_: Exception) {
-      RATE_1
-    }
+    get() =
+      try {
+        PlayerReference.opPlaybackRate()
+      } catch (_: Exception) {
+        RATE_1
+      }
 
   private val downloadExecutor =
     Executors.newFixedThreadPool(1) { r: Runnable ->
@@ -170,9 +171,7 @@ object PlayerModel {
 
   private var currentFuture: CompletableFuture<Unit>? = null
 
-  private fun executeTaskCancellingExisting(
-    task: () -> Unit
-  ): CompletableFuture<Unit> {
+  private fun executeTaskCancellingExisting(task: () -> Unit): CompletableFuture<Unit> {
     val newFuture = CompletableFuture<Unit>()
     this.currentFuture?.cancel(true)
     this.currentFuture = newFuture
@@ -199,15 +198,18 @@ object PlayerModel {
     get() = this.stateField
 
   private val stateSubject =
-    BehaviorSubject.create<PlayerModelState>()
+    BehaviorSubject
+      .create<PlayerModelState>()
       .toSerialized()
 
   private val manifestDownloadEventSubject =
-    PublishSubject.create<ManifestFulfillmentEvent>()
+    PublishSubject
+      .create<ManifestFulfillmentEvent>()
       .toSerialized()
 
   private val licenseCheckEventSubject =
-    PublishSubject.create<SingleLicenseCheckStatus>()
+    PublishSubject
+      .create<SingleLicenseCheckStatus>()
       .toSerialized()
 
   /**
@@ -265,7 +267,8 @@ object PlayerModel {
     this.stateSubject.observeOn(AndroidSchedulers.mainThread())
 
   private val playerEventSubject =
-    BehaviorSubject.create<PlayerEvent>()
+    BehaviorSubject
+      .create<PlayerEvent>()
       .toSerialized()
 
   /**
@@ -276,7 +279,8 @@ object PlayerModel {
     this.playerEventSubject.observeOn(AndroidSchedulers.mainThread())
 
   private val viewCommandSource =
-    PublishSubject.create<PlayerViewCommand>()
+    PublishSubject
+      .create<PlayerViewCommand>()
       .toSerialized()
 
   /**
@@ -291,7 +295,8 @@ object PlayerModel {
    */
 
   private val downloadEventSubject =
-    BehaviorSubject.create<PlayerReadingOrderItemDownloadStatus>()
+    BehaviorSubject
+      .create<PlayerReadingOrderItemDownloadStatus>()
       .toSerialized()
 
   val downloadEvents: Observable<PlayerReadingOrderItemDownloadStatus> =
@@ -314,37 +319,44 @@ object PlayerModel {
   init {
     this.stateSubject.onNext(this.state)
 
-    this.stateEvents.ofType(PlayerModelState.PlayerOpen::class.java)
+    this.stateEvents
+      .ofType(PlayerModelState.PlayerOpen::class.java)
       .subscribe { e ->
         this.timeTracker.bookOpened(e.palaceId)
       }
 
-    this.stateEvents.ofType(PlayerBookOpenFailed::class.java)
+    this.stateEvents
+      .ofType(PlayerBookOpenFailed::class.java)
       .subscribe {
         this.timeTracker.bookClosed()
       }
 
-    this.stateEvents.ofType(PlayerModelState.PlayerClosed::class.java)
+    this.stateEvents
+      .ofType(PlayerModelState.PlayerClosed::class.java)
       .subscribe {
         this.timeTracker.bookClosed()
       }
 
-    this.playerEvents.ofType(PlayerEventPlaybackStarted::class.java)
+    this.playerEvents
+      .ofType(PlayerEventPlaybackStarted::class.java)
       .subscribe { e ->
         this.timeTracker.bookPlaybackStarted(e.palaceId, this.playbackRate.speed)
       }
 
-    this.playerEvents.ofType(PlayerEventPlaybackPaused::class.java)
+    this.playerEvents
+      .ofType(PlayerEventPlaybackPaused::class.java)
       .subscribe { e ->
         this.timeTracker.bookPlaybackPaused(e.palaceId, this.playbackRate.speed)
       }
 
-    this.playerEvents.ofType(PlayerEventPlaybackStopped::class.java)
+    this.playerEvents
+      .ofType(PlayerEventPlaybackStopped::class.java)
       .subscribe { e ->
         this.timeTracker.bookPlaybackPaused(e.palaceId, this.playbackRate.speed)
       }
 
-    this.playerEvents.ofType(PlayerEventPlaybackRateChanged::class.java)
+    this.playerEvents
+      .ofType(PlayerEventPlaybackRateChanged::class.java)
       .subscribe { e ->
         this.timeTracker.bookPlaybackRateChanged(e.palaceId, e.rate.speed)
       }
@@ -356,9 +368,7 @@ object PlayerModel {
     this.viewCommandSource.onNext(command)
   }
 
-  private fun downloadManifest(
-    strategy: ManifestFulfillmentStrategyType
-  ): PlayerResult<ManifestFulfilled, ManifestFulfillmentError> {
+  private fun downloadManifest(strategy: ManifestFulfillmentStrategyType): PlayerResult<ManifestFulfilled, ManifestFulfillmentError> {
     this.logger.debug("downloadManifest")
 
     val fulfillSubscription =
@@ -638,7 +648,9 @@ object PlayerModel {
             throw OperationFailedException()
           }
 
-          is PlayerResult.Success -> result.result
+          is PlayerResult.Success -> {
+            result.result
+          }
         }
 
       licenseFileTemp.delete()
@@ -649,18 +661,22 @@ object PlayerModel {
       licenseFileTemp.renameTo(licenseFile)
 
       val manifestData: ManifestFulfilled =
-        when (val result = LCPDownloads.downloadManifestFromPublication(
-          context = context,
-          authorizationHandler = PlayerObservableAuthorizationHandler,
-          license = licenseAndBytes.license,
-          receiver = receiver
-        )) {
+        when (val result =
+          LCPDownloads.downloadManifestFromPublication(
+            context = context,
+            authorizationHandler = PlayerObservableAuthorizationHandler,
+            license = licenseAndBytes.license,
+            receiver = receiver
+          )
+        ) {
           is PlayerResult.Failure -> {
             this.setNewState(PlayerManifestDownloadFailed(result.failure))
             throw OperationFailedException()
           }
 
-          is PlayerResult.Success -> result.result
+          is PlayerResult.Success -> {
+            result.result
+          }
         }
 
       return this.opParseManifest(
@@ -1066,23 +1082,21 @@ object PlayerModel {
         readingOrderID = readingOrderItem.id,
         offsetMilliseconds = readingOrderItemOffsetMilliseconds
       )
-    this.database()
+    this
+      .database()
       ?.lastReadPositionSave(bookID, position)
   }
 
-  private fun lastReadPositionGet(
-    bookID: PlayerBookID
-  ): PlayerPosition? {
-    return this.database()
+  private fun lastReadPositionGet(bookID: PlayerBookID): PlayerPosition? =
+    this
+      .database()
       ?.lastReadPositionGet(bookID)
       ?.orElse(null)
-  }
 
-  private fun database(): ADatabaseType? {
-    return synchronized(this.databaseRefLock) {
+  private fun database(): ADatabaseType? =
+    synchronized(this.databaseRefLock) {
       this.databaseRef
     }
-  }
 
   private fun openDatabase(file: Path) {
     synchronized(this.databaseRefLock) {
@@ -1098,10 +1112,8 @@ object PlayerModel {
     }
   }
 
-  private fun onHandleChapterCompletionForSleepTimer(
-    event: PlayerEvent
-  ) {
-    return when (event) {
+  private fun onHandleChapterCompletionForSleepTimer(event: PlayerEvent) =
+    when (event) {
       is PlayerEventChapterCompleted -> {
         when (PlayerSleepTimer.configuration) {
           PlayerSleepTimerConfiguration.EndOfChapter -> {
@@ -1120,13 +1132,11 @@ object PlayerModel {
         // Nothing to do.
       }
     }
-  }
 
-  fun closeBookOrDismissError(): CompletableFuture<Unit> {
-    return this.executeTaskCancellingExisting {
+  fun closeBookOrDismissError(): CompletableFuture<Unit> =
+    this.executeTaskCancellingExisting {
       this.opCloseBookOrDismissError()
     }
-  }
 
   private fun opCloseBookOrDismissError() {
     this.currentFuture?.cancel(true)
@@ -1200,9 +1210,7 @@ object PlayerModel {
     this.stateSubject.onNext(newState)
   }
 
-  private fun onSleepTimerEvent(
-    event: PlayerSleepTimerEvent
-  ) {
+  private fun onSleepTimerEvent(event: PlayerSleepTimerEvent) {
     try {
       return when (event) {
         PlayerSleepTimerEvent.PlayerSleepTimerFinished -> {
@@ -1225,19 +1233,27 @@ object PlayerModel {
       PlayerReference.opPlay()
 
       when (PlayerSleepTimer.status) {
-        is PlayerSleepTimerType.Status.Paused -> PlayerSleepTimer.unpause()
+        is PlayerSleepTimerType.Status.Paused -> {
+          PlayerSleepTimer.unpause()
+        }
+
         is PlayerSleepTimerType.Status.Running -> {
           // Nothing to do
         }
 
         is PlayerSleepTimerType.Status.Stopped -> {
           when (PlayerSleepTimer.configuration) {
-            PlayerSleepTimerConfiguration.EndOfChapter -> PlayerSleepTimer.start()
+            PlayerSleepTimerConfiguration.EndOfChapter -> {
+              PlayerSleepTimer.start()
+            }
+
             PlayerSleepTimerConfiguration.Off -> {
               // Nothing to do
             }
 
-            is PlayerSleepTimerConfiguration.WithDuration -> PlayerSleepTimer.start()
+            is PlayerSleepTimerConfiguration.WithDuration -> {
+              PlayerSleepTimer.start()
+            }
           }
         }
       }
@@ -1246,9 +1262,7 @@ object PlayerModel {
     }
   }
 
-  fun pause(
-    reason: PlayerPauseReason
-  ) {
+  fun pause(reason: PlayerPauseReason) {
     PlayerReference.opPause(reason)
 
     try {
@@ -1258,9 +1272,7 @@ object PlayerModel {
     }
   }
 
-  fun playOrPauseAsAppropriate(
-    reason: PlayerPauseReason
-  ) {
+  fun playOrPauseAsAppropriate(reason: PlayerPauseReason) {
     PlayerReference.opPlayOrPauseAsAppropriate(reason)
   }
 
@@ -1280,9 +1292,7 @@ object PlayerModel {
     PlayerReference.opMovePlayheadToAbsoluteTime(newOffset)
   }
 
-  fun manifest(): PlayerManifest? {
-    return PlayerReference.opManifest()
-  }
+  fun manifest(): PlayerManifest? = PlayerReference.opManifest()
 
   fun bookmarkCreate() {
     PlayerReference.opBookmarkCreate()
@@ -1307,25 +1317,15 @@ object PlayerModel {
   val isBuffering: Boolean
     get() = PlayerReference.opIsBuffering()
 
-  fun isDownloading(): Boolean {
-    return PlayerReference.opIsDownloading()
-  }
+  fun isDownloading(): Boolean = PlayerReference.opIsDownloading()
 
-  fun isDownloadingCompleted(): Boolean {
-    return PlayerReference.opIsDownloadingCompleted()
-  }
+  fun isDownloadingCompleted(): Boolean = PlayerReference.opIsDownloadingCompleted()
 
-  fun isAnyDownloadingFailed(): Boolean {
-    return PlayerReference.opIsDownloadingAnyFailed()
-  }
+  fun isAnyDownloadingFailed(): Boolean = PlayerReference.opIsDownloadingAnyFailed()
 
-  fun isStreamingSupported(): Boolean {
-    return PlayerReference.opIsStreamingSupported()
-  }
+  fun isStreamingSupported(): Boolean = PlayerReference.opIsStreamingSupported()
 
-  fun start(
-    application: Application
-  ) {
+  fun start(application: Application) {
     this.application = application
   }
 
@@ -1341,19 +1341,11 @@ object PlayerModel {
     }
   }
 
-  fun seekIncrementForward(): Long {
-    return seekIncrementForwardMs.get()
-  }
+  fun seekIncrementForward(): Long = seekIncrementForwardMs.get()
 
-  fun seekIncrementBackward(): Long {
-    return seekIncrementBackwardMs.get()
-  }
+  fun seekIncrementBackward(): Long = seekIncrementBackwardMs.get()
 
-  fun chapterTitleFor(
-    position: PlayerPosition
-  ): String {
-    return PlayerReference.opChapterTitleFor(position)
-  }
+  fun chapterTitleFor(position: PlayerPosition): String = PlayerReference.opChapterTitleFor(position)
 
   /**
    * Process the given book file: Attempt to extract a manifest and parse it, and take ownership
@@ -1406,11 +1398,13 @@ object PlayerModel {
         this.manifestDownloadEventSubject.onNext(event)
       }
 
-      when (val manifest = LCPDownloads.extractManifestFromFile(
-        context = context,
-        bookFile = bookFile,
-        receiver = receiver
-      )) {
+      when (val manifest =
+        LCPDownloads.extractManifestFromFile(
+          context = context,
+          bookFile = bookFile,
+          receiver = receiver
+        )
+      ) {
         is PlayerResult.Failure -> {
           this.setNewState(PlayerManifestDownloadFailed(manifest.failure))
           throw OperationFailedException()
@@ -1474,41 +1468,23 @@ object PlayerModel {
     PlayerReference.opDownloadAll()
   }
 
-  fun findDownloadingProgressIfAny(): PlayerDownloadProgress? {
-    return PlayerReference.opFindDownloadingProgressIfAny()
-  }
+  fun findDownloadingProgressIfAny(): PlayerDownloadProgress? = PlayerReference.opFindDownloadingProgressIfAny()
 
-  fun findDownloadingStatusIfAny(): PlayerDownloadTaskStatus.Downloading? {
-    return PlayerReference.opFindDownloadingStatusIfAny()
-  }
+  fun findDownloadingStatusIfAny(): PlayerDownloadTaskStatus.Downloading? = PlayerReference.opFindDownloadingStatusIfAny()
 
-  fun downloadProgress(): PlayerDownloadProgress {
-    return PlayerReference.opDownloadProgress()
-  }
+  fun downloadProgress(): PlayerDownloadProgress = PlayerReference.opDownloadProgress()
 
-  fun isOpen(): Boolean {
-    return PlayerReference.opIsOpen()
-  }
+  fun isOpen(): Boolean = PlayerReference.opIsOpen()
 
-  fun tableOfContents(): PlayerManifestTOC? {
-    return PlayerReference.opTableOfContent()
-  }
+  fun tableOfContents(): PlayerManifestTOC? = PlayerReference.opTableOfContent()
 
-  fun readingOrder(): List<PlayerReadingOrderItemType> {
-    return PlayerReference.opReadingOrder()
-  }
+  fun readingOrder(): List<PlayerReadingOrderItemType> = PlayerReference.opReadingOrder()
 
-  fun readingOrderByID(): Map<PlayerManifestReadingOrderID, PlayerReadingOrderItemType> {
-    return PlayerReference.opReadingOrderByID()
-  }
+  fun readingOrderByID(): Map<PlayerManifestReadingOrderID, PlayerReadingOrderItemType> = PlayerReference.opReadingOrderByID()
 
-  fun downloadTasksFailed(): List<PlayerDownloadTaskType> {
-    return PlayerReference.opDownloadTasksFailed()
-  }
+  fun downloadTasksFailed(): List<PlayerDownloadTaskType> = PlayerReference.opDownloadTasksFailed()
 
-  fun playerID(): UUID? {
-    return PlayerReference.opPlayerID()
-  }
+  fun playerID(): UUID? = PlayerReference.opPlayerID()
 
   fun chapterPrevious() {
     PlayerReference.opChapterPrevious()

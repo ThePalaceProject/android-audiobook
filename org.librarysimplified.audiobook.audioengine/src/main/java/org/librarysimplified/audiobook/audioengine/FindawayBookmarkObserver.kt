@@ -28,7 +28,6 @@ class FindawayBookmarkObserver private constructor(
   private val onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit,
   private val isStreamingNow: () -> Boolean
 ) : AutoCloseable {
-
   private val logger =
     LoggerFactory.getLogger(FindawayBookmarkObserver::class.java)
   private val bookmarkWaitPeriod =
@@ -41,8 +40,8 @@ class FindawayBookmarkObserver private constructor(
     this.subscription = this.player.events.subscribe(this::onPlayerEvent)
   }
 
-  private fun onPlayerEvent(event: PlayerEvent) {
-    return when (event) {
+  private fun onPlayerEvent(event: PlayerEvent) =
+    when (event) {
       is PlayerEventPlaybackProgressUpdate -> {
         if (!this.player.isClosed) {
           this.onPlayerProgressUpdate(event)
@@ -64,10 +63,10 @@ class FindawayBookmarkObserver private constructor(
       is PlayerEventPlaybackPaused,
       is PlayerEventPlaybackStarted,
       is PlayerEventPlaybackStopped,
-      is PlayerEventPlaybackWaitingForAction ->
+      is PlayerEventPlaybackWaitingForAction -> {
         Unit
+      }
     }
-  }
 
   private fun onPlayerProgressUpdate(event: PlayerEventPlaybackProgressUpdate) {
     this.logger.debug("onPlayerProgressUpdate: {}", event)
@@ -107,13 +106,12 @@ class FindawayBookmarkObserver private constructor(
       player: PlayerType,
       onBookmarkCreate: (PlayerEventCreateBookmark) -> Unit,
       isStreamingNow: () -> Boolean
-    ): FindawayBookmarkObserver {
-      return FindawayBookmarkObserver(
+    ): FindawayBookmarkObserver =
+      FindawayBookmarkObserver(
         player = player,
         onBookmarkCreate = onBookmarkCreate,
         isStreamingNow = isStreamingNow
       )
-    }
   }
 
   override fun close() {

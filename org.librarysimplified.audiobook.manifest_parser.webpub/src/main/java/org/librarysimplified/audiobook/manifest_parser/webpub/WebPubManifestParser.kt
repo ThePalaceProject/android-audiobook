@@ -26,7 +26,6 @@ class WebPubManifestParser(
   private val originalBytes: ByteArray,
   onReceive: (FRParserContextType, PlayerManifest) -> Unit = FRValueParsers.ignoringReceiverWithContext()
 ) : FRAbstractParserObject<PlayerManifest>(onReceive) {
-
   private lateinit var metadata: PlayerManifestMetadata
   private val spineItems = mutableListOf<PlayerManifestReadingOrderItem>()
   private val tocElements = mutableListOf<PlayerManifestLink>()
@@ -34,8 +33,8 @@ class WebPubManifestParser(
   private val extensionValues = mutableListOf<PlayerManifestExtensionValueType>()
   private val errors = mutableListOf<FRParseError>()
 
-  override fun onCompleted(context: FRParserContextType): FRParseResult<PlayerManifest> {
-    return FRParseResult.errorsOr(listOf(), this.errors) {
+  override fun onCompleted(context: FRParserContextType): FRParseResult<PlayerManifest> =
+    FRParseResult.errorsOr(listOf(), this.errors) {
       FRParseResult.succeed(
         PlayerManifest(
           palaceId = this.palaceId,
@@ -48,7 +47,6 @@ class WebPubManifestParser(
         )
       )
     }
-  }
 
   override fun schema(context: FRParserContextType): FRParserObjectSchema {
     val metadataSchema =
@@ -76,9 +74,11 @@ class WebPubManifestParser(
               WebPubLinkParser()
             },
             receiver = { spineItems ->
-              this.spineItems.addAll(spineItems.mapIndexed { index, link ->
-                this.toReadingOrderItem(index, link)
-              })
+              this.spineItems.addAll(
+                spineItems.mapIndexed { index, link ->
+                  this.toReadingOrderItem(index, link)
+                }
+              )
             }
           )
         },
@@ -110,9 +110,11 @@ class WebPubManifestParser(
               WebPubLinkParser()
             },
             receiver = { spineItems ->
-              this.spineItems.addAll(spineItems.mapIndexed { index, link ->
-                this.toReadingOrderItem(index, link)
-              })
+              this.spineItems.addAll(
+                spineItems.mapIndexed { index, link ->
+                  this.toReadingOrderItem(index, link)
+                }
+              )
             }
           )
         },
@@ -148,12 +150,11 @@ class WebPubManifestParser(
   private fun toReadingOrderItem(
     index: Int,
     link: PlayerManifestLink
-  ): PlayerManifestReadingOrderItem {
-    return PlayerManifestReadingOrderItem(
+  ): PlayerManifestReadingOrderItem =
+    PlayerManifestReadingOrderItem(
       PlayerManifestReadingOrderID.create(index, link.hrefURI),
       link as PlayerManifestLink.LinkBasic
     )
-  }
 
   private fun finishSchema(
     metadataSchema: FRParserObjectFieldSchema<PlayerManifestMetadata>,

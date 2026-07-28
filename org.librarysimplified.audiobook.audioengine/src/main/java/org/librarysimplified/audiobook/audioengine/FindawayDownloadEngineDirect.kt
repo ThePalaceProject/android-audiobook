@@ -15,7 +15,6 @@ import io.reactivex.subjects.Subject
 data class FindawayDownloadEngineDirect(
   val engine: DownloadEngine
 ) : FindawayDownloadEngineType {
-
   private val baseEvents =
     this.engine.allEvents()
   private val wrappedEvents =
@@ -28,15 +27,12 @@ data class FindawayDownloadEngineDirect(
     contentId: String,
     part: Int,
     chapter: Int
-  ): Observable<DownloadStatus> {
-    return wrapObservable(this.engine.getStatus(contentId, part, chapter))
-  }
+  ): Observable<DownloadStatus> = wrapObservable(this.engine.getStatus(contentId, part, chapter))
 
-  private fun <T> wrapObservable(
-    baseObservable: rx.Observable<T>
-  ): Subject<T> {
+  private fun <T> wrapObservable(baseObservable: rx.Observable<T>): Subject<T> {
     val subject =
-      PublishSubject.create<T>()
+      PublishSubject
+        .create<T>()
         .toSerialized()
 
     baseObservable.subscribe(
@@ -51,15 +47,9 @@ data class FindawayDownloadEngineDirect(
     return subject
   }
 
-  override fun download(request: DownloadRequest): Observable<DownloadEvent> {
-    return this.wrapObservable(this.engine.download(request))
-  }
+  override fun download(request: DownloadRequest): Observable<DownloadEvent> = this.wrapObservable(this.engine.download(request))
 
-  override fun pause(request: DownloadRequest) {
-    return this.engine.pause(request)
-  }
+  override fun pause(request: DownloadRequest) = this.engine.pause(request)
 
-  override fun delete(request: DownloadRequest) {
-    return this.engine.delete(request)
-  }
+  override fun delete(request: DownloadRequest) = this.engine.delete(request)
 }

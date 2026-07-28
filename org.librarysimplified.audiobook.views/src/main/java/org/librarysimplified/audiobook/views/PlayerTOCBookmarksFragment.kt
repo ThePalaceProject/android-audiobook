@@ -15,7 +15,6 @@ import org.librarysimplified.audiobook.api.PlayerUIThread
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
 
 class PlayerTOCBookmarksFragment : Fragment() {
-
   private lateinit var adapter: PlayerTOCBookmarkAdapter
   private lateinit var list: RecyclerView
   private var subscriptions: CompositeDisposable = CompositeDisposable()
@@ -75,30 +74,20 @@ class PlayerTOCBookmarksFragment : Fragment() {
     this.subscriptions.dispose()
   }
 
-  private fun onBookmarksChanged(
-    bookmarks: List<PlayerBookmark>
-  ) {
+  private fun onBookmarksChanged(bookmarks: List<PlayerBookmark>) {
     this.adapter.setBookmarks(bookmarks)
   }
 
-  private fun onBookmarkDelete(
-    bookmark: PlayerBookmark
-  ) {
+  private fun onBookmarkDelete(bookmark: PlayerBookmark) {
     PlayerModel.bookmarkDelete(bookmark)
   }
 
-  private fun onBookmarkSelected(
-    position: PlayerPosition
-  ) {
+  private fun onBookmarkSelected(position: PlayerPosition) {
     PlayerModel.movePlayheadTo(position)
     PlayerUIThread.runOnUIThreadDelayed({
       PlayerModel.submitViewCommand(PlayerViewNavigationTOCClose)
     }, 250L)
   }
 
-  private fun onTitleLookup(
-    position: PlayerPosition
-  ): String {
-    return PlayerModel.chapterTitleFor(position)
-  }
+  private fun onTitleLookup(position: PlayerPosition): String = PlayerModel.chapterTitleFor(position)
 }

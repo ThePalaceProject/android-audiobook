@@ -11,13 +11,11 @@ import java.util.Locale
 data class LicenseStatusDocument(
   val status: Status
 ) {
-
   /**
    * The status of a license.
    */
 
   enum class Status {
-
     /**
      * The License Document is available, but the user hasn’t accessed the License and/or Status Document yet.
      */
@@ -56,11 +54,9 @@ data class LicenseStatusDocument(
 
     EXPIRED;
 
-    override fun toString(): String =
-      super.name.lowercase(Locale.ROOT)
+    override fun toString(): String = super.name.lowercase(Locale.ROOT)
 
     companion object {
-
       fun ofString(text: String): Status? =
         try {
           valueOf(text.uppercase(Locale.ROOT))

@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.json_web_token
  */
 
 interface JSONWebSignatureAlgorithmType {
-
   /**
    * The name of the algorithm as a JSSE name.
    */
@@ -16,7 +15,5 @@ interface JSONWebSignatureAlgorithmType {
    * Sign the given data, returning the signature.
    */
 
-  fun sign(
-    data: ByteArray
-  ): ByteArray
+  fun sign(data: ByteArray): ByteArray
 }

@@ -12,11 +12,13 @@ import kotlin.reflect.KClass
  */
 
 object LCPNoPDFFactory : PdfDocumentFactory<PdfDocument> {
-
   override val documentType: KClass<PdfDocument>
     get() = PdfDocument::class
 
-  override suspend fun open(resource: Resource, password: String?): ReadTry<PdfDocument> {
-    return ReadTry.failure(ReadError.UnsupportedOperation("Not supported!"))
-  }
+  override suspend fun open(
+    resource: Resource,
+    password: String?
+  ): ReadTry<PdfDocument> =
+    ReadTry
+      .failure(ReadError.UnsupportedOperation("Not supported!"))
 }

@@ -12,28 +12,25 @@ import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckResul
 data class LicenseCheckResult(
   val checkStatuses: List<SingleLicenseCheckResult>
 ) {
-
   /**
    * License checking succeeded if none of the individual checks failed.
    */
 
-  fun checkSucceeded(): Boolean {
-    return !this.checkStatuses.any { status ->
+  fun checkSucceeded(): Boolean =
+    !this.checkStatuses.any { status ->
       status is SingleLicenseCheckResult.Failed
     }
-  }
 
   /**
    * Summarize the results of license checking.
    */
 
-  fun summarize(): List<String> {
-    return this.checkStatuses.map { status ->
+  fun summarize(): List<String> =
+    this.checkStatuses.map { status ->
       buildString {
         this.append(status.shortName)
         this.append(": ")
         this.append(status.message)
       }
     }
-  }
 }

@@ -23,7 +23,6 @@ class ExoReadingOrderItemHandle(
   internal var nextElement: ExoReadingOrderItemHandle?,
   internal var previousElement: ExoReadingOrderItemHandle?
 ) : PlayerReadingOrderItemType {
-
   /**
    * The current download status of the spine element.
    */

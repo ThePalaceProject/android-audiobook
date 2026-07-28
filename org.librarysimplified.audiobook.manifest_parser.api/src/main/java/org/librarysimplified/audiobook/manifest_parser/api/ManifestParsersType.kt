@@ -10,7 +10,6 @@ import java.net.URI
  */
 
 interface ManifestParsersType {
-
   /**
    * Parse a manifest from the given input stream. This will try each of the available
    * parser providers in turn until one claims that it can parse the resulting manifest. Parser

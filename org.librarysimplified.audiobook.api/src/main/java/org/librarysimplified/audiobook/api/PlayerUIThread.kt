@@ -8,7 +8,6 @@ import android.os.Looper
  */
 
 object PlayerUIThread {
-
   /**
    * Check that the current thread is the UI thread and raise {@link IllegalStateException}
    * if it isn't.
@@ -29,9 +28,7 @@ object PlayerUIThread {
    * @return `true` iff the current thread is the UI thread.
    */
 
-  fun isUIThread(): Boolean {
-    return Looper.getMainLooper().thread === Thread.currentThread()
-  }
+  fun isUIThread(): Boolean = Looper.getMainLooper().thread === Thread.currentThread()
 
   /**
    * Run the given Runnable on the UI thread.

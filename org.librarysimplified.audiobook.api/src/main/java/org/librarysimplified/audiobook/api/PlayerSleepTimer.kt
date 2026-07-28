@@ -24,7 +24,6 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
 object PlayerSleepTimer : PlayerSleepTimerType {
-
   private val oneSecond =
     Duration.standardSeconds(1L)
 
@@ -41,7 +40,8 @@ object PlayerSleepTimer : PlayerSleepTimerType {
     Stopped(configuration = Off)
 
   private val eventsSubject =
-    BehaviorSubject.create<PlayerSleepTimerEvent>()
+    BehaviorSubject
+      .create<PlayerSleepTimerEvent>()
       .toSerialized()
 
   private val eventsOnUI: Observable<PlayerSleepTimerEvent> =
@@ -56,7 +56,6 @@ object PlayerSleepTimer : PlayerSleepTimerType {
    */
 
   private sealed class TimerCommand {
-
     data object Start : TimerCommand()
 
     data object Cancel : TimerCommand()
@@ -67,7 +66,9 @@ object PlayerSleepTimer : PlayerSleepTimerType {
 
     data object Finish : TimerCommand()
 
-    data class Reconfigure(val configuration: PlayerSleepTimerConfiguration) : TimerCommand()
+    data class Reconfigure(
+      val configuration: PlayerSleepTimerConfiguration
+    ) : TimerCommand()
   }
 
   init {
@@ -84,12 +85,29 @@ object PlayerSleepTimer : PlayerSleepTimerType {
             // No commands received.
           }
 
-          Start -> this.opStart()
-          Cancel -> this.opCancel()
-          is Reconfigure -> this.opReconfigure(command.configuration)
-          Pause -> this.opPause()
-          Unpause -> this.opUnpause()
-          Finish -> this.onFinish()
+          Start -> {
+            this.opStart()
+          }
+
+          Cancel -> {
+            this.opCancel()
+          }
+
+          is Reconfigure -> {
+            this.opReconfigure(command.configuration)
+          }
+
+          Pause -> {
+            this.opPause()
+          }
+
+          Unpause -> {
+            this.opUnpause()
+          }
+
+          Finish -> {
+            this.onFinish()
+          }
         }
 
         this.opTick()
@@ -104,82 +122,95 @@ object PlayerSleepTimer : PlayerSleepTimerType {
   }
 
   private fun opTick() {
-    this.statusNow = when (val oldStatus = this.statusNow) {
-      is Paused, is Stopped -> oldStatus
+    this.statusNow =
+      when (val oldStatus = this.statusNow) {
+        is Paused, is Stopped -> {
+          oldStatus
+        }
 
-      is Running -> {
-        when (val c = oldStatus.configuration) {
-          EndOfChapter, Off -> oldStatus
-
-          is WithDuration -> {
-            val completed =
-              (c.duration <= oneSecond)
-
-            val newStatus: Status =
-              if (completed) {
-                Stopped(configuration = Off)
-              } else {
-                val newDuration =
-                  c.duration.minus(oneSecond)
-                val newConfiguration =
-                  WithDuration(newDuration)
-                oldStatus.copy(configuration = newConfiguration)
-              }
-
-            this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
-            if (completed) {
-              this.eventsSubject.onNext(PlayerSleepTimerFinished)
+        is Running -> {
+          when (val c = oldStatus.configuration) {
+            EndOfChapter, Off -> {
+              oldStatus
             }
-            newStatus
+
+            is WithDuration -> {
+              val completed =
+                (c.duration <= oneSecond)
+
+              val newStatus: Status =
+                if (completed) {
+                  Stopped(configuration = Off)
+                } else {
+                  val newDuration =
+                    c.duration.minus(oneSecond)
+                  val newConfiguration =
+                    WithDuration(newDuration)
+                  oldStatus.copy(configuration = newConfiguration)
+                }
+
+              this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+              if (completed) {
+                this.eventsSubject.onNext(PlayerSleepTimerFinished)
+              }
+              newStatus
+            }
           }
         }
       }
-    }
   }
 
   private fun opStart() {
-    this.statusNow = when (val oldStatus = this.statusNow) {
-      is Running -> oldStatus
-      is Paused, is Stopped -> {
-        val newStatus = Running(configuration = oldStatus.configuration)
-        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
-        newStatus
+    this.statusNow =
+      when (val oldStatus = this.statusNow) {
+        is Running -> {
+          oldStatus
+        }
+
+        is Paused, is Stopped -> {
+          val newStatus = Running(configuration = oldStatus.configuration)
+          this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+          newStatus
+        }
       }
-    }
   }
 
   private fun opCancel() {
-    this.statusNow = when (val oldStatus = this.statusNow) {
-      is Paused, is Stopped -> oldStatus
+    this.statusNow =
+      when (val oldStatus = this.statusNow) {
+        is Paused, is Stopped -> {
+          oldStatus
+        }
 
-      is Running -> {
-        val newStatus = Stopped(configuration = Off)
-        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
-        newStatus
+        is Running -> {
+          val newStatus = Stopped(configuration = Off)
+          this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+          newStatus
+        }
       }
-    }
   }
 
   private fun opReconfigure(newConfiguration: PlayerSleepTimerConfiguration) {
-    this.statusNow = when (val oldStatus = this.statusNow) {
-      is Paused -> {
-        val newStatus = oldStatus.copy(configuration = newConfiguration)
-        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
-        newStatus
-      }
+    this.statusNow =
+      when (val oldStatus = this.statusNow) {
+        is Paused -> {
+          val newStatus = oldStatus.copy(configuration = newConfiguration)
+          this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+          newStatus
+        }
 
-      is Running -> {
-        val newStatus = oldStatus.copy(configuration = newConfiguration)
-        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
-        newStatus
-      }
+        is Running -> {
+          val newStatus = oldStatus.copy(configuration = newConfiguration)
+          this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+          newStatus
+        }
 
-      is Stopped -> {
-        val newStatus = oldStatus.copy(configuration = newConfiguration)
-        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
-        newStatus
+        is Stopped -> {
+          val newStatus = oldStatus.copy(configuration = newConfiguration)
+          this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+          newStatus
+        }
       }
-    }
   }
 
   private fun onFinish() {
@@ -191,15 +222,18 @@ object PlayerSleepTimer : PlayerSleepTimerType {
   }
 
   private fun opUnpause() {
-    this.statusNow = when (val oldStatus = this.statusNow) {
-      is Paused -> {
-        val newStatus = Running(configuration = oldStatus.configuration)
-        this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
-        newStatus
-      }
+    this.statusNow =
+      when (val oldStatus = this.statusNow) {
+        is Paused -> {
+          val newStatus = Running(configuration = oldStatus.configuration)
+          this.eventsSubject.onNext(PlayerSleepTimerStatusChanged(oldStatus, newStatus))
+          newStatus
+        }
 
-      is Stopped, is Running -> oldStatus
-    }
+        is Stopped, is Running -> {
+          oldStatus
+        }
+      }
   }
 
   private fun opPause() {

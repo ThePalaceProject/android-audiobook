@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.demo
  */
 
 enum class ExampleTargetType {
-
   /**
    * The target is a manifest.
    */

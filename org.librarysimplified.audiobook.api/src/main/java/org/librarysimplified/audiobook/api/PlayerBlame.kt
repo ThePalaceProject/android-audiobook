@@ -11,25 +11,15 @@ data class PlayerBlame(
   val threadName: String,
   val threadID: Long
 ) {
-
   companion object {
-
     fun closeIfOpen(
       ref: AtomicReference<PlayerBlame>,
       blame: () -> PlayerBlame
-    ): Boolean {
-      return ref.compareAndSet(null, blame())
-    }
+    ): Boolean = ref.compareAndSet(null, blame())
 
-    fun closeIfOpen(
-      ref: AtomicReference<PlayerBlame>
-    ): Boolean {
-      return closeIfOpen(ref, this::blame)
-    }
+    fun closeIfOpen(ref: AtomicReference<PlayerBlame>): Boolean = closeIfOpen(ref, this::blame)
 
-    fun checkNotClosed(
-      ref: AtomicReference<PlayerBlame>
-    ) {
+    fun checkNotClosed(ref: AtomicReference<PlayerBlame>) {
       val blame = ref.get()
       if (blame != null) {
         val exception =

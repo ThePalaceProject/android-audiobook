@@ -27,7 +27,6 @@ class PlayerTOCBookmarkAdapter(
   private val onSelect: (PlayerPosition) -> Unit,
   private val onDelete: (Int, PlayerBookmark) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
   private val periodFormatter: PeriodFormatter =
     PeriodFormatterBuilder()
       .printZeroAlways()
@@ -44,17 +43,24 @@ class PlayerTOCBookmarkAdapter(
 
   override fun getItemCount(): Int = this.bookmarks.size
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+  override fun onCreateViewHolder(
+    parent: ViewGroup,
+    viewType: Int
+  ): RecyclerView.ViewHolder {
     PlayerUIThread.checkIsUIThread()
 
     val view =
-      LayoutInflater.from(parent.context)
+      LayoutInflater
+        .from(parent.context)
         .inflate(R.layout.player_toc_bookmark_item_view, parent, false)
 
     return this.BookmarkViewHolder(view)
   }
 
-  override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+  override fun onBindViewHolder(
+    holder: RecyclerView.ViewHolder,
+    position: Int
+  ) {
     PlayerUIThread.checkIsUIThread()
 
     (holder as? BookmarkViewHolder)?.bind(this.bookmarks[position])
@@ -65,7 +71,9 @@ class PlayerTOCBookmarkAdapter(
     this.notifyDataSetChanged()
   }
 
-  inner class BookmarkViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+  inner class BookmarkViewHolder(
+    val view: View
+  ) : RecyclerView.ViewHolder(view) {
     private val bookmarkDate: TextView =
       this.itemView.findViewById(R.id.player_toc_bookmark_item_view_date)
     private val bookmarkOffset: TextView =

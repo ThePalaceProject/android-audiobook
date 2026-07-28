@@ -6,16 +6,12 @@ import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckProvi
 import org.librarysimplified.audiobook.license_check.spi.SingleLicenseCheckType
 
 class FeedbooksStatusChecks : SingleLicenseCheckProviderType {
-
   override val name: String =
     "FeedbooksRightsCheck"
 
-  override fun createLicenseCheck(
-    parameters: SingleLicenseCheckParameters
-  ): SingleLicenseCheckType {
-    return FeedbooksStatusCheck(
+  override fun createLicenseCheck(parameters: SingleLicenseCheckParameters): SingleLicenseCheckType =
+    FeedbooksStatusCheck(
       parsers = LicenseStatusParsers,
       parameters = parameters
     )
-  }
 }

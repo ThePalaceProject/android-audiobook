@@ -5,15 +5,14 @@ package org.librarysimplified.audiobook.manifest.api
  */
 
 sealed class PlayerManifestScalar {
-
   /**
    * A string-typed scalar manifest value.
    */
 
-  data class PlayerManifestScalarString(val text: String) : PlayerManifestScalar() {
-    override fun toString(): String {
-      return this.text
-    }
+  data class PlayerManifestScalarString(
+    val text: String
+  ) : PlayerManifestScalar() {
+    override fun toString(): String = this.text
   }
 
   /**
@@ -21,25 +20,24 @@ sealed class PlayerManifestScalar {
    */
 
   sealed class PlayerManifestScalarNumber : PlayerManifestScalar() {
-
     /**
      * A real-typed scalar manifest value.
      */
 
-    data class PlayerManifestScalarReal(val number: Double) : PlayerManifestScalarNumber() {
-      override fun toString(): String {
-        return this.number.toString()
-      }
+    data class PlayerManifestScalarReal(
+      val number: Double
+    ) : PlayerManifestScalarNumber() {
+      override fun toString(): String = this.number.toString()
     }
 
     /**
      * An integer-typed scalar manifest value.
      */
 
-    data class PlayerManifestScalarInteger(val number: Int) : PlayerManifestScalarNumber() {
-      override fun toString(): String {
-        return this.number.toString()
-      }
+    data class PlayerManifestScalarInteger(
+      val number: Int
+    ) : PlayerManifestScalarNumber() {
+      override fun toString(): String = this.number.toString()
     }
   }
 
@@ -47,9 +45,9 @@ sealed class PlayerManifestScalar {
    * A boolean-typed scalar manifest value.
    */
 
-  data class PlayerManifestScalarBoolean(val value: Boolean) : PlayerManifestScalar() {
-    override fun toString(): String {
-      return this.value.toString()
-    }
+  data class PlayerManifestScalarBoolean(
+    val value: Boolean
+  ) : PlayerManifestScalar() {
+    override fun toString(): String = this.value.toString()
   }
 }

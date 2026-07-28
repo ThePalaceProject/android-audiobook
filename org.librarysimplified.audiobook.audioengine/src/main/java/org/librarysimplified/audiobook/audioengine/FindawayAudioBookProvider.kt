@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory
 class FindawayAudioBookProvider(
   private val manifest: PlayerManifest
 ) : PlayerAudioBookProviderType {
-
   private val logger =
     LoggerFactory.getLogger(FindawayAudioBookProvider::class.java)
 
@@ -28,13 +27,14 @@ class FindawayAudioBookProvider(
       PlayerBookID.transform(this.manifest.metadata.identifier)
 
     return when (
-      val parsed = FindawayManifest.transform(
-        context = context,
-        bookID = id,
-        manifest = this.manifest
-      )
+      val parsed =
+        FindawayManifest.transform(
+          context = context,
+          bookID = id,
+          manifest = this.manifest
+        )
     ) {
-      is PlayerResult.Success ->
+      is PlayerResult.Success -> {
         try {
           PlayerResult.Success(
             FindawayAudioBook.create(
@@ -45,9 +45,11 @@ class FindawayAudioBookProvider(
         } catch (e: FindawayInitializationException) {
           PlayerResult.Failure(e)
         }
+      }
 
-      is PlayerResult.Failure ->
+      is PlayerResult.Failure -> {
         PlayerResult.Failure(parsed.failure)
+      }
     }
   }
 
@@ -60,6 +62,7 @@ class FindawayAudioBookProvider(
       is PlayerResult.Failure -> {
         false
       }
+
       is PlayerResult.Success -> {
         book.result.wholeBookDownloadTask.delete()
         return true

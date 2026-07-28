@@ -7,7 +7,6 @@ import java.net.URI
  */
 
 sealed class OPAManifestURI {
-
   /**
    * The given URI serves a manifest directly, using the provided OPA scope.
    *

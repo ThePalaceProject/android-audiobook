@@ -7,7 +7,6 @@ import org.librarysimplified.http.api.LSHTTPClientType
  */
 
 interface ManifestFulfillmentStrategyParametersType {
-
   /**
    * The client used to make various HTTP requests.
    */

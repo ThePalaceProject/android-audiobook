@@ -10,7 +10,6 @@ import java.net.URI
  */
 
 object LicenseStatusParsers : LicenseStatusParserProviderType {
-
   private val fieldRushParsers =
     FRParsers()
 
@@ -19,11 +18,10 @@ object LicenseStatusParsers : LicenseStatusParserProviderType {
     input: ByteArray,
     extensions: List<Any>,
     warningsAsErrors: Boolean
-  ): ParserType<LicenseStatusDocument> {
-    return LicenseStatusParser(
+  ): ParserType<LicenseStatusDocument> =
+    LicenseStatusParser(
       parsers = this.fieldRushParsers,
       stream = ByteArrayInputStream(input),
       uri = uri
     )
-  }
 }

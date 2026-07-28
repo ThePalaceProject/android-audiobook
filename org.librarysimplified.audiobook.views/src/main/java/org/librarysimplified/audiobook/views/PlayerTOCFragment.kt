@@ -17,7 +17,6 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
 import org.slf4j.LoggerFactory
 
 class PlayerTOCFragment : PlayerBaseFragment() {
-
   private val logger =
     LoggerFactory.getLogger(PlayerTOCFragment::class.java)
 
@@ -46,14 +45,16 @@ class PlayerTOCFragment : PlayerBaseFragment() {
     this.viewPagerAdapter =
       PlayerTOCAdapter(
         parentFragment = this,
-        fragments = listOf(
-          PlayerTOCChaptersFragment(),
-          PlayerTOCBookmarksFragment()
-        ),
-        fragmentTitles = listOf(
-          getString(R.string.audiobook_player_menu_toc_title_chapters),
-          getString(R.string.audiobook_player_menu_toc_title_bookmarks)
-        )
+        fragments =
+          listOf(
+            PlayerTOCChaptersFragment(),
+            PlayerTOCBookmarksFragment()
+          ),
+        fragmentTitles =
+          listOf(
+            getString(R.string.audiobook_player_menu_toc_title_chapters),
+            getString(R.string.audiobook_player_menu_toc_title_bookmarks)
+          )
       )
     this.viewPager.adapter = this.viewPagerAdapter
 
@@ -94,11 +95,12 @@ class PlayerTOCFragment : PlayerBaseFragment() {
   }
 
   private fun onMenuRefreshAllSelected() {
-    Toast.makeText(
-      this.requireContext(),
-      R.string.audiobook_toc_downloading_all_chapters,
-      Toast.LENGTH_SHORT
-    ).show()
+    Toast
+      .makeText(
+        this.requireContext(),
+        R.string.audiobook_toc_downloading_all_chapters,
+        Toast.LENGTH_SHORT
+      ).show()
 
     PlayerModel.downloadAll()
   }

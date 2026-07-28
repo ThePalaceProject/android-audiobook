@@ -40,13 +40,14 @@ class ExoAdapter(
   private val toc: PlayerManifestTOC,
   private val isStreamingNow: () -> Boolean,
   private val authorizationHandler: PlayerAuthorizationHandlerType,
-) : Player.Listener, AutoCloseable {
-
+) : Player.Listener,
+  AutoCloseable {
   private val closed =
     AtomicBoolean(false)
 
   private val stateSubject =
-    BehaviorSubject.create<ExoPlayerPlaybackStatusTransition>()
+    BehaviorSubject
+      .create<ExoPlayerPlaybackStatusTransition>()
       .toSerialized()
 
   /**
@@ -163,9 +164,7 @@ class ExoAdapter(
     )
   }
 
-  override fun onPlaybackStateChanged(
-    playbackState: Int
-  ) {
+  override fun onPlaybackStateChanged(playbackState: Int) {
     this.logger.debug(
       "onPlaybackStateChanged: {} ({})", this.nameForState(playbackState),
       playbackState
@@ -228,14 +227,15 @@ class ExoAdapter(
           this.newState(ExoPlayerPlaybackStatus.BUFFERING)
         }
       }
+
       false -> {
         this.newState(ExoPlayerPlaybackStatus.PAUSED)
       }
     }
   }
 
-  private fun nameForState(playbackState: Int): String {
-    return when (playbackState) {
+  private fun nameForState(playbackState: Int): String =
+    when (playbackState) {
       ExoPlayer.STATE_BUFFERING -> {
         "Buffering"
       }
@@ -256,7 +256,6 @@ class ExoAdapter(
         "Unrecognized state"
       }
     }
-  }
 
   fun broadcastPlaybackPosition() {
     val readingOrderItem =
@@ -348,7 +347,8 @@ class ExoAdapter(
     this.savedError = null
 
     val newSource =
-      ProgressiveMediaSource.Factory(dataSourceFactory)
+      ProgressiveMediaSource
+        .Factory(dataSourceFactory)
         .createMediaSource(MediaItem.fromUri(targetURI))
 
     this.exoPlayer.setMediaSource(newSource)
@@ -360,9 +360,7 @@ class ExoAdapter(
     )
   }
 
-  private fun isPlayerBroken(): Boolean {
-    return this.savedError != null
-  }
+  private fun isPlayerBroken(): Boolean = this.savedError != null
 
   private fun setupMDC() {
     MDC.put("BookTitle", this.manifest.metadata.title)

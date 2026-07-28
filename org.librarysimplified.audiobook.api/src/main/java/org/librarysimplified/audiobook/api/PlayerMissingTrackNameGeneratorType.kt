@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.api
  */
 
 interface PlayerMissingTrackNameGeneratorType {
-
   /**
    * @return A track name for the zero-indexed chapter index
    */

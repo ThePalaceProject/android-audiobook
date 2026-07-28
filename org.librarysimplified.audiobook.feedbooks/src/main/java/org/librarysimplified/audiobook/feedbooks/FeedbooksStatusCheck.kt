@@ -27,7 +27,6 @@ class FeedbooksStatusCheck(
   private val parsers: LicenseStatusParserProviderType,
   private val parameters: SingleLicenseCheckParameters
 ) : SingleLicenseCheckType {
-
   private val logger =
     LoggerFactory.getLogger(FeedbooksStatusCheck::class.java)
 
@@ -43,7 +42,10 @@ class FeedbooksStatusCheck(
   override fun execute(): SingleLicenseCheckResult {
     this.event("Started status check…")
 
-    return when (val link = this.parameters.manifest.links.find(this::linkIsLicenseLink)) {
+    return when (val link =
+      this.parameters.manifest.links
+        .find(this::linkIsLicenseLink)
+    ) {
       null -> {
         this.event("Check is not applicable: No license link.")
         SingleLicenseCheckResult.NotApplicable("No license link.")
@@ -73,7 +75,8 @@ class FeedbooksStatusCheck(
     this.event("Fetching license document $target…")
 
     val request =
-      this.parameters.httpClient.newRequest(target)
+      this.parameters.httpClient
+        .newRequest(target)
         .build()
 
     val response =
@@ -104,9 +107,7 @@ class FeedbooksStatusCheck(
     }
   }
 
-  private fun parseLicenseStatusDocument(
-    parser: ParserType<LicenseStatusDocument>
-  ): SingleLicenseCheckResult {
+  private fun parseLicenseStatusDocument(parser: ParserType<LicenseStatusDocument>): SingleLicenseCheckResult {
     return when (val parseResult = parser.parse()) {
       is ParseResult.Success -> {
         val document = parseResult.result

@@ -106,11 +106,12 @@ data class PlayerManifestTOC(
     val offsetAbsolute: PlayerMillisecondsAbsolute =
       readingOrderItemInterval.lower + readingOrderItemOffset
 
-    tocItem = this.adjustTOCItemForManifestInconsistency(
-      tocItem = tocItem,
-      readingOrderItemInterval = readingOrderItemInterval,
-      offsetAbsolute = offsetAbsolute
-    )
+    tocItem =
+      this.adjustTOCItemForManifestInconsistency(
+        tocItem = tocItem,
+        readingOrderItemInterval = readingOrderItemInterval,
+        offsetAbsolute = offsetAbsolute
+      )
 
     val tocItemOffset =
       PlayerMillisecondsTOC(
@@ -123,7 +124,8 @@ data class PlayerManifestTOC(
     val tocItemRemaining =
       maxOf(
         Duration.ZERO,
-        Duration.millis(tocItemDuration)
+        Duration
+          .millis(tocItemDuration)
           .minus(tocItemPosition)
       )
 
@@ -187,9 +189,7 @@ data class PlayerManifestTOC(
     value: Double,
     lower: Double,
     upper: Double
-  ): Double {
-    return Math.max(lower, Math.min(value, upper))
-  }
+  ): Double = Math.max(lower, Math.min(value, upper))
 
   /**
    * Given a reading order item and a millisecond offset relative to that reading order item,

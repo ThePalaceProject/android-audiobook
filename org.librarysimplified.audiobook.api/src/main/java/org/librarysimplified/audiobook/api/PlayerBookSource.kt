@@ -7,7 +7,6 @@ import java.io.File
  */
 
 sealed class PlayerBookSource {
-
   /**
    * The book source is a packaged audiobook file.
    */

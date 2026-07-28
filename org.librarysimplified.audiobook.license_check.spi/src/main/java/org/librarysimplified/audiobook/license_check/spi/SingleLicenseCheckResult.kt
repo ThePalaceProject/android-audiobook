@@ -5,7 +5,6 @@ package org.librarysimplified.audiobook.license_check.spi
  */
 
 sealed class SingleLicenseCheckResult {
-
   /**
    * The message returned as a result of performing a check.
    */

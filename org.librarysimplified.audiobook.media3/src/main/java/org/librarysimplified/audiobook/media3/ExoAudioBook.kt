@@ -48,7 +48,6 @@ class ExoAudioBook private constructor(
   private val authorizationHandler: PlayerAuthorizationHandlerType,
   private val networkAccess: LSHTTPNetworkAccessReadableType,
 ) : PlayerAudioBookType {
-
   private val logger =
     LoggerFactory.getLogger(ExoAudioBook::class.java)
 
@@ -56,7 +55,8 @@ class ExoAudioBook private constructor(
     AtomicBoolean(false)
 
   private val manifestUpdates =
-    PublishSubject.create<Unit>()
+    PublishSubject
+      .create<Unit>()
       .toSerialized()
 
   override val wholeBookDownloadTask: PlayerDownloadWholeBookTaskType =
@@ -85,9 +85,7 @@ class ExoAudioBook private constructor(
   override val supportsIndividualChapterDownload: Boolean =
     this.supportsDownloads == DownloadIndividualChaptersAsFiles
 
-  override fun replaceManifest(
-    manifest: PlayerManifest
-  ): CompletableFuture<Unit> {
+  override fun replaceManifest(manifest: PlayerManifest): CompletableFuture<Unit> {
     val future = CompletableFuture<Unit>()
     this.engineExecutor.execute {
       try {
@@ -105,9 +103,7 @@ class ExoAudioBook private constructor(
   override val manifest: PlayerManifest
     get() = this.exoManifest.originalManifest
 
-  private fun replaceManifestTransform(
-    manifest: PlayerManifest
-  ) {
+  private fun replaceManifestTransform(manifest: PlayerManifest) {
     this.logger.debug("Replacing manifest")
 
     val newBookID = PlayerBookID.transform(manifest.metadata.identifier)
@@ -121,22 +117,24 @@ class ExoAudioBook private constructor(
       throw IllegalArgumentException(sb.toString())
     }
 
-    return when (val result = ExoManifest.transform(
-      bookID = this.id,
-      manifest = manifest,
-      missingTrackNames = this.missingTrackNameGenerator
-    )) {
-      is PlayerResult.Success ->
+    return when (val result =
+      ExoManifest.transform(
+        bookID = this.id,
+        manifest = manifest,
+        missingTrackNames = this.missingTrackNameGenerator
+      )
+    ) {
+      is PlayerResult.Success -> {
         this.replaceManifestWith(result.result)
+      }
 
-      is PlayerResult.Failure ->
+      is PlayerResult.Failure -> {
         throw result.failure
+      }
     }
   }
 
-  private fun replaceManifestWith(
-    exoManifest: ExoManifest
-  ) {
+  private fun replaceManifestWith(exoManifest: ExoManifest) {
     if (exoManifest.bookID != this.exoManifest.bookID) {
       throw IllegalArgumentException(
         "Manifest ID ${exoManifest.bookID} does not match existing id ${this.exoManifest.bookID}"
@@ -161,7 +159,6 @@ class ExoAudioBook private constructor(
   }
 
   companion object {
-
     private val log = LoggerFactory.getLogger(ExoAudioBook::class.java)
 
     fun findDirectoryFor(

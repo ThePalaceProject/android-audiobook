@@ -12,7 +12,6 @@ import java.io.Closeable
  */
 
 interface ManifestFulfillmentStrategyType : Closeable {
-
   /**
    * An observable source of events published during fulfillment.
    */

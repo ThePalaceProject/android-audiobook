@@ -14,7 +14,6 @@ class PlayerAuthorizationHandlerDelegating private constructor(
   val delegate: PlayerAuthorizationHandlerType,
   val extensions: List<PlayerAuthorizationHandlerExtensionType>
 ) : PlayerAuthorizationHandlerType {
-
   private val logger =
     LoggerFactory.getLogger(PlayerAuthorizationHandlerDelegating::class.java)
 
@@ -22,9 +21,7 @@ class PlayerAuthorizationHandlerDelegating private constructor(
     fun create(
       delegate: PlayerAuthorizationHandlerType,
       extensions: List<PlayerAuthorizationHandlerExtensionType>
-    ): PlayerAuthorizationHandlerType {
-      return PlayerAuthorizationHandlerDelegating(delegate, extensions)
-    }
+    ): PlayerAuthorizationHandlerType = PlayerAuthorizationHandlerDelegating(delegate, extensions)
   }
 
   override fun onAuthorizationIsNoLongerInvalid(
@@ -53,11 +50,13 @@ class PlayerAuthorizationHandlerDelegating private constructor(
   ): LSHTTPAuthorizationType? {
     val original = this.delegate.onConfigureAuthorizationFor(source, kind)
     for (extension in this.extensions) {
-      when (val override = extension.onOverrideAuthorizationFor(
-        link = source,
-        kind = kind,
-        authorization = original
-      )) {
+      when (val override =
+        extension.onOverrideAuthorizationFor(
+          link = source,
+          kind = kind,
+          authorization = original
+        )
+      ) {
         is PlayerAuthorizationHandlerExtensionType.OverrideError -> {
           this.logger.debug(
             "[{}]: Failed to override authorization for {}: {}",
@@ -89,7 +88,5 @@ class PlayerAuthorizationHandlerDelegating private constructor(
     providerName: String,
     kind: PlayerDownloadRequest.Kind,
     credentialsType: Class<T>
-  ): T {
-    return this.delegate.onRequireCustomCredentialsFor(providerName, kind, credentialsType)
-  }
+  ): T = this.delegate.onRequireCustomCredentialsFor(providerName, kind, credentialsType)
 }

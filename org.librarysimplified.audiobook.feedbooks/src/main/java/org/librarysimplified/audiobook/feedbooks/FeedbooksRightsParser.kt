@@ -16,18 +16,16 @@ import org.joda.time.LocalDateTime
 class FeedbooksRightsParser(
   onReceive: (FRParserContextType, FeedbooksRights) -> Unit = FRValueParsers.ignoringReceiverWithContext()
 ) : FRAbstractParserObject<FeedbooksRights>(onReceive) {
-
   private var validStart: LocalDateTime? = null
   private var validEnd: LocalDateTime? = null
 
-  override fun onCompleted(context: FRParserContextType): FRParseResult<FeedbooksRights> {
-    return FRParseResult.succeed(
+  override fun onCompleted(context: FRParserContextType): FRParseResult<FeedbooksRights> =
+    FRParseResult.succeed(
       FeedbooksRights(
         validStart = this.validStart,
         validEnd = this.validEnd
       )
     )
-  }
 
   override fun schema(context: FRParserContextType): FRParserObjectSchema {
     val validStartSchema =

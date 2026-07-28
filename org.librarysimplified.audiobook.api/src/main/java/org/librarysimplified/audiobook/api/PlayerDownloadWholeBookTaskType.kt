@@ -6,7 +6,6 @@ package org.librarysimplified.audiobook.api
  */
 
 interface PlayerDownloadWholeBookTaskType : PlayerDownloadTaskType {
-
   /**
    * Run the download task.
    */

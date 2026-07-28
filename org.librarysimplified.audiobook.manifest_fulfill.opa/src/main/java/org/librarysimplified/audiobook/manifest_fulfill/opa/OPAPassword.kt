@@ -7,7 +7,6 @@ import java.io.Serializable
  */
 
 sealed class OPAPassword : Serializable {
-
   /**
    * A password is not required.
    */

@@ -6,17 +6,15 @@ package org.librarysimplified.audiobook.api
  * of PlayerSleepTimerThread, then the current thread is a timer thread.
  */
 
-class PlayerSleepTimerThread(runnable: Runnable) : Thread(runnable) {
-
+class PlayerSleepTimerThread(
+  runnable: Runnable
+) : Thread(runnable) {
   init {
     this.name = "org.librarysimplified.audiobook.api:timer:${this.id}"
   }
 
   companion object {
-
-    fun isSleepTimerThread(): Boolean {
-      return Thread.currentThread() is PlayerSleepTimerThread
-    }
+    fun isSleepTimerThread(): Boolean = Thread.currentThread() is PlayerSleepTimerThread
 
     fun checkIsSleepTimerThread() {
       if (!isSleepTimerThread()) {

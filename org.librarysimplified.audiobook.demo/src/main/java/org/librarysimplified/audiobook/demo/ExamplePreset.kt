@@ -18,24 +18,18 @@ data class ExamplePreset(
   val credentials: ExamplePlayerCredentials,
   val lcpPassphrase: String?
 ) {
-
   companion object {
-
     /**
      * Parse bundled repositories from XML resources.
      */
 
-    fun fromXMLResources(context: Context): List<ExamplePreset> {
-      return loadFrom(context.resources.getXml(R.xml.presets))
-    }
+    fun fromXMLResources(context: Context): List<ExamplePreset> = loadFrom(context.resources.getXml(R.xml.presets))
 
     /**
      * Load presets from the given XML parser.
      */
 
-    fun loadFrom(
-      parser: XmlPullParser
-    ): List<ExamplePreset> {
+    fun loadFrom(parser: XmlPullParser): List<ExamplePreset> {
       var name = ""
       var location = ""
       var lcpPassphrase: String? = null
@@ -45,10 +39,11 @@ data class ExamplePreset(
 
       while (true) {
         when (parser.next()) {
-          XmlPullParser.END_DOCUMENT ->
+          XmlPullParser.END_DOCUMENT -> {
             return presets.toList()
+          }
 
-          XmlPullParser.START_TAG ->
+          XmlPullParser.START_TAG -> {
             when (parser.name) {
               "Presets" -> {
               }
@@ -65,31 +60,34 @@ data class ExamplePreset(
               }
 
               "AuthenticationBasic" -> {
-                credentials = ExamplePlayerCredentials.Basic(
-                  userName = parser.getAttributeValue(null, "userName"),
-                  password = parser.getAttributeValue(null, "password")
-                )
+                credentials =
+                  ExamplePlayerCredentials.Basic(
+                    userName = parser.getAttributeValue(null, "userName"),
+                    password = parser.getAttributeValue(null, "password")
+                  )
               }
 
               "Overdrive" -> {
-                credentials = ExamplePlayerCredentials.Overdrive(
-                  userName = parser.getAttributeValue(null, "userName"),
-                  password = OPAPassword.Password(parser.getAttributeValue(null, "password")),
-                  clientKey = parser.getAttributeValue(null, "clientKey"),
-                  clientPass = parser.getAttributeValue(null, "clientSecret")
-                )
+                credentials =
+                  ExamplePlayerCredentials.Overdrive(
+                    userName = parser.getAttributeValue(null, "userName"),
+                    password = OPAPassword.Password(parser.getAttributeValue(null, "password")),
+                    clientKey = parser.getAttributeValue(null, "clientKey"),
+                    clientPass = parser.getAttributeValue(null, "clientSecret")
+                  )
               }
 
               "Feedbooks" -> {
                 val encoded =
                   parser.getAttributeValue(null, "bearerTokenSecret")
 
-                credentials = ExamplePlayerCredentials.Feedbooks(
-                  userName = parser.getAttributeValue(null, "userName"),
-                  password = parser.getAttributeValue(null, "password"),
-                  bearerTokenSecret = JSONBase64String(encoded).decode(),
-                  issuerURL = parser.getAttributeValue(null, "issuerURL")
-                )
+                credentials =
+                  ExamplePlayerCredentials.Feedbooks(
+                    userName = parser.getAttributeValue(null, "userName"),
+                    password = parser.getAttributeValue(null, "password"),
+                    bearerTokenSecret = JSONBase64String(encoded).decode(),
+                    issuerURL = parser.getAttributeValue(null, "issuerURL")
+                  )
               }
 
               "AuthenticationNone" -> {
@@ -99,10 +97,14 @@ data class ExamplePreset(
               else -> {
               }
             }
+          }
 
           XmlPullParser.END_TAG -> {
             when (parser.name) {
-              "Presets" -> Unit
+              "Presets" -> {
+                Unit
+              }
+
               "Preset" -> {
                 presets.add(
                   ExamplePreset(
@@ -114,33 +116,36 @@ data class ExamplePreset(
                   )
                 )
               }
+
               else -> {
               }
             }
           }
 
-          else -> Unit
+          else -> {
+            Unit
+          }
         }
       }
     }
 
-    private fun parseType(
-      value: String?
-    ): ExampleTargetType {
-      return when (value) {
+    private fun parseType(value: String?): ExampleTargetType =
+      when (value) {
         null -> {
           ExampleTargetType.MANIFEST
         }
+
         "manifest" -> {
           ExampleTargetType.MANIFEST
         }
+
         "lcpLicense" -> {
           ExampleTargetType.LCP_LICENSE
         }
+
         else -> {
           throw ParseException("Unrecognized preset type: $value", 0)
         }
       }
-    }
   }
 }
