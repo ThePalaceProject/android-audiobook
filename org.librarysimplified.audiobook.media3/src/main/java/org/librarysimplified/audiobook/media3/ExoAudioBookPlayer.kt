@@ -2,6 +2,8 @@ package org.librarysimplified.audiobook.media3
 
 import android.app.Application
 import android.net.Uri
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.datasource.DataSource.Factory
 import androidx.media3.exoplayer.ExoPlayer
@@ -396,7 +398,18 @@ class ExoAudioBookPlayer private constructor(
         authorizationHandler = authorizationHandler,
         book = book,
         dataSourceFactory = dataSourceFactory,
-        exoPlayer = ExoPlayer.Builder(context).build(),
+        exoPlayer =
+          ExoPlayer
+            .Builder(context)
+            .setAudioAttributes(
+              AudioAttributes
+                .Builder()
+                .setUsage(C.USAGE_MEDIA)
+                .setContentType(C.CONTENT_TYPE_MUSIC)
+                .build(),
+              // handleAudioFocus =
+              false
+            ).build(),
         manifestUpdates = manifestUpdates,
         networkAccess = networkAccess,
         statusEvents = statusEvents,
