@@ -57,6 +57,8 @@ object PlayerFocusWatcher {
         AudioFocusRequest
           .Builder(AudioManager.AUDIOFOCUS_GAIN)
           .setOnAudioFocusChangeListener(afChangeListener)
+          .setAcceptsDelayedFocusGain(true)
+          .setWillPauseWhenDucked(true)
           .build()
 
       val result = audioManager.requestAudioFocus(this.focusRequest!!)

@@ -807,10 +807,14 @@ object PlayerMediaFacade : Player {
 
   override fun getContentBufferedPosition(): Long = this.latestChapterPosition
 
-  override fun getAudioAttributes(): AudioAttributes {
-    this.warnNotImplemented("getAudioAttributes")
-    return AudioAttributes.DEFAULT
-  }
+  private val audioAttributes =
+    AudioAttributes
+      .Builder()
+      .setUsage(C.USAGE_MEDIA)
+      .setContentType(C.CONTENT_TYPE_MUSIC)
+      .build()
+
+  override fun getAudioAttributes(): AudioAttributes = this.audioAttributes
 
   override fun setVolume(volume: Float) {
     this.warnNotImplemented("setVolume")
