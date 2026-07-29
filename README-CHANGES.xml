@@ -704,11 +704,20 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2026-07-27T18:38:50+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="24.2.0">
+    <c:release date="2026-07-27T00:00:00+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="24.2.0">
       <c:changes>
         <c:change date="2026-07-22T00:00:00+00:00" summary="Skip interval is now configurable.">
           <c:tickets>
             <c:ticket id="PP-4713"/>
+          </c:tickets>
+        </c:change>
+      </c:changes>
+    </c:release>
+    <c:release date="2026-07-29T18:35:28+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="24.3.0">
+      <c:changes>
+        <c:change date="2026-07-29T18:35:28+00:00" summary="Ensure the player media button receiver is exported for bluetooth control.">
+          <c:tickets>
+            <c:ticket id="PP-4615"/>
           </c:tickets>
         </c:change>
       </c:changes>
