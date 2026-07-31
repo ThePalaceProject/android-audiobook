@@ -330,7 +330,7 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerDebugStatus.alpha = 0.0f
     this.playerStatusArea.alpha = 0.0f
     this.playerStatusButton.visibility = GONE
-    this.coverView.setImageBitmap(PlayerModel.coverImage)
+    this.coverView.setImageBitmap(PlayerModel.coverImage?.cover)
     return view
   }
 
@@ -619,7 +619,7 @@ class PlayerFragment : PlayerBaseFragment() {
   private fun onPlayerViewCommand(event: PlayerViewCommand) =
     when (event) {
       PlayerViewCoverImageChanged -> {
-        this.coverView.setImageBitmap(PlayerModel.coverImage)
+        this.coverView.setImageBitmap(PlayerModel.coverImage?.cover)
       }
 
       PlayerViewNavigationPlaybackRateMenuOpen -> {

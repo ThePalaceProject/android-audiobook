@@ -405,7 +405,7 @@ class ExoAudioBookPlayer private constructor(
               AudioAttributes
                 .Builder()
                 .setUsage(C.USAGE_MEDIA)
-                .setContentType(C.CONTENT_TYPE_MUSIC)
+                .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                 .build(),
               // handleAudioFocus =
               false

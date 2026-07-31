@@ -118,7 +118,7 @@ object PlayerModel {
   var bookAuthor: String = ""
 
   @Volatile
-  private var coverImageField: Bitmap? = null
+  private var coverImageField: PlayerCoverImageData? = null
 
   @Volatile
   private lateinit var application: Application
@@ -137,7 +137,7 @@ object PlayerModel {
    * The cover image for the audio book.
    */
 
-  val coverImage: Bitmap?
+  val coverImage: PlayerCoverImageData?
     get() = this.coverImageField
 
   private var audioManagerService: AudioManager? = null
@@ -1310,7 +1310,11 @@ object PlayerModel {
     get() = PlayerReference.opIsPlaying()
 
   fun setCoverImage(image: Bitmap?) {
-    this.coverImageField = image
+    if (image != null) {
+      this.coverImageField = PlayerCoverImageData.create(image)
+    } else {
+      this.coverImageField = null
+    }
     this.submitViewCommand(PlayerViewCommand.PlayerViewCoverImageChanged)
   }
 

@@ -165,15 +165,7 @@ object PlayerMediaFacade : Player {
 
   private fun coverImageData(): ByteArray? {
     val coverImage = PlayerModel.coverImage
-    return if (coverImage != null) {
-      ByteArrayOutputStream()
-        .use { stream ->
-          coverImage.compress(Bitmap.CompressFormat.JPEG, 80, stream)
-          stream.toByteArray()
-        }
-    } else {
-      null
-    }
+    return coverImage?.data
   }
 
   private fun setCoverImageFor(
@@ -811,7 +803,7 @@ object PlayerMediaFacade : Player {
     AudioAttributes
       .Builder()
       .setUsage(C.USAGE_MEDIA)
-      .setContentType(C.CONTENT_TYPE_MUSIC)
+      .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
       .build()
 
   override fun getAudioAttributes(): AudioAttributes = this.audioAttributes
