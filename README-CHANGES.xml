@@ -713,14 +713,14 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2026-07-31T11:43:58+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="24.3.0">
+    <c:release date="2026-08-07T17:11:56+00:00" is-open="false" ticket-system="org.palaceproject.jira" version="24.3.0">
       <c:changes>
         <c:change date="2026-07-29T00:00:00+00:00" summary="Ensure the player media button receiver is exported for bluetooth control.">
           <c:tickets>
             <c:ticket id="PP-4615"/>
           </c:tickets>
         </c:change>
-        <c:change date="2026-07-31T11:43:58+00:00" summary="Cache cover image data to prevent a severe performance issue that can be triggered by large cover images combined with the audioengine player."/>
+        <c:change date="2026-07-31T00:00:00+00:00" summary="Cache cover image data to prevent a severe performance issue that can be triggered by large cover images combined with the audioengine player."/>
       </c:changes>
     </c:release>
   </c:releases>
