@@ -11,5 +11,5 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlin.reflect)
 
-    compileOnly(libs.jcip)
+    compileOnly(libs.jcip.annotations)
 }

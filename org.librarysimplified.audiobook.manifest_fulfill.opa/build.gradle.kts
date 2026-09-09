@@ -13,5 +13,5 @@ dependencies {
     implementation(libs.palace.http.api)
     implementation(libs.slf4j)
 
-    compileOnly(libs.jcip)
+    compileOnly(libs.jcip.annotations)
 }

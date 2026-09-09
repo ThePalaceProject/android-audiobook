@@ -216,7 +216,7 @@ dependencies {
         implementation(libs.timber)
     }
 
-    compileOnly(libs.jcip)
+    compileOnly(libs.jcip.annotations)
 }
 
 android {

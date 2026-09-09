@@ -16,5 +16,5 @@ dependencies {
     implementation(libs.rxjava2)
     implementation(libs.slf4j)
 
-    compileOnly(libs.jcip)
+    compileOnly(libs.jcip.annotations)
 }

@@ -10,5 +10,5 @@ dependencies {
     implementation(libs.slf4j)
     implementation(libs.joda.time)
 
-    compileOnly(libs.jcip)
+    compileOnly(libs.jcip.annotations)
 }

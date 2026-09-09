@@ -17,5 +17,5 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     implementation(libs.slf4j)
 
-    compileOnly(libs.jcip)
+    compileOnly(libs.jcip.annotations)
 }

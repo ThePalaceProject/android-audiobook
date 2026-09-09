@@ -16,5 +16,5 @@ dependencies {
     implementation(libs.palace.http.downloads)
     implementation(libs.rxjava2)
 
-    compileOnly(libs.jcip)
+    compileOnly(libs.jcip.annotations)
 }
