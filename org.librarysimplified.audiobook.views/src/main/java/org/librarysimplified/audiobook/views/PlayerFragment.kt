@@ -553,7 +553,7 @@ class PlayerFragment : PlayerBaseFragment() {
 
   @UiThread
   private fun setButtonToShowPlay() {
-    this.playPauseButton.setImageResource(R.drawable.baseline_play_arrow_24)
+    this.playPauseButton.setImageResource(R.drawable.play)
     this.playPauseButton.setOnClickListener { PlayerModel.play() }
     this.playPauseButton.contentDescription =
       this.getString(R.string.audiobook_accessibility_play)

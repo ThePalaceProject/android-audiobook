@@ -10,7 +10,14 @@ data class PlayerPlaybackRate(
   val speed: Double
 ) {
   val formatted: String
-    get() = String.format(Locale.ROOT, "%.2fx", this.speed)
+    get() {
+      val integer = Math.floor(speed)
+      val remaining = speed - integer
+      if (remaining > 0.0001) {
+        return String.format(Locale.ROOT, "%.2fx", this.speed)
+      }
+      return String.format(Locale.ROOT, "%.1fx", this.speed)
+    }
 
   companion object {
     val RATE_0_5 = PlayerPlaybackRate(0.5)
