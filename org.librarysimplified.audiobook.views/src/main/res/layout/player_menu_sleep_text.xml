@@ -5,32 +5,11 @@
     android:layout_width="48dp"
     android:layout_height="48dp">
 
-    <TextView
-        android:id="@+id/player_menu_sleep_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:clickable="false"
-        android:focusable="false"
-        android:gravity="center"
-        android:importantForAccessibility="no"
-        android:text="00:00"
-        android:textSize="7sp"
-        android:textStyle="bold"
-        android:typeface="monospace"
-        android:textColor="@color/PalacePrimaryForegroundColor"
-        app:tint="@color/PalacePrimaryForegroundColor"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <ImageView
         android:id="@+id/player_menu_sleep_image"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_centerInParent="true"
-        android:layout_marginEnd="8dp"
         android:clickable="false"
         android:focusable="false"
         android:tintMode="multiply"
@@ -41,20 +20,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/PalacePrimaryForegroundColor" />
-
-    <ImageView
-        android:id="@+id/player_menu_sleep_end_of_chapter"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_centerInParent="true"
-        android:clickable="false"
-        android:focusable="false"
-        android:tintMode="multiply"
-        app:tint="@color/PalacePrimaryForegroundColor"
-        android:importantForAccessibility="no"
-        android:src="@drawable/baseline_book_24"
-        app:layout_constraintBottom_toBottomOf="@+id/player_menu_sleep_image"
-        app:layout_constraintEnd_toEndOf="@+id/player_menu_sleep_image"
-        app:layout_constraintTop_toTopOf="@+id/player_menu_sleep_image" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

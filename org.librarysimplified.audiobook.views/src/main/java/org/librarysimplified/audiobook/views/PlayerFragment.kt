@@ -102,7 +102,6 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var menuAddBookmark: MenuItem
   private lateinit var menuPlaybackRate: MenuItem
   private lateinit var menuSleep: MenuItem
-  private lateinit var menuSleepEndOfChapter: ImageView
   private lateinit var menuTOC: MenuItem
   private lateinit var playPauseButton: ImageView
   private lateinit var playerBookAuthor: TextView
@@ -131,7 +130,6 @@ class PlayerFragment : PlayerBaseFragment() {
   private var subscriptions: CompositeDisposable = CompositeDisposable()
   private var playerPositionDragging: Boolean = false
   private var menuPlaybackRateText: TextView? = null
-  private var menuSleepText: TextView? = null
   private val bottomSheetDarkenOpacityMax = 1.0f
 
   /*
@@ -659,8 +657,6 @@ class PlayerFragment : PlayerBaseFragment() {
   @UiThread
   private fun onPlayerSleepTimerStatusStopped() {
     this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-    this.menuSleepText?.text = ""
-    this.menuSleepEndOfChapter.visibility = INVISIBLE
   }
 
   @UiThread
@@ -669,22 +665,15 @@ class PlayerFragment : PlayerBaseFragment() {
       EndOfChapter -> {
         this.menuSleep.actionView?.contentDescription =
           this.sleepTimerContentDescriptionEndOfChapter()
-        this.menuSleepText?.text = ""
-        this.menuSleepEndOfChapter.visibility = VISIBLE
       }
 
       Off -> {
         this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-        this.menuSleepText?.text = ""
-        this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
 
       is WithDuration -> {
         this.menuSleep.actionView?.contentDescription =
           this.sleepTimerContentDescriptionForTime(paused = false, c.duration)
-        this.menuSleepText?.text =
-          PlayerTimeStrings.durationText(c.duration)
-        this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
     }
 
@@ -694,22 +683,15 @@ class PlayerFragment : PlayerBaseFragment() {
       EndOfChapter -> {
         this.menuSleep.actionView?.contentDescription =
           this.sleepTimerContentDescriptionEndOfChapter()
-        this.menuSleepText?.text = ""
-        this.menuSleepEndOfChapter.visibility = VISIBLE
       }
 
       Off -> {
         this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-        this.menuSleepText?.text = ""
-        this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
 
       is WithDuration -> {
         this.menuSleep.actionView?.contentDescription =
           this.sleepTimerContentDescriptionForTime(paused = true, c.duration)
-        this.menuSleepText?.text =
-          PlayerTimeStrings.durationText(c.duration)
-        this.menuSleepEndOfChapter.visibility = INVISIBLE
       }
     }
 
@@ -1114,13 +1096,6 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.menuSleep.actionView?.setOnClickListener { this.onMenuSleepSelected() }
     this.menuSleep.actionView?.contentDescription = this.sleepTimerContentDescriptionSetUp()
-
-    this.menuSleepText = this.menuSleep.actionView?.findViewById(R.id.player_menu_sleep_text)
-    this.menuSleepText?.text = ""
-
-    this.menuSleepEndOfChapter =
-      this.menuSleep.actionView!!.findViewById(R.id.player_menu_sleep_end_of_chapter)
-    this.menuSleepEndOfChapter.visibility = INVISIBLE
 
     this.menuTOC = this.toolbar.menu.findItem(R.id.player_menu_toc)
     this.menuTOC.setOnMenuItemClickListener { this.onMenuTOCSelected() }
