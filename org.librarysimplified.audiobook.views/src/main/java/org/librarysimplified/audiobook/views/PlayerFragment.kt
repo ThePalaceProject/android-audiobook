@@ -335,13 +335,6 @@ class PlayerFragment : PlayerBaseFragment() {
   override fun onStart() {
     super.onStart()
 
-    this
-      .requireActivity()
-      .window.decorView.viewTreeObserver
-      .addOnGlobalFocusChangeListener { oldFocus, newFocus ->
-        this.onFocusChanged(oldFocus, newFocus)
-      }
-
     this.timeStrings =
       PlayerTimeStrings.SpokenTranslations.createFromResources(this.resources)
 
@@ -464,40 +457,6 @@ class PlayerFragment : PlayerBaseFragment() {
     )
 
     this.onPlayerEventPlaybackRateChanged()
-  }
-
-  private fun onFocusChanged(
-    oldFocus: View?,
-    newFocus: View?
-  ) {
-    val oldClass: String?
-    val oldName: String?
-    val newClass: String?
-    val newName: String?
-
-    if (oldFocus != null) {
-      oldClass = oldFocus.javaClass.simpleName
-      oldName = oldFocus.resources.getResourceName(oldFocus.id)
-    } else {
-      oldClass = null
-      oldName = null
-    }
-
-    if (newFocus != null) {
-      newClass = newFocus.javaClass.simpleName
-      newName = newFocus.resources.getResourceName(newFocus.id)
-    } else {
-      newClass = null
-      newName = null
-    }
-
-    this.logger.debug("Focus: Now {}:{} (was: {}:{})", newName, newClass, oldName, oldClass)
-    this.logger.debug(
-      "Focus: {} {} {}",
-      newFocus?.isClickable,
-      newFocus?.isFocusable,
-      newFocus?.isEnabled
-    )
   }
 
   private fun playerRateViewsLock() {
