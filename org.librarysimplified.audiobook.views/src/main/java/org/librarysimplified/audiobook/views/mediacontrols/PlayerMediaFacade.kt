@@ -314,6 +314,10 @@ object PlayerMediaFacade : Player {
         this.listeners.forEach { listener ->
           listener.onIsPlayingChanged(PlayerModel.isPlaying)
           listener.onPlaybackStateChanged(Player.STATE_READY)
+          listener.onPlayWhenReadyChanged(
+            PlayerModel.isPlaying,
+            Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST
+          )
         }
       }
 
@@ -322,6 +326,10 @@ object PlayerMediaFacade : Player {
         this.listeners.forEach { listener ->
           listener.onIsPlayingChanged(PlayerModel.isPlaying)
           listener.onPlaybackStateChanged(Player.STATE_READY)
+          listener.onPlayWhenReadyChanged(
+            PlayerModel.isPlaying,
+            Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST
+          )
         }
       }
 
@@ -343,6 +351,10 @@ object PlayerMediaFacade : Player {
     this.logger.debug("addListener: {} listeners now", this.listeners.size)
 
     listener.onIsPlayingChanged(PlayerModel.isPlaying)
+    listener.onPlayWhenReadyChanged(
+      PlayerModel.isPlaying,
+      Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST
+    )
   }
 
   override fun removeListener(listener: Player.Listener) {
