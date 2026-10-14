@@ -723,16 +723,21 @@
         <c:change date="2026-07-31T00:00:00+00:00" summary="Cache cover image data to prevent a severe performance issue that can be triggered by large cover images combined with the audioengine player."/>
       </c:changes>
     </c:release>
-    <c:release date="2026-10-08T18:18:45+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="24.4.0">
+    <c:release date="2026-10-14T09:19:14+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="24.4.0">
       <c:changes>
         <c:change date="2026-09-18T00:00:00+00:00" summary="Add new icons.">
           <c:tickets>
             <c:ticket id="PP-4913"/>
           </c:tickets>
         </c:change>
-        <c:change date="2026-10-08T18:18:45+00:00" summary="Remove useless and crash-prone debug code.">
+        <c:change date="2026-10-08T00:00:00+00:00" summary="Remove useless and crash-prone debug code.">
           <c:tickets>
             <c:ticket id="PP-5334"/>
+          </c:tickets>
+        </c:change>
+        <c:change date="2026-10-14T09:19:14+00:00" summary="Attempt to work around notification crashes.">
+          <c:tickets>
+            <c:ticket id="PP-5154"/>
           </c:tickets>
         </c:change>
       </c:changes>
