@@ -86,6 +86,8 @@
     <string name="audiobook_accessibility_elapsed_in_chapter">Elapsed In Chapter</string>
 
     <string name="audiobook_accessibility_navigation_back">Back</string>
+    <string name="audiobook_accessibility_navigation_close">Close</string>
+    <string name="audiobook_accessibility_minimize">Minimize</string>
 
     <string name="audiobook_accessibility_player_buffering">Player Is Buffering</string>
 

@@ -46,6 +46,7 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewErrorsDownloadOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationMinimize
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
@@ -360,6 +361,10 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       PlayerViewNavigationCloseAll -> {
         this.close()
         this.switchFragment(ExampleFragmentSelectBook())
+      }
+
+      PlayerViewNavigationMinimize -> {
+        // The demo does not implement a minimized player.
       }
 
       PlayerViewErrorsDownloadOpen -> {

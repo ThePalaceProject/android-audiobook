@@ -67,6 +67,7 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverIm
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewErrorsDownloadOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewLoginOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationMinimize
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationTOCClose
@@ -126,6 +127,7 @@ class PlayerFragment : PlayerBaseFragment() {
   private lateinit var playerTimeRemaining: TextView
   private lateinit var timeStrings: PlayerTimeStrings.SpokenTranslations
   private lateinit var toolbar: Toolbar
+  private lateinit var playerMinimizeButton: ImageView
 
   private var subscriptions: CompositeDisposable = CompositeDisposable()
   private var playerPositionDragging: Boolean = false
@@ -158,6 +160,8 @@ class PlayerFragment : PlayerBaseFragment() {
 
     this.toolbar =
       view.findViewById(R.id.audioBookToolbar)
+    this.playerMinimizeButton =
+      view.findViewById(R.id.player_minimize_button)!!
     this.coverView =
       view.findViewById(R.id.player_cover)!!
     this.playerBusy =
@@ -210,8 +214,11 @@ class PlayerFragment : PlayerBaseFragment() {
     this.playerPauseReason =
       view.findViewById(R.id.player_pause_reason)
 
-    this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_back)
+    this.toolbar.setNavigationContentDescription(R.string.audiobook_accessibility_navigation_close)
     this.toolbarConfigureAllActions()
+    this.playerMinimizeButton.setOnClickListener {
+      this.onToolbarMinimizeSelected()
+    }
 
     this.playerPosition.isEnabled = false
     this.playerPositionDragging = false
@@ -586,6 +593,7 @@ class PlayerFragment : PlayerBaseFragment() {
       PlayerViewLoginOpen,
       PlayerViewErrorsDownloadOpen,
       PlayerViewNavigationCloseAll,
+      PlayerViewNavigationMinimize,
       PlayerViewNavigationSleepMenuOpen,
       PlayerViewNavigationTOCClose,
       PlayerViewNavigationTOCOpen -> {
@@ -1096,6 +1104,11 @@ class PlayerFragment : PlayerBaseFragment() {
 
   private fun onToolbarNavigationSelected(): Boolean {
     PlayerModel.submitViewCommand(PlayerViewNavigationCloseAll)
+    return true
+  }
+
+  private fun onToolbarMinimizeSelected(): Boolean {
+    PlayerModel.submitViewCommand(PlayerViewNavigationMinimize)
     return true
   }
 

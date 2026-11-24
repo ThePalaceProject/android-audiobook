@@ -15,9 +15,21 @@
         android:padding="0dp"
         android:theme="@style/Palace.Legacy.ToolbarTheme"
         app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="@drawable/back"
+        app:navigationIcon="@drawable/close"
         app:popupTheme="@style/Palace.Legacy.ToolbarPopupTheme"
-        tools:title="Placeholder" />
+        tools:title="Placeholder">
+
+        <ImageView
+            android:id="@+id/player_minimize_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="@string/audiobook_accessibility_minimize"
+            android:focusable="true"
+            android:src="@drawable/minimize" />
+
+    </androidx.appcompat.widget.Toolbar>
 
     <TextView
         android:id="@+id/playerBookTitle"
