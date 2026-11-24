@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.UiThread
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
@@ -114,6 +115,10 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
     } catch (e: Exception) {
       this.logger.error("Failed to close book: ", e)
     }
+  }
+
+  fun attachToOpenPlayer() {
+    this.switchFragment(PlayerFragment())
   }
 
   private fun switchFragment(fragment: Fragment) {
@@ -359,12 +364,19 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       PlayerViewNavigationCloseAll -> {
-        this.close()
-        this.switchFragment(ExampleFragmentSelectBook())
+        AlertDialog
+          .Builder(this)
+          .setMessage("Stop playback?")
+          .setNegativeButton("Cancel", null)
+          .setPositiveButton("Stop") { _, _ ->
+            this.close()
+            this.switchFragment(ExampleFragmentSelectBook())
+          }.show()
       }
 
       PlayerViewNavigationMinimize -> {
-        // The demo does not implement a minimized player.
+        // The book is left open; the full-player view is dismissed.
+        this.switchFragment(ExampleFragmentSelectBook())
       }
 
       PlayerViewErrorsDownloadOpen -> {
