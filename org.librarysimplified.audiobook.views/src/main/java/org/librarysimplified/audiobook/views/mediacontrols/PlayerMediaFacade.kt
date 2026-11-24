@@ -56,6 +56,7 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverIm
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewErrorsDownloadOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewLoginOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationExpand
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationMinimize
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
@@ -195,6 +196,8 @@ object PlayerMediaFacade : Player {
       PlayerViewLoginOpen -> {}
 
       PlayerViewNavigationCloseAll -> {}
+
+      PlayerViewNavigationExpand -> {}
 
       PlayerViewNavigationMinimize -> {}
 

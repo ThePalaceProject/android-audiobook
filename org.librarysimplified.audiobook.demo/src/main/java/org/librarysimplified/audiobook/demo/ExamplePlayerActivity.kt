@@ -4,6 +4,7 @@ import android.Manifest
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.UiThread
@@ -31,6 +32,7 @@ import org.librarysimplified.audiobook.time_tracking.PlayerTimeTracked
 import org.librarysimplified.audiobook.views.PlayerBaseFragment
 import org.librarysimplified.audiobook.views.PlayerBookmarkModel
 import org.librarysimplified.audiobook.views.PlayerFragment
+import org.librarysimplified.audiobook.views.PlayerMiniFragment
 import org.librarysimplified.audiobook.views.PlayerModel
 import org.librarysimplified.audiobook.views.PlayerModelState
 import org.librarysimplified.audiobook.views.PlayerModelState.PlayerBookOpenFailed
@@ -47,6 +49,7 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewCoverImageChanged
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewErrorsDownloadOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationCloseAll
+import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationExpand
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationMinimize
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationPlaybackRateMenuOpen
 import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigationSleepMenuOpen
@@ -121,6 +124,30 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
     this.switchFragment(PlayerFragment())
   }
 
+  private fun showMiniPlayer() {
+    if (this.supportFragmentManager.findFragmentById(R.id.example_mini_player_holder) != null) {
+      return
+    }
+
+    findViewById<View>(R.id.example_mini_player_holder).visibility = View.VISIBLE
+    this.supportFragmentManager
+      .beginTransaction()
+      .replace(R.id.example_mini_player_holder, PlayerMiniFragment())
+      .commit()
+  }
+
+  private fun hideMiniPlayer() {
+    val fragment =
+      this.supportFragmentManager.findFragmentById(R.id.example_mini_player_holder)
+    if (fragment != null) {
+      this.supportFragmentManager
+        .beginTransaction()
+        .remove(fragment)
+        .commit()
+    }
+    findViewById<View>(R.id.example_mini_player_holder).visibility = View.GONE
+  }
+
   private fun switchFragment(fragment: Fragment) {
     this.fragmentNow = fragment
     this.supportFragmentManager
@@ -159,6 +186,10 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
           is PlayerTOCFragment -> {
             this.switchFragment(PlayerFragment())
+          }
+
+          is PlayerMiniFragment -> {
+            // The compact player is hosted in its own container, not the main fragment holder.
           }
         }
       }
@@ -268,6 +299,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
 
       PlayerClosed -> {
         PlayerModel.setCoverImage(null)
+        this.hideMiniPlayer()
         this.switchFragment(ExampleFragmentSelectBook())
       }
 
@@ -375,8 +407,17 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
       }
 
       PlayerViewNavigationMinimize -> {
-        // The book is left open; the full-player view is dismissed.
+        // The book is left open; the full-player view is dismissed and the compact player
+        // is shown.
         this.switchFragment(ExampleFragmentSelectBook())
+        this.showMiniPlayer()
+      }
+
+      PlayerViewNavigationExpand -> {
+        // The book is already open; this attaches to the full player and hides the compact
+        // player.
+        this.hideMiniPlayer()
+        this.attachToOpenPlayer()
       }
 
       PlayerViewErrorsDownloadOpen -> {

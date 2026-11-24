@@ -88,6 +88,9 @@
     <string name="audiobook_accessibility_navigation_back">Back</string>
     <string name="audiobook_accessibility_navigation_close">Close</string>
     <string name="audiobook_accessibility_minimize">Minimize</string>
+    <string name="audiobook_accessibility_expand_player">Open the full player</string>
+    <string name="audiobook_accessibility_skip_backward">Skip backward</string>
+    <string name="audiobook_accessibility_skip_forward">Skip forward</string>
 
     <string name="audiobook_accessibility_player_buffering">Player Is Buffering</string>
 
