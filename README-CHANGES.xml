@@ -742,7 +742,7 @@
         </c:change>
       </c:changes>
     </c:release>
-    <c:release date="2026-11-04T19:50:13+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="24.5.0">
+    <c:release date="2026-11-24T14:19:08+00:00" is-open="true" ticket-system="org.palaceproject.jira" version="25.0.0">
       <c:changes/>
     </c:release>
   </c:releases>

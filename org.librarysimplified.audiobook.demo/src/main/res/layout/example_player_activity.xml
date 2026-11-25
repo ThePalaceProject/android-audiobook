@@ -3,11 +3,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  android:clipChildren="false"
   android:orientation="vertical">
 
   <FrameLayout
     android:id="@+id/example_player_fragment_holder"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+    android:layout_height="0dp"
+    android:layout_weight="1" />
+
+  <FrameLayout
+    android:id="@+id/example_mini_player_holder"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginBottom="8dp"
+    android:clipChildren="false"
+    android:visibility="gone" />
 
 </LinearLayout>

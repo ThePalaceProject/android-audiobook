@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  A compact, single-line player. It shows the cover, title, and transport controls for the
+  currently-open book. Tapping the bar (anywhere except the buttons) expands it to the full
+  player.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/player_mini_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/player_mini_background"
+    android:clickable="true"
+    android:contentDescription="@string/audiobook_accessibility_expand_player"
+    android:elevation="3dp"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <LinearLayout
+        android:id="@+id/player_mini_close"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/audiobook_accessibility_navigation_close"
+        android:focusable="true"
+        android:gravity="center">
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:importantForAccessibility="no"
+            android:src="@drawable/close" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/player_mini_cover"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="@string/audiobook_accessibility_book_cover"
+        android:scaleType="fitCenter"
+        android:src="@drawable/baseline_work_24" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginRight="8dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/player_mini_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:lines="1"
+            android:textColor="@color/PalacePrimaryForegroundColor"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="Very long placeholder book title that should never be seen in practice." />
+
+        <TextView
+            android:id="@+id/player_mini_author"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:lines="1"
+            android:textColor="@color/PalacePrimaryForegroundColor"
+            android:textSize="13sp"
+            tools:text="Very long placeholder author name that should never be seen in practice." />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/player_mini_skip_back"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="4dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/audiobook_accessibility_skip_backward"
+        android:focusable="true"
+        android:gravity="center">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:importantForAccessibility="no"
+            android:src="@drawable/circle_left"
+            app:tint="@color/PalacePrimaryForegroundColor" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/player_mini_play_pause"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:gravity="center"
+        android:contentDescription="@string/audiobook_accessibility_play"
+        android:focusable="true"
+        app:tint="@color/PalacePrimaryForegroundColor">
+        <ImageView
+            android:id="@+id/player_mini_play_pause_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:clickable="false"
+            android:importantForAccessibility="no"
+            android:focusable="false"
+            android:src="@drawable/baseline_play_arrow_24"
+            app:tint="@color/PalacePrimaryForegroundColor" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/player_mini_skip_forward"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/audiobook_accessibility_skip_forward"
+        android:focusable="true"
+        android:gravity="center">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:importantForAccessibility="no"
+            android:src="@drawable/circle_right"
+            app:tint="@color/PalacePrimaryForegroundColor" />
+    </LinearLayout>
+
+</LinearLayout>

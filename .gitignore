@@ -8,3 +8,6 @@ local.properties
 provider.properties
 .ci/*.log
 presets.xml
+demotest/
+ktlint.jar
+gradle/gradle-daemon-jvm.properties

@@ -28,6 +28,7 @@ import org.librarysimplified.audiobook.manifest_fulfill.opa.OPAPassword
 import org.librarysimplified.audiobook.manifest_fulfill.spi.ManifestFulfillmentStrategyType
 import org.librarysimplified.audiobook.manifest_parser.extension_spi.ManifestParserExtensionType
 import org.librarysimplified.audiobook.views.PlayerModel
+import org.librarysimplified.audiobook.views.PlayerModelState.PlayerOpen
 import org.librarysimplified.http.api.LSHTTPNetworkAccess
 import java.io.File
 import java.net.URI
@@ -246,6 +247,17 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
   private fun onSelectedPlay() {
     ExampleTimeTracking.timeSecondsTracked = 0L
 
+    val sourceURI =
+      URI.create(this.location.text.toString())
+
+    // If this exact book is already open, show the player without reopening it.
+    val state =
+      PlayerModel.state
+    if (state is PlayerOpen && state.palaceId == this.palaceId(sourceURI)) {
+      (this.requireActivity() as ExamplePlayerActivity).attachToOpenPlayer()
+      return
+    }
+
     val credentials =
       when (this.authenticationSelected) {
         this.authBasic -> {
@@ -288,8 +300,6 @@ class ExampleFragmentSelectBook : Fragment(R.layout.example_config_screen) {
       }
 
     ExampleAuthorizationHandler.setCredentials(credentials)
-
-    val sourceURI = URI.create(this.location.text.toString())
 
     when (this.typeSelected) {
       this.typeLCP -> {

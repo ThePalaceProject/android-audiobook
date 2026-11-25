@@ -12,6 +12,20 @@ sealed class PlayerViewCommand {
   data object PlayerViewNavigationCloseAll : PlayerViewCommand()
 
   /**
+   * The user performed an action that means the full player view should be closed while
+   * playback continues.
+   */
+
+  data object PlayerViewNavigationMinimize : PlayerViewCommand()
+
+  /**
+   * The user performed an action that means the compact player should be expanded to the
+   * full player view.
+   */
+
+  data object PlayerViewNavigationExpand : PlayerViewCommand()
+
+  /**
    * The user performed an action that means the TOC should be closed.
    */
 
