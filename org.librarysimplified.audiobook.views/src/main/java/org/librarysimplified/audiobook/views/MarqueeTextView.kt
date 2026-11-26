@@ -9,9 +9,11 @@ import android.widget.TextView
 
 /**
  * A single-line text view that scrolls its text horizontally when the text is wider than the
- * view, and stays still when it fits. The text moves left at a fixed slow speed and then
- * restarts after a short extra travel, so that long titles and author names remain readable
- * within a fixed bar width.
+ * view, and stays still when it fits.
+ *
+ * The text enters from the right edge, scrolls left at a fixed slow speed, and exits past the
+ * left edge before repeating. The loop restarts only while the text is fully outside the view's
+ * bounds, so the motion is continuous and the text never visibly jumps.
  *
  * The text is laid out at its full width and clipped by the view's own bounds; a canvas
  * translation in [onDraw] slides the visible portion, so the view does not need to be wider than
@@ -24,8 +26,10 @@ class MarqueeTextView(
   attrs: AttributeSet?
 ) : TextView(context, attrs, android.R.attr.textViewStyle) {
   private var animator: ValueAnimator? = null
-  private var maxScroll = 0f
+  private var marqueeActive = false
   private var scrollOffset = 0f
+  private var scrollStart = 0f
+  private var scrollEnd = 0f
   private var scrollingEnabled = false
 
   init {
@@ -46,9 +50,9 @@ class MarqueeTextView(
    */
   fun stopScrolling() {
     this.scrollingEnabled = false
+    this.marqueeActive = false
     this.stopAnimator()
     this.scrollOffset = 0f
-    this.maxScroll = 0f
     this.invalidate()
   }
 
@@ -71,7 +75,7 @@ class MarqueeTextView(
   }
 
   override fun onDraw(canvas: Canvas) {
-    if (this.maxScroll > 0f) {
+    if (this.marqueeActive) {
       canvas.translate(this.scrollOffset, 0f)
     }
     super.onDraw(canvas)
@@ -88,33 +92,34 @@ class MarqueeTextView(
 
     val textWidth = this.paint.measureText(this.text.toString())
     val contentWidth = this.width - this.paddingLeft - this.paddingRight
-    val overflow = textWidth - contentWidth
 
-    if (overflow <= 0f) {
-      this.resetScroll()
+    if (textWidth <= contentWidth) {
+      this.marqueeActive = false
+      this.stopAnimator()
+      this.scrollOffset = 0f
+      this.invalidate()
       return
     }
 
-    this.maxScroll = overflow
+    // The text starts fully outside the right edge and ends fully outside the left edge. The
+    // animator wraps back to the right-edge start, which only happens while the text is invisible,
+    // so the loop is seamless.
+    this.scrollStart = (this.width - this.paddingLeft).toFloat()
+    this.scrollEnd = -(textWidth + this.paddingLeft).toFloat()
+    this.scrollOffset = this.scrollStart
+    this.marqueeActive = true
     this.startAnimator()
-  }
-
-  private fun resetScroll() {
-    this.stopAnimator()
-    this.scrollOffset = 0f
-    this.maxScroll = 0f
   }
 
   private fun startAnimator() {
     this.stopAnimator()
 
     val density = this.resources.displayMetrics.density
-    val gapPx = MARQUEE_GAP_DP * density
-    val distance = this.maxScroll + gapPx
+    val distance = this.scrollStart - this.scrollEnd
     val speedPxPerSecond = MARQUEE_SPEED_DP_PER_SECOND * density
     val durationMs = (distance / speedPxPerSecond * 1000f).toLong()
 
-    val animator = ValueAnimator.ofFloat(0f, -distance)
+    val animator = ValueAnimator.ofFloat(this.scrollStart, this.scrollEnd)
     animator.duration = durationMs
     animator.interpolator = LinearInterpolator()
     animator.repeatCount = ValueAnimator.INFINITE
@@ -137,6 +142,5 @@ class MarqueeTextView(
 
   private companion object {
     private const val MARQUEE_SPEED_DP_PER_SECOND = 30f
-    private const val MARQUEE_GAP_DP = 48f
   }
 }
