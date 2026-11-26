@@ -11,6 +11,8 @@ import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
@@ -77,6 +79,7 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     this.askForNotificationsPermission()
+    this.applySystemBarInsets()
   }
 
   private fun askForNotificationsPermission() {
@@ -86,6 +89,22 @@ class ExamplePlayerActivity : AppCompatActivity(R.layout.example_player_activity
         arrayOf(Manifest.permission.POST_NOTIFICATIONS),
         100
       )
+    }
+  }
+
+  /**
+   * On Android 15 (API 35) and later the system mandates edge-to-edge display, so the window
+   * content extends under the navigation bar. Apply the system-bar insets as padding to the root
+   * view so the compact player clears the navigation bar.
+   */
+  private fun applySystemBarInsets() {
+    if (Build.VERSION.SDK_INT >= 35) {
+      val root = this.findViewById<View>(R.id.example_player_root)
+      ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
+        val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+        insets
+      }
     }
   }
 
