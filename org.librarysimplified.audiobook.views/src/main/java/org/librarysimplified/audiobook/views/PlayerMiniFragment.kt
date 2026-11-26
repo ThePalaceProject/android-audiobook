@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import io.reactivex.disposables.CompositeDisposable
 import org.librarysimplified.audiobook.api.PlayerEvent
 import org.librarysimplified.audiobook.api.PlayerEvent.PlayerEventWithPosition.PlayerEventPlaybackBuffering
@@ -27,14 +26,14 @@ import org.librarysimplified.audiobook.views.PlayerViewCommand.PlayerViewNavigat
  */
 
 class PlayerMiniFragment : PlayerBaseFragment() {
-  private lateinit var author: TextView
+  private lateinit var author: MarqueeTextView
   private lateinit var close: LinearLayout
   private lateinit var cover: ImageView
   private lateinit var playPause: LinearLayout
   private lateinit var playPauseIcon: ImageView
   private lateinit var skipBack: LinearLayout
   private lateinit var skipForward: LinearLayout
-  private lateinit var title: TextView
+  private lateinit var title: MarqueeTextView
   private var subscriptions: CompositeDisposable = CompositeDisposable()
 
   override fun onCreateView(
@@ -92,10 +91,15 @@ class PlayerMiniFragment : PlayerBaseFragment() {
       PlayerModel.viewCommands
         .subscribe(this::onPlayerViewCommand)
     )
+
+    this.title.startScrolling()
+    this.author.startScrolling()
   }
 
   override fun onStop() {
     this.subscriptions.dispose()
+    this.title.stopScrolling()
+    this.author.stopScrolling()
     super.onStop()
   }
 

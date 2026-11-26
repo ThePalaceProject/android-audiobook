@@ -59,22 +59,20 @@
         android:layout_marginRight="8dp"
         android:orientation="vertical">
 
-        <TextView
+        <org.librarysimplified.audiobook.views.MarqueeTextView
             android:id="@+id/player_mini_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
             android:lines="1"
             android:textColor="@color/PalacePrimaryForegroundColor"
             android:textSize="16sp"
             android:textStyle="bold"
             tools:text="Very long placeholder book title that should never be seen in practice." />
 
-        <TextView
+        <org.librarysimplified.audiobook.views.MarqueeTextView
             android:id="@+id/player_mini_author"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
             android:lines="1"
             android:textColor="@color/PalacePrimaryForegroundColor"
             android:textSize="13sp"
