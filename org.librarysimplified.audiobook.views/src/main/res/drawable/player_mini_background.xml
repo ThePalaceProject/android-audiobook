@@ -2,6 +2,6 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-  <solid android:color="?android:attr/colorBackground" />
-  <stroke android:width="1px" android:color="@color/PlayerMiniBorder" />
+  <solid android:color="@color/PalaceScreenBackgroundColor" />
+  <stroke android:width="1px" android:color="@color/PalacePrimaryForegroundColor" />
 </shape>

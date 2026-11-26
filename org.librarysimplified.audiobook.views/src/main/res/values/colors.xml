@@ -8,7 +8,6 @@
 
     <!-- Color settings for the sleep timer configuration menu. -->
 
-  <color name="PlayerMiniBorder">#80000000</color>
   <color name="PlayerMiniShadow">#20000000</color>
 
 </resources>
